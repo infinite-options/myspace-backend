@@ -710,6 +710,84 @@ class MaintenanceStatusByProperty(Resource):
         finally:
             disconnect(conn)
 
+
+def remove_nested_keys(dictionary, key_to_remove):
+    print("in function", dictionary, key_to_remove )
+    print(len(dictionary))
+    print(key)
+    for key in dictionary:
+        for i in range(len(dictionary[key])):
+            for keys in list(dictionary[key][i]):
+                if keys == key_to_remove:
+                    val = dictionary[key][i][keys]
+                    del dictionary[key][i][keys]
+
+    print("after first loop")
+    for value in dictionary.values():
+        if isinstance(value, dict):
+            remove_nested_keys(value, key_to_remove)
+
+    return dictionary, val
+
+
+class ownerMaintenanceDashboard(Resource):
+    def get(self, owner_id):
+        print('in New Owner Maintenance Dashboard')
+        response = {}
+        conn = connect()
+
+        # print("Owner UID: ", owner_id)
+
+
+        try:
+            maintenanceQuery = (""" 
+                    -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH ALL DETAILS
+                    SELECT property_owner_id
+                        , property_uid, property_available_to_rent, property_active_date, property_address -- , property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
+                        -- , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                    FROM space.properties
+                    LEFT JOIN space.property_owner ON property_id = property_uid 					-- SO WE CAN SORT BY OWNER
+                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid	-- MAINTENANCE DETAILS
+                    WHERE property_owner_id = \'""" + owner_id + """\'
+                    ORDER BY maintenance_request_status;
+                    """)
+            
+
+            # print("Query: ", maintenanceQuery)
+            items = execute(maintenanceQuery, "get", conn)
+            # response["MaintenanceStatus"] = items["result"]
+            # print(response)
+            print('Made it here 1')
+
+            # return response
+
+            # response_data = response.json()
+            # response_data = json.load(response)
+            response_data = json.dumps(items["result"])
+            # print(response_data)
+            key_to_remove = 'property_owner_id'
+            print("here")
+
+            x, val = remove_nested_keys(response_data, key_to_remove)
+
+            print("back from function")
+            new_dict = {val: [x]}
+            print(new_dict)
+
+
+            return new_dict
+            
+
+        except:
+            print("Error in Maintenance Status Query")
+        finally:
+            disconnect(conn)
+
+
+
+
+
+
 class Bills(Resource):
     def post(self):
         print("In add Bill")
@@ -1061,6 +1139,7 @@ class TransactionsByOwnerByProperty(Resource):
 
 
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
+api.add_resource(ownerMaintenanceDashboard, '/ownerMaintenanceDashboard/<string:owner_id>')
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
