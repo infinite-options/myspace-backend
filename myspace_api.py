@@ -210,7 +210,7 @@ def disconnect(conn):
 # OPTIONAL: Set skipSerialization to True to skip default JSON response serialization
 def execute(sql, cmd, conn, skipSerialization=False):
     response = {}
-    print("==> Execute Query: ", cmd,sql)
+    # print("==> Execute Query: ", cmd,sql)
     try:
         with conn.cursor() as cur:
             cur.execute(sql)
@@ -710,27 +710,56 @@ class MaintenanceStatusByProperty(Resource):
         finally:
             disconnect(conn)
 
+class ownerDashboardProperties(Resource):
+    def get(self, owner_id):
+        print('in New Owner Maintenance Dashboard')
+        response = {}
+        conn = connect()
 
-def remove_nested_keys(dictionary, key_to_remove):
-    print("in function", dictionary, key_to_remove )
-    print(len(dictionary))
-    print(key)
-    for key in dictionary:
-        for i in range(len(dictionary[key])):
-            for keys in list(dictionary[key][i]):
-                if keys == key_to_remove:
-                    val = dictionary[key][i][keys]
-                    del dictionary[key][i][keys]
-
-    print("after first loop")
-    for value in dictionary.values():
-        if isinstance(value, dict):
-            remove_nested_keys(value, key_to_remove)
-
-    return dictionary, val
+        # print("Owner UID: ", owner_id)
 
 
-class ownerMaintenanceDashboard(Resource):
+        try:
+            maintenanceQuery = (""" 
+                    -- PROPERTY DETAILS INCLUDING MAINTENANCE      
+                    SELECT property_uid, property_address
+                        , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
+                        , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                    FROM space.properties
+                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid		-- SO WE HAVE MAINTENANCE INFO
+                    LEFT JOIN space.property_owner ON property_id = property_uid 						-- SO WE CAN SORT BY OWNER
+                    WHERE property_owner_id = \'""" + owner_id + """\';
+                    """)
+
+            # print("Query: ", maintenanceQuery)
+            items = execute(maintenanceQuery, "get", conn)
+            # print(type(items), items)  # This is a Dictionary
+            # print(type(items["result"]), items["result"])  # This is a list
+
+            property_list = items["result"]
+
+            # Format Output to be a dictionary of lists
+            property_dict = {}
+            for item in property_list:
+                property_id = item['property_uid']
+                property_info = {k: v for k, v in item.items() if k != 'property_uid'}
+                
+                if property_id in property_dict:
+                    property_dict[property_id].append(property_info)
+                else:
+                    property_dict[property_id] = [property_info]
+
+            # Print the resulting dictionary
+            # print(property_dict)
+            return property_dict
+            
+
+        except:
+            print("Error in Maintenance Status Query")
+        finally:
+            disconnect(conn)
+
+class ownerDashboardMaintenanceByStatus(Resource):
     def get(self, owner_id):
         print('in New Owner Maintenance Dashboard')
         response = {}
@@ -744,49 +773,42 @@ class ownerMaintenanceDashboard(Resource):
                     -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH ALL DETAILS
                     SELECT property_owner_id
                         , property_uid, property_available_to_rent, property_active_date, property_address -- , property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        -- , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid 					-- SO WE CAN SORT BY OWNER
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid	-- MAINTENANCE DETAILS
+                        , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                    FROM space.maintenanceRequests
+                    LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
+                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
                     WHERE property_owner_id = \'""" + owner_id + """\'
                     ORDER BY maintenance_request_status;
                     """)
-            
 
             # print("Query: ", maintenanceQuery)
             items = execute(maintenanceQuery, "get", conn)
-            # response["MaintenanceStatus"] = items["result"]
-            # print(response)
-            print('Made it here 1')
+            # print(type(items), items)  # This is a Dictionary
+            # print(type(items["result"]), items["result"])  # This is a list
 
-            # return response
+            property_list = items["result"]
 
-            # response_data = response.json()
-            # response_data = json.load(response)
-            response_data = json.dumps(items["result"])
-            # print(response_data)
-            key_to_remove = 'property_owner_id'
-            print("here")
+            # Format Output to be a dictionary of lists
+            property_dict = {}
+            for item in property_list:
+                maintenance_status = item['maintenance_request_status']
+                # property_id = item['property_uid']
+                property_info = {k: v for k, v in item.items() if k != 'maintenance_request_status'}
+                
+                if maintenance_status in property_dict:
+                    property_dict[maintenance_status].append(property_info)
+                else:
+                    property_dict[maintenance_status] = [property_info]
 
-            x, val = remove_nested_keys(response_data, key_to_remove)
-
-            print("back from function")
-            new_dict = {val: [x]}
-            print(new_dict)
-
-
-            return new_dict
+            # Print the resulting dictionary
+            # print(property_dict)
+            return property_dict
             
 
         except:
             print("Error in Maintenance Status Query")
         finally:
             disconnect(conn)
-
-
-
-
-
 
 class Bills(Resource):
     def post(self):
@@ -1054,6 +1076,8 @@ class CashFlow(Resource):
         finally:
             disconnect(conn)
 
+
+
 class TransactionsByOwner(Resource):
     def get(self, owner_id):
         print('in Transactions By Owner')
@@ -1064,13 +1088,15 @@ class TransactionsByOwner(Resource):
 
         try:
             transactionQuery = (""" 
-                    -- TRANSACTIONS BY OWNER
-                    SELECT owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                        , property_id, po_owner_percent
+                    -- ALL TRANSACTIONS
+                    SELECT -- *
+                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
+                        , property_listed_rent, property_deposit, property_images, property_taxes, property_mortgages, property_insurance, property_description, property_notes
+                        , property_owner_id, po_owner_percent
                         , purchase_uid, pur_timestamp, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                    FROM space.ownerProfileInfo								-- START WITH PROPERTY OWNER
-                    LEFT JOIN space.property_owner ON owner_uid = property_owner_id		-- TO FIND PROPERTIES
-                    LEFT JOIN space.purchases ON property_id = pur_property_id
+                    FROM space.properties
+                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+                    LEFT JOIN space.purchases ON pur_property_id = property_uid
                     WHERE property_owner_id = \'""" + owner_id + """\';
                     """)
             
@@ -1098,14 +1124,14 @@ class TransactionsByOwnerByProperty(Resource):
         try:
             transactionQuery = (""" 
                     -- TRANSACTIONS BY OWNER BY PROPERTY
-                    SELECT owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                        , property_id, po_owner_percent
-                        , property_address, property_unit, property_city, property_state, property_zip, property_type
+                    SELECT -- *
+                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
+                        , property_listed_rent, property_deposit, property_images, property_taxes, property_mortgages, property_insurance, property_description, property_notes
+                        , property_owner_id, po_owner_percent
                         , purchase_uid, pur_timestamp, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                    FROM space.ownerProfileInfo								-- START WITH PROPERTY OWNER
-                    LEFT JOIN space.property_owner ON owner_uid = property_owner_id		-- TO FIND PROPERTIES
-                    LEFT JOIN space.properties ON property_id = property_uid		-- TO FIND PROPERTY SPECIFICS
-                    LEFT JOIN space.purchases ON property_id = pur_property_id		-- TO FIND PURCHASES
+                    FROM space.properties
+                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+                    LEFT JOIN space.purchases ON pur_property_id = property_uid
                     WHERE property_owner_id = \'""" + owner_id + """\'
                         AND property_uid = \'""" + property_id + """\';
                     """)
@@ -1139,7 +1165,8 @@ class TransactionsByOwnerByProperty(Resource):
 
 
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
-api.add_resource(ownerMaintenanceDashboard, '/ownerMaintenanceDashboard/<string:owner_id>')
+api.add_resource(ownerDashboardProperties, '/ownerDashboardProperties/<string:owner_id>')
+api.add_resource(ownerDashboardMaintenanceByStatus, '/ownerDashboardMaintenanceByStatus/<string:owner_id>')
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
