@@ -16,6 +16,14 @@
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
+from properties import Properties, PropertiesByOwner
+from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
+from cashflow import CashflowByOwner
+from profiles import OwnerProfile, TenantProfile
+from documents import OwnerDocuments, TenantDocuments
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, OwnerMaintenanceByStatus
+from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+
 import os
 import boto3
 import json
@@ -155,195 +163,7 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 
 
-# SECTION 3: DATABASE FUNCTIONALITY
-# RDS for AWS SQL 5.7
-# RDS_HOST = 'pm-mysqldb.cxjnrciilyjq.us-west-1.rds.amazonaws.com'
-# RDS for AWS SQL 8.0
-RDS_HOST = 'io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com'
-RDS_PORT = 3306
-RDS_USER = 'admin'
-RDS_DB = 'space'
-RDS_PW="prashant"   # Not sure if I need this
-# RDS_PW = os.environ.get('RDS_PW')
-S3_BUCKET = "manifest-image-db"
-# S3_BUCKET = os.environ.get('S3_BUCKET')
-# S3_KEY = os.environ.get('S3_KEY')
-# S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
 
-
-# CONNECT AND DISCONNECT TO MYSQL DATABASE ON AWS RDS (API v2)
-# Connect to MySQL database (API v2)
-def connect():
-    global RDS_PW
-    global RDS_HOST
-    global RDS_PORT
-    global RDS_USER
-    global RDS_DB
-
-    # print("Trying to connect to RDS (API v2)...")
-    try:
-        conn = pymysql.connect(host=RDS_HOST,
-                               user=RDS_USER,
-                               port=RDS_PORT,
-                               passwd=RDS_PW,
-                               db=RDS_DB,
-                               charset='utf8mb4',
-                               cursorclass=pymysql.cursors.DictCursor)
-        # print("Successfully connected to RDS. (API v2)")
-        return conn
-    except:
-        print("Could not connect to RDS. (API v2)")
-        raise Exception("RDS Connection failed. (API v2)")
-
-# Disconnect from MySQL database (API v2)
-def disconnect(conn):
-    try:
-        conn.close()
-        # print("Successfully disconnected from MySQL database. (API v2)")
-    except:
-        print("Could not properly disconnect from MySQL database. (API v2)")
-        raise Exception("Failure disconnecting from MySQL database. (API v2)")
-
-# Execute an SQL command (API v2)
-# Set cmd parameter to 'get' or 'post'
-# Set conn parameter to connection object
-# OPTIONAL: Set skipSerialization to True to skip default JSON response serialization
-def execute(sql, cmd, conn, skipSerialization=False):
-    response = {}
-    # print("==> Execute Query: ", cmd,sql)
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql)
-            if cmd == 'get':
-                print("in get")
-                result = cur.fetchall()
-                response['message'] = 'Successfully executed SQL query.'
-                # Return status code of 280 for successful GET request
-                response['code'] = 280
-                if not skipSerialization:
-                    print("Serialized Response")
-                    result = serializeResponse(result)
-                print("Not Serialized Response")
-                response['result'] = result
-            elif cmd == 'post':
-                print("in post")
-                conn.commit()
-                response['message'] = 'Successfully committed SQL command.'
-                # Return status code of 281 for successful POST request
-                response['code'] = 281
-            elif cmd == 'del':
-                print("in del")
-                conn.commit()
-                response['message'] = 'Successfully committed SQL command.'
-                # Return status code of 281 for successful POST request
-                response['code'] = 281
-            else:
-                response['message'] = 'Request failed. Unknown or ambiguous instruction given for MySQL command.'
-                # Return status code of 480 for unknown HTTP method
-                response['code'] = 480
-    except:
-        response['message'] = 'Request failed, could not execute MySQL command.'
-        # Return status code of 490 for unsuccessful HTTP request
-        response['code'] = 490
-    finally:
-        # response['sql'] = sql
-        return response
-
-# Serialize JSON
-def serializeResponse(response):
-    try:
-        for row in response:
-            for key in row:
-                if type(row[key]) is Decimal:
-                    row[key] = float(row[key])
-                elif (type(row[key]) is date or type(row[key]) is datetime) and row[key] is not None:
-                # Change this back when finished testing to get only date
-                    row[key] = row[key].strftime("%Y-%m-%d")
-                    # row[key] = row[key].strftime("%Y-%m-%d %H-%M-%S")
-                # elif is_json(row[key]):
-                #     row[key] = json.loads(row[key])
-                elif isinstance(row[key], bytes):
-                    row[key] = row[key].decode()
-        return response
-    except:
-        raise Exception("Bad query JSON")
-
-
-# RUN STORED PROCEDURES
-
-        # MOVE STORED PROCEDURES HERE
-
-
-# Function to upload image to s3
-def allowed_file(filename):
-    # Checks if the file is allowed to upload
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def helper_upload_img(file):
-    bucket = S3_BUCKET
-    # creating key for image name
-    salt = os.urandom(8)
-    dk = hashlib.pbkdf2_hmac('sha256',  (file.filename).encode(
-        'utf-8'), salt, 100000, dklen=64)
-    key = (salt + dk).hex()
-
-    if file and allowed_file(file.filename):
-
-        # image link
-        filename = 'https://s3-us-west-1.amazonaws.com/' \
-                   + str(bucket) + '/' + str(key)
-
-        # uploading image to s3 bucket
-        upload_file = s3.put_object(
-            Bucket=bucket,
-            Body=file,
-            Key=key,
-            ACL='public-read',
-            ContentType='image/jpeg'
-        )
-        return filename
-    return None
-
-# Function to upload icons
-def helper_icon_img(url):
-
-    bucket = S3_BUCKET
-    response = requests.get(url, stream=True)
-
-    if response.status_code == 200:
-        raw_data = response.content
-        url_parser = urlparse(url)
-        file_name = os.path.basename(url_parser.path)
-        key = 'image' + "/" + file_name
-
-        try:
-
-            with open(file_name, 'wb') as new_file:
-                new_file.write(raw_data)
-
-            # Open the server file as read mode and upload in AWS S3 Bucket.
-            data = open(file_name, 'rb')
-            upload_file = s3.put_object(
-                Bucket=bucket,
-                Body=data,
-                Key=key,
-                ACL='public-read',
-                ContentType='image/jpeg')
-            data.close()
-
-            file_url = 'https://%s/%s/%s' % (
-                's3-us-west-1.amazonaws.com', bucket, key)
-
-        except Exception as e:
-            print("Error in file upload %s." % (str(e)))
-
-        finally:
-            new_file.close()
-            os.remove(file_name)
-    else:
-        print("Cannot parse url")
-
-    return file_url
 
 
 
@@ -367,11 +187,11 @@ def get_new_purchaseUID(conn):
         return newPurchaseQuery["result"][0]["new_id"]
     return "Could not generate new bill UID", 500
 
-def get_new_propertyUID(conn):
-    newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
-    if newPropertyQuery["code"] == 280:
-        return newPropertyQuery["result"][0]["new_id"]
-    return "Could not generate new property UID", 500
+# def get_new_propertyUID(conn):
+#     newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
+#     if newPropertyQuery["code"] == 280:
+#         return newPropertyQuery["result"][0]["new_id"]
+#     return "Could not generate new property UID", 500
 
 
 
@@ -429,286 +249,10 @@ class ownerDashboard(Resource):
         finally:
             disconnect(conn)
 
-class Properties(Resource):
-    def get(self):
-        print('in Properties')
-        response = {}
-        conn = connect()
-
-        try:
-            propertiesQuery = (""" 
-                    -- PROPERTIES BY OWNER
-                    SELECT property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
-                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images
-                        , property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes
-                        , property_owner.property_owner_id
-                        , ownerProfileInfo.*
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid
-                    LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid;
-                    """)
-            
-
-            # print("Query: ", propertiesQuery)
-            items = execute(propertiesQuery, "get", conn)
-            response["Property"] = items["result"]
 
 
-            return response
-
-        except:
-            print("Error in Property Query")
-        finally:
-            disconnect(conn)
-    
-    def post(self):
-        print("In add Property")
-
-        try:
-            conn = connect()
-            response = {}
-            response['message'] = []
-            data = request.get_json(force=True)
-            print(data)
-
-            #  Get New Bill UID
-            new_property_uid = get_new_propertyUID(conn)
-            print(new_property_uid)
 
 
-            # Set Variables from JSON OBJECT
-            property_owner_id = data["property_owner_id"]
-            po_owner_percent = data["po_owner_percent"]
-            print(po_owner_percent)
-            property_available_to_rent = data["available_to_rent"]
-            property_active_date = data["active_date"]
-            property_address = data["address"]
-            property_unit = data["unit"]
-            property_city = data["city"]
-            property_state = data["state"]
-            property_zip = data["zip"]
-            print(property_zip)
-            property_type = data["property_type"]
-            property_num_beds = data["bedrooms"]
-            property_num_baths = data["bathrooms"]
-            property_area = data["property_area"]
-            property_listed_rent = data["listed"]
-            property_deposit = data["deposit"]
-            print(property_deposit)
-            property_pets_allowed = data["pets_allowed"]
-            property_deposit_for_rent = data["deposit_for_rent"]
-            property_images = data["property_images"]
-            print(property_images)
-            property_taxes = data["property_taxes"]
-            property_mortgages = data["property_mortgages"]
-            property_insurance = data["property_insurance"]
-            property_featured = data["property_featured"]
-            property_description = data["property_description"]
-            property_notes = data["property_notes"]
-            print(property_notes)
-
-
-            propertyQuery = (""" 
-                    -- ADDS RELATIONSHIP BETWEEN PROPERTY AND OWNER
-                    INSERT INTO space.property_owner
-                    SET property_id = \'""" + new_property_uid + """\'
-                        , property_owner_id = \'""" + property_owner_id + """\'
-                        , po_owner_percent = \'""" + str(po_owner_percent) + """\';
-                    """)
-            
-            # print("Query: ", propertyQuery)
-            response = execute(propertyQuery, "post", conn) 
-            # print("Query out", response["code"])
-            # response["property_uid"] = new_property_uid
-
-            propertyQuery = (""" 
-                    -- ADDS NEW PROPERTY DETAILS 
-                    INSERT INTO space.properties
-                    SET property_uid = \'""" + new_property_uid + """\'
-                        , property_available_to_rent =  \'""" + property_available_to_rent + """\'
-                        , property_active_date = \'""" + property_active_date + """\'
-                        , property_address = \'""" + property_address + """\'
-                        , property_unit = \'""" + property_unit + """\'
-                        , property_city = \'""" + property_city + """\'
-                        , property_state = \'""" + property_state + """\'
-                        , property_zip = \'""" + property_zip + """\'
-                        , property_type = \'""" + property_type + """\'
-                        , property_num_beds = \'""" + str(property_num_beds) + """\'
-                        , property_num_baths = \'""" + str(property_num_baths) + """\'
-                        , property_area = \'""" + str(property_area) + """\'
-                        , property_listed_rent = \'""" + str(property_listed_rent) + """\'
-                        , property_deposit = \'""" + str(property_deposit) + """\'
-                        , property_pets_allowed = \'""" + str(property_pets_allowed) + """\'
-                        , property_deposit_for_rent = \'""" + str(property_deposit_for_rent) + """\'
-                        , property_images = "[]"
-                        , property_taxes = \'""" + str(property_taxes)  + """\'
-                        , property_mortgages = \'""" + str(property_mortgages) + """\'
-                        , property_insurance = \'""" + str(property_insurance) + """\'
-                        , property_featured = \'""" + str(property_featured) + """\'
-                        , property_description = \'""" + property_description + """\'
-                        , property_notes = \'""" + property_notes + """\';
-                    """)
-            
-            # print("Query: ", propertyQuery)
-            response = execute(propertyQuery, "post", conn) 
-            # print("Query out", response["code"])
-            response["property_uid"] = new_property_uid
-
-            return response
-
-        except:
-            print("Error in Add Property Query")
-        finally:
-            disconnect(conn)
-
-    def delete(self):
-        print("In delete Bill")
-
-        try:
-            conn = connect()
-            response = {}
-            response['message'] = []
-            data = request.get_json(force=True)
-            print(data)
-
-            property_owner_id = data["property_owner_id"]
-            property_id = data["property_id"]
-            
-
-            # Query
-            delPropertyQuery = (""" 
-                    -- DELETE PROPERTY FROM PROPERTY-OWNER TABLE
-                    DELETE FROM space.property_owner
-                    WHERE property_id = \'""" + property_id + """\'
-                        AND property_owner_id = \'""" + property_owner_id + """\';         
-                    """)
-
-            print("Query: ", delPropertyQuery)
-            response = execute(delPropertyQuery, "del", conn) 
-            print("Query out", response["code"])
-            response["Deleted property_uid"] = property_id
-
-
-            delPropertyQuery = (""" 
-                    -- DELETE PROPERTY FROM PROPERTIES TABLE
-                    DELETE FROM space.properties 
-                    WHERE property_uid = \'""" + property_id + """\';         
-                    """)
-
-            print("Query: ", delPropertyQuery)
-            response = execute(delPropertyQuery, "del", conn) 
-            print("Query out", response["code"])
-            response["Deleted bill_uid"] = property_id
-
-
-            return response
-
-        except:
-            print("Error in Delete Property Query")
-        finally:
-            disconnect(conn)
-
-class PropertiesByOwner(Resource):
-    def get(self, owner_id):
-        print('in Properties by Owner')
-        response = {}
-        conn = connect()
-
-        print("Property Owner UID: ", owner_id)
-
-        try:
-            propertiesQuery = (""" 
-                    -- PROPERTIES BY OWNER
-                    SELECT property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
-                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images
-                        , property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes
-                        , property_owner.property_owner_id
-                        , ownerProfileInfo.*
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid
-                    LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\';
-                    """)
-            
-
-            # print("Query: ", propertiesQuery)
-            items = execute(propertiesQuery, "get", conn)
-            response["Property"] = items["result"]
-
-
-            return response
-
-        except:
-            print("Error in Property Query")
-        finally:
-            disconnect(conn)
-
-class MaintenanceByProperty(Resource):
-    def get(self, property_id):
-        print('in Maintenance By Property')
-        response = {}
-        conn = connect()
-
-        print("Property UID: ", property_id)
-
-        try:
-            maintenanceQuery = (""" 
-                    -- MAINTENANCE PROJECTS BY PROPERTY        
-                    SELECT -- *
-                        property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area
-                        , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                    FROM space.properties
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
-                    WHERE property_uid = \'""" + property_id + """\';
-                    """)
-            
-
-            # print("Query: ", maintenanceQuery)
-            items = execute(maintenanceQuery, "get", conn)
-            print("here")
-            print(items)
-            response["MaintenanceProjects"] = items["result"]
-
-
-            return response
-
-        except:
-            print("Error in Maintenance Query")
-        finally:
-            disconnect(conn)
-
-class MaintenanceStatusByProperty(Resource):
-    def get(self, property_id):
-        print('in New Owner Dashboard new')
-        response = {}
-        conn = connect()
-
-        print("Property UID: ", property_id)
-
-        try:
-            maintenanceQuery = (""" 
-                    -- MAINTENANCE STATUS BY PROPERTY        
-                    SELECT property_uid, property_address
-                        , maintenanceRequests.maintenance_request_status
-                        , COUNT(maintenanceRequests.maintenance_request_status) AS num
-                    FROM space.properties
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
-                    WHERE property_uid = \'""" + property_id + """\'
-                    GROUP BY maintenance_request_status;
-                    """)
-            
-
-            # print("Query: ", maintenanceQuery)
-            items = execute(maintenanceQuery, "get", conn)
-            response["MaintenanceProjectStatus"] = items["result"]
-
-
-            return response
-
-        except:
-            print("Error in Maintenance Query")
-        finally:
-            disconnect(conn)
 
 class ownerDashboardProperties(Resource):
     def get(self, owner_id):
@@ -759,56 +303,7 @@ class ownerDashboardProperties(Resource):
         finally:
             disconnect(conn)
 
-class ownerDashboardMaintenanceByStatus(Resource):
-    def get(self, owner_id):
-        print('in New Owner Maintenance Dashboard')
-        response = {}
-        conn = connect()
 
-        # print("Owner UID: ", owner_id)
-
-
-        try:
-            maintenanceQuery = (""" 
-                    -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH ALL DETAILS
-                    SELECT property_owner_id
-                        , property_uid, property_available_to_rent, property_active_date, property_address -- , property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                    FROM space.maintenanceRequests
-                    LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
-                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                    ORDER BY maintenance_request_status;
-                    """)
-
-            # print("Query: ", maintenanceQuery)
-            items = execute(maintenanceQuery, "get", conn)
-            # print(type(items), items)  # This is a Dictionary
-            # print(type(items["result"]), items["result"])  # This is a list
-
-            property_list = items["result"]
-
-            # Format Output to be a dictionary of lists
-            property_dict = {}
-            for item in property_list:
-                maintenance_status = item['maintenance_request_status']
-                # property_id = item['property_uid']
-                property_info = {k: v for k, v in item.items() if k != 'maintenance_request_status'}
-                
-                if maintenance_status in property_dict:
-                    property_dict[maintenance_status].append(property_info)
-                else:
-                    property_dict[maintenance_status] = [property_info]
-
-            # Print the resulting dictionary
-            # print(property_dict)
-            return property_dict
-            
-
-        except:
-            print("Error in Maintenance Status Query")
-        finally:
-            disconnect(conn)
 
 class Bills(Resource):
     def post(self):
@@ -1024,130 +519,11 @@ class Bills(Resource):
         finally:
             disconnect(conn)
 
-class CashFlow(Resource):
-    def get(self):
-        print('in CashFlow')
-        response = {}
-        conn = connect()
-
-        try:
-            cashFlowQuery = (""" 
-                    -- CASHFLOW BY PROPERTY BY MONTH.  CONSIDER ADDING pur_type WHEN THE PURCHASE IS LOGGED
-                    SELECT -- *
-                        property_uid, property_address, property_unit, pur_type, pur_due_date
-                        , ROUND(SUM(pur_amount_due),2) AS cf
-                    FROM (
-                        SELECT -- *
-                            property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
-                            -- , SUM(pur_amount_due) AS purchase_amount_due
-                            , purchases.*
-                            , IF (purchase_type LIKE "RENT" OR  purchase_type LIKE "DEPOSIT" OR  purchase_type LIKE "LATE FEE" OR  purchase_type LIKE "UTILITY" OR  purchase_type LIKE "EXTRA CHARGES", 1 , 0) AS cf_revenue
-                            , CASE
-                                WHEN (purchase_type LIKE "RENT" OR  purchase_type LIKE "LATE FEE" OR  purchase_type LIKE "UTILITY" OR  purchase_type LIKE "EXTRA CHARGES") THEN "revenue"
-                                WHEN (purchase_type LIKE "OWNER PAYMENT RENT" OR  purchase_type LIKE "OWNER PAYMENT LATE FEE" OR  purchase_type LIKE "OWNER PAYMENT EXTRA CHARGES" OR  purchase_type LIKE "MAINTENANCE") THEN "expense"
-                                WHEN (purchase_type LIKE "DEPOSIT") THEN "deposit"
-                                ELSE "other"
-                            END AS pur_type
-                        FROM space.properties
-                        LEFT JOIN space.purchases ON pur_property_id = property_uid
-                        -- WHERE property_uid = "200-000001"
-                        -- WHERE MONTH(pur_due_date) = 4 AND YEAR(pur_due_date) = 2023
-                        GROUP BY MONTH(pur_due_date),
-                                YEAR(pur_due_date),
-                                purchase_type,
-                                property_uid
-                            ) a
-                    GROUP BY MONTH(pur_due_date),
-                                YEAR(pur_due_date),
-                                pur_type,
-                            property_uid;
-                    """)
-            
-
-            # print("Query: ", cashFlowQuery)
-            items = execute(cashFlowQuery, "get", conn)
-            response["Property"] = items["result"]
-
-
-            return response
-
-        except:
-            print("Error in Cash Flow Query")
-        finally:
-            disconnect(conn)
 
 
 
-class TransactionsByOwner(Resource):
-    def get(self, owner_id):
-        print('in Transactions By Owner')
-        response = {}
-        conn = connect()
-
-        print("Property Owner UID: ", owner_id)
-
-        try:
-            transactionQuery = (""" 
-                    -- ALL TRANSACTIONS
-                    SELECT -- *
-                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
-                        , property_listed_rent, property_deposit, property_images, property_taxes, property_mortgages, property_insurance, property_description, property_notes
-                        , property_owner_id, po_owner_percent
-                        , purchase_uid, pur_timestamp, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-                    LEFT JOIN space.purchases ON pur_property_id = property_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\';
-                    """)
-            
-
-            # print("Query: ", TransactionQuery)
-            items = execute(transactionQuery, "get", conn)
-            response["Transactions"] = items["result"]
 
 
-            return response
-
-        except:
-            print("Error in Transaction Query")
-        finally:
-            disconnect(conn)
-
-class TransactionsByOwnerByProperty(Resource):
-    def get(self, owner_id, property_id):
-        print('in Transactions By Owner')
-        response = {}
-        conn = connect()
-
-        print("Property Owner UID: ", owner_id)
-
-        try:
-            transactionQuery = (""" 
-                    -- TRANSACTIONS BY OWNER BY PROPERTY
-                    SELECT -- *
-                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
-                        , property_listed_rent, property_deposit, property_images, property_taxes, property_mortgages, property_insurance, property_description, property_notes
-                        , property_owner_id, po_owner_percent
-                        , purchase_uid, pur_timestamp, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-                    LEFT JOIN space.purchases ON pur_property_id = property_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                        AND property_uid = \'""" + property_id + """\';
-                    """)
-            
-
-            # print("Query: ", TransactionQuery)
-            items = execute(transactionQuery, "get", conn)
-            response["Transactions"] = items["result"]
-
-
-            return response
-
-        except:
-            print("Error in Transaction Query")
-        finally:
-            disconnect(conn)
 
         
 
@@ -1166,16 +542,25 @@ class TransactionsByOwnerByProperty(Resource):
 
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 api.add_resource(ownerDashboardProperties, '/ownerDashboardProperties/<string:owner_id>')
-api.add_resource(ownerDashboardMaintenanceByStatus, '/ownerDashboardMaintenanceByStatus/<string:owner_id>')
+api.add_resource(OwnerMaintenanceByStatus, '/ownerMaintenanceByStatus/<string:owner_id>')
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
 api.add_resource(MaintenanceStatusByProperty, '/maintenanceStatusByProperty/<string:property_id>')
 api.add_resource(Bills, '/bills')
-api.add_resource(CashFlow, '/cashFlow')
+
+api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
+
 api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
+api.add_resource(AllTransactions, '/allTransactions')
 
+
+api.add_resource(OwnerProfile, '/ownerProfile/<string:owner_id>')
+api.add_resource(TenantProfile, '/tenantProfile/<string:tenant_id>')
+
+api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
+api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=4000)
