@@ -1045,8 +1045,65 @@ class TransactionsByOwnerByProperty(Resource):
         finally:
             disconnect(conn)
 
-        
+class PropertyList(Resource):
+    def get(self):
 
+        response = {}
+        conn = connect()
+
+
+        try:
+            PropertyQuery = (""" 
+                    -- LIST OF ALL PROPERTIES
+                    SELECT COUNT(*) AS MaintenanceRequests, lease_status, property_uid, property_address FROM space.ownerProfileInfo 
+                    LEFT JOIN space.property_owner ON owner_uid = property_owner_id
+                    LEFT JOIN space.properties ON property_id = property_uid
+                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+                    LEFT JOIN space.leases ON lease_property_id = maintenance_property_id
+                    LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                    LEFT JOIN space.tenantProfileInfo ON tenant_uid = lt_tenant_id
+                    GROUP BY property_uid
+                    """)
+
+            items = execute(PropertyQuery, "get", conn)
+            response["Properties"] = items["result"]
+
+            return response
+
+        except:
+            print("Error in Property Query")
+        finally:
+            disconnect(conn)
+
+class Property(Resource):
+    def get(self, property_uid):
+
+        response = {}
+        conn = connect()
+
+
+        try:
+            PropertyQuery = (""" 
+                    -- DETAILS OF A PROPERTY
+                    SELECT DISTINCT owner_first_name,property_uid, property_type,property_num_baths,property_num_beds,tenant_first_name ,COUNT(maintenance_property_id) AS MaintenanceRequests, lease_status,  property_address FROM space.ownerProfileInfo 
+                    LEFT JOIN space.property_owner ON owner_uid = property_owner_id
+                    LEFT JOIN space.properties ON property_id = property_uid
+                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+                    LEFT JOIN space.leases ON lease_property_id = maintenance_property_id
+                    LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                    LEFT JOIN space.tenantProfileInfo ON tenant_uid = lt_tenant_id
+                    WHERE property_uid = \'""" + property_uid + """\'
+                    """)
+
+            items = execute(PropertyQuery, "get", conn)
+            response["Properties"] = items["result"]
+
+            return response
+
+        except:
+            print("Error in Property Query")
+        finally:
+            disconnect(conn)
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
@@ -1069,7 +1126,8 @@ api.add_resource(Bills, '/bills')
 api.add_resource(CashFlow, '/cashFlow')
 api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
-
+api.add_resource(PropertyList, '/PropertyList')
+api.add_resource(Property, '/Property/<string:property_uid>')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=4000)
