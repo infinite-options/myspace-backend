@@ -38,7 +38,7 @@ class PropertiesByOwner(Resource):
         try:
             propertiesQuery = (""" 
                     -- PROPERTIES BY OWNER
-                    SELECT * FROM space.prop_details
+                    SELECT * FROM space.p_details
                     WHERE  contract_status = 'ACTIVE'
                         AND owner_uid = \'""" + owner_id + """\';
                     """)
@@ -75,7 +75,7 @@ class Properties(Resource):
         try:
             propertiesQuery = (""" 
                     -- PROPERTIES
-                    SELECT * FROM space.prop_details
+                    SELECT * FROM space.p_details
                     WHERE contract_status = 'ACTIVE'
                     """)
             
@@ -102,10 +102,16 @@ class Properties(Resource):
             data = request.get_json(force=True)
             print(data)
 
-            #  Get New Bill UID
+            #  Get New Property UID
             new_property_uid = get_new_propertyUID(conn)
             print(new_property_uid)
 
+            # TRY IMPORTING DATA USING THIS LOOP
+            # fields = ['property_uid', 'title', 'description',
+            #           'priority', 'request_created_by', 'request_type']
+            # newRequest = {}
+            # for field in fields:
+            #     newRequest[field] = data.get(field)
 
             # Set Variables from JSON OBJECT
             property_owner_id = data["property_owner_id"]
@@ -193,7 +199,7 @@ class Properties(Resource):
             disconnect(conn)
 
     def delete(self):
-        print("In delete Bill")
+        print("In delete Property")
 
         try:
             conn = connect()

@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from decimal import Decimal
 from datetime import datetime, date, timedelta
 import requests
+from botocore.response import StreamingBody
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
@@ -77,7 +78,7 @@ def execute(sql, cmd, conn, skipSerialization=False):
                 if not skipSerialization:
                     print("Serialized Response")
                     result = serializeResponse(result)
-                    print("GET QUERY RESULT: ", result)
+                    # print("GET QUERY RESULT: ", result)
                 response['result'] = result
             elif cmd == 'post':
                 print("in post")
@@ -198,3 +199,167 @@ def helper_icon_img(url):
         print("Cannot parse url")
 
     return file_url
+
+def uploadImage(file, key, content):
+    bucket = 'io-pm'
+    contentType = ''
+    # # contentType = 'image/jpeg'
+    # print('file in uploadimage', file, key)
+    # print('img in key', 'img' in key)
+    # print('doc in key', 'doc' in key)
+    # print('typefile streamingbody', type(file) == StreamingBody)
+    # trying to upload a new image file
+    # if type(file) != StreamingBody and '.svg' in file.filename:
+    #     contentType = 'image/svg+xml'
+    #     print('file in svg', contentType)
+    # # trying to upload a new pdf file
+    # elif type(file) != StreamingBody and '.pdf' in file.filename:
+    #     contentType = 'application/pdf'
+    #     print('file in pdf', contentType)
+    if type(file) == StreamingBody:
+        contentType = content
+        # print('file in streamingbody', contentType)
+    # # # trying to upload a new image file
+    # elif type(file) == StreamingBody and 'img' in key:
+    #     contentType = 'image/svg+xml'
+    #     print('file in streamingbody and img', contentType)
+    # # trying to reload an exisiting pdf
+    # elif type(file) == StreamingBody and 'doc' in key:
+    #     contentType = 'application/pdf'
+    #     print('file in streamingbody and doc', contentType)
+    # print('contentType', contentType)
+    if file:
+        # print('if file', file, bucket, key)
+        filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
+        upload_file = s3.put_object(
+            Bucket=bucket,
+            Body=file.read(),
+            Key=key,
+            ACL='public-read',
+            ContentType=contentType
+        )
+
+        return filename
+    return None
+
+class DatabaseConnection:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def disconnect(self):
+        self.conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.disconnect()
+
+    def execute(self, sql, args=[], cmd='get'):
+        response = {}
+        try:
+            with self.conn.cursor() as cur:
+                # print('IN EXECUTE')
+                if len(args) == 0:
+                    # print('execute', sql)
+                    cur.execute(sql)
+                else:
+                    cur.execute(sql, args)
+
+                if 'get' in cmd:
+                    # print('IN GET')
+                    result = cur.fetchall()
+                    result = serializeJSON(result)
+                    # print('RESULT GET')
+                    response['message'] = 'Successfully executed SQL query'
+                    response['code'] = 200
+                    response['result'] = result
+                    # print('RESPONSE GET')
+                elif 'post' in cmd:
+                    # print('IN POST')
+                    self.conn.commit()
+                    response['message'] = 'Successfully committed SQL query'
+                    response['code'] = 200
+                    # print('RESPONSE POST')
+        except Exception as e:
+            print('ERROR', e)
+            response['message'] = 'Error occurred while executing SQL query'
+            response['code'] = 500
+            response['error'] = e
+            print('RESPONSE ERROR', response)
+        return response
+
+    def select(self, tables, where={}, cols='*'):
+        response = {}
+        try:
+            sql = f'SELECT {cols} FROM {tables}'
+            for i, key in enumerate(where.keys()):
+                if i == 0:
+                    sql += ' WHERE '
+                sql += f'{key} = %({key})s'
+                if i != len(where.keys()) - 1:
+                    sql += ', '
+
+            response = self.execute(sql, where, 'get')
+        except Exception as e:
+            print(e)
+        return response
+
+    def insert(self, table, object):
+        response = {}
+        try:
+            sql = f'INSERT INTO {table} SET '
+            for i, key in enumerate(object.keys()):
+                sql += f'{key} = %({key})s'
+                if i != len(object.keys()) - 1:
+                    sql += ', '
+            response = self.execute(sql, object, 'post')
+        except Exception as e:
+            print(e)
+        return response
+
+    def update(self, table, primaryKey, object):
+        response = {}
+        try:
+            sql = f'UPDATE {table} SET '
+            print(sql)
+            for i, key in enumerate(object.keys()):
+                sql += f'{key} = %({key})s'
+                if i != len(object.keys()) - 1:
+                    sql += ', '
+            sql += f' WHERE '
+            print(sql)
+            for i, key in enumerate(primaryKey.keys()):
+                sql += f'{key} = %({key})s'
+                object[key] = primaryKey[key]
+                if i != len(primaryKey.keys()) - 1:
+                    sql += ' AND '
+            print(sql, object)
+            response = self.execute(sql, object, 'post')
+            print(response)
+        except Exception as e:
+            print(e)
+        return response
+
+    def delete(self, sql):
+        response = {}
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(sql)
+
+                self.conn.commit()
+                response['message'] = 'Successfully committed SQL query'
+                response['code'] = 200
+                # response = self.execute(sql, 'post')
+        except Exception as e:
+            print(e)
+        return response
+
+    def call(self, procedure, cmd='get'):
+        response = {}
+        try:
+            sql = f'CALL {procedure}()'
+            response = self.execute(sql, cmd=cmd)
+        except Exception as e:
+            print(e)
+        return response
