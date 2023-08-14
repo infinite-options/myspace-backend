@@ -3,6 +3,7 @@ import datetime
 import json
 import boto3
 from botocore.response import StreamingBody
+from decimal import Decimal
 
 s3 = boto3.client('s3')
 
@@ -43,23 +44,32 @@ def connect():
 
 
 def serializeJSON(unserialized):
+    print(unserialized, type(unserialized))
     if type(unserialized) == list:
+        print("in list")
         serialized = []
         for entry in unserialized:
             serializedEntry = serializeJSON(entry)
             serialized.append(serializedEntry)
         return serialized
     elif type(unserialized) == dict:
+        print("in dict")
         serialized = {}
         for entry in unserialized:
             serializedEntry = serializeJSON(unserialized[entry])
             serialized[entry] = serializedEntry
         return serialized
     elif type(unserialized) == datetime.datetime:
+        print("in date")
         return str(unserialized)
     elif type(unserialized) == bytes:
+        print("in bytes")
+        return str(unserialized)
+    elif type(unserialized) == Decimal:
+        print("in bytes")
         return str(unserialized)
     else:
+        print("in else")
         return unserialized
 
 
@@ -77,9 +87,9 @@ class DatabaseConnection:
         self.disconnect()
 
     def execute(self, sql, args=[], cmd='get'):
-        print("In execute.  SQL: ", sql)
-        print("In execute.  args: ",args)
-        print("In execute.  cmd: ",cmd)
+        # print("In execute.  SQL: ", sql)
+        # print("In execute.  args: ",args)
+        # print("In execute.  cmd: ",cmd)
         response = {}
         try:
             with self.conn.cursor() as cur:
@@ -90,7 +100,7 @@ class DatabaseConnection:
                 else:
                     cur.execute(sql, args)
                 formatted_sql = f"{sql} (args: {args})"
-                print(formatted_sql)
+                # print(formatted_sql)
                     
 
                 if 'get' in cmd:

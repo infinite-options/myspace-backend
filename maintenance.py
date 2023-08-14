@@ -23,10 +23,48 @@ import calendar
 
 def get_new_maintenanceUID(conn):
     print("In new UID request")
-    newMaintenanceQuery = execute("CALL space.new_request_uid;", "get", conn)
-    if newMaintenanceQuery["code"] == 280:
-        return newMaintenanceQuery["result"][0]["new_id"]
+    
+    with connect() as db:
+        newMaintenanceQuery = db.execute("CALL space.new_request_uid;", "get", conn)
+        if newMaintenanceQuery["code"] == 280:
+            return newMaintenanceQuery["result"][0]["new_id"]
     return "Could not generate new property UID", 500
+
+
+def updateImages(imageFiles, maintenance_request_uid):
+    content = []
+
+    for filename in imageFiles:
+
+        if type(imageFiles[filename]) == str:
+
+            bucket = 'io-pm'
+            key = imageFiles[filename].split('/io-pm/')[1]
+            data = s3.get_object(
+                Bucket=bucket,
+                Key=key
+            )
+            imageFiles[filename] = data['Body']
+            content.append(data['ContentType'])
+        else:
+            content.append('')
+
+    s3Resource = boto3.resource('s3')
+    bucket = s3Resource.Bucket('io-pm')
+    bucket.objects.filter(
+        Prefix=f'maintenanceRequests/{maintenance_request_uid}/').delete()
+    images = []
+    for i in range(len(imageFiles.keys())):
+
+        filename = f'img_{i-1}'
+        if i == 0:
+            filename = 'img_cover'
+        key = f'maintenanceRequests/{maintenance_request_uid}/{filename}'
+        image = uploadImage(
+            imageFiles[filename], key, content[i])
+
+        images.append(image)
+    return images
 
 
 class MaintenanceStatusByProperty(Resource):
@@ -222,12 +260,10 @@ class MaintenanceRequests_works(Resource):
 
 class MaintenanceRequests(Resource):
     def post(self):
+        print("In Maintenace Requests")
         response = {}
         with connect() as db:
             data = request.form
-            # fields = ['property_uid', 'title', 'description',
-            #           'priority', 'request_created_by', 'request_type']
-
             fields = [
                 'maintenance_property_id'
                 , 'maintenance_title'
@@ -243,7 +279,7 @@ class MaintenanceRequests(Resource):
                 , 'maintenance_scheduled_time'
                 , 'maintenance_frequency'
                 , 'maintenance_notes'
-
+                , 'maintenace_image'
                 , 'maintenance_request_created_date'
                 , 'maintenance_request_closed_date'
                 , 'maintenance_request_adjustment_date'
@@ -277,7 +313,6 @@ class MaintenanceRequests(Resource):
                 file = request.files.get(filename)
                 print("File: ", file)
                 if file:
-
                     key = f'maintenanceRequests/{newRequestID}/{filename}'
                     image = uploadImage(file, key, '')
                     images.append(image)
