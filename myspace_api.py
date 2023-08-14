@@ -361,7 +361,7 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
-api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts')
+api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:business_uid>')
 
 
 if __name__ == '__main__':
