@@ -44,32 +44,32 @@ def connect():
 
 
 def serializeJSON(unserialized):
-    print(unserialized, type(unserialized))
+    # print(unserialized, type(unserialized))
     if type(unserialized) == list:
-        print("in list")
+        # print("in list")
         serialized = []
         for entry in unserialized:
             serializedEntry = serializeJSON(entry)
             serialized.append(serializedEntry)
         return serialized
     elif type(unserialized) == dict:
-        print("in dict")
+        # print("in dict")
         serialized = {}
         for entry in unserialized:
             serializedEntry = serializeJSON(unserialized[entry])
             serialized[entry] = serializedEntry
         return serialized
     elif type(unserialized) == datetime.datetime:
-        print("in date")
+        # print("in date")
         return str(unserialized)
     elif type(unserialized) == bytes:
-        print("in bytes")
+        # print("in bytes")
         return str(unserialized)
     elif type(unserialized) == Decimal:
-        print("in bytes")
+        # print("in bytes")
         return str(unserialized)
     else:
-        print("in else")
+        # print("in else")
         return unserialized
 
 
