@@ -25,6 +25,7 @@ from leases import LeaseDetails
 from purchases import Bills
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsBusinessContacts
+# from refresh import Refresh
 from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 
 import os
@@ -362,6 +363,14 @@ api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
 api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:business_uid>')
+
+
+# refresh
+# api.add_resource(Refresh, '/refresh')
+
+# socialLogin
+# api.add_resource(UserSocialLogin, '/userSocialLogin/<string:email>')
+# api.add_resource(UserSocialSignup, '/userSocialSignup')
 
 
 if __name__ == '__main__':

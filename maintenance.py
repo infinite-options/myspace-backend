@@ -171,91 +171,6 @@ class MaintenanceStatusByOwner(Resource):
             # Print the resulting dictionary
             # print(property_dict)
             return property_dict
-            
-
-
-# ADD MAINTENACE ITEM
-class MaintenanceRequests_works(Resource):
-    def post(self):
-
-        try:
-            print("In Maintenance Requests POST")
-            conn = connect()
-            response = {}
-            response['message'] = []
-            data = request.form
-            print("Imported data; ", data)
-
-
-            # GET NEW UID
-            new_maintenance_request_uid = get_new_maintenanceUID(conn)
-            # newRequestID = db.call('new_request_id')['result'][0]['new_id']
-            print("New ID: ", new_maintenance_request_uid)
-
-
-            # ASSIGN VALUE
-            maintenance_property_id = data["maintenance_property_id"]
-            maintenance_title = data["maintenance_title"]
-            maintenance_desc = data["maintenance_desc"]
-            print(maintenance_desc)
-            maintenance_images = data["maintenance_images"]
-            print(maintenance_images)
-            maintenance_request_type = data["maintenance_request_type"]
-            maintenance_request_created_by = data["maintenance_request_created_by"]
-            maintenance_priority = data["maintenance_priority"]
-            maintenance_can_reschedule = data["maintenance_can_reschedule"]
-            print(maintenance_can_reschedule)
-            maintenance_assigned_business = data["maintenance_assigned_business"]
-            maintenance_assigned_worker = data["maintenance_assigned_worker"]
-            maintenance_scheduled_date = data["maintenance_scheduled_date"]
-            maintenance_scheduled_time = data["maintenance_scheduled_time"]
-            maintenance_frequency = data["maintenance_frequency"]
-            print(maintenance_frequency)
-            maintenance_notes = data["maintenance_notes"]
-            maintenance_request_status = data["maintenance_request_status"]
-            maintenance_request_created_date = data["maintenance_request_created_date"]
-            maintenance_request_closed_date = data["maintenance_request_closed_date"]
-            maintenance_request_adjustment_date = data["maintenance_request_adjustment_date"]
-            print(maintenance_request_created_date)
-
-
-            
-            # DEFINE QUERY  
-            maintenanceQuery = (""" 
-                    -- ADD NEW MAINTENACE REQUEST
-                    INSERT INTO space.maintenanceRequests
-                    SET maintenance_request_uid = "800-000039"
-                    ,  maintenance_property_id = "200-000006"
-                    ,  maintenance_title = "SQL TEST"
-                    ,  maintenance_desc = "Testing the SQL query"
-                    ,  maintenance_request_type = "Other"
-                    ,  maintenance_request_created_by = "600-000003"
-                    ,  maintenance_priority = "High"
-                    ,  maintenance_can_reschedule = "1"
-                    ,  maintenance_assigned_business = NULL
-                    ,  maintenance_assigned_worker = NULL
-                    ,  maintenance_scheduled_date = "800-000039"
-                    ,  maintenance_scheduled_time = NULL
-                    ,  maintenance_frequency = "One Time"
-                    ,  maintenance_notes = "Take Notes"
-                    ,  maintenance_request_status = "NEW"
-                    ,  maintenance_request_created_date = "2023-08-01"
-                    ,  maintenance_request_closed_date = NULL
-                    ,  maintenance_request_adjustment_date = NULL;
-                    """)
-            
-            print("Query: ", maintenanceQuery)
-
-            # RUN QUERY
-            response = execute(maintenanceQuery, "post", conn) 
-            print("Query out", response["code"])
-            response["maintenance_request_uid"] = new_maintenance_request_uid
-            return response
-
-        except:
-            print("Error in Add Maintenance Request Query")
-        finally:
-            disconnect(conn)
 
 
 class MaintenanceRequests(Resource):
@@ -268,7 +183,6 @@ class MaintenanceRequests(Resource):
                 'maintenance_property_id'
                 , 'maintenance_title'
                 , 'maintenance_desc'
-                , 'maintenance_images'
                 , 'maintenance_request_type'
                 , 'maintenance_request_created_by'
                 , 'maintenance_priority'
@@ -279,7 +193,6 @@ class MaintenanceRequests(Resource):
                 , 'maintenance_scheduled_time'
                 , 'maintenance_frequency'
                 , 'maintenance_notes'
-                , 'maintenace_image'
                 , 'maintenance_request_created_date'
                 , 'maintenance_request_closed_date'
                 , 'maintenance_request_adjustment_date'
@@ -288,18 +201,14 @@ class MaintenanceRequests(Resource):
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
-                print(field, " = ", newRequest[field])
+                # print(field, " = ", newRequest[field])
 
 
             # # GET NEW UID
-            # new_maintenance_request_uid = get_new_maintenanceUID(conn)
-            # # newRequestID = db.call('new_request_id')['result'][0]['new_id']
-            # print("New ID: ", new_maintenance_request_uid)
-
-            print("Get New Request UID")
+            # print("Get New Request UID")
             newRequestID = db.call('new_request_id')['result'][0]['new_id']
             newRequest['maintenance_request_uid'] = newRequestID
-            print(newRequestID)
+            # print(newRequestID)
 
             images = []
             i = -1
@@ -307,11 +216,11 @@ class MaintenanceRequests(Resource):
             while True:
                 print("In while loop")
                 filename = f'img_{i}'
-                print("Filename: ", filename)
+                # print("Filename: ", filename)
                 if i == -1:
                     filename = 'img_cover'
                 file = request.files.get(filename)
-                print("File: ", file)
+                # print("File: ", file)
                 if file:
                     key = f'maintenanceRequests/{newRequestID}/{filename}'
                     image = uploadImage(file, key, '')
@@ -320,13 +229,16 @@ class MaintenanceRequests(Resource):
                     break
                 i += 1
             newRequest['maintenance_images'] = json.dumps(images)
-            print("Images to be uploaded: ", newRequest['maintenance_images'])
+            # print("Images to be uploaded: ", newRequest['maintenance_images'])
 
             newRequest['maintenance_request_status'] = 'NEW'
             # newRequest['frequency'] = 'One time'
             # newRequest['can_reschedule'] = False
 
-            print(newRequest)
+            # print(newRequest)
 
             response = db.insert('maintenanceRequests', newRequest)
+            response['Maintenance_UID'] = newRequestID
+            response['images'] = newRequest['maintenance_images']
+
         return response
