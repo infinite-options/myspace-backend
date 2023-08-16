@@ -247,6 +247,34 @@ class ownerDashboard(Resource):
             response["LeaseStatus"] = items["result"]
 
 
+            rentQuery = (""" 
+                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
+                    SELECT -- *,
+                        property_owner_id
+                        , rent_status
+                        , COUNT(rent_status) AS num
+                    FROM (
+                        SELECT property_id, property_owner_id, po_owner_percent
+                            , property_address, property_unit, property_city, property_state, property_zip
+                            , pp_status.*
+                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                        FROM space.property_owner
+                        LEFT JOIN space.properties ON property_uid = property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = property_id
+                        WHERE property_owner_id = \'""" + owner_id + """\'
+                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        GROUP BY property_id
+                        ) AS rs
+                    GROUP BY rent_status
+                    """)
+
+            # print("Query: ", leaseQuery)
+            items = execute(rentQuery, "get", conn)
+            response["RentStatus"] = items["result"]
+
+
             return response
 
         except:
