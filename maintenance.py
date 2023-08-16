@@ -21,14 +21,14 @@ import calendar
 # BY YEAR     X           X               X
 
 
-def get_new_maintenanceUID(conn):
-    print("In new UID request")
+# def get_new_maintenanceUID(conn):
+#     print("In new UID request")
     
-    with connect() as db:
-        newMaintenanceQuery = db.execute("CALL space.new_request_uid;", "get", conn)
-        if newMaintenanceQuery["code"] == 280:
-            return newMaintenanceQuery["result"][0]["new_id"]
-    return "Could not generate new property UID", 500
+#     with connect() as db:
+#         newMaintenanceQuery = db.execute("CALL space.new_request_uid;", "get", conn)
+#         if newMaintenanceQuery["code"] == 280:
+#             return newMaintenanceQuery["result"][0]["new_id"]
+#     return "Could not generate new property UID", 500
 
 
 def updateImages(imageFiles, maintenance_request_uid):
@@ -205,10 +205,10 @@ class MaintenanceRequests(Resource):
 
 
             # # GET NEW UID
-            # print("Get New Request UID")
-            newRequestID = db.call('new_request_id')['result'][0]['new_id']
+            print("Get New Request UID")
+            newRequestID = db.call('new_request_uid')['result'][0]['new_id']
             newRequest['maintenance_request_uid'] = newRequestID
-            # print(newRequestID)
+            print(newRequestID)
 
             images = []
             i = -1

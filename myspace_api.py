@@ -16,6 +16,7 @@
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
+from payments import Payments
 from properties import Properties, PropertiesByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -178,18 +179,18 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 # RUN STORED PROCEDURES
 
-def get_new_billUID(conn):
-    newBillQuery = execute("CALL space.new_bill_uid;", "get", conn)
-    if newBillQuery["code"] == 280:
-        return newBillQuery["result"][0]["new_id"]
-    return "Could not generate new bill UID", 500
+# def get_new_billUID(conn):
+#     newBillQuery = execute("CALL space.new_bill_uid;", "get", conn)
+#     if newBillQuery["code"] == 280:
+#         return newBillQuery["result"][0]["new_id"]
+#     return "Could not generate new bill UID", 500
 
 
-def get_new_purchaseUID(conn):
-    newPurchaseQuery = execute("CALL space.new_purchase_uid;", "get", conn)
-    if newPurchaseQuery["code"] == 280:
-        return newPurchaseQuery["result"][0]["new_id"]
-    return "Could not generate new bill UID", 500
+# def get_new_purchaseUID(conn):
+#     newPurchaseQuery = execute("CALL space.new_purchase_uid;", "get", conn)
+#     if newPurchaseQuery["code"] == 280:
+#         return newPurchaseQuery["result"][0]["new_id"]
+#     return "Could not generate new bill UID", 500
 
 # def get_new_propertyUID(conn):
 #     newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
@@ -351,6 +352,8 @@ api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:ye
 api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
 api.add_resource(AllTransactions, '/allTransactions')
+
+api.add_resource(Payments, '/makePayment')
 
 
 api.add_resource(OwnerProfile, '/ownerProfile/<string:owner_id>')

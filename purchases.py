@@ -17,6 +17,21 @@ import calendar
 # BY YEAR     X           X               X
 
 
+
+def get_new_billUID(conn):
+    newBillQuery = execute("CALL space.new_bill_uid;", "get", conn)
+    if newBillQuery["code"] == 280:
+        return newBillQuery["result"][0]["new_id"]
+    return "Could not generate new bill UID", 500
+
+
+def get_new_purchaseUID(conn):
+    newPurchaseQuery = execute("CALL space.new_purchase_uid;", "get", conn)
+    if newPurchaseQuery["code"] == 280:
+        return newPurchaseQuery["result"][0]["new_id"]
+    return "Could not generate new bill UID", 500
+
+
 class Bills(Resource):
     def post(self):
         print("In add Bill")
