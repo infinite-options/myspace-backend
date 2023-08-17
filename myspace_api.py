@@ -16,6 +16,7 @@
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
+from rents import Rents, RentDetails
 from payments import Payments
 from properties import Properties, PropertiesByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
@@ -364,6 +365,8 @@ class ownerDashboardProperties(Resource):
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 api.add_resource(ownerDashboardProperties, '/ownerDashboardProperties/<string:owner_id>')
 
+api.add_resource(Rents, '/rents/<string:owner_id>')
+api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
