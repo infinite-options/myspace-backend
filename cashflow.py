@@ -43,7 +43,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -65,7 +65,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -87,7 +87,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -110,7 +110,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -133,7 +133,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -155,7 +155,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -177,7 +177,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -200,7 +200,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -220,7 +220,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -247,7 +247,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -269,7 +269,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -291,7 +291,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -314,7 +314,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -337,7 +337,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -359,7 +359,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -381,7 +381,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
+                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -404,7 +404,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
@@ -424,7 +424,7 @@ class CashflowByOwner(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
+                        , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE owner_uid = \'""" + owner_id + """\'
