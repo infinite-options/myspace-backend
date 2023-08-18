@@ -38,9 +38,13 @@ class PropertiesByOwner(Resource):
         try:
             propertiesQuery = (""" 
                     -- PROPERTIES BY OWNER
-                    SELECT * FROM space.p_details
-                    WHERE  contract_status = 'ACTIVE'
-                        AND owner_uid = \'""" + owner_id + """\';
+                    SELECT * 
+                    FROM p_details
+                    LEFT JOIN space.pp_status ON pur_property_id = property_uid
+                    WHERE owner_uid = \'""" + owner_id + """\'
+                        AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year));
                     """)
             
 
