@@ -73,6 +73,7 @@ class RentDetails(Resource):
                         , property_address, property_unit, property_city, property_state, property_zip
                         , pp_status.*
                         , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                        , IF (payment_status = "UNPAID", DATEDIFF(NOW(),pur_due_date), "") AS overdue
                     FROM space.property_owner
                     LEFT JOIN space.properties ON property_uid = property_id
                     LEFT JOIN space.pp_status ON pur_property_id = property_id
