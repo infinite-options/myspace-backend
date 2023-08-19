@@ -77,7 +77,7 @@ class RentDetails(Resource):
                     LEFT JOIN space.properties ON property_uid = property_id
                     LEFT JOIN space.pp_status ON pur_property_id = property_id
                     WHERE property_owner_id = \'""" + owner_id + """\'
-                        AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (purchase_type = "RENT" OR purchase_type = "LATE FEE" OR ISNULL(purchase_type))
                     ORDER BY property_id, pur_due_date
                     """)
 
