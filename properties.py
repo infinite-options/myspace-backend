@@ -5,7 +5,8 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+from data_pm import connect, uploadImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -31,12 +32,13 @@ class PropertiesByOwner(Resource):
     def get(self, owner_id):
         print('in Properties by Owner')
         response = {}
-        conn = connect()
+        # conn = connect()
 
         print("Property Owner UID: ", owner_id)
 
-        try:
-            propertiesQuery = (""" 
+        with connect() as db:
+            print("in connect loop")
+            propertiesQuery = db.execute(""" 
                     -- PROPERTIES BY OWNER
                     SELECT * 
                     FROM p_details
@@ -49,16 +51,9 @@ class PropertiesByOwner(Resource):
             
 
             # print("Query: ", propertiesQuery)
-            items = execute(propertiesQuery, "get", conn)
-            response["Property"] = items["result"]
-
-
+            # items = execute(propertiesQuery, "get", conn)
+            response["Property"] = propertiesQuery
             return response
-
-        except:
-            print("Error in Property Query")
-        finally:
-            disconnect(conn)
 
 
 # 1. rent due date
@@ -74,10 +69,10 @@ class Properties(Resource):
     def get(self):
         print('in Properties')
         response = {}
-        conn = connect()
 
-        try:
-            propertiesQuery = (""" 
+        with connect() as db:
+            print("in connect loop")
+            propertiesQuery = db.execute(""" 
                     -- PROPERTIES
                     SELECT * FROM space.p_details
                     WHERE contract_status = 'ACTIVE'
@@ -85,130 +80,112 @@ class Properties(Resource):
             
 
             # print("Query: ", propertiesQuery)
-            items = execute(propertiesQuery, "get", conn)
-            response["Property"] = items["result"]
-
-
+            response["Property"] = propertiesQuery
             return response
 
-        except:
-            print("Error in Property Query")
-        finally:
-            disconnect(conn)
     
     def post(self):
         print("In add Property")
+        response = {}
 
-        try:
-            conn = connect()
-            response = {}
-            response['message'] = []
-            data = request.get_json(force=True)
-            print(data)
+        with connect() as db:
+            data = request.form
+            fields = [
+                "property_owner_id"
+                , "po_owner_percent"
+                , 'property_available_to_rent'
+                , "property_active_date"
+                , 'property_address'
+                , "property_unit"
+                , "property_city"
+                , "property_state"
+                , "property_zip"
+                , "property_type"
+                , "property_num_beds"
+                , "property_num_baths"
+                , "property_area"
+                , "property_listed_rent"
+                , "property_deposit"
+                , "property_pets_allowed"
+                , "property_deposit_for_rent"
+                , "property_taxes"
+                , "property_mortgages"
+                , "property_insurance"
+                , "property_featured"
+                , "property_description"
+                , "property_notes"
+            ]
 
-            #  Get New Property UID
-            new_property_uid = get_new_propertyUID(conn)
-            print(new_property_uid)
+            newRequest = {}
+            newProperty = {}
 
-            # TRY IMPORTING DATA USING THIS LOOP
-            # fields = ['property_uid', 'title', 'description',
-            #           'priority', 'request_created_by', 'request_type']
-            # newRequest = {}
-            # for field in fields:
-            #     newRequest[field] = data.get(field)
+            # print("Property Type: ", data.get("property_type"))
+            # print("Property Address: ", request.form.get('property_address'))
 
-            # Set Variables from JSON OBJECT
-            property_owner_id = data["property_owner_id"]
-            po_owner_percent = data["po_owner_percent"]
-            print(po_owner_percent)
-            property_available_to_rent = data["available_to_rent"]
-            property_active_date = data["active_date"]
-            property_address = data["address"]
-            property_unit = data["unit"]
-            property_city = data["city"]
-            property_state = data["state"]
-            property_zip = data["zip"]
-            print(property_zip)
-            property_type = data["property_type"]
-            property_num_beds = data["bedrooms"]
-            property_num_baths = data["bathrooms"]
-            property_area = data["property_area"]
-            property_listed_rent = data["listed"]
-            property_deposit = data["deposit"]
-            print(property_deposit)
-            property_pets_allowed = data["pets_allowed"]
-            property_deposit_for_rent = data["deposit_for_rent"]
-            property_images = data["property_images"]
-            print(property_images)
-            property_taxes = data["property_taxes"]
-            property_mortgages = data["property_mortgages"]
-            property_insurance = data["property_insurance"]
-            property_featured = data["property_featured"]
-            property_description = data["property_description"]
-            property_notes = data["property_notes"]
-            print(property_notes)
+            for field in fields:
+                # print("Field: ", field)
+                # print("Form Data: ", data.get(field))
+                newProperty[field] = data.get(field)
+                # print("New Property Field: ", newProperty[field])
+            # print("Current newProperty", newProperty, type(newProperty))
 
-
-            propertyQuery = (""" 
-                    -- ADDS RELATIONSHIP BETWEEN PROPERTY AND OWNER
-                    INSERT INTO space.property_owner
-                    SET property_id = \'""" + new_property_uid + """\'
-                        , property_owner_id = \'""" + property_owner_id + """\'
-                        , po_owner_percent = \'""" + str(po_owner_percent) + """\';
-                    """)
+            keys_to_remove = ["property_owner_id", "po_owner_percent"]
+            newRequest = {key: newProperty.pop(key) for key in keys_to_remove if key in newProperty}
+            # print("Current newProperty", newProperty, type(newProperty))
+            # print("Current newRequest", newRequest, type(newRequest))
             
-            # print("Query: ", propertyQuery)
-            response = execute(propertyQuery, "post", conn) 
-            # print("Query out", response["code"])
-            # response["property_uid"] = new_property_uid
+            # newRequest['property_owner_id'] = request.form.get("property_owner_id")
+            # newRequest['po_owner_percent'] = request.form.get("po_owner_percent")
+            # print(newRequest)
 
-            propertyQuery = (""" 
-                    -- ADDS NEW PROPERTY DETAILS 
-                    INSERT INTO space.properties
-                    SET property_uid = \'""" + new_property_uid + """\'
-                        , property_available_to_rent =  \'""" + property_available_to_rent + """\'
-                        , property_active_date = \'""" + property_active_date + """\'
-                        , property_address = \'""" + property_address + """\'
-                        , property_unit = \'""" + property_unit + """\'
-                        , property_city = \'""" + property_city + """\'
-                        , property_state = \'""" + property_state + """\'
-                        , property_zip = \'""" + property_zip + """\'
-                        , property_type = \'""" + property_type + """\'
-                        , property_num_beds = \'""" + str(property_num_beds) + """\'
-                        , property_num_baths = \'""" + str(property_num_baths) + """\'
-                        , property_area = \'""" + str(property_area) + """\'
-                        , property_listed_rent = \'""" + str(property_listed_rent) + """\'
-                        , property_deposit = \'""" + str(property_deposit) + """\'
-                        , property_pets_allowed = \'""" + str(property_pets_allowed) + """\'
-                        , property_deposit_for_rent = \'""" + str(property_deposit_for_rent) + """\'
-                        , property_images = "[]"
-                        , property_taxes = \'""" + str(property_taxes)  + """\'
-                        , property_mortgages = \'""" + str(property_mortgages) + """\'
-                        , property_insurance = \'""" + str(property_insurance) + """\'
-                        , property_featured = \'""" + str(property_featured) + """\'
-                        , property_description = \'""" + property_description + """\'
-                        , property_notes = \'""" + property_notes + """\';
-                    """)
-            
-            # print("Query: ", propertyQuery)
-            response = execute(propertyQuery, "post", conn) 
-            # print("Query out", response["code"])
-            response["property_uid"] = new_property_uid
 
-            return response
+            # # GET NEW UID
+            # print("Get New Property UID")
+            newRequestID = db.call('new_property_uid')['result'][0]['new_id']
+            newRequest['property_id'] = newRequestID
+            newProperty['property_uid'] = newRequestID
+            print(newRequestID)
 
-        except:
-            print("Error in Add Property Query")
-        finally:
-            disconnect(conn)
+            images = []
+            i = -1
+            # WHILE WHAT IS TRUE?
+            while True:
+                # print("In while loop")
+                filename = f'img_{i}'
+                # print("Filename: ", filename)
+                if i == -1:
+                    filename = 'img_cover'
+                file = request.files.get(filename)
+                # print("File: ", file)
+                if file:
+                    key = f'properties/{newRequestID}/{filename}'
+                    image = uploadImage(file, key, '')
+                    images.append(image)
+                    # print("Images: ", images)
+                else:
+                    break
+                i += 1
+            newProperty['property_images'] = json.dumps(images)
+            # print("Images to be uploaded: ", newProperty['property_images'])
+
+            # print(newRequest)
+            response = db.insert('property_owner', newRequest)
+            response['property_owner'] = "Added"
+
+            # print(newProperty, type(newProperty))
+            response = db.insert('properties', newProperty)
+            response['property_UID'] = newRequestID
+            response['images'] = newProperty['property_images']
+
+        return response
+
+
 
     def delete(self):
         print("In delete Property")
+        response = {}
 
-        try:
-            conn = connect()
-            response = {}
-            response['message'] = []
+        with connect() as db:
             data = request.get_json(force=True)
             print(data)
 
@@ -224,10 +201,13 @@ class Properties(Resource):
                         AND property_owner_id = \'""" + property_owner_id + """\';         
                     """)
 
-            print("Query: ", delPropertyQuery)
-            response = execute(delPropertyQuery, "del", conn) 
-            print("Query out", response["code"])
-            response["Deleted property_uid"] = property_id
+            # print("Query: ", delPropertyQuery)
+            response_po = db.delete(delPropertyQuery) 
+            # print("Query out", response_po["code"])
+            # if response_po["code"] == 200:
+            #     response["Deleted property_uid"] = property_id
+            # else:
+            #     response["Deleted property_uid"] = "Not successful"
 
 
             delPropertyQuery = (""" 
@@ -236,16 +216,20 @@ class Properties(Resource):
                     WHERE property_uid = \'""" + property_id + """\';         
                     """)
 
-            print("Query: ", delPropertyQuery)
-            response = execute(delPropertyQuery, "del", conn) 
-            print("Query out", response["code"])
-            response["Deleted bill_uid"] = property_id
+            # print("Query: ", delPropertyQuery)
+            response = db.delete(delPropertyQuery) 
+            # print("Query out", response["code"])
+            
+            if response["code"] == 200:
+                response["Deleted property_uid"] = property_id
+            else:
+                response["Deleted property_uid"] = "Not successful"
+
+            if response_po["code"] == 200:
+                response["Deleted po property_id"] = property_id
+            else:
+                response["Deleted po property_id"] = "Not successful"
 
 
             return response
-
-        except:
-            print("Error in Delete Property Query")
-        finally:
-            disconnect(conn)
 
