@@ -3,7 +3,8 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+from data_pm import connect, uploadImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -17,12 +18,11 @@ class LeaseDetails(Resource):
     def get(self, filter_id):
         print('in Lease Details')
         response = {}
-        conn = connect()
 
-        try:
+        with connect() as db:
             if filter_id[:3] == "110":
 
-                leaseQuery = (""" 
+                leaseQuery = db.execute(""" 
                         -- PROPERTY MANAGEMENT AND OWNER LEASES
                         SELECT -- *,
                             lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status, move_out_date
@@ -48,7 +48,7 @@ class LeaseDetails(Resource):
                 
             elif filter_id[:3] == "350":
 
-                leaseQuery = (""" 
+                leaseQuery = db.execute(""" 
                         -- PROPERTY MANAGEMENT AND OWNER LEASES
                         SELECT -- *,
                             lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status, move_out_date
@@ -74,7 +74,7 @@ class LeaseDetails(Resource):
 
             else:
 
-                leaseQuery = (""" 
+                leaseQuery = db.execute(""" 
                         -- PROPERTY MANAGEMENT AND OWNER LEASES
                         SELECT -- *,
                             lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status, move_out_date
@@ -98,15 +98,10 @@ class LeaseDetails(Resource):
                             AND business_uid = \'""" + filter_id + """\';
                         """)
 
-            print("Query: ", leaseQuery)
-            items = execute(leaseQuery, "get", conn)
-            print(items)
-            response["Lease Details"] = items["result"]
+            # print("Lease Query: ", leaseQuery)
+            # items = execute(leaseQuery, "get", conn)
+            # print(items)
+            response["Lease Details"] = leaseQuery
 
 
             return response
-
-        except:
-            print("Error in Lease Query")
-        finally:
-            disconnect(conn)

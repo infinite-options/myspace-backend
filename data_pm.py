@@ -66,7 +66,7 @@ def serializeJSON(unserialized):
         # print("in bytes")
         return str(unserialized)
     elif type(unserialized) == Decimal:
-        # print("in bytes")
+        # print("in Decimal")
         return str(unserialized)
     else:
         # print("in else")
