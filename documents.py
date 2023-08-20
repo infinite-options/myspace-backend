@@ -3,7 +3,8 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+from data_pm import connect, uploadImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -23,10 +24,10 @@ class OwnerDocuments(Resource):
     def get(self, owner_id):
         print('in Owner Documents')
         response = {}
-        conn = connect()
 
-        try:
-            documentQuery = (""" 
+        with connect() as db:
+            print("in connect loop")
+            documentQuery = db.execute(""" 
                     -- OWNER DOCUMENTS
                     SELECT property_owner_id, po_owner_percent
                         , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
@@ -40,18 +41,12 @@ class OwnerDocuments(Resource):
                     """)
             
 
-            print("Query: ", documentQuery)
-            items = execute(documentQuery, "get", conn)
-            print(items)
-            response["Documents"] = items["result"]
-
-
+            # print("Query: ", documentQuery)
+            # items = execute(documentQuery, "get", conn)
+            # print(items)
+            response["Documents"] = documentQuery
             return response
 
-        except:
-            print("Error in Document Query")
-        finally:
-            disconnect(conn)
 
 
 class TenantDocuments(Resource):
@@ -60,10 +55,10 @@ class TenantDocuments(Resource):
     def get(self, tenant_id):
         print('in Tenant Documents')
         response = {}
-        conn = connect()
 
-        try:
-            documentQuery = (""" 
+        with connect() as db:
+            print("in connect loop")
+            documentQuery = db.execute(""" 
                     -- TENANT DOCUMENTS
                     SELECT tenant_uid, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         ,lease_uid, lease_property_id, lease_end, lease_status
@@ -76,15 +71,8 @@ class TenantDocuments(Resource):
                     """)
             
 
-            print("Query: ", documentQuery)
-            items = execute(documentQuery, "get", conn)
-            print(items)
-            response["Documents"] = items["result"]
-
-
+            # print("Query: ", documentQuery)
+            # items = execute(documentQuery, "get", conn)
+            # print(items)
+            response["Documents"] = documentQuery
             return response
-
-        except:
-            print("Error in Document Query")
-        finally:
-            disconnect(conn)
