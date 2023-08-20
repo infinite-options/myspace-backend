@@ -291,7 +291,7 @@ class ownerDashboardProperties(Resource):
 
         with connect() as db:
             print("in owner dashboard properties")
-            maintenanceQuery = db.execute(""" 
+            property_list = db.execute(""" 
                     -- PROPERTY DETAILS INCLUDING MAINTENANCE      
                     SELECT property_uid, property_address
                         , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
@@ -302,16 +302,19 @@ class ownerDashboardProperties(Resource):
                     WHERE property_owner_id = \'""" + owner_id + """\';
                     """)
 
-            # print("Query: ", maintenanceQuery)
+            # print("Query: ", maintenanceQuery, type(maintenanceQuery))
             # items = execute(maintenanceQuery, "get", conn)
             # print(type(items), items)  # This is a Dictionary
             # print(type(items["result"]), items["result"])  # This is a list
 
-            property_list = maintenanceQuery
+            # property_list = items["result"]
+
+            print(type(property_list))
+            print(type(property_list["result"]))
 
             # Format Output to be a dictionary of lists
             property_dict = {}
-            for item in property_list:
+            for item in property_list["result"]:
                 property_id = item['property_uid']
                 property_info = {k: v for k, v in item.items() if k != 'property_uid'}
                 
