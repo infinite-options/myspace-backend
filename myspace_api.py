@@ -28,7 +28,8 @@ from purchases import Bills
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsBusinessContacts
 # from refresh import Refresh
-from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+from data_pm import connect, uploadImage, s3
 
 import os
 import boto3
@@ -206,14 +207,14 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 class ownerDashboard(Resource):
     def get(self, owner_id):
-        print('in New Owner Dashboard new')
+        print('in Owner Dashboard')
         response = {}
-        conn = connect()
 
         # print("Owner UID: ", owner_id)
 
-        try:
-            maintenanceQuery = (""" 
+        with connect() as db:
+            print("in owner dashboard")
+            maintenanceQuery = db.execute(""" 
                     -- MAINTENANCE STATUS BY USER
                     SELECT property_owner.property_owner_id
                         , maintenanceRequests.maintenance_request_status
@@ -227,11 +228,10 @@ class ownerDashboard(Resource):
             
 
             # print("Query: ", maintenanceQuery)
-            items = execute(maintenanceQuery, "get", conn)
-            response["MaintenanceStatus"] = items["result"]
+            response["MaintenanceStatus"] = maintenanceQuery
 
 
-            leaseQuery = (""" 
+            leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
                     SELECT property_owner.property_owner_id
                         , leases.lease_end
@@ -244,11 +244,10 @@ class ownerDashboard(Resource):
                     """)
 
             # print("Query: ", leaseQuery)
-            items = execute(leaseQuery, "get", conn)
-            response["LeaseStatus"] = items["result"]
+            response["LeaseStatus"] = leaseQuery
 
 
-            rentQuery = (""" 
+            rentQuery = db.execute(""" 
                     -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
                     SELECT -- *,
                         property_owner_id
@@ -272,16 +271,10 @@ class ownerDashboard(Resource):
                     """)
 
             # print("Query: ", leaseQuery)
-            items = execute(rentQuery, "get", conn)
-            response["RentStatus"] = items["result"]
+            response["RentStatus"] = rentQuery
 
 
             return response
-
-        except:
-            print("Error in Maintenance or Lease Query")
-        finally:
-            disconnect(conn)
 
 
 
@@ -290,15 +283,15 @@ class ownerDashboard(Resource):
 
 class ownerDashboardProperties(Resource):
     def get(self, owner_id):
-        print('in New Owner Maintenance Dashboard')
+        print('in Owner Dashboard Properties')
         response = {}
-        conn = connect()
 
         # print("Owner UID: ", owner_id)
 
 
-        try:
-            maintenanceQuery = (""" 
+        with connect() as db:
+            print("in owner dashboard properties")
+            maintenanceQuery = db.execute(""" 
                     -- PROPERTY DETAILS INCLUDING MAINTENANCE      
                     SELECT property_uid, property_address
                         , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
@@ -310,11 +303,11 @@ class ownerDashboardProperties(Resource):
                     """)
 
             # print("Query: ", maintenanceQuery)
-            items = execute(maintenanceQuery, "get", conn)
+            # items = execute(maintenanceQuery, "get", conn)
             # print(type(items), items)  # This is a Dictionary
             # print(type(items["result"]), items["result"])  # This is a list
 
-            property_list = items["result"]
+            property_list = maintenanceQuery
 
             # Format Output to be a dictionary of lists
             property_dict = {}
@@ -330,12 +323,6 @@ class ownerDashboardProperties(Resource):
             # Print the resulting dictionary
             # print(property_dict)
             return property_dict
-            
-
-        except:
-            print("Error in Maintenance Status Query")
-        finally:
-            disconnect(conn)
 
 
 
