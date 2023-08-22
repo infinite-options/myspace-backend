@@ -171,6 +171,38 @@ class MaintenanceStatusByOwner(Resource):
             # Print the resulting dictionary
             # print(property_dict)
             return property_dict
+        
+
+class MaintenanceRequestsByOwner(Resource): 
+    def get(self, owner_id):
+        print('in New Owner Maintenance Dashboard')
+        response = {}
+
+        # print("Owner UID: ", owner_id)
+
+        with connect() as db:
+            print("in connect loop")
+            maintenanceQuery = db.execute(""" 
+                    -- NEW MAINTENANCE STATUS QUERY
+                    SELECT -- *
+                        maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, user_type, user_name, user_phone, user_email
+                        , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status
+                        , maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                        , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                        , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
+                        , o_details.*
+                    FROM space.m_details
+                    LEFT JOIN space.user_profiles ON maintenance_request_created_by = profile_uid
+                    LEFT JOIN space.properties ON property_uid = maintenance_property_id
+                    LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                    WHERE property_owner_id = \'""" + owner_id + """\'
+                    ORDER BY maintenance_request_status;
+                    """)
+
+            # print("Query: ", maintenanceQuery)  # This is a list
+            # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
+            response["MaintenanceProjects"] = maintenanceQuery
+            return response
 
 
 class MaintenanceRequests(Resource):
