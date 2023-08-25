@@ -27,6 +27,7 @@ from leases import LeaseDetails
 from purchases import Bills
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsBusinessContacts
+from settings import BankAccount
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -79,7 +80,7 @@ import requests
 # OTHER IMPORTS NOT IN NITYA
 from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+# from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from urllib.parse import urlparse
 import urllib.request
@@ -388,6 +389,8 @@ api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
 api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:business_uid>')
+
+api.add_resource(BankAccount, '/bankAccount')
 
 
 # refresh
