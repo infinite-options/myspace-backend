@@ -36,7 +36,7 @@ class Rents(Resource):
             rentQuery = db.execute(""" 
                     -- RENT STATUS BY PROPERTY FOR OWNER PAGE
                     SELECT property_id, property_owner_id, po_owner_percent
-                        , property_address, property_unit, property_city, property_state, property_zip
+                        , property_address, property_unit, property_city, property_state, property_zip, property_images
                         , pp_status.*
                         , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
                     FROM space.property_owner
