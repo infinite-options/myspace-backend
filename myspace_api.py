@@ -330,15 +330,34 @@ class ownerDashboardProperties(Resource):
 
 
 
-
-
-
-
-
-
-
-
-        
+class TenantDashboard(Resource):
+    def get(self, tenant_id):
+        response = {}
+        with connect() as db:
+            property = db.execute("""
+                    SELECT p.property_uid, p.property_address, p.property_unit
+                    FROM space.properties p
+                        INNER JOIN space.leases l ON l.lease_property_id = p.property_uid
+                        INNER JOIN space.lease_tenant lt ON lt.lt_lease_id = l.lease_uid
+                    WHERE lt.lt_tenant_id = \'""" + tenant_id + """\';
+                    """)
+            response["property"] = property
+            maintenance = db.execute("""
+                    SELECT mr.maintenance_images, mr.maintenance_title,
+                        mr.maintenance_request_status, mr.maintenance_priority,
+                        mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                    FROM space.maintenanceRequests mr
+                        INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
+                    WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
+                    """)
+            response["maintenanceRequests"] = maintenance
+            announcements = db.execute("""
+                SELECT * FROM announcements
+                WHERE announcement_receiver LIKE '%""" + tenant_id + """%'
+                AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
+                AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
+            response["announcements"] = announcements
+            return response
 
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
@@ -390,7 +409,8 @@ api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
 api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:business_uid>')
 
-api.add_resource(BankAccount, '/bankAccount')
+api.add_resource(BankAccount, '/bankAccount/<string:business_id>')
+api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 
 
 # refresh
