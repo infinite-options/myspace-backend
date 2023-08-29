@@ -81,3 +81,42 @@ class ContactsBusinessContacts(Resource):
 
             response["Business Contacts"] = profileQuery
             return response
+        
+class ContactsOwnerContactsDetails(Resource):
+    # decorators = [jwt_required()]
+
+    def get(self, owner_uid):
+        print('in Get Owner Contacts', owner_uid)
+        response = {}
+        # conn = connect()
+
+
+        with connect() as db:
+            print("in connect loop")
+            profileQuery = db.execute(""" 
+                    -- FIND ALL OWNER CONTACTS
+                    SELECT -- *,
+                        business_uid AS contact_uid, "Property Manager" AS contact_type, business_name AS contact_business_name, business_phone_number AS contact_phone_numnber, business_email AS contact_email, business_address AS contact_address, business_unit AS contact_unit, business_city AS contact_city, business_state AS contact_state, business_zip AS contact_zip
+                        , business_ein_number, business_services_fees, business_locations, business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number, business_documents
+                        , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
+                        , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                    FROM (
+                        SELECT *
+                        FROM space.o_details AS o
+                        LEFT JOIN space.properties ON o.property_id = property_uid
+                        WHERE owner_uid = \'""" + owner_uid + """\'
+                    ) AS op
+                    LEFT JOIN space.b_details AS b ON b.contract_property_id = property_uid
+                    -- LEFT JOIN space.contractFees ON contract_uid = contract_id
+                    WHERE b.contract_status IS NOT NULL
+                    GROUP BY b.business_uid, property_id;
+                    """)
+            
+
+            print("Query: ", profileQuery)
+            # items = execute(profileQuery, "get", conn)
+            # print(items)
+            # response["Profile"] = items["result"]
+
+            response["Owner Contacts"] = profileQuery
+            return response
