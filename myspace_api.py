@@ -18,7 +18,7 @@
 
 from rents import Rents, RentDetails
 from payments import Payments
-from properties import Properties, PropertiesByOwner
+from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
 from profiles import OwnerProfile, TenantProfile
@@ -380,6 +380,7 @@ api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
+api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 api.add_resource(MaintenanceRequestsByOwner, '/maintenanceRequestsByOwner/<string:owner_id>')

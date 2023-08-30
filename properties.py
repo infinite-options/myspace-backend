@@ -21,11 +21,11 @@ import calendar
 # BY YEAR     X           X               X
 
 
-def get_new_propertyUID(conn):
-    newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
-    if newPropertyQuery["code"] == 280:
-        return newPropertyQuery["result"][0]["new_id"]
-    return "Could not generate new property UID", 500
+# def get_new_propertyUID(conn):
+#     newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
+#     if newPropertyQuery["code"] == 280:
+#         return newPropertyQuery["result"][0]["new_id"]
+#     return "Could not generate new property UID", 500
 
 
 class PropertiesByOwner(Resource):
@@ -180,7 +180,6 @@ class Properties(Resource):
         return response
 
 
-
     def delete(self):
         print("In delete Property")
         response = {}
@@ -233,3 +232,54 @@ class Properties(Resource):
 
             return response
 
+class PropertyDashboardByOwner (Resource):
+    def get(self, owner_id):
+        print('in Property Dashboard by Owner')
+        response = {}
+        # conn = connect()
+
+        print("Property Owner UID: ", owner_id)
+
+        with connect() as db:
+            print("in connect loop")
+            propertiesQuery = db.execute(""" 
+                    -- MANTENANCE AND RENT STATUS BY PROPERTY BY OWNER
+                    SELECT * 
+                    FROM (
+                        SELECT * 
+                        FROM space.o_details
+                        LEFT JOIN space.properties ON property_uid = property_id
+                        WHERE owner_uid = "110-000003"
+                        ) AS p
+                    LEFT JOIN (
+                        -- OPEN MAINTENANCE (not paid, not completed, not cancelled) BY PROPERTY
+                        SELECT  -- *, 
+                            maintenance_property_id, COUNT(maintenance_request_status) AS num_open_maintenace_req
+                        FROM space.m_details
+                        WHERE maintenance_request_status != "PAID" AND maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
+                        GROUP BY maintenance_property_id
+                        ) AS m ON property_id = maintenance_property_id
+                    LEFT JOIN (
+                        -- RENT STATUS BY PROPERTY FOR OWNER PAGE (USED IN RENTS ALSO)
+                        SELECT property_id
+                            -- , property_owner_id, po_owner_percent
+                            -- , property_address, property_unit, property_city, property_state, property_zip
+                            -- , pp_status.*
+                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                        FROM space.property_owner
+                        LEFT JOIN space.properties ON property_uid = property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = property_id
+                        WHERE property_owner_id = "110-000003"
+                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        GROUP BY property_id
+                        ORDER BY rent_status
+                        ) AS r ON p.property_id = r.property_id;
+                    """)
+            
+
+            # print("Query: ", propertiesQuery)
+            # items = execute(propertiesQuery, "get", conn)
+            response["Property Dashboard"] = propertiesQuery
+            return response
