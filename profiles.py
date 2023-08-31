@@ -17,8 +17,25 @@ import calendar
 # BY MONTH    X           X               X
 # BY YEAR     X           X               X
 
-
 class OwnerProfile(Resource):
+    def post(self):
+        print('in Owner Profile')
+        response = {}
+        payload = request.get_json()
+        with connect() as db:
+            response = db.insert('ownerProfileInfo', payload)
+        return response
+
+    def put(self):
+        print('in Owner Profile')
+        response = {}
+        payload = request.get_json()
+        key = {'owner_uid': payload.pop('owner_uid')}
+        with connect() as db:
+            response = db.update('ownerProfileInfo', key, payload)
+        return response
+
+class OwnerProfileByOwnerUid(Resource):
     # decorators = [jwt_required()]
 
     def get(self, owner_id):
