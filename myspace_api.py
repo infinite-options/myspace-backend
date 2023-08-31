@@ -27,7 +27,7 @@ from leases import LeaseDetails
 from purchases import Bills
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
-from settings import BankAccount
+from settings import Account
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -416,7 +416,7 @@ api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessC
 
 
 
-api.add_resource(BankAccount, '/bankAccount/<string:business_id>')
+api.add_resource(Account, '/account')
 api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 
 

@@ -135,7 +135,7 @@ class DatabaseConnection:
                     sql += ' WHERE '
                 sql += f'{key} = %({key})s'
                 if i != len(where.keys()) - 1:
-                    sql += ', '
+                    sql += ' AND '
 
             response = self.execute(sql, where, 'get')
         except Exception as e:
