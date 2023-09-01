@@ -50,13 +50,17 @@ class Bills(Resource):
 
             # Set Variables from JSON OBJECT
             bill_description = data["bill_description"]
+            # print("bill_description: ", bill_description, type(bill_description))
             bill_amount = data["bill_amount"]
             bill_created_by = data["bill_created_by"]
             bill_utility_type = data["bill_utility_type"]
             bill_split = data["bill_split"]
             bill_property_id = data["bill_property_id"]
-            print(str(json.dumps(bill_property_id)))
+            # print(str(json.dumps(bill_property_id)))
             bill_docs = data["bill_docs"]
+            bill_maintenance_quote_id  = data["bill_maintenance_quote_id"]
+            bill_notes  = data["bill_notes"]
+            # print("bill_notes: ", bill_notes, type(bill_notes))
 
             billQuery = (""" 
                     -- CREATE NEW BILL
@@ -69,7 +73,9 @@ class Bills(Resource):
                     , bill_utility_type = \'""" + bill_utility_type + """\'
                     , bill_split = \'""" + bill_split + """\'
                     , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
-                    , bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\';          
+                    , bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
+                    , bill_notes = \'""" + bill_description + """\'
+                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
                     """)
 
             # print("Query: ", billQuery)
@@ -82,7 +88,7 @@ class Bills(Resource):
             # print("made it here", bill_property_id)
             pur_ids = []
             split_num = len(bill_property_id)
-            # print(split_num)
+            print(split_num)
             split_bill_amount = round(bill_amount/split_num,2)
 
             for data_dict in bill_property_id:
@@ -93,51 +99,68 @@ class Bills(Resource):
                     # print("Input to Find Responsible Party Query:  ", pur_property_id, bill_utility_type)
 
                     # For each property ID and utility, identify the responsible party
+                    # NEED TO ADD: if utility_type is maintenance then it should be owner and no need to check
 
-                    queryResponse = (""" 
-                        -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
-                        SELECT responsible_party
-                        FROM (
-                            SELECT u.*
-                                , list_item AS utility_type
-                                , CASE
-                                    WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
-                                    WHEN lease_status = "ACTIVE" AND utility_payer = "tenant" THEN lt_tenant_id
-                                    ELSE property_owner_id
-                                END AS responsible_party
+                    if bill_utility_type == "maintenance": 
+                        queryResponse = (""" 
+                            -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
+                                SELECT -- *
+                                    property_owner_id
+                                FROM space.property_owner
+                                WHERE property_id = \'""" + pur_property_id + """\';
+                            """)
+
+                        # print("queryResponse is: ", queryResponse)
+                        responsibleArray = db.execute(queryResponse)
+                        # print("Responsible Party is: ", responsibleArray)
+                        responsibleParty = responsibleArray['result'][0]['property_owner_id']
+                        # print("Responsible Party is: ", responsibleParty)
+
+                    else:
+                        queryResponse = (""" 
+                            -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
+                            SELECT responsible_party
                             FROM (
-                                SELECT -- *,
-                                    property_uid, property_address, property_unit
-                                    , utility_type_id, utility_payer_id
-                                    , list_item AS utility_payer
-                                    , property_owner_id
-                                    , contract_business_id, contract_status, contract_start_date, contract_end_date
-                                    , lease_status, lease_start, lease_end
-                                    , lt_tenant_id, lt_responsibility 
-                                FROM space.properties
-                                LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
+                                SELECT u.*
+                                    , list_item AS utility_type
+                                    , CASE
+                                        WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
+                                        WHEN lease_status = "ACTIVE" AND utility_payer = "tenant" THEN lt_tenant_id
+                                        ELSE property_owner_id
+                                    END AS responsible_party
+                                FROM (
+                                    SELECT -- *,
+                                        property_uid, property_address, property_unit
+                                        , utility_type_id, utility_payer_id
+                                        , list_item AS utility_payer
+                                        , property_owner_id
+                                        , contract_business_id, contract_status, contract_start_date, contract_end_date
+                                        , lease_status, lease_start, lease_end
+                                        , lt_tenant_id, lt_responsibility 
+                                    FROM space.properties
+                                    LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
 
-                                LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
-                                LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
-                                LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
-                                LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
-                                LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
-                                WHERE contract_status = "ACTIVE"
-                                ) u 
+                                    LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
+                                    LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
+                                    LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
+                                    LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
+                                    LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+                                    WHERE contract_status = "ACTIVE"
+                                    ) u 
 
-                            LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
-                            ) u_all
+                                LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
+                                ) u_all
 
-                        WHERE property_uid = \'""" + pur_property_id + """\'
-                            AND utility_type = \'""" + bill_utility_type + """\';
-        
-                        """)
+                            WHERE property_uid = \'""" + pur_property_id + """\'
+                                AND utility_type = \'""" + bill_utility_type + """\';
+            
+                            """)
 
-                    # print("queryResponse is: ", queryResponse)
-                    responsibleArray = db.execute(queryResponse)
-                    # print("Responsible Party is: ", responsibleArray)
-                    responsibleParty = responsibleArray['result'][0]['responsible_party']
-                    # print("Responsible Party is: ", responsibleParty)
+                        # print("queryResponse is: ", queryResponse)
+                        responsibleArray = db.execute(queryResponse)
+                        # print("Responsible Party is: ", responsibleArray)
+                        responsibleParty = responsibleArray['result'][0]['responsible_party']
+                        # print("Responsible Party is: ", responsibleParty)
                 
 
                     # STILL NEED TO ADD A LOOP FOR EACH RESPONSIBLE PARTY   
@@ -200,7 +223,7 @@ class Bills(Resource):
                     continue
 
             # print(pur_ids)
-            response["purchase_ids add"] = pur_ids
+            response["purchase_ids_add"] = pur_ids
             # response["purchase_ids added"] = json.dumps(pur_ids)
             return response
 
