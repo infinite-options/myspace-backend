@@ -101,7 +101,7 @@ class LeaseDetails(Resource):
             # print("Lease Query: ", leaseQuery)
             # items = execute(leaseQuery, "get", conn)
             # print(items)
-            response["Lease Details"] = leaseQuery
+            response["Lease_Details"] = leaseQuery
 
 
             return response

@@ -36,7 +36,7 @@ class ContactsMaintenance(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Maintenance Contacts"] = profileQuery
+            response["Maintenance_Contacts"] = profileQuery
             return response
         
 
@@ -76,7 +76,7 @@ class ContactsOwnerContactsDetails(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Owner Contacts"] = profileQuery
+            response["Owner_Contacts"] = profileQuery
             return response
         
 
@@ -122,7 +122,7 @@ class ContactsBusinessContacts(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Business Contacts"] = profileQuery
+            response["Business_Contacts"] = profileQuery
             return response
 
 
@@ -152,7 +152,7 @@ class ContactsBusinessContactsOwnerDetails(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Owner Details"] = profileQuery
+            response["Owner_Details"] = profileQuery
             return response
 
     
@@ -183,7 +183,7 @@ class ContactsBusinessContactsTenantDetails(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Tenant Details"] = profileQuery
+            response["Tenant_Details"] = profileQuery
             return response
         
 class ContactsBusinessContactsMaintenanceDetails(Resource):
@@ -213,5 +213,5 @@ class ContactsBusinessContactsMaintenanceDetails(Resource):
             # print(items)
             # response["Profile"] = items["result"]
 
-            response["Maintenance Details"] = profileQuery
+            response["Maintenance_Details"] = profileQuery
             return response

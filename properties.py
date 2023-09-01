@@ -281,5 +281,5 @@ class PropertyDashboardByOwner (Resource):
 
             # print("Query: ", propertiesQuery)
             # items = execute(propertiesQuery, "get", conn)
-            response["Property Dashboard"] = propertiesQuery
+            response["Property_Dashboard"] = propertiesQuery
             return response
