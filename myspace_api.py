@@ -24,7 +24,7 @@ from cashflow import CashflowByOwner
 from profiles import OwnerProfile, TenantProfile
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
-from purchases import Bills
+from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from settings import Account
@@ -389,6 +389,8 @@ api.add_resource(MaintenanceStatusByProperty, '/maintenanceStatusByProperty/<str
 api.add_resource(MaintenanceStatusByOwner, '/maintenanceStatusByOwner/<string:owner_id>')
 
 api.add_resource(Bills, '/bills')
+api.add_resource(AddExpense, '/addExpense')
+api.add_resource(AddRevenue, '/addRevenue')
 
 api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 

@@ -232,3 +232,98 @@ class Bills(Resource):
 
 
             return response
+        
+class AddExpense(Resource):
+    def post(self):
+        print("In Add Expense")
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+            # print(data)
+
+            fields = [
+                "pur_property_id"
+                , "purchase_type"
+                , "pur_cf_type"
+                , "purchase_date"
+                , "pur_due_date"
+                , "pur_amount_due"
+                , "purchase_status"
+                , "pur_notes"
+                , "pur_description"
+                , "pur_receiver"
+                , "pur_initiator"
+                , "pur_payer"
+            ]
+
+            # PUTS JSON DATA INTO EACH FILE
+            newRequest = {}
+            for field in fields:
+                newRequest[field] = data.get(field)
+                # print(field, " = ", newRequest[field])
+
+
+            # # GET NEW UID
+            # print("Get New Request UID")
+            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequest['purchase_uid'] = newRequestID
+            # print(newRequestID)
+
+            # SET TRANSACTION DATE TO NOW
+            newRequest['pur_timestamp'] = date.today()
+
+            # print(newRequest)
+
+            response = db.insert('purchases', newRequest)
+            response['Purchases_UID'] = newRequestID
+
+        return response
+    
+
+
+
+class AddRevenue(Resource):
+    def post(self):
+        print("In Add Revenue")
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+            # print(data)
+
+            fields = [
+                "pur_property_id"
+                , "purchase_type"
+                , "pur_cf_type"
+                , "purchase_date"
+                , "pur_due_date"
+                , "pur_amount_due"
+                , "purchase_status"
+                , "pur_notes"
+                , "pur_description"
+                , "pur_receiver"
+                , "pur_initiator"
+                , "pur_payer"
+            ]
+
+            # PUTS JSON DATA INTO EACH FILE
+            newRequest = {}
+            for field in fields:
+                newRequest[field] = data.get(field)
+                # print(field, " = ", newRequest[field])
+
+
+            # # GET NEW UID
+            # print("Get New Request UID")
+            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequest['purchase_uid'] = newRequestID
+            # print(newRequestID)
+
+            # SET TRANSACTION DATE TO NOW
+            newRequest['pur_timestamp'] = date.today()
+
+            # print(newRequest)
+
+            response = db.insert('purchases', newRequest)
+            response['Purchases_UID'] = newRequestID
+
+        return response
