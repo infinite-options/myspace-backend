@@ -215,3 +215,60 @@ class ContactsBusinessContactsMaintenanceDetails(Resource):
 
             response["Maintenance_Details"] = profileQuery
             return response
+        
+
+
+class Contact(Resource):
+
+    def get(self, contact_uid):
+        print('in Get Contact', contact_uid)
+        response = {}
+
+        with connect() as db:
+            query = "SELECT * FROM space.contacts WHERE contact_uid = %s;"
+            response = db.execute(query, (contact_uid))
+        return response
+        # conn = connect()
+
+    def post(self):
+        print("In POST Contact")
+        response = {}
+
+        with connect() as db:
+            print("in connect loop")
+            data = request.json
+            fields = ['category', 'first_name', 'last_name', 'phone_number', 'email',
+                        'maintenance_category', 'tenant_property', 'notes', 'created_by']
+
+            newContact = {}
+            for field in fields:
+                fieldValue = data.get(field)
+                if fieldValue:
+                    newContact[f'contact_{field}'] = fieldValue
+                    print(newContact)
+            newContactID = db.call('new_contact_uid')['result'][0]['new_id']
+            newContact['contact_uid'] = newContactID
+            print(newContact)
+            response = db.insert('contacts', newContact)
+
+        return response
+    
+
+    def put(self):
+        response = {}
+        with connect() as db:
+            data = request.json
+            fields = ['category', 'first_name', 'last_name', 'phone_number', 'email',
+                        'maintenance_category', 'tenant_property', 'notes', 'created_by']
+
+            updatedContact = {}
+            for field in fields:
+                fieldValue = data.get(field)
+                if fieldValue:
+                    updatedContact[f'contact_{field}'] = fieldValue
+            primaryKey = {
+                'contact_uid': data.get('contact_uid')
+            }
+            response = db.update('contacts', primaryKey, updatedContact)
+        return response
+

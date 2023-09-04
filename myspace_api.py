@@ -28,6 +28,7 @@ from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from settings import Account
+from contacts import Contact
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -415,6 +416,10 @@ api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:bu
 api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+
+api.add_resource(Contact, '/contact/<string:contact_uid>')
+
+
 
 
 
