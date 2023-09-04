@@ -30,6 +30,8 @@ class OwnerProfile(Resource):
         print('in Owner Profile')
         response = {}
         payload = request.get_json()
+        if payload.get('owner_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
         key = {'owner_uid': payload.pop('owner_uid')}
         with connect() as db:
             response = db.update('ownerProfileInfo', key, payload)
