@@ -335,11 +335,15 @@ class TenantDashboard(Resource):
         response = {}
         with connect() as db:
             property = db.execute("""
-                    SELECT p.property_uid, p.property_address, p.property_unit
+                    SELECT SUM(pur_amount_due) AS balance, 
+                        CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date,
+                        p.property_uid, p.property_address, p.property_unit
                     FROM space.properties p
-                        INNER JOIN space.leases l ON l.lease_property_id = p.property_uid
-                        INNER JOIN space.lease_tenant lt ON lt.lt_lease_id = l.lease_uid
-                    WHERE lt.lt_tenant_id = \'""" + tenant_id + """\';
+                        LEFT JOIN space.leases l ON l.lease_property_id = p.property_uid
+                        LEFT JOIN space.lease_tenant lt ON lt.lt_lease_id = l.lease_uid
+                        LEFT JOIN space.purchases pur ON p.property_uid = pur.pur_property_id
+                    WHERE pur.purchase_status = 'UNPAID' AND lt.lt_tenant_id = \'""" + tenant_id + """\'
+                    GROUP BY property_uid;
                     """)
             response["property"] = property
             maintenance = db.execute("""
@@ -415,7 +419,6 @@ api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:bu
 api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
-
 
 
 api.add_resource(Account, '/account')

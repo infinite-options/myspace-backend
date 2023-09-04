@@ -9,9 +9,7 @@ import boto3
 import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import calendar
-
-
+from werkzeug.exceptions import BadRequest
 
 
 # MAINTENANCE BY STATUS
@@ -108,7 +106,9 @@ class MaintenanceByProperty(Resource):
                     -- MAINTENANCE PROJECTS BY PROPERTY        
                     SELECT -- *
                         property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area
-                        , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                        , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by
+                        , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency
+                        , maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost
                     FROM space.properties
                     LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
                     WHERE property_uid = \'""" + property_id + """\';
@@ -187,7 +187,7 @@ class MaintenanceRequestsByOwner(Resource):
                     SELECT -- *
                         maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, user_type, user_name, user_phone, user_email
                         , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status
-                        , maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                        , maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost
                         , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                         , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
                         , o_details.*
@@ -228,6 +228,8 @@ class MaintenanceRequests(Resource):
                 , 'maintenance_request_created_date'
                 , 'maintenance_request_closed_date'
                 , 'maintenance_request_adjustment_date'
+                , 'maintenance_callback_number'
+                , 'maintenance_estimated_cost'
             ]
 
             newRequest = {}
@@ -273,4 +275,14 @@ class MaintenanceRequests(Resource):
             response['Maintenance_UID'] = newRequestID
             response['images'] = newRequest['maintenance_images']
 
+        return response
+    
+    def put(self):
+        response = {}
+        payload = request.get_json()
+        if payload.get('maintenance_request_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'maintenance_request_uid': payload.pop('maintenance_request_uid')}
+        with connect() as db:
+            response = db.update('maintenanceRequests', key, payload)
         return response
