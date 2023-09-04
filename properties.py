@@ -11,7 +11,7 @@ import boto3
 import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import calendar
+from werkzeug.exceptions import BadRequest
 
 
 # MAINTENANCE BY STATUS
@@ -177,6 +177,17 @@ class Properties(Resource):
             response['property_UID'] = newRequestID
             response['images'] = newProperty['property_images']
 
+        return response
+    
+    
+    def put(self):
+        response = {}
+        payload = request.get_json()
+        if payload.get('property_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'property_uid': payload.pop('property_uid')}
+        with connect() as db:
+            response = db.update('properties', key, payload)
         return response
 
 
