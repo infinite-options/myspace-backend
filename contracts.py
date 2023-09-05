@@ -22,3 +22,11 @@ class Contracts(Resource):
         with connect() as db:
             response = db.update('contracts', key, payload)
         return response
+
+
+class ContractsByUid(Resource):
+    def get(self, contract_uid):
+        print('in ContractsByUid')
+        with connect() as db:
+            response = db.select('contracts', {"contract_uid": contract_uid})
+        return response
