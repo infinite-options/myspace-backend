@@ -9,7 +9,7 @@ import boto3
 import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import calendar
+from werkzeug.exceptions import BadRequest
 
 
 # OVERVIEW
