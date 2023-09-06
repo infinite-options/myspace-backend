@@ -182,7 +182,7 @@ class Properties(Resource):
     
     def put(self):
         response = {}
-        payload = request.get_json()
+        payload = request.form.to_dict()
         if payload.get('property_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'property_uid': payload.pop('property_uid')}
