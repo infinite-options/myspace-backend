@@ -30,6 +30,7 @@ from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, Contacts
 from contracts import Contracts, ContractsByUid
 from settings import Account
 from lists import List
+from quotes import QuotesByBusiness, QuotesStatusByBusiness
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -397,7 +398,8 @@ api.add_resource(MaintenanceSummaryByOwner, '/maintenanceSummaryByOwner/<string:
 api.add_resource(MaintenanceStatusByOwnerSimplified, '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
 api.add_resource(MaintenanceSummaryAndStatusByOwner, '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
 
-
+api.add_resource(QuotesByBusiness, '/quotesByBusiness')
+api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 
 api.add_resource(Bills, '/bills')
 api.add_resource(ContractsByUid, '/contracts/<string:contract_uid>')
