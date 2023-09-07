@@ -329,14 +329,57 @@ class MaintenanceStatusByOwnerSimplified(Resource):
             maintenanceQuery = db.execute(""" 
                     -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH LIMITED DETAILS FOR FLUTTERFLOW
                     SELECT property_owner_id
-                        , property_uid, property_address -- , property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_uid, maintenance_title, maintenance_images, maintenance_request_type, maintenance_request_status
+                        , property_uid, property_address, property_unit -- , property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
+                        , maintenance_request_created_date, maintenance_request_uid, maintenance_title, maintenance_images, maintenance_request_type, maintenance_request_status
                     FROM space.maintenanceRequests 
                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
                     LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
                     LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
                     WHERE property_owner_id = \'""" + owner_id + """\'
                     ORDER BY maintenance_request_status;
+                    """)
+
+            # print("Query: ", maintenanceQuery)  # This is a list
+            # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
+            response["MaintenanceSummary"] = maintenanceQuery
+            return response
+        
+
+class MaintenanceSummaryAndStatusByOwner(Resource): 
+    def get(self, owner_id):
+        print('in Maintenance Summary and Status by Owner')
+        response = {}
+
+        # print("Owner UID: ", owner_id)
+
+        with connect() as db:
+            print("in connect loop")
+            maintenanceQuery = db.execute(""" 
+                    -- NEW QUERY TO SIMPLIFY FLUTTERFLOW EXPANDABLE WIDGET WITH JSON OBJECT
+                    SELECT
+                        maintenanceRequests.maintenance_request_status
+                        , COUNT(maintenanceRequests.maintenance_request_status) AS num
+                        , JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'owner_id', property_owner_id,
+                                'property_id', property_uid,
+                                'property_address', property_address,
+                                'property_unit', property_unit,
+                                'incident_date', maintenance_request_created_date,
+                                'maintenance_request_type', maintenance_request_type,
+                                'priority', maintenance_priority,
+                                'title', maintenance_title,
+                                'description', maintenance_desc,
+                                'images', maintenance_images,
+                                'estimated_cost', quote_total_estimate
+                            ) 
+                        ) AS individual_incidents
+                    FROM space.maintenanceRequests 
+                    LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
+                    LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
+                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+                    WHERE property_owner_id = '110-000003'
+                    GROUP BY maintenance_request_status;
                     """)
 
             # print("Query: ", maintenanceQuery)  # This is a list
