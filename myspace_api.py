@@ -25,13 +25,12 @@ from profiles import OwnerProfile, TenantProfile, OwnerProfileByOwnerUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
-from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
-    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid, \
-    MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from contracts import Contracts, ContractsByUid
 from settings import Account
 from lists import List
+from quotes import QuotesByBusiness, QuotesStatusByBusiness
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -397,8 +396,12 @@ api.add_resource(MaintenanceStatusByProperty, '/maintenanceStatusByProperty/<str
 api.add_resource(MaintenanceStatusByOwner, '/maintenanceStatusByOwner/<string:owner_id>')
 api.add_resource(MaintenanceSummaryByOwner, '/maintenanceSummaryByOwner/<string:owner_id>')
 api.add_resource(MaintenanceStatusByOwnerSimplified, '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
+api.add_resource(MaintenanceSummaryAndStatusByOwner, '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
+
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+api.add_resource(QuotesByBusiness, '/quotesByBusiness')
+api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 
 api.add_resource(Bills, '/bills')
 api.add_resource(ContractsByUid, '/contracts/<string:contract_uid>')
