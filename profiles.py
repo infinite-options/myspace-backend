@@ -61,8 +61,28 @@ class OwnerProfileByOwnerUid(Resource):
 
             return response
 
+class TenantProfile(Resource): 
+    def post(self):
+        response = {}
+        print('in TenantProfile')
+        payload = request.get_json()
 
-class TenantProfile(Resource):
+        with connect() as db:
+            response = db.insert('tenantProfileInfo', payload)
+        return response
+    
+    def put(self):
+        response = {}
+        print('in TenantProfile')
+        payload = request.get_json()
+        if payload.get('tenant_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'tenant_uid': payload.pop('tenant_uid')}
+        with connect() as db:
+            response = db.update('tenantProfileInfo', key, payload)
+        return response
+
+class TenantProfileByTenantUid(Resource):
     # decorators = [jwt_required()]
 
     def get(self, tenant_id):
