@@ -21,7 +21,7 @@ from payments import Payments
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from profiles import OwnerProfile, TenantProfile, OwnerProfileByOwnerUid
+from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
@@ -30,6 +30,7 @@ from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, Contacts
 from contracts import Contracts, ContractsByUid
 from settings import Account
 from lists import List
+from managers import SearchManager
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
 from data_pm import connect, uploadImage, s3
@@ -413,9 +414,10 @@ api.add_resource(Payments, '/makePayment')
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
-api.add_resource(TenantProfile, '/tenantProfile/<string:tenant_id>')
+api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
 
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
+api.add_resource(TenantProfile, '/tenantProfile')
 
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
@@ -434,6 +436,7 @@ api.add_resource(List, '/lists')
 api.add_resource(Account, '/account')
 api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 
+api.add_resource(SearchManager, '/searchManager')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
