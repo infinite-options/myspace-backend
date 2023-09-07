@@ -288,6 +288,33 @@ class MaintenanceRequests(Resource):
         return response
 
 
+class MaintenanceQuotes(Resource):
+    def post(self):
+        print('in MaintenanceQuotes')
+        payload = request.get_json()
+        with connect() as db:
+            response = db.insert('maintenanceQuotes', payload)
+        return response
+
+    def put(self):
+        print('in MaintenanceQuotes')
+        payload = request.get_json()
+        if payload.get('maintenance_quote_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'maintenance_quote_uid': payload.pop('maintenance_quote_uid')}
+        with connect() as db:
+            response = db.update('maintenanceQuotes', key, payload)
+        return response
+
+
+class MaintenanceQuotesByUid(Resource):
+    def get(self, maintenance_quote_uid):
+        print('in MaintenanceQuotesByUid')
+        with connect() as db:
+            response = db.select('maintenanceQuotes', {"maintenance_quote_uid": maintenance_quote_uid})
+        return response
+
+
 
 class MaintenanceSummaryByOwner(Resource): 
     def get(self, owner_id):
