@@ -21,7 +21,8 @@ from payments import Payments
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid
+from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, \
+    BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
@@ -422,9 +423,11 @@ api.add_resource(Payments, '/makePayment')
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
 api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
+api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
 
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
+api.add_resource(BusinessProfile, '/businessProfile')
 
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
