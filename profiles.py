@@ -103,3 +103,11 @@ class TenantProfileByTenantUid(Resource):
             # print(items)
             response["Profile"] = profileQuery
             return response
+
+
+class RolesByUserid(Resource):
+    def get(self, user_id):
+        print('in RolesByUserid')
+        with connect() as db:
+            response = db.select('user_profiles', {"user_id": user_id})
+        return response

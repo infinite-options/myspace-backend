@@ -1,6 +1,7 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-from announcements import Announcements
+from announcements import Announcements,AnnouncementsByUid
+from profiles import RolesByUserid
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
@@ -439,6 +440,8 @@ api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContac
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
+api.add_resource(AnnouncementsByUid, '/announcements/<string:announcement_uid>')
+api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 
 api.add_resource(List, '/lists')
 
