@@ -18,7 +18,7 @@ from profiles import RolesByUserid
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments
+from payments import Payments, PaymentStatus
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -242,6 +242,7 @@ class ownerDashboard(Resource):
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
                     SELECT property_owner.property_owner_id
+                        , property_owner.property_id
                         , leases.lease_end
                         , COUNT(lease_end) AS num
                     FROM space.properties
@@ -420,6 +421,7 @@ api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
+api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
