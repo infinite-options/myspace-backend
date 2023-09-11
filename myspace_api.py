@@ -17,7 +17,7 @@
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments
+from payments import Payments, PaymentStatus
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -419,6 +419,7 @@ api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
+api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
