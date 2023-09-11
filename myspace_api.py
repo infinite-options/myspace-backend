@@ -1,6 +1,7 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
 from announcements import Announcements
+from password import Password
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
@@ -449,6 +450,8 @@ api.add_resource(Account, '/account')
 api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 
 api.add_resource(SearchManager, '/searchManager')
+
+api.add_resource(Password, '/password')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
