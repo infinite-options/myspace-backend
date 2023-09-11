@@ -445,7 +445,6 @@ api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContac
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
-api.add_resource(AnnouncementsByUid, '/announcements/<string:announcement_uid>')
 api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 
 api.add_resource(List, '/lists')
