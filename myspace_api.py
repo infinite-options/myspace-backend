@@ -29,7 +29,7 @@ from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
-from contracts import Contracts, ContractsByUid
+from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
@@ -409,7 +409,7 @@ api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 
 api.add_resource(Bills, '/bills')
-api.add_resource(ContractsByUid, '/contracts/<string:contract_uid>')
+api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
