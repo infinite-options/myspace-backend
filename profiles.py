@@ -111,3 +111,31 @@ class RolesByUserid(Resource):
         with connect() as db:
             response = db.select('user_profiles', {"user_id": user_id})
         return response
+
+
+class BusinessProfile(Resource):
+    def post(self):
+        print('in BusinessProfile')
+        payload = request.get_json()
+        with connect() as db:
+            response = db.insert('businessProfileInfo', payload)
+        return response
+
+    def put(self):
+        print('in BusinessProfile')
+        payload = request.get_json()
+        if payload.get('business_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'business_uid': payload.pop('business_uid')}
+        with connect() as db:
+            response = db.update('businessProfileInfo', key, payload)
+        return response
+
+
+class BusinessProfileByUid(Resource):
+    def get(self, business_uid):
+        print('in BusinessProfileByUid')
+        with connect() as db:
+            response = db.select('businessProfileInfo', {"business_uid": business_uid})
+        return response
+

@@ -357,7 +357,9 @@ class MaintenanceStatusByOwnerSimplified(Resource):
                     -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH LIMITED DETAILS FOR FLUTTERFLOW
                     SELECT property_owner_id
                         , property_uid, property_address, property_unit -- , property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_created_date, maintenance_request_uid, maintenance_title, maintenance_images, maintenance_request_type, maintenance_request_status
+                        , maintenance_request_uid, maintenance_title
+                        , if (ISNULL(JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))),"https://s3-us-west-1.amazonaws.com/io-pm/maintenanceRequests/800-000028/img_cover", JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))) AS image
+                        , maintenance_request_type, maintenance_request_status, maintenance_request_created_date
                     FROM space.maintenanceRequests 
                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
                     LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
@@ -386,7 +388,7 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
                     SELECT
                         maintenanceRequests.maintenance_request_status
                         , COUNT(maintenanceRequests.maintenance_request_status) AS num
-                        , JSON_ARRAYAGG(
+                        , -- JSON_ARRAYAGG(
                             JSON_OBJECT(
                                 'owner_id', property_owner_id,
                                 'property_id', property_uid,
@@ -399,7 +401,7 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
                                 'description', maintenance_desc,
                                 'images', maintenance_images,
                                 'estimated_cost', quote_total_estimate
-                            ) 
+                            -- ) 
                         ) AS individual_incidents
                     FROM space.maintenanceRequests 
                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
