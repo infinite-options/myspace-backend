@@ -388,7 +388,7 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
                     SELECT
                         maintenanceRequests.maintenance_request_status
                         , COUNT(maintenanceRequests.maintenance_request_status) AS num
-                        , -- JSON_ARRAYAGG(
+                        , JSON_ARRAYAGG(
                             JSON_OBJECT(
                                 'owner_id', property_owner_id,
                                 'property_id', property_uid,
@@ -401,7 +401,7 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
                                 'description', maintenance_desc,
                                 'images', maintenance_images,
                                 'estimated_cost', quote_total_estimate
-                            -- ) 
+                            ) 
                         ) AS individual_incidents
                     FROM space.maintenanceRequests 
                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
