@@ -42,8 +42,8 @@ class Payments(Resource):
                 , 'paid_by'
                 , 'payment_intent'
                 , 'payment_method'
-                , 'date_cleared'
-                , 'client_secret'
+                , 'payment_date_cleared'
+                , 'payment_client_secret'
             ]
 
             # PUTS JSON DATA INTO EACH FILE
