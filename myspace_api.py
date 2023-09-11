@@ -240,6 +240,7 @@ class ownerDashboard(Resource):
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
                     SELECT property_owner.property_owner_id
+                        , property_owner.property_id
                         , leases.lease_end
                         , COUNT(lease_end) AS num
                     FROM space.properties
