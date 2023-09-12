@@ -372,7 +372,27 @@ class MaintenanceStatusByOwnerSimplified(Resource):
             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
             response["MaintenanceSummary"] = maintenanceQuery
             return response
-        
+
+
+class MaintenanceStatusByMaintenance(Resource):
+    def get(self, business_uid):
+        print('in MaintenanceStatusByMaintenance')
+        with connect() as db:
+            return db.execute("""
+                    SELECT business_uid,
+                    property_uid, properties.property_address,
+                    purchase_uid, purchase_status, purchase_type, 
+                    payment_uid, pay_amount, payment_notes, payment_type,
+                    maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status,
+                    maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
+                    FROM b_details 
+                    JOIN properties ON contract_property_id = property_uid
+                    JOIN pp_details ON property_uid = pur_property_id
+                    JOIN m_details ON property_uid = maintenance_property_id
+                    WHERE business_uid = \'""" + business_uid + """\'
+                    GROUP BY maintenance_request_status;
+                    """)
+
 
 class MaintenanceSummaryAndStatusByOwner(Resource): 
     def get(self, owner_id):
