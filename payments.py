@@ -40,6 +40,10 @@ class Payments(Resource):
                 , 'payment_date'
                 , 'payment_verify'
                 , 'paid_by'
+                , 'payment_intent'
+                , 'payment_method'
+                , 'payment_date_cleared'
+                , 'payment_client_secret'
             ]
 
             # PUTS JSON DATA INTO EACH FILE
@@ -64,7 +68,6 @@ class Payments(Resource):
             response['Payments_UID'] = newRequestID
 
         return response
-    
 
 
 class PaymentStatus(Resource):
