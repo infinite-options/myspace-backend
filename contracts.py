@@ -24,9 +24,9 @@ class Contracts(Resource):
         return response
 
 
-class ContractsByUid(Resource):
-    def get(self, contract_uid):
-        print('in ContractsByUid')
+class ContractsByBusiness(Resource):
+    def get(self, business_id):
+        print('in ContractsByBusiness')
         with connect() as db:
-            response = db.select('contracts', {"contract_uid": contract_uid})
+            response = db.select('contracts', {"contract_business_id": business_id})
         return response

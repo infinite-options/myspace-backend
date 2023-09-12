@@ -1,6 +1,7 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-
+from announcements import Announcements
+from profiles import RolesByUserid
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
@@ -17,17 +18,18 @@
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments
+from payments import Payments, PaymentStatus
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid
+from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, \
+    BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
-from contracts import Contracts, ContractsByUid
+from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
@@ -240,6 +242,7 @@ class ownerDashboard(Resource):
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
                     SELECT property_owner.property_owner_id
+                        , property_owner.property_id
                         , leases.lease_end
                         , COUNT(lease_end) AS num
                     FROM space.properties
@@ -406,7 +409,7 @@ api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 
 api.add_resource(Bills, '/bills')
-api.add_resource(ContractsByUid, '/contracts/<string:contract_uid>')
+api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
@@ -418,13 +421,16 @@ api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
+api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
 api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
+api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
 
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
+api.add_resource(BusinessProfile, '/businessProfile')
 
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
@@ -437,6 +443,9 @@ api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:bu
 api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+
+api.add_resource(Announcements, '/announcements')
+api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 
 api.add_resource(List, '/lists')
 
