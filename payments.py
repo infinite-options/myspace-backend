@@ -103,3 +103,63 @@ class PaymentStatus(Resource):
 
 
             return response
+
+class PaymentMethod(Resource):
+
+    def post(self):
+        response = {}
+
+        # print("User ID: ", user_id)
+        data = request.get_json(force=True)
+        if data["paymentMethod_type"] == "bank":
+            with connect() as db:
+
+                # print(data)
+
+                fields = [
+                    'paymentMethod_uid'
+                    , 'paymentMethod_profile_id'
+                    , 'paymentMethod_type'
+                    , 'paymentMethod_name'
+                    , 'paymentMethod_acct'
+                    , 'paymentMethod_routing_number'
+                    , 'paymentMethod_micro_deposits'
+                    , 'paymentMethod_billingzip'
+                    , 'paymentMethod_status'
+                ]
+
+                newRequest = {}
+                for field in fields:
+                    newRequest[field] = data.get(field)
+
+                
+
+                response = db.insert('paymentMethods', newRequest)
+
+
+                return response
+        elif data["paymentMethod_type"] == "card":
+            with connect() as db:
+
+                
+
+                fields = [
+                    'paymentMethod_uid'
+                    , 'paymentMethod_profile_id'
+                    , 'paymentMethod_type'
+                    , 'paymentMethod_name'
+                    , 'paymentMethod_exp_date'
+                    , 'paymentMethod_cvv'
+                    , 'paymentMethod_billingzip'
+                    , 'paymentMethod_status'
+                ]
+
+                newRequest = {}
+                for field in fields:
+                    newRequest[field] = data.get(field)
+
+                
+
+                response = db.insert('paymentMethods', newRequest)
+
+                return response
