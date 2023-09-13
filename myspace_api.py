@@ -456,6 +456,7 @@ api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
+api.add_resource(PaymentMethod, '/Paymentmethod')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
