@@ -34,7 +34,7 @@ from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
-from quotes import QuotesByBusiness, QuotesStatusByBusiness
+from quotes import QuotesByBusiness, QuotesStatusByBusiness, Quotes
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -406,6 +406,7 @@ api.add_resource(MaintenanceSummaryAndStatusByOwner, '/maintenanceSummaryAndStat
 
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+api.add_resource(Quotes, '/quotes')
 api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 

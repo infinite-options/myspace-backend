@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from data_pm import connect
+from data_pm import connect, uploadImage
+import json
 
 class QuotesStatusByBusiness(Resource): 
     def get(self):
@@ -55,3 +56,35 @@ class QuotesByBusiness(Resource):
                 else:
                     response_dict[group_by_value] = [item]
             return response_dict
+        
+class Quotes(Resource): 
+    def post(self):
+        response = []
+        payload = request.form
+        quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
+        quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
+        quote_notes = payload["quote_notes"]
+        with connect() as db:
+            for quote_business_id in quote_maintenance_contacts:
+                quote = {}
+                quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
+                quote["quote_business_id"] = quote_business_id
+                quote["quote_maintenance_request_id"] = quote_maintenance_request_id
+                quote["quote_status"] = "REQUESTED"
+                quote["quote_notes"] = quote_notes
+                images = []
+                i = 0
+                while True:
+                    filename = f'img_{i}'
+                    file = request.files.get(filename)
+                    if file:
+                        key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                        image = uploadImage(file, key, '')
+                        images.append(image)
+                    else:
+                        break
+                    i += 1
+                quote["quote_maintenance_images"] = json.dumps(images)
+                query_response = db.insert('maintenanceQuotes', quote)
+                response.append(query_response)
+        return response
