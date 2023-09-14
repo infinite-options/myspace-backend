@@ -19,7 +19,7 @@ from password import Password
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus
+from payments import Payments, PaymentStatus, PaymentMethod
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
