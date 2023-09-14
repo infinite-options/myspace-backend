@@ -242,15 +242,23 @@ class ownerDashboard(Resource):
 
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
-                    SELECT property_owner.property_owner_id
-                        , property_owner.property_id
+                    SELECT o_details.property_owner_id
                         , leases.lease_end
                         , COUNT(lease_end) AS num
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid
-                    LEFT JOIN space.leases ON lease_property_id = property_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                    GROUP BY MONTH(lease_end), YEAR(lease_end);
+                    FROM space.leases
+                    LEFT JOIN space.o_details ON property_id = lease_property_id
+                    LEFT JOIN space.properties ON property_uid = lease_property_id
+                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+                    WHERE lease_status = "ACTIVE"
+                        AND contract_status = "ACTIVE"
+                        AND fee_name = "RENT"
+                        AND ld_type = "LEASE"
+                        AND property_owner_id = \'""" + owner_id + """\'
+                    GROUP BY MONTH(lease_end),
+                            YEAR(lease_end);
                     """)
 
             # print("Query: ", leaseQuery)
