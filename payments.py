@@ -105,61 +105,83 @@ class PaymentStatus(Resource):
             return response
 
 class PaymentMethod(Resource):
+    # decorators = [jwt_required()]
 
     def post(self):
+        print('in PaymentStatus')
         response = {}
 
         # print("User ID: ", user_id)
-        data = request.get_json(force=True)
-        if data["paymentMethod_type"] == "bank":
-            with connect() as db:
+        with connect() as db:
+            print("in owner dashboard")
+            rows = db.execute(""" 
+                    SELECT * FROM space.businessProfileInfo
+                    """)
+        for i in range(0, len(rows["result"])):
+            if rows["result"][i]["business_zelle"]!="":
+                with connect() as db:
+                    cur = db.conn.cursor()
 
-                # print(data)
+                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
+                                                                  paymentMethod_billingzip)
+                                         values (%s, %s, %s, %s) 
+                                    """
+                    cur.execute(sql,
+                                (rows["result"][i]["business_uid"], 'venmo', rows["result"][i]["business_venmo"],
+                                 rows["result"][i]["business_zip"]))
+                    db.conn.commit()
+            if rows["result"][i]["business_zelle"]!="":
+                with connect() as db:
+                    cur = db.conn.cursor()
 
-                fields = [
-                    'paymentMethod_uid'
-                    , 'paymentMethod_profile_id'
-                    , 'paymentMethod_type'
-                    , 'paymentMethod_name'
-                    , 'paymentMethod_acct'
-                    , 'paymentMethod_routing_number'
-                    , 'paymentMethod_micro_deposits'
-                    , 'paymentMethod_billingzip'
-                    , 'paymentMethod_status'
-                ]
+                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
+                                                                  paymentMethod_billingzip)
+                                         values (%s, %s, %s, %s) 
+                                    """
+                    cur.execute(sql,
+                                (rows["result"][i]["business_uid"], 'zelle', rows["result"][i]["business_zelle"],
+                                 rows["result"][i]["business_zip"]))
+                    db.conn.commit()
+            if rows["result"][i]["business_apple_pay"]!="":
+                with connect() as db:
+                    cur = db.conn.cursor()
 
-                newRequest = {}
-                for field in fields:
-                    newRequest[field] = data.get(field)
+                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
+                                                                  paymentMethod_billingzip)
+                                         values (%s, %s, %s, %s) 
+                                    """
+                    cur.execute(sql,
+                                (rows["result"][i]["business_uid"], 'apple_pay', rows["result"][i]["business_apple_pay"],
+                                 rows["result"][i]["business_zip"]))
+                    db.conn.commit()
+            if rows["result"][i]["business_paypal"]!="":
+                with connect() as db:
+                    cur = db.conn.cursor()
 
-                
+                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
+                                                                  paymentMethod_billingzip)
+                                         values (%s, %s, %s, %s) 
+                                    """
+                    cur.execute(sql,
+                                (
+                                rows["result"][i]["business_uid"], 'paypal', rows["result"][i]["business_paypal"],
+                                rows["result"][i]["business_zip"]))
+                    db.conn.commit()
+            if rows["result"][i]["business_account_number"]!="":
+                with connect() as db:
+                    cur = db.conn.cursor()
 
-                response = db.insert('paymentMethods', newRequest)
+                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_acct, 
+                                                                  paymentMethod_routing_number ,paymentMethod_billingzip)
+                                         values (%s, %s, %s, %s, %s) 
+                                    """
+                    cur.execute(sql,
+                                (
+                                    rows["result"][i]["business_uid"], 'bank', rows["result"][i]["business_account_number"],rows["result"][i]["business_routing_number"]
+                                    ,rows["result"][i]["business_zip"]))
+                    db.conn.commit()
+            #
+            #
+            # print(rows["result"][i]["business_uid"])
 
-
-                return response
-        elif data["paymentMethod_type"] == "card":
-            with connect() as db:
-
-                
-
-                fields = [
-                    'paymentMethod_uid'
-                    , 'paymentMethod_profile_id'
-                    , 'paymentMethod_type'
-                    , 'paymentMethod_name'
-                    , 'paymentMethod_exp_date'
-                    , 'paymentMethod_cvv'
-                    , 'paymentMethod_billingzip'
-                    , 'paymentMethod_status'
-                ]
-
-                newRequest = {}
-                for field in fields:
-                    newRequest[field] = data.get(field)
-
-                
-
-                response = db.insert('paymentMethods', newRequest)
-
-                return response
+        return response
