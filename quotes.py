@@ -55,3 +55,24 @@ class QuotesByBusiness(Resource):
                 else:
                     response_dict[group_by_value] = [item]
             return response_dict
+        
+
+class QuotesByRequest(Resource): 
+    def get(self):
+        args = request.args
+        request_id = args.get("maintenance_request_id")
+        with connect() as db:
+            query = """ 
+                SELECT *
+                FROM space.maintenanceQuotes
+                WHERE quote_maintenance_request_id = \'""" + request_id + """\' AND quote_status = 'SENT'
+            """
+            response = db.execute(query)
+            # response_dict = {}
+            # for item in query_result["result"]:
+            #     group_by_value = item.pop("quote_status")
+            #     if group_by_value in response_dict:
+            #         response_dict[group_by_value].append(item)
+            #     else:
+            #         response_dict[group_by_value] = [item]
+            return response

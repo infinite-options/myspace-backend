@@ -79,9 +79,9 @@ class OwnerDocuments(Resource):
             # print("File: ", file)
             
             key = f'owners/{owner_id}/{filename}'
-            link = uploadImage(file, key, '')
-            print(link)
-            newDocument['link'] = link
+            # link = uploadImage(file, key, '')
+            # print(link)
+            newDocument['document_link'] = "link"
             
         with connect() as db:
             data = request.form
@@ -101,17 +101,20 @@ class OwnerDocuments(Resource):
             for field in fields:
                 if data.get(field) is not None:
                     newDocument[field] = data.get(field)
-
+            new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
+            newDocument['document_uid'] = new_doc_id
+            newDocument['document_profile_id'] = owner_id
             
-            sql = f"""UPDATE space.ownerProfileInfo
-                        SET owner_documents = JSON_ARRAY_APPEND(
-                            IFNULL(owner_documents, JSON_ARRAY()),
-                            '$',
-                            "{newDocument}"
-                        )
-                        WHERE owner_uid = \'""" + owner_id + """\';"""
-            print(sql)
-            response = db.execute(sql, cmd='post')
+            # sql = f"""UPDATE space.ownerProfileInfo
+            #             SET owner_documents = JSON_ARRAY_APPEND(
+            #                 IFNULL(owner_documents, JSON_ARRAY()),
+            #                 '$',
+            #                 "{newDocument}"
+            #             )
+            #             WHERE owner_uid = \'""" + owner_id + """\';"""
+            # print(sql)
+            # response = db.execute(sql, cmd='post')
+            response = db.insert('documents', newDocument)
 
         return response
 
