@@ -68,11 +68,4 @@ class QuotesByRequest(Resource):
                 WHERE quote_maintenance_request_id = \'""" + request_id + """\' AND quote_status = 'SENT'
             """
             response = db.execute(query)
-            # response_dict = {}
-            # for item in query_result["result"]:
-            #     group_by_value = item.pop("quote_status")
-            #     if group_by_value in response_dict:
-            #         response_dict[group_by_value].append(item)
-            #     else:
-            #         response_dict[group_by_value] = [item]
             return response
