@@ -40,6 +40,10 @@ class Payments(Resource):
                 , 'payment_date'
                 , 'payment_verify'
                 , 'paid_by'
+                , 'payment_intent'
+                , 'payment_method'
+                , 'payment_date_cleared'
+                , 'payment_client_secret'
             ]
 
             # PUTS JSON DATA INTO EACH FILE
@@ -64,3 +68,38 @@ class Payments(Resource):
             response['Payments_UID'] = newRequestID
 
         return response
+
+
+class PaymentStatus(Resource):
+    # decorators = [jwt_required()]
+
+    def get(self, user_id):
+        print('in PaymentStatus')
+        response = {}
+
+        # print("User ID: ", user_id)
+
+        with connect() as db:
+            # print("in connect loop")
+            paymentStatus = db.execute(""" 
+                    SELECT DISTINCT *
+                    FROM space.pp_details
+                    WHERE pur_payer = \'""" + user_id + """\' AND ISNULL(payment_uid);
+                    """)
+
+            
+            # print("Query: ", paymentStatus)
+            response["PaymentStatus"] = paymentStatus
+
+            paidStatus = db.execute(""" 
+                    SELECT DISTINCT *
+                    FROM space.pp_details
+                    WHERE pur_payer = \'""" + user_id + """\' AND payment_uid != "NULL";
+                    """)
+
+            
+            # print("Query: ", paidStatus)
+            response["PaidStatus"] = paidStatus
+
+
+            return response
