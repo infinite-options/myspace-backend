@@ -28,7 +28,7 @@ from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, Tenant
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
-from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -465,6 +465,7 @@ api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
+api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
