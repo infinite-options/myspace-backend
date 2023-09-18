@@ -19,7 +19,7 @@ from password import Password
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus
+from payments import Payments, PaymentStatus, PaymentMethod
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -28,14 +28,16 @@ from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, Tenant
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
-from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
+    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
-from quotes import QuotesByBusiness, QuotesStatusByBusiness, Quotes
 from status_update import StatusUpdate
+from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -404,6 +406,8 @@ api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
+api.add_resource(MaintenanceStatusByProfile, '/maintenanceStatus/<string:profile_uid>')
+
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 api.add_resource(MaintenanceRequestsByOwner, '/maintenanceRequestsByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
@@ -419,6 +423,7 @@ api.add_resource(Quotes, '/quotes')
 api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 api.add_resource(StatusUpdate, '/statusUpdate')
+api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 api.add_resource(Bills, '/bills')
 api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
@@ -467,6 +472,7 @@ api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
+api.add_resource(PaymentMethod, '/Paymentmethod')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
