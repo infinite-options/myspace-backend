@@ -413,3 +413,16 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
             response["MaintenanceSummary"] = maintenanceQuery
             return response
+
+
+
+class Schedule(Resource):
+    def put(self):
+        response = {}
+        payload = request.get_json()
+        if payload.get('maintenance_request_id') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'maintenance_request_uid': payload.pop('maintenance_request_id')}
+        with connect() as db:
+            response = db.update('maintenanceRequests', key, payload)
+        return response
