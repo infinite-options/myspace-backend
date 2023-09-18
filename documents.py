@@ -10,12 +10,20 @@ import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
+from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
+
 
 
 # OVERVIEW
 #           TENANT      OWNER     PROPERTY MANAGER     
 #              X           X               X
 
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class OwnerDocuments(Resource):
@@ -46,7 +54,69 @@ class OwnerDocuments(Resource):
             # print(items)
             response["Documents"] = documentQuery
             return response
+        
+    def post(self, owner_id):
+        print('in OwnerDocuments')
+        newDocument = {}
+        response = {}
+        data = request.form
 
+        if 'document_file' not in request.files:
+            raise BadRequest("Request failed, no 'document_file' in payload.")
+
+        file = request.files['document_file']
+
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            raise BadRequest("Request failed, no selected file.")
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            
+            #upload to s3
+            # file = request.files.get(filename)
+            # print("File: ", file)
+            
+            key = f'owners/{owner_id}/{filename}'
+            # link = uploadImage(file, key, '')
+            # print(link)
+            newDocument['document_link'] = "link"
+            
+        with connect() as db:
+            data = request.form
+            fields = [
+                # "property_owner_id",
+                'document_type',
+                'document_title',
+                'document_date_created',
+                'document_property',
+                'document_owner',
+                'document_tenant',
+                'document_description'
+            ]
+            # print("Document Type: ", data.get("document_type"))
+            
+            # newDocument['owner_uid']
+            for field in fields:
+                if data.get(field) is not None:
+                    newDocument[field] = data.get(field)
+            new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
+            newDocument['document_uid'] = new_doc_id
+            newDocument['document_profile_id'] = owner_id
+            
+            # sql = f"""UPDATE space.ownerProfileInfo
+            #             SET owner_documents = JSON_ARRAY_APPEND(
+            #                 IFNULL(owner_documents, JSON_ARRAY()),
+            #                 '$',
+            #                 "{newDocument}"
+            #             )
+            #             WHERE owner_uid = \'""" + owner_id + """\';"""
+            # print(sql)
+            # response = db.execute(sql, cmd='post')
+            response = db.insert('documents', newDocument)
+
+        return response
 
 
 class TenantDocuments(Resource):

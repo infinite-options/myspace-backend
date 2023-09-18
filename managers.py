@@ -39,6 +39,7 @@ class SearchManager(Resource):
         #     if filterValue is not None:
         #         where[filter] = filterValue
         where['business_type'] = 'MANAGEMENT'
+        where['business_city'] = request.args.get('city')
         # print(where)
         with connect() as db:
             response = db.select('b_details', where)
