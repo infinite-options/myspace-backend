@@ -19,7 +19,7 @@ from password import Password
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus
+from payments import Payments, PaymentStatus, PaymentMethod
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -466,6 +466,7 @@ api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
+api.add_resource(PaymentMethod, '/Paymentmethod')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
