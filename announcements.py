@@ -7,8 +7,14 @@ from data_pm import connect
 
 class Announcements(Resource):
     def post(self):
-        print('in Announcements')
         payload = request.get_json()
         with connect() as db:
             response = db.insert('announcements', payload)
+        return response
+
+
+class AnnouncementsByUid(Resource):
+    def get(self, announcement_uid):
+        with connect() as db:
+            response = db.select('announcements', {"announcement_uid": announcement_uid})
         return response
