@@ -405,7 +405,74 @@ class MaintenanceStatusByOwnerSimplified(Resource):
             response["MaintenanceSummary"] = maintenanceQuery
             return response
         
+class MaintenanceDashboard(Resource):
+    def post(self):
+        response = {}
 
+        with connect() as db:
+
+            requested = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'REQUESTED'
+                            """)
+            sum_requested = requested["result"][0]["SUM(quote_total_estimate)"]
+
+        with connect() as db:
+
+            accepted = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'ACCEPTED'
+                            """)
+            sum_accepted = accepted["result"][0]["SUM(quote_total_estimate)"]
+        with connect() as db:
+
+            scheduled = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'SCHEDULED'
+                            """)
+            sum_scheduled = scheduled["result"][0]["SUM(quote_total_estimate)"]
+        with connect() as db:
+
+            completed = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'COMPLETED'
+                            """)
+            sum_completed = completed["result"][0]["SUM(quote_total_estimate)"]
+
+        with connect() as db:
+
+            requested = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'REQUESTED'
+                            """)
+            num_requested = requested["result"][0]["COUNT(*)"]
+
+        with connect() as db:
+
+            accepted = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'ACCEPTED'
+                            """)
+            num_accepted = accepted["result"][0]["COUNT(*)"]
+        with connect() as db:
+
+            scheduled = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'SCHEDULED'
+                            """)
+            num_scheduled = scheduled["result"][0]["COUNT(*)"]
+        with connect() as db:
+
+            completed = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'COMPLETED'
+                            """)
+            num_completed = completed["result"][0]["COUNT(*)"]
+
+        json_num = {"Accepted": num_accepted,
+                "Requested": num_requested,
+                "Scheduled": num_scheduled,
+                "Completed": num_completed}
+
+        json_sum = {"Accepted": sum_accepted,
+                    "Requested": sum_requested,
+                    "Scheduled": sum_scheduled,
+                    "Completed": sum_completed}
+
+        return json_sum
+        
 class MaintenanceSummaryAndStatusByOwner(Resource): 
     def get(self, owner_id):
         print('in Maintenance Summary and Status by Owner')

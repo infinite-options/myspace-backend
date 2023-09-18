@@ -30,7 +30,7 @@ from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
-    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -472,6 +472,8 @@ api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
+
+api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
 api.add_resource(PaymentMethod, '/Paymentmethod')
 
 # refresh
