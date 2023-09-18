@@ -36,6 +36,7 @@ from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
+from status_update import StatusUpdate
 from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 
 # from refresh import Refresh
@@ -421,6 +422,7 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 api.add_resource(Quotes, '/quotes')
 api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
+api.add_resource(StatusUpdate, '/statusUpdate')
 api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 api.add_resource(Bills, '/bills')
