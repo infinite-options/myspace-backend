@@ -11,6 +11,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
+from maintenance_mapper import mapMaintenanceStatusByUserType
+
 
 # MAINTENANCE BY STATUS
 #                           TENANT      OWNER     PROPERTY MANAGER     
@@ -342,6 +344,36 @@ class MaintenanceSummaryByOwner(Resource):
             response["MaintenanceSummary"] = maintenanceQuery
             return response
 
+
+class MaintenanceStatusByProfile(Resource):
+    def get(self, profile_uid):
+        print('in MaintenanceStatusByProfile')
+        with connect() as db:
+            query = db.select('user_profiles', {"profile_uid": profile_uid})
+        try:
+            user = query.get('result')[0]
+            business_user_id = user['user_id']
+            user_type = user['user_type']
+        except (IndexError, KeyError) as e:
+            print(e)
+            raise BadRequest("Request failed, no such user_profile record in the database.")
+
+        with connect() as db:
+            response = db.execute("""SELECT business_uid,
+                property_uid, properties.property_address,
+                purchase_uid, purchase_status, purchase_type, 
+                payment_uid, pay_amount, payment_notes, payment_type,
+                maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
+                maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
+                FROM b_details 
+                JOIN properties ON contract_property_id = property_uid
+                JOIN pp_details ON property_uid = pur_property_id
+                JOIN m_details ON property_uid = maintenance_property_id
+                WHERE business_user_id = \'""" + business_user_id + """\'
+                ORDER BY maintenance_request_created_date;""")
+        if response.get('code') == 200 and response.get('result'):
+            return mapMaintenanceStatusByUserType(response, user_type)
+        return response
 
 
 class MaintenanceStatusByOwnerSimplified(Resource): 
