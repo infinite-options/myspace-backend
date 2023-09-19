@@ -19,7 +19,7 @@ from password import Password
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus, PaymentMethod
+from payments import Payments, PaymentStatus, PaymentMethod,RequestPayment
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -463,6 +463,7 @@ api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessC
 
 api.add_resource(Announcements, '/announcements')
 api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
+api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')
 
