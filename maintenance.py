@@ -291,6 +291,12 @@ class MaintenanceRequests(Resource):
 
 
 class MaintenanceQuotes(Resource):
+    def get(self):
+        where = request.args.to_dict()
+        with connect() as db:
+            response = db.select('maintenanceQuotes', where)
+        return response
+
     def post(self):
         print('in MaintenanceQuotes')
         payload = request.get_json()
