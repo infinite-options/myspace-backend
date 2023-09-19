@@ -12,3 +12,10 @@ class Announcements(Resource):
         with connect() as db:
             response = db.insert('announcements', payload)
         return response
+
+
+class AnnouncementsByUserId(Resource):
+    def get(self, user_id):
+        with connect() as db:
+            response = db.select('announcements', {"announcement_sender": user_id})
+        return response
