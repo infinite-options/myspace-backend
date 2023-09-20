@@ -13,8 +13,8 @@ class Announcements(Resource):
         return response
 
 
-class AnnouncementsByUid(Resource):
-    def get(self, announcement_uid):
+class AnnouncementsByUserId(Resource):
+    def get(self, user_id):
         with connect() as db:
-            response = db.select('announcements', {"announcement_uid": announcement_uid})
+            response = db.select('announcements', {"announcement_sender": user_id})
         return response
