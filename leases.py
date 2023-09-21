@@ -40,7 +40,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE lease_status = "ACTIVE"
-                            AND contract_status = "ACTIVE"
+                            -- AND contract_status = "ACTIVE"
                             AND fee_name = "RENT"
                             AND ld_type = "LEASE"
                             AND property_owner_id = \'""" + filter_id + """\';

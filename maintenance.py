@@ -11,6 +11,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
+from maintenance_mapper import mapMaintenanceStatusByUserType
+
 
 # MAINTENANCE BY STATUS
 #                           TENANT      OWNER     PROPERTY MANAGER     
@@ -289,6 +291,12 @@ class MaintenanceRequests(Resource):
 
 
 class MaintenanceQuotes(Resource):
+    def get(self):
+        where = request.args.to_dict()
+        with connect() as db:
+            response = db.select('maintenanceQuotes', where)
+        return response
+
     def post(self):
         print('in MaintenanceQuotes')
         payload = request.get_json()
@@ -343,6 +351,36 @@ class MaintenanceSummaryByOwner(Resource):
             return response
 
 
+class MaintenanceStatusByProfile(Resource):
+    def get(self, profile_uid):
+        print('in MaintenanceStatusByProfile')
+        with connect() as db:
+            query = db.select('user_profiles', {"profile_uid": profile_uid})
+        try:
+            user = query.get('result')[0]
+            business_user_id = user['user_id']
+            user_type = user['user_type']
+        except (IndexError, KeyError) as e:
+            print(e)
+            raise BadRequest("Request failed, no such user_profile record in the database.")
+
+        with connect() as db:
+            response = db.execute("""SELECT business_uid,
+                property_uid, properties.property_address,
+                purchase_uid, purchase_status, purchase_type, 
+                payment_uid, pay_amount, payment_notes, payment_type,
+                maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
+                maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
+                FROM b_details 
+                JOIN properties ON contract_property_id = property_uid
+                JOIN pp_details ON property_uid = pur_property_id
+                JOIN m_details ON property_uid = maintenance_property_id
+                WHERE business_user_id = \'""" + business_user_id + """\'
+                ORDER BY maintenance_request_created_date;""")
+        if response.get('code') == 200 and response.get('result'):
+            return mapMaintenanceStatusByUserType(response, user_type)
+        return response
+
 
 class MaintenanceStatusByOwnerSimplified(Resource): 
     def get(self, owner_id):
@@ -357,7 +395,9 @@ class MaintenanceStatusByOwnerSimplified(Resource):
                     -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH LIMITED DETAILS FOR FLUTTERFLOW
                     SELECT property_owner_id
                         , property_uid, property_address, property_unit -- , property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_created_date, maintenance_request_uid, maintenance_title, maintenance_images, maintenance_request_type, maintenance_request_status
+                        , maintenance_request_uid, maintenance_title
+                        , if (ISNULL(JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))),"", JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))) AS image
+                        , maintenance_request_type, maintenance_request_status, maintenance_request_created_date
                     FROM space.maintenanceRequests 
                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
                     LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
@@ -371,7 +411,74 @@ class MaintenanceStatusByOwnerSimplified(Resource):
             response["MaintenanceSummary"] = maintenanceQuery
             return response
         
+class MaintenanceDashboard(Resource):
+    def post(self):
+        response = {}
 
+        with connect() as db:
+
+            requested = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'REQUESTED'
+                            """)
+            sum_requested = requested["result"][0]["SUM(quote_total_estimate)"]
+
+        with connect() as db:
+
+            accepted = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'ACCEPTED'
+                            """)
+            sum_accepted = accepted["result"][0]["SUM(quote_total_estimate)"]
+        with connect() as db:
+
+            scheduled = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'SCHEDULED'
+                            """)
+            sum_scheduled = scheduled["result"][0]["SUM(quote_total_estimate)"]
+        with connect() as db:
+
+            completed = db.execute(""" 
+                            SELECT SUM(quote_total_estimate) FROM space.maintenanceQuotes WHERE quote_status = 'COMPLETED'
+                            """)
+            sum_completed = completed["result"][0]["SUM(quote_total_estimate)"]
+
+        with connect() as db:
+
+            requested = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'REQUESTED'
+                            """)
+            num_requested = requested["result"][0]["COUNT(*)"]
+
+        with connect() as db:
+
+            accepted = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'ACCEPTED'
+                            """)
+            num_accepted = accepted["result"][0]["COUNT(*)"]
+        with connect() as db:
+
+            scheduled = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'SCHEDULED'
+                            """)
+            num_scheduled = scheduled["result"][0]["COUNT(*)"]
+        with connect() as db:
+
+            completed = db.execute(""" 
+                            SELECT COUNT(*) FROM space.maintenanceQuotes WHERE quote_status = 'COMPLETED'
+                            """)
+            num_completed = completed["result"][0]["COUNT(*)"]
+
+        json_num = {"Accepted": num_accepted,
+                "Requested": num_requested,
+                "Scheduled": num_scheduled,
+                "Completed": num_completed}
+
+        json_sum = {"Accepted": sum_accepted,
+                    "Requested": sum_requested,
+                    "Scheduled": sum_scheduled,
+                    "Completed": sum_completed}
+
+        return json_sum
+        
 class MaintenanceSummaryAndStatusByOwner(Resource): 
     def get(self, owner_id):
         print('in Maintenance Summary and Status by Owner')
@@ -413,16 +520,3 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
             response["MaintenanceSummary"] = maintenanceQuery
             return response
-
-
-
-class Schedule(Resource):
-    def put(self):
-        response = {}
-        payload = request.get_json()
-        if payload.get('maintenance_request_id') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_request_uid': payload.pop('maintenance_request_id')}
-        with connect() as db:
-            response = db.update('maintenanceRequests', key, payload)
-        return response

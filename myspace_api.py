@@ -1,6 +1,8 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-
+from announcements import Announcements, AnnouncementsByUserId
+from profiles import RolesByUserid
+from password import Password
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
@@ -17,21 +19,25 @@
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments
+from payments import Payments, PaymentStatus, PaymentMethod,RequestPayment
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid
+from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, \
+    BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue
-from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, Schedule
-from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
-from contracts import Contracts, ContractsByUid
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
+    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
+from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerContactsManagerDetails, ContactsMaintenanceContactsManagerDetails, ContactsMaintenanceContactsTenantDetails
+from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
 from managers import SearchManager
-from quotes import QuotesByBusiness, QuotesStatusByBusiness
+from status_update import StatusUpdate
+from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -239,14 +245,23 @@ class ownerDashboard(Resource):
 
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
-                    SELECT property_owner.property_owner_id
+                    SELECT o_details.property_owner_id
                         , leases.lease_end
                         , COUNT(lease_end) AS num
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid
-                    LEFT JOIN space.leases ON lease_property_id = property_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                    GROUP BY MONTH(lease_end), YEAR(lease_end);
+                    FROM space.leases
+                    LEFT JOIN space.o_details ON property_id = lease_property_id
+                    LEFT JOIN space.properties ON property_uid = lease_property_id
+                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+                    WHERE lease_status = "ACTIVE"
+                        AND contract_status = "ACTIVE"
+                        AND fee_name = "RENT"
+                        AND ld_type = "LEASE"
+                        AND property_owner_id = \'""" + owner_id + """\'
+                    GROUP BY MONTH(lease_end),
+                            YEAR(lease_end);
                     """)
 
             # print("Query: ", leaseQuery)
@@ -391,6 +406,8 @@ api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
+api.add_resource(MaintenanceStatusByProfile, '/maintenanceStatus/<string:profile_uid>')
+
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 api.add_resource(MaintenanceRequestsByOwner, '/maintenanceRequestsByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
@@ -399,15 +416,17 @@ api.add_resource(MaintenanceStatusByOwner, '/maintenanceStatusByOwner/<string:ow
 api.add_resource(MaintenanceSummaryByOwner, '/maintenanceSummaryByOwner/<string:owner_id>')
 api.add_resource(MaintenanceStatusByOwnerSimplified, '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
 api.add_resource(MaintenanceSummaryAndStatusByOwner, '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
-api.add_resource(Schedule, '/schedule')
 
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+api.add_resource(Quotes, '/quotes')
 api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
+api.add_resource(StatusUpdate, '/statusUpdate')
+api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 api.add_resource(Bills, '/bills')
-api.add_resource(ContractsByUid, '/contracts/<string:contract_uid>')
+api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
@@ -419,13 +438,16 @@ api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
+api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
 api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
+api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
 
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
+api.add_resource(BusinessProfile, '/businessProfile')
 
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
@@ -438,6 +460,14 @@ api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:bu
 api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+api.add_resource(ContactsOwnerContactsManagerDetails, '/contactsOwnerContacts/<string:owner_uid>')
+api.add_resource(ContactsMaintenanceContactsManagerDetails, '/contactsMaintenanceContactsManagerDetails/<string:business_uid>')
+api.add_resource(ContactsMaintenanceContactsTenantDetails, '/contactsMaintenanceContactsTenantDetails/<string:business_uid>')
+
+api.add_resource(Announcements, '/announcements')
+api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
+api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
+api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')
 
@@ -445,6 +475,11 @@ api.add_resource(Account, '/account')
 api.add_resource(TenantDashboard, '/tenantDashboard/<string:tenant_id>')
 
 api.add_resource(SearchManager, '/searchManager')
+
+api.add_resource(Password, '/password')
+
+api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
+api.add_resource(PaymentMethod, '/Paymentmethod')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')

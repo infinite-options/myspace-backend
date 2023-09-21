@@ -39,6 +39,7 @@ class ContactsMaintenance(Resource):
             response["Maintenance_Contacts"] = profileQuery
             return response
         
+        
 
 class ContactsOwnerContactsDetails(Resource):
     # decorators = [jwt_required()]
@@ -214,4 +215,113 @@ class ContactsBusinessContactsMaintenanceDetails(Resource):
             # response["Profile"] = items["result"]
 
             response["Maintenance_Details"] = profileQuery
+            return response
+        
+
+class ContactsOwnerContactsManagerDetails(Resource):
+    # decorators = [jwt_required()]
+
+    def get(self, owner_uid):
+        print('in Get Manager Contacts for Owners')
+        response = {}
+    
+        with connect() as db:
+            print("in connect loop")
+            profileQuery = db.execute(f"""
+                SELECT
+                b.business_uid AS contact_uid,
+                'Manager' AS contact_type,
+                b.business_name AS contact_first_name,
+                'Management' AS contact_last_name,
+                b.business_phone_number AS contact_phone_number,
+                b.business_email AS contact_email,
+                b.business_address AS contact_address,
+                b.business_city AS contact_city,
+                b.business_state AS contact_state,
+                b.business_zip AS contact_zip,
+                COUNT(p.property_uid) AS property_count,
+                GROUP_CONCAT(p.property_address) AS property_addresses
+                FROM
+                    space.b_details AS b
+                LEFT JOIN
+                    space.o_details AS o ON b.contract_property_id = o.property_id
+                LEFT JOIN
+                    space.properties AS p ON o.property_id = p.property_uid
+                WHERE
+                    o.property_owner_id = '{owner_uid}' AND contract_status = 'ACTIVE'
+                GROUP BY
+                    b.business_uid;
+            """)
+            response["Owner_Contacts"] = profileQuery
+            return response
+        
+
+
+class ContactsMaintenanceContactsManagerDetails(Resource):
+    # decorators = [jwt_required()]
+
+    def get(self, business_uid):
+        print('in Get Tenant Contacts for Maintenance')
+        response = {}
+    
+        with connect() as db:
+            print("in connect loop")
+            profileQuery = db.execute(f"""
+                SELECT 
+                    business_uid as contact_uid,
+                    "Property Manager" as contact_type,
+                    business_name as contact_first_name,
+                    "Management" as contact_last_name,
+                    business_phone_number as contact_phone_number,
+                    business_email as contact_email,
+                    business_address as contact_address,
+                    business_city as contact_city,
+                    business_state as contact_state,
+                    business_zip as contact_zip 
+                FROM 
+                    space.m_details as m
+                INNER JOIN 
+                    space.b_details as b ON m.maintenance_property_id = b.contract_property_id
+                WHERE 
+	                quote_business_id = '{business_uid}'
+                GROUP BY 
+                    business_uid;
+                
+            """)
+            response["Maintenance_Contacts_Managers"] = profileQuery
+            return response
+
+class ContactsMaintenanceContactsTenantDetails(Resource):
+    # decorators = [jwt_required()]
+
+    def get(self, business_uid):
+        print('in Get Tenant Contacts for Maintenance')
+        response = {}
+    
+        with connect() as db:
+            print("in connect loop")
+            profileQuery = db.execute(f"""
+                SELECT
+                    tenant_uid as contact_uid,
+                    "Active Tenant" as contact_type,
+                    tenant_first_name as contact_first_name,
+                    tenant_last_name as contact_last_name,
+                    tenant_phone_number as contact_phone_number,
+                    tenant_email as contact_email,
+                    tenant_address as contact_address,
+                    tenant_city as contact_city,
+                    tenant_state as contact_state,
+                    tenant_zip as contact_zip 
+                FROM 
+                    space.t_details as t 
+                INNER JOIN 
+                    space.leases as l ON t.lt_lease_id = l.lease_uid
+                INNER JOIN
+                    space.m_details as m ON l.lease_property_id = m.maintenance_property_id
+                WHERE 
+                    lease_status = 'ACTIVE' AND quote_business_id = '{business_uid}'
+                GROUP BY 
+                    tenant_uid;       
+            """)
+            response["Maintenance_Contacts_Tenants"] = profileQuery
             return response
