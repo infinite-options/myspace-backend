@@ -31,7 +31,7 @@ from purchases import Bills, AddExpense, AddRevenue
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
-from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails
+from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
@@ -460,6 +460,9 @@ api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:bu
 api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+api.add_resource(ContactsOwnerManagerDetails, '/contactsOwnerManagerDetails/<string:owner_uid>')
+api.add_resource(ContactsMaintenanceManagerDetails, '/contactsMaintenanceManagerDetails/<string:business_uid>')
+api.add_resource(ContactsMaintenanceTenantDetails, '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
