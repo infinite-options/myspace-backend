@@ -381,15 +381,19 @@ class MaintenanceSummaryByOwner(Resource):
 #             return mapMaintenanceStatusByUserType(response, user_type)
 #         return response
 
-class MaintenanceStatusByProfile(Resource):
-    def get(self, profile_uid):
-        print('in MaintenanceStatusByProfile')
-        print(profile_uid)
+class MaintenanceStatus(Resource):
+    def get(self):
+        print('in MaintenanceStatus')
+        request_params = request.args.to_dict()
+        profile_uid = request_params.get('profile_uid')
+        business_uid = request_params.get('business_uid')
+        if not profile_uid or not business_uid:
+            raise BadRequest("Request failed, required parameters: profile_uid, business_uid.")
+
         with connect() as db:
             query = db.select('user_profiles', {"profile_uid": profile_uid})
         try:
             user = query.get('result')[0]
-            business_user_id = user['user_id']
             user_type = user['user_type']
         except (IndexError, KeyError) as e:
             print(e)
@@ -419,10 +423,9 @@ class MaintenanceStatusByProfile(Resource):
                                 -- LEFT JOIN space.properties ON maintenance_property_id = property_uid
                                 LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
                                 LEFT JOIN space.pp_details ON pur_bill_id = bill_uid
-                                WHERE quote_business_id = \'""" + profile_uid + """\' AND  quote_business_id IS NOT NULL
+                                WHERE quote_business_id = \'""" + business_uid + """\' AND  quote_business_id IS NOT NULL
                                 ORDER BY maintenance_request_created_date;
                                   """)
-
 
         if response.get('code') == 200 and response.get('result'):
             return mapMaintenanceStatusByUserType(response, user_type)
