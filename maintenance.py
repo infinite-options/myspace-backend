@@ -175,7 +175,7 @@ class MaintenanceStatusByOwner(Resource):
             return property_dict
         
 
-class MaintenanceRequestsByOwner(Resource): 
+class MaintenanceRequestsByOwner(Resource):
     def get(self, owner_id):
         print('in New Owner Maintenance Dashboard')
         response = {}
@@ -201,9 +201,20 @@ class MaintenanceRequestsByOwner(Resource):
                     ORDER BY maintenance_request_status;
                     """)
 
-            # print("Query: ", maintenanceQuery)  # This is a list
-            # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
             response["MaintenanceProjects"] = maintenanceQuery
+
+            maintenanceNum = db.execute(""" 
+                                -- MAINTENANCE STATUS BY USER
+                                SELECT property_owner.property_owner_id
+                                    , maintenanceRequests.maintenance_request_status
+                                    , COUNT(maintenanceRequests.maintenance_request_status) AS num
+                                FROM space.properties
+                                LEFT JOIN space.property_owner ON property_id = property_uid
+                                LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+                                WHERE property_owner_id = \'""" + owner_id + """\'
+                                GROUP BY maintenance_request_status;
+                                """)
+            response["MaintenanceNum"] = maintenanceNum
             return response
 
 
