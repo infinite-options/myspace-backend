@@ -1,3 +1,4 @@
+import datetime
 
 from flask import request
 from flask_restful import Resource
@@ -7,7 +8,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from data_pm import connect, uploadImage, s3
 import boto3
 import json
-from datetime import date, datetime, timedelta
+# from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
 
@@ -293,7 +294,7 @@ class AddExpense(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = date.today()
+            newRequest['pur_timestamp'] = datetime.date.today()
 
             # print(newRequest)
 
@@ -342,11 +343,69 @@ class AddRevenue(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = date.today()
+            newRequest['pur_timestamp'] = datetime.date.today()
 
             # print(newRequest)
 
             response = db.insert('purchases', newRequest)
             response['Purchases_UID'] = newRequestID
+
+        return response
+
+class RentPurchase(Resource):
+    def post(self):
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+
+            newRequest = {}
+
+            # # GET NEW UID
+            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequest['purchase_uid'] = newRequestID
+
+
+
+            newRequest['pur_timestamp'] = datetime.date.today()
+            newRequest['pur_property_id'] = data.get("property_id")
+            newRequest['purchase_type'] = "RENT"
+            newRequest['pur_cf_type'] = "REVENUE"
+            dt = datetime.datetime(2023,9,21)
+            newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+            newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+
+            #get the rent amount
+            rent_amt_st = db.select('properties',
+                                          {'property_uid': data.get("property_id")})
+            rent_amt = rent_amt_st.get('result')[0]['property_listed_rent']
+            newRequest['pur_amount_due'] = rent_amt
+            newRequest['purchase_status'] = "UNPAID"
+            newRequest['pur_notes'] = "RENT FOR NEXT MONTH"
+            newRequest['pur_description'] = "RENT FOR NEXT MONTH"
+
+            #get property owner id
+            owner_id_st = db.select('property_owner',
+                                    {'property_id': data.get("property_id")})
+            owner_id = owner_id_st.get('result')[0]['property_owner_id']
+            newRequest['pur_receiver'] = owner_id
+
+            #get property manager id
+            manager_id_st = db.select('b_details',
+                                    {'contract_property_id': data.get("property_id"),
+                                     'business_type':"MANAGEMENT"})
+            manager_id = manager_id_st.get('result')[0]['business_user_id']
+            newRequest['pur_initiator'] = manager_id
+
+            #get the tenant id
+            lease_id_st = db.select('leases',
+                                      {'lease_property_id': data.get("property_id")})
+            lease_id = lease_id_st.get('result')[0]['lease_uid']
+            tenant_id_st = db.select('lease_tenant',
+                                      {'lt_lease_id': lease_id})
+            tenant_id = tenant_id_st.get('result')[0]['lt_tenant_id']
+            newRequest['pur_payer'] = tenant_id
+
+
+            response = db.insert('purchases', newRequest)
 
         return response

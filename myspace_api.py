@@ -27,7 +27,7 @@ from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, Tenant
     BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
-from purchases import Bills, AddExpense, AddRevenue
+from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
@@ -465,6 +465,7 @@ api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
+api.add_resource(RentPurchase, '/rentPurchase')
 
 api.add_resource(List, '/lists')
 
