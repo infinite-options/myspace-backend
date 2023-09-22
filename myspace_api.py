@@ -30,7 +30,7 @@ from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
-    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatus, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -406,7 +406,7 @@ api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
-api.add_resource(MaintenanceStatusByProfile, '/maintenanceStatus/<string:profile_uid>')
+api.add_resource(MaintenanceStatus, '/maintenanceStatus')
 
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 api.add_resource(MaintenanceRequestsByOwner, '/maintenanceRequestsByOwner/<string:owner_id>')
