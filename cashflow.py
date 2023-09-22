@@ -276,7 +276,7 @@ class CashflowByOwner(Resource):
                         AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND pur_cf_type = 'revenue'
-                        GROUP BY property_address, property_unit, cf_month
+                        GROUP BY property_address, property_unit, cf_month, , cf_year
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
                     """)
                 
@@ -298,7 +298,7 @@ class CashflowByOwner(Resource):
                         AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND pur_cf_type = 'revenue'
-                        GROUP BY property_address, property_unit, cf_month,  purchase_type
+                        GROUP BY property_address, property_unit, cf_month, cf_year, purchase_type
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
                     """)
                 

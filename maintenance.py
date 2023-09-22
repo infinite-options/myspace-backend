@@ -351,9 +351,40 @@ class MaintenanceSummaryByOwner(Resource):
             return response
 
 
+# class MaintenanceStatusByProfile(Resource):
+#     def get(self, profile_uid):
+#         print('in MaintenanceStatusByProfile')
+#         with connect() as db:
+#             query = db.select('user_profiles', {"profile_uid": profile_uid})
+#         try:
+#             user = query.get('result')[0]
+#             business_user_id = user['user_id']
+#             user_type = user['user_type']
+#         except (IndexError, KeyError) as e:
+#             print(e)
+#             raise BadRequest("Request failed, no such user_profile record in the database.")
+
+#         with connect() as db:
+#             response = db.execute("""SELECT business_uid,
+#                 property_uid, properties.property_address,
+#                 purchase_uid, purchase_status, purchase_type, 
+#                 payment_uid, pay_amount, payment_notes, payment_type,
+#                 maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
+#                 maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
+#                 FROM b_details 
+#                 JOIN properties ON contract_property_id = property_uid
+#                 JOIN pp_details ON property_uid = pur_property_id
+#                 JOIN m_details ON property_uid = maintenance_property_id
+#                 WHERE business_user_id = \'""" + business_user_id + """\'
+#                 ORDER BY maintenance_request_created_date;""")
+#         if response.get('code') == 200 and response.get('result'):
+#             return mapMaintenanceStatusByUserType(response, user_type)
+#         return response
+
 class MaintenanceStatusByProfile(Resource):
     def get(self, profile_uid):
         print('in MaintenanceStatusByProfile')
+        print(profile_uid)
         with connect() as db:
             query = db.select('user_profiles', {"profile_uid": profile_uid})
         try:
@@ -365,18 +396,34 @@ class MaintenanceStatusByProfile(Resource):
             raise BadRequest("Request failed, no such user_profile record in the database.")
 
         with connect() as db:
-            response = db.execute("""SELECT business_uid,
-                property_uid, properties.property_address,
-                purchase_uid, purchase_status, purchase_type, 
-                payment_uid, pay_amount, payment_notes, payment_type,
-                maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
-                maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
-                FROM b_details 
-                JOIN properties ON contract_property_id = property_uid
-                JOIN pp_details ON property_uid = pur_property_id
-                JOIN m_details ON property_uid = maintenance_property_id
-                WHERE business_user_id = \'""" + business_user_id + """\'
-                ORDER BY maintenance_request_created_date;""")
+            response = db.execute("""
+                                  SELECT -- *
+                                    maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
+                                    , maintenance_assigned_business, maintenance_assigned_worker
+                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                                    , maintenance_callback_number, maintenance_estimated_cost
+                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    -- , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
+                                    , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                    , cf_month, cf_year
+                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                                    , property_address, property_unit, property_city, property_state, property_zip, property_type, property_images, property_description, property_notes
+                                    , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_address, owner_unit, owner_city, owner_state, owner_zip
+                                    , contract_start_date, contract_end_date, contract_status, business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
+                                    , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                                FROM space.m_details 
+                                -- LEFT JOIN space.properties ON maintenance_property_id = property_uid
+                                LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                                LEFT JOIN space.pp_details ON pur_bill_id = bill_uid
+                                WHERE quote_business_id = \'""" + profile_uid + """\' AND  quote_business_id IS NOT NULL
+                                ORDER BY maintenance_request_created_date;
+                                  """)
+
+
         if response.get('code') == 200 and response.get('result'):
             return mapMaintenanceStatusByUserType(response, user_type)
         return response
