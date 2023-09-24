@@ -370,19 +370,31 @@ class RentPurchase(Resource):
             newRequest['pur_property_id'] = data.get("property_id")
             newRequest['purchase_type'] = "RENT"
             newRequest['pur_cf_type'] = "REVENUE"
-            dt = datetime.datetime(2023,9,21)
-            newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
-            newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+            dt = datetime.datetime.now()
+            month = dt.month
+            year = dt.year
+
 
             #get the rent amount
-            rent_amt_st = db.select('properties',
-                                          {'property_uid': data.get("property_id")})
-            rent_amt = rent_amt_st.get('result')[0]['property_listed_rent']
+            lease_bill_st = db.select('leases',
+                                          {'lease_property_id': data.get("property_id")})
+            lease_bill_id = lease_bill_st.get('result')[0]['lease_uid']
+            lease_fees_st = db.select('leaseFees',
+                                          {'fees_lease_id': lease_bill_id, "fee_name":"Rent"})
+            rent_amt = lease_fees_st.get('result')[0]['charge']
+            due_by = lease_fees_st.get('result')[0]['due_by']
+
+            if due_by != 1:
+                newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32+due_by)).replace(day=1)
+                newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32+due_by)).replace(day=1)
+            else:
+                newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+                newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+
             newRequest['pur_amount_due'] = rent_amt
             newRequest['purchase_status'] = "UNPAID"
-            newRequest['pur_notes'] = "RENT FOR NEXT MONTH"
-            newRequest['pur_description'] = "RENT FOR NEXT MONTH"
-
+            newRequest['pur_notes'] = f"RENT FOR {month} {year}"
+            newRequest['pur_description'] = f"RENT FOR {month} {year}"
             #get property owner id
             owner_id_st = db.select('property_owner',
                                     {'property_id': data.get("property_id")})
@@ -393,7 +405,7 @@ class RentPurchase(Resource):
             manager_id_st = db.select('b_details',
                                     {'contract_property_id': data.get("property_id"),
                                      'business_type':"MANAGEMENT"})
-            manager_id = manager_id_st.get('result')[0]['business_user_id']
+            manager_id = manager_id_st.get('result')[0]['business_uid']
             newRequest['pur_initiator'] = manager_id
 
             #get the tenant id
@@ -405,7 +417,12 @@ class RentPurchase(Resource):
             tenant_id = tenant_id_st.get('result')[0]['lt_tenant_id']
             newRequest['pur_payer'] = tenant_id
 
-
-            response = db.insert('purchases', newRequest)
+            # checking if record is already present in the database
+            get_rec_st = db.select('purchases',
+                                      {'pur_property_id': data.get("property_id"), 'pur_notes': f"RENT FOR {month} {year}"})
+            if (len(get_rec_st.get('result'))) == 0:
+                response = db.insert('purchases', newRequest)
+            else:
+                raise ValueError("Record already present for this month")
 
         return response
