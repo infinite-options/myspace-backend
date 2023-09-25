@@ -11,7 +11,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
-from maintenance_mapper import mapMaintenanceStatusByUserType
+from maintenance_mapper import mapMaintenanceStatusByUserType, mapMaintenanceStatusForOwner, \
+    mapMaintenanceStatusForTenant, mapMaintenanceStatusForMaintenancePerson, mapMaintenanceStatusForPropertyManager
 
 
 # MAINTENANCE BY STATUS
@@ -567,3 +568,156 @@ class MaintenanceSummaryAndStatusByOwner(Resource):
             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
             response["MaintenanceSummary"] = maintenanceQuery
             return response
+
+
+class MaintenanceStatusForOwner(Resource):
+    def get(self):
+        print('in MaintenanceStatusForOwner')
+        request_params = request.args.to_dict()
+        owner_uid = request_params.get('owner_uid')
+        if owner_uid is None:
+            raise BadRequest("Request failed, required parameter: owner_uid")
+
+        with connect() as db:
+            response = db.execute("""
+                                    SELECT o.owner_uid, property_id, o.owner_user_id, o.owner_first_name, o.owner_last_name, o.owner_phone_number, o.owner_email, o.owner_address, o.owner_unit, o.owner_city, o.owner_state, o.owner_zip
+                                    maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
+                                    , maintenance_assigned_business, maintenance_assigned_worker
+                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                                    , maintenance_callback_number, maintenance_estimated_cost
+                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    -- bill_uid,
+                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                    , cf_month, cf_year
+                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                                    , property_address, property_unit, property_city, property_state, property_zip, property_type, property_images, property_description, property_notes
+                                    , contract_start_date, contract_end_date, contract_status, business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
+                                    , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                                    FROM o_details AS o
+                                    JOIN m_details ON maintenance_property_id = property_id
+                                    -- LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                                    JOIN pp_details ON o.owner_uid = pp_details.owner_uid
+                                    WHERE o.owner_uid = \'""" + owner_uid + """\'
+                                    AND maintenance_quote_uid IS NOT NULL
+                                    GROUP BY maintenance_quote_uid
+                                    ORDER BY maintenance_request_created_date;""")
+
+        if response.get('code') == 200:
+            return mapMaintenanceStatusForOwner(response)
+        return response
+
+
+class MaintenanceStatusForTenant(Resource):
+    def get(self):
+        print('in MaintenanceStatusForTenant')
+        request_params = request.args.to_dict()
+        tenant_uid = request_params.get('tenant_uid')
+        if tenant_uid is None:
+            raise BadRequest("Request failed, required parameter: tenant_uid")
+
+        with connect() as db:
+            response = db.execute("""-- TENANT (param: tenant_uid)
+                                    SELECT p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
+                                    , p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type, p.property_images, p.property_description, p.property_notes
+                                    , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
+                                    , maintenance_assigned_business, maintenance_assigned_worker
+                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                                    , maintenance_callback_number, maintenance_estimated_cost
+                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    , bill_uid
+                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                    , cf_month, cf_year
+                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                                    , pp.contract_start_date, pp.contract_end_date, pp.contract_status, pp.business_name, pp.business_phone_number, pp.business_email, pp.business_services_fees, pp.business_locations, pp.business_address, pp.business_unit, pp.business_city, pp.business_state, pp.business_zip
+                                    FROM p_details AS p
+                                    JOIN m_details ON property_uid = maintenance_property_id 
+                                    LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                                    LEFT JOIN pp_details AS pp ON bill_uid = pur_bill_id
+                                    WHERE tenant_uid = \'""" + tenant_uid + """\'
+                                    ORDER BY maintenance_request_created_date;""")
+
+        if response.get('code') == 200:
+            return mapMaintenanceStatusForTenant(response)
+        return response
+
+
+class MaintenanceStatusForPropertyManager(Resource):
+    def get(self):
+        print('in MaintenanceStatusForPropertyManager')
+        request_params = request.args.to_dict()
+        business_uid = request_params.get('business_uid')
+        if business_uid is None:
+            raise BadRequest("Request failed, required parameter: business_uid")
+
+        with connect() as db:
+            response = db.execute("""-- PROPERTY MANAGER (param: business_uid)
+                                    SELECT business_uid, b.business_user_id, b.business_name, b.business_phone_number, b.business_email
+                                    maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
+                                    , maintenance_assigned_business, maintenance_assigned_worker
+                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                                    , maintenance_callback_number, maintenance_estimated_cost
+                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    , bill_uid
+                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                    , cf_month, cf_year
+                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                                    , pp.contract_start_date, pp.contract_end_date, pp.contract_status, pp.business_name, pp.business_phone_number, pp.business_email, pp.business_services_fees, pp.business_locations, pp.business_address, pp.business_unit, pp.business_city, pp.business_state, pp.business_zip
+                                    FROM b_details AS b
+                                    JOIN m_details ON business_uid = quote_business_id
+                                    LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                                    LEFT JOIN pp_details AS pp ON bill_uid = pur_bill_id
+                                    WHERE business_uid = \'""" + business_uid + """\'
+                                    ORDER BY maintenance_request_created_date;""")
+
+        if response.get('code') == 200:
+            return mapMaintenanceStatusForPropertyManager(response)
+        return response
+
+
+class MaintenanceStatusForMaintenancePerson(Resource):
+    def get(self):
+        print('in MaintenanceStatusForMaintenancePerson')
+        request_params = request.args.to_dict()
+        business_uid = request_params.get('business_uid')
+        if business_uid is None:
+            raise BadRequest("Request failed, required parameter: business_uid")
+
+        with connect() as db:
+            response = db.execute("""
+                                  SELECT -- *
+                                    maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
+                                    , maintenance_assigned_business, maintenance_assigned_worker
+                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+                                    , maintenance_callback_number, maintenance_estimated_cost
+                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    -- , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
+                                    , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                    , cf_month, cf_year
+                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                                    , property_address, property_unit, property_city, property_state, property_zip, property_type, property_images, property_description, property_notes
+                                    , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_address, owner_unit, owner_city, owner_state, owner_zip
+                                    , contract_start_date, contract_end_date, contract_status, business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
+                                    , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                                FROM space.m_details 
+                                -- LEFT JOIN space.properties ON maintenance_property_id = property_uid
+                                LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                                LEFT JOIN space.pp_details ON pur_bill_id = bill_uid
+                                WHERE quote_business_id = \'""" + business_uid + """\' AND  quote_business_id IS NOT NULL
+                                ORDER BY maintenance_request_created_date;""")
+
+        if response.get('code') == 200:
+            return mapMaintenanceStatusForMaintenancePerson(response)
+        return response
