@@ -11,7 +11,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
-from maintenance_mapper import mapMaintenanceStatusByUserType
+from maintenance_mapper import mapMaintenanceStatusByUserType, mapMaintenanceStatusForOwner, \
+    mapMaintenanceStatusForPropertyManager, mapMaintenanceStatusForMaintenancePerson, mapMaintenanceStatusForTenant
 
 
 # MAINTENANCE BY STATUS
@@ -622,8 +623,12 @@ class MaintenanceStatus(Resource):
                         -- WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'
                         -- WHERE quote_business_id = \'""" + uid + """\'
+                        ORDER BY maintenance_request_created_date;
                         """)
-            
+
+            if maintenanceStatus.get('code') == 200:
+                return mapMaintenanceStatusForOwner(maintenanceStatus)
+
             response["MaintenanceStatus"] = maintenanceStatus
             return response
         
@@ -685,8 +690,12 @@ class MaintenanceStatus(Resource):
                             WHERE business_uid = \'""" + uid + """\'
                             -- WHERE tenant_uid = \'""" + uid + """\'
                             -- WHERE quote_business_id = \'""" + uid + """\'
+                            ORDER BY maintenance_request_created_date;
                             """)
-                
+
+                if maintenanceStatus.get('code') == 200:
+                    return mapMaintenanceStatusForPropertyManager(maintenanceStatus)
+
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
             
@@ -724,8 +733,12 @@ class MaintenanceStatus(Resource):
                             -- WHERE business_uid = \'""" + uid + """\'
                             -- WHERE tenant_uid = \'""" + uid + """\'
                             WHERE quote_business_id = \'""" + uid + """\'
+                            ORDER BY maintenance_request_created_date;
                             """)
-                
+
+                if maintenanceStatus.get('code') == 200:
+                    return mapMaintenanceStatusForMaintenancePerson(maintenanceStatus)
+
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
             
@@ -769,8 +782,12 @@ class MaintenanceStatus(Resource):
                         -- WHERE business_uid = \'""" + uid + """\'
                         WHERE tenant_uid = \'""" + uid + """\'
                         -- WHERE quote_business_id = \'""" + uid + """\'
+                        ORDER BY maintenance_request_created_date;
                         """)
-            
+
+            if maintenanceStatus.get('code') == 200:
+                return mapMaintenanceStatusForTenant(maintenanceStatus)
+
             response["MaintenanceStatus"] = maintenanceStatus
             return response
 
