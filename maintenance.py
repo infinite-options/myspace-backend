@@ -598,7 +598,7 @@ class MaintenanceStatus(Resource):
                         SELECT -- * -- bill_property_id,  maintenance_property_id,
                             maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority
                             , maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                            , maintenance_callback_number, maintenance_estimated_cost
+                            , maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                             , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id
                             , quote_services_expenses -- WHERE DOES THIS COME FROM
                             -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
@@ -668,7 +668,7 @@ class MaintenanceStatus(Resource):
                             SELECT -- * -- bill_property_id,  maintenance_property_id,
                                 maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority
                                 , maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                                , maintenance_callback_number, maintenance_estimated_cost
+                                , maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                 , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id
                                 , quote_services_expenses -- WHERE DOES THIS COME FROM
                                 -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
@@ -714,7 +714,7 @@ class MaintenanceStatus(Resource):
                             SELECT -- * -- bill_property_id,  maintenance_property_id,
                                 maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority
                                 , maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                                , maintenance_callback_number, maintenance_estimated_cost
+                                , maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                 , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id
                                 , quote_services_expenses -- WHERE DOES THIS COME FROM
                                 -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
@@ -766,7 +766,7 @@ class MaintenanceStatus(Resource):
                         SELECT -- * -- bill_property_id,  maintenance_property_id,
                             maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority
                             , maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                            , maintenance_callback_number, maintenance_estimated_cost
+                            , maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                             , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id
                             , quote_services_expenses -- WHERE DOES THIS COME FROM
                             -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
