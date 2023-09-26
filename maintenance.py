@@ -204,18 +204,18 @@ class MaintenanceRequestsByOwner(Resource):
 
             response["MaintenanceProjects"] = maintenanceQuery
 
-            maintenanceNum = db.execute(""" 
+            maintenanceCount = db.execute(""" 
                                 -- MAINTENANCE STATUS BY USER
                                 SELECT property_owner.property_owner_id
                                     , maintenanceRequests.maintenance_request_status
-                                    , COUNT(maintenanceRequests.maintenance_request_status) AS num
+                                    , COUNT(maintenanceRequests.maintenance_request_status) AS count
                                 FROM space.properties
                                 LEFT JOIN space.property_owner ON property_id = property_uid
                                 LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
                                 WHERE property_owner_id = \'""" + owner_id + """\'
                                 GROUP BY maintenance_request_status;
                                 """)
-            response["MaintenanceNum"] = maintenanceNum
+            response["MaintenanceCount"] = maintenanceCount
             return response
 
 
