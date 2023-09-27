@@ -72,6 +72,7 @@ class QuotesByRequest(Resource):
             return response
 
 
+# TODO: Move (post) to /maintenanceQuotes after UI routing changes
 class Quotes(Resource): 
     def post(self):
         response = []

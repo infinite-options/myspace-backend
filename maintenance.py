@@ -318,12 +318,13 @@ class MaintenanceQuotes(Resource):
 
     def put(self):
         print('in MaintenanceQuotes')
-        payload = request.get_json()
+        payload = request.form
         if payload.get('maintenance_quote_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_quote_uid': payload.pop('maintenance_quote_uid')}
+        key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
+        quote = {k: v for k, v in payload.items()}
         with connect() as db:
-            response = db.update('maintenanceQuotes', key, payload)
+            response = db.update('maintenanceQuotes', key, quote)
         return response
 
 
