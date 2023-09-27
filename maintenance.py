@@ -605,7 +605,7 @@ class MaintenanceStatus(Resource):
                             , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
                             , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                             -- Properties
-                            , property_address
+                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                             , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                             , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
@@ -675,7 +675,7 @@ class MaintenanceStatus(Resource):
                                 , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
                                 , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                 -- Properties
-                                , property_address
+                                , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                                 , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                                 , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
@@ -721,7 +721,7 @@ class MaintenanceStatus(Resource):
                                 , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
                                 , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                 -- Properties
-                                , property_address
+                                , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                                 , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                                 , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
@@ -773,7 +773,7 @@ class MaintenanceStatus(Resource):
                             , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
                             , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                             -- Properties
-                            , property_address
+                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                             , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                             , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
