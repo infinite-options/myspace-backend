@@ -261,7 +261,7 @@ class CashflowByOwner(Resource):
                 # print("Query: ", response_revenue_by_year)
                 response["response_revenue_by_year"] = response_revenue_by_year
 
-
+                # print("In Cashflow TTM 1")
 
 
                 response_revenue_by_month = db.execute("""
@@ -276,14 +276,14 @@ class CashflowByOwner(Resource):
                         AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND pur_cf_type = 'revenue'
-                        GROUP BY property_address, property_unit, cf_month, , cf_year
+                        GROUP BY property_address, property_unit, cf_month, cf_year
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
                     """)
                 
                 # print("Query: ", response_revenue_by_month)
                 response["response_revenue_by_month"] = response_revenue_by_month
 
-
+                # print("In Cashflow TTM 2")
 
 
                 response_revenue_by_month_by_type = db.execute("""
@@ -305,7 +305,7 @@ class CashflowByOwner(Resource):
                 # print("Query: ", response_revenue_by_month_by_type)
                 response["response_revenue_by_month_by_type"] = response_revenue_by_month_by_type
 
-
+                # print("In Cashflow TTM 3")
 
 
 
@@ -328,7 +328,7 @@ class CashflowByOwner(Resource):
                 response["response_revenue"] = response_revenue
 
 
-
+                # print("In Cashflow TTM 4")
 
 
                 # # EXPENSES
@@ -351,7 +351,7 @@ class CashflowByOwner(Resource):
                 # print("Query: ", response_expense_by_year)
                 response["response_expense_by_year"] = response_expense_by_year
 
-
+                # print("In Cashflow TTM 5")
 
 
                 response_expense_by_month = db.execute("""
@@ -374,6 +374,7 @@ class CashflowByOwner(Resource):
                 response["response_expense_by_month"] = response_expense_by_month
 
 
+                # print("In Cashflow TTM 6")
 
 
                 response_expense_by_month_by_type = db.execute("""
@@ -396,7 +397,7 @@ class CashflowByOwner(Resource):
                 response["response_expense_by_month_by_type"] = response_expense_by_month_by_type
 
 
-
+                # print("In Cashflow TTM 7")
 
 
                 response_expense = db.execute("""
@@ -418,6 +419,9 @@ class CashflowByOwner(Resource):
                 response["response_expense"] = response_expense
 
 
+                # print("In Cashflow TTM 8")
+
+
                 # OTHER
                 response_other = db.execute("""
                     -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
@@ -436,6 +440,8 @@ class CashflowByOwner(Resource):
                 
                 # print("Query: ", response_other)
                 response["response_other"] = response_other
+
+                # print("In Cashflow TTM 9")
 
                 # print(response)
                 return response
