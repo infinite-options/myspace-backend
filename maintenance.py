@@ -437,22 +437,30 @@ class MaintenanceQuotes(Resource):
         if payload.get('maintenance_quote_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
+        print("Key: ", key)
         quote = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", quote)
         images = []
         i = 0
+        
         while True:
             filename = f'img_{i}'
+            print("Filename: ", filename)
             file = request.files.get(filename)
+            print("File: ", file)
             if file:
-                key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
-                image = uploadImage(file, key, '')
+                S3key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                print("S3 Key: ", S3key)
+                image = uploadImage(file, S3key, '')
                 images.append(image)
             else:
                 break
             i += 1
+        print("Images: ",images)    
         quote["quote_maintenance_images"] = json.dumps(images)
 
         with connect() as db:
+            print("In actual PUT")
             response = db.update('maintenanceQuotes', key, quote)
         return response
 
