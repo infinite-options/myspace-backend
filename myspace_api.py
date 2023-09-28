@@ -29,7 +29,7 @@ from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
-    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
+    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
@@ -410,6 +410,7 @@ api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 api.add_resource(MaintenanceStatusByProfile,
                  '/maintenanceStatus/<string:profile_uid>')
 
+api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 api.add_resource(MaintenanceRequestsByOwner,
                  '/maintenanceRequestsByOwner/<string:owner_id>')
