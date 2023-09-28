@@ -19,7 +19,7 @@ from password import Password
 # from dashboard import ownerDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus, PaymentMethod,RequestPayment
+from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -50,7 +50,7 @@ from datetime import datetime as dt
 from datetime import timezone as dtz
 import time
 from datetime import datetime, date, timedelta
-from pytz import timezone as ptz  #Not sure what the difference is
+from pytz import timezone as ptz  # Not sure what the difference is
 
 import stripe
 
@@ -90,9 +90,7 @@ import requests
 
 # OTHER IMPORTS NOT IN NITYA
 from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
-from googleapiclient.discovery import build
 # from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 from urllib.parse import urlparse
 import urllib.request
 import base64
@@ -112,7 +110,6 @@ import re
 # from env_keys import BING_API_KEY, RDS_PW
 
 
-
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 s3 = boto3.client('s3')
 
@@ -124,12 +121,9 @@ CORS(app)
 app.config['DEBUG'] = True
 
 
-
-
-
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 # EMAIL INFO
-#app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_SERVER'] = 'smtp.mydomain.com'
 app.config['MAIL_PORT'] = 465
 
@@ -158,6 +152,8 @@ utc = pytz.utc
 # def getNow(): return datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S")
 
 # These statment return Day and Time in Local Time - Not sure about PST vs PDT
+
+
 def getToday(): return datetime.strftime(datetime.now(), "%Y-%m-%d")
 def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
@@ -179,13 +175,15 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 
 
+# STRIPE KEYS
 
+stripe_public_test_key = os.getenv("stripe_public_test_key")
+stripe_secret_test_key = os.getenv("stripe_secret_test_key")
 
+stripe_public_live_key = os.getenv("stripe_public_live_key")
+stripe_secret_live_key = os.getenv("stripe_secret_live_key")
 
-
-
-
-
+stripe.api_key = stripe_secret_test_key
 
 
 # -- Stored Procedures start here -------------------------------------------------------------------------------
@@ -213,9 +211,16 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 #     return "Could not generate new property UID", 500
 
 
-
-
 # -- SPACE Queries start here -------------------------------------------------------------------------------
+
+class stripe_key(Resource):
+    def get(self, desc):
+        print(desc)
+        if desc == "PMTEST":
+            return {"publicKey": stripe_public_test_key}
+        else:
+            return {"publicKey": stripe_public_live_key}
+
 
 class ownerDashboard(Resource):
     def get(self, owner_id):
@@ -237,11 +242,9 @@ class ownerDashboard(Resource):
                     WHERE property_owner_id = \'""" + owner_id + """\'
                     GROUP BY maintenance_request_status;
                     """)
-            
 
             # print("Query: ", maintenanceQuery)
             response["MaintenanceStatus"] = maintenanceQuery
-
 
             leaseQuery = db.execute(""" 
                     -- LEASE STATUS BY USER
@@ -266,7 +269,6 @@ class ownerDashboard(Resource):
 
             # print("Query: ", leaseQuery)
             response["LeaseStatus"] = leaseQuery
-
 
             rentQuery = db.execute(""" 
                     -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
@@ -294,12 +296,7 @@ class ownerDashboard(Resource):
             # print("Query: ", leaseQuery)
             response["RentStatus"] = rentQuery
 
-
             return response
-
-
-
-
 
 
 class ownerDashboardProperties(Resource):
@@ -308,7 +305,6 @@ class ownerDashboardProperties(Resource):
         response = {}
 
         # print("Owner UID: ", owner_id)
-
 
         with connect() as db:
             print("in owner dashboard properties")
@@ -337,8 +333,9 @@ class ownerDashboardProperties(Resource):
             property_dict = {}
             for item in property_list["result"]:
                 property_id = item['property_uid']
-                property_info = {k: v for k, v in item.items() if k != 'property_uid'}
-                
+                property_info = {k: v for k,
+                                 v in item.items() if k != 'property_uid'}
+
                 if property_id in property_dict:
                     property_dict[property_id].append(property_info)
                 else:
@@ -347,7 +344,6 @@ class ownerDashboardProperties(Resource):
             # Print the resulting dictionary
             # print(property_dict)
             return property_dict
-
 
 
 class TenantDashboard(Resource):
@@ -397,32 +393,42 @@ class TenantDashboard(Resource):
 
 
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
-api.add_resource(ownerDashboardProperties, '/ownerDashboardProperties/<string:owner_id>')
+api.add_resource(ownerDashboardProperties,
+                 '/ownerDashboardProperties/<string:owner_id>')
 
 api.add_resource(Rents, '/rents/<string:owner_id>')
 api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
 api.add_resource(Properties, '/properties')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
-api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
-
+api.add_resource(PropertyDashboardByOwner,
+                 '/propertyDashboardByOwner/<string:owner_id>')
 
 
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 
-api.add_resource(MaintenanceStatusByProfile, '/maintenanceStatus/<string:profile_uid>')
+api.add_resource(MaintenanceStatusByProfile,
+                 '/maintenanceStatus/<string:profile_uid>')
 
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
-api.add_resource(MaintenanceRequestsByOwner, '/maintenanceRequestsByOwner/<string:owner_id>')
-api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
-api.add_resource(MaintenanceStatusByProperty, '/maintenanceStatusByProperty/<string:property_id>')
-api.add_resource(MaintenanceStatusByOwner, '/maintenanceStatusByOwner/<string:owner_id>')
-api.add_resource(MaintenanceSummaryByOwner, '/maintenanceSummaryByOwner/<string:owner_id>')
-api.add_resource(MaintenanceStatusByOwnerSimplified, '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
-api.add_resource(MaintenanceSummaryAndStatusByOwner, '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
+api.add_resource(MaintenanceRequestsByOwner,
+                 '/maintenanceRequestsByOwner/<string:owner_id>')
+api.add_resource(MaintenanceByProperty,
+                 '/maintenanceByProperty/<string:property_id>')
+api.add_resource(MaintenanceStatusByProperty,
+                 '/maintenanceStatusByProperty/<string:property_id>')
+api.add_resource(MaintenanceStatusByOwner,
+                 '/maintenanceStatusByOwner/<string:owner_id>')
+api.add_resource(MaintenanceSummaryByOwner,
+                 '/maintenanceSummaryByOwner/<string:owner_id>')
+api.add_resource(MaintenanceStatusByOwnerSimplified,
+                 '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
+api.add_resource(MaintenanceSummaryAndStatusByOwner,
+                 '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
 
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
-api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+api.add_resource(MaintenanceQuotesByUid,
+                 '/maintenanceQuotes/<string:maintenance_quote_uid>')
 api.add_resource(Quotes, '/quotes')
 api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
@@ -435,10 +441,12 @@ api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
 
-api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
+api.add_resource(
+    CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 
 api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
-api.add_resource(TransactionsByOwnerByProperty, '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
+api.add_resource(TransactionsByOwnerByProperty,
+                 '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
@@ -447,7 +455,8 @@ api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
 api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
-api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
+api.add_resource(BusinessProfileByUid,
+                 '/businessProfile/<string:business_uid>')
 
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
@@ -459,14 +468,22 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
-api.add_resource(ContactsOwnerContactsDetails, '/contactsOwnerContactsDetails/<string:owner_uid>')
-api.add_resource(ContactsBusinessContacts, '/contactsBusinessContacts/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsOwnerDetails, '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsTenantDetails, '/contactsBusinessContactsTenantDetails/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsMaintenanceDetails, '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
-api.add_resource(ContactsOwnerManagerDetails, '/contactsOwnerManagerDetails/<string:owner_uid>')
-api.add_resource(ContactsMaintenanceManagerDetails, '/contactsMaintenanceManagerDetails/<string:business_uid>')
-api.add_resource(ContactsMaintenanceTenantDetails, '/contactsMaintenanceTenantDetails/<string:business_uid>')
+api.add_resource(ContactsOwnerContactsDetails,
+                 '/contactsOwnerContactsDetails/<string:owner_uid>')
+api.add_resource(ContactsBusinessContacts,
+                 '/contactsBusinessContacts/<string:business_uid>')
+api.add_resource(ContactsBusinessContactsOwnerDetails,
+                 '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
+api.add_resource(ContactsBusinessContactsTenantDetails,
+                 '/contactsBusinessContactsTenantDetails/<string:business_uid>')
+api.add_resource(ContactsBusinessContactsMaintenanceDetails,
+                 '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+api.add_resource(ContactsOwnerManagerDetails,
+                 '/contactsOwnerManagerDetails/<string:owner_uid>')
+api.add_resource(ContactsMaintenanceManagerDetails,
+                 '/contactsMaintenanceManagerDetails/<string:business_uid>')
+api.add_resource(ContactsMaintenanceTenantDetails,
+                 '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
@@ -485,6 +502,7 @@ api.add_resource(Password, '/password')
 
 api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
 api.add_resource(PaymentMethod, '/Paymentmethod')
+api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
