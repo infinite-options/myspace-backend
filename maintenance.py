@@ -323,6 +323,20 @@ class MaintenanceQuotes(Resource):
             raise BadRequest("Request failed, no UID in payload.")
         key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
         quote = {k: v for k, v in payload.items()}
+        images = []
+        i = 0
+        while True:
+            filename = f'img_{i}'
+            file = request.files.get(filename)
+            if file:
+                key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                image = uploadImage(file, key, '')
+                images.append(image)
+            else:
+                break
+            i += 1
+        quote["quote_maintenance_images"] = json.dumps(images)
+
         with connect() as db:
             response = db.update('maintenanceQuotes', key, quote)
         return response
