@@ -9,8 +9,7 @@ import boto3
 import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import calendar
-
+from werkzeug.exceptions import BadRequest
 
 
 # NOT SURE I NEED THIS
@@ -105,87 +104,24 @@ class PaymentStatus(Resource):
             return response
 
 class PaymentMethod(Resource):
-    # decorators = [jwt_required()]
-
     def post(self):
-        print('in PaymentStatus')
-        response = {}
-
-        # print("User ID: ", user_id)
+        response = []
+        payload = request.get_json()
         with connect() as db:
-            print("in owner dashboard")
-            rows = db.execute(""" 
-                    SELECT * FROM space.businessProfileInfo
-                    """)
-        for i in range(0, len(rows["result"])):
-            if rows["result"][i]["business_zelle"]!="":
-                with connect() as db:
-                    cur = db.conn.cursor()
-
-                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
-                                                                  paymentMethod_billingzip)
-                                         values (%s, %s, %s, %s) 
-                                    """
-                    cur.execute(sql,
-                                (rows["result"][i]["business_uid"], 'venmo', rows["result"][i]["business_venmo"],
-                                 rows["result"][i]["business_zip"]))
-                    db.conn.commit()
-            if rows["result"][i]["business_zelle"]!="":
-                with connect() as db:
-                    cur = db.conn.cursor()
-
-                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
-                                                                  paymentMethod_billingzip)
-                                         values (%s, %s, %s, %s) 
-                                    """
-                    cur.execute(sql,
-                                (rows["result"][i]["business_uid"], 'zelle', rows["result"][i]["business_zelle"],
-                                 rows["result"][i]["business_zip"]))
-                    db.conn.commit()
-            if rows["result"][i]["business_apple_pay"]!="":
-                with connect() as db:
-                    cur = db.conn.cursor()
-
-                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
-                                                                  paymentMethod_billingzip)
-                                         values (%s, %s, %s, %s) 
-                                    """
-                    cur.execute(sql,
-                                (rows["result"][i]["business_uid"], 'apple_pay', rows["result"][i]["business_apple_pay"],
-                                 rows["result"][i]["business_zip"]))
-                    db.conn.commit()
-            if rows["result"][i]["business_paypal"]!="":
-                with connect() as db:
-                    cur = db.conn.cursor()
-
-                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_name, 
-                                                                  paymentMethod_billingzip)
-                                         values (%s, %s, %s, %s) 
-                                    """
-                    cur.execute(sql,
-                                (
-                                rows["result"][i]["business_uid"], 'paypal', rows["result"][i]["business_paypal"],
-                                rows["result"][i]["business_zip"]))
-                    db.conn.commit()
-            if rows["result"][i]["business_account_number"]!="":
-                with connect() as db:
-                    cur = db.conn.cursor()
-
-                    sql = """insert into space.paymentMethods (paymentMethod_profile_id, paymentMethod_type, paymentMethod_acct, 
-                                                                  paymentMethod_routing_number ,paymentMethod_billingzip)
-                                         values (%s, %s, %s, %s, %s) 
-                                    """
-                    cur.execute(sql,
-                                (
-                                    rows["result"][i]["business_uid"], 'bank', rows["result"][i]["business_account_number"],rows["result"][i]["business_routing_number"]
-                                    ,rows["result"][i]["business_zip"]))
-                    db.conn.commit()
-            #
-            #
-            # print(rows["result"][i]["business_uid"])
-
+            for payment_method in payload:
+                query_response = db.insert('paymentMethods', payment_method)
+                response.append(query_response)
         return response
-
+    
+    def put(self):
+        response = {}
+        payload = request.get_json()
+        if payload.get('paymentMethod_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
+        with connect() as db:
+            response = db.update('paymentMethods', key, payload)
+        return response
 
 class RequestPayment(Resource):
     def post(self):

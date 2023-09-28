@@ -504,7 +504,7 @@ api.add_resource(SearchManager, '/searchManager')
 api.add_resource(Password, '/password')
 
 api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
-api.add_resource(PaymentMethod, '/Paymentmethod')
+api.add_resource(PaymentMethod, '/paymentMethod')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 # refresh
