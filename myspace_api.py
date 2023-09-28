@@ -127,6 +127,7 @@ app.config['DEBUG'] = True
 
 
 
+
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 # EMAIL INFO
 #app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -181,7 +182,14 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 
 
+# STRIPE KEYS
+stripe_public_test_key = os.getenv('stripe_public_test_key')
+stripe_secret_test_key = os.getenv("stripe_secret_test_key")
+print(stripe_public_test_key)
+stripe_public_live_key = os.environ.get("stripe_public_live_key")
+stripe_secret_live_key = os.getenv("stripe_secret_live_key")
 
+stripe.api_key = stripe_secret_test_key
 
 
 
@@ -383,7 +391,15 @@ class TenantDashboard(Resource):
             response["announcements"] = announcements
             return response
 
-
+class stripe_key(Resource):
+    def get(self, desc):
+        print(desc)
+        if desc == "PMTEST":
+            return {"publicKey": stripe_public_test_key}
+        else:
+            return {"publicKey": stripe_public_live_key}
+        
+        
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
 # New APIs, uses connect() and disconnect()
@@ -485,6 +501,8 @@ api.add_resource(Password, '/password')
 
 api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
 api.add_resource(PaymentMethod, '/Paymentmethod')
+
+api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
