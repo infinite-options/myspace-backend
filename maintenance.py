@@ -440,20 +440,9 @@ class MaintenanceQuotes(Resource):
         print("Key: ", key)
         quote = {k: v for k, v in payload.items()}
         print("KV Pairs: ", quote)
-
-        with connect() as db:
-            query = db.select('maintenanceQuotes', key)
-        try:
-            quote_from_db = query.get('result')[0]
-            images = quote_from_db.get("quote_maintenance_images")
-            print(f'previously saved images: {images}')
-        except IndexError as e:
-            print(e)
-            raise BadRequest("Request failed, no such Maintenance Quote in the database.")
-
-        if not images:
-            images = []
+        images = []
         i = 0
+        
         while True:
             filename = f'img_{i}'
             print("Filename: ", filename)
