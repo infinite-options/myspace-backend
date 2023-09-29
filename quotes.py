@@ -79,7 +79,7 @@ class Quotes(Resource):
         payload = request.form
         quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
         quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
-        quote_notes = payload["quote_notes"]
+        quote_pm_notes = payload["quote_pm_notes"]
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
                 quote = {}
@@ -87,7 +87,7 @@ class Quotes(Resource):
                 quote["quote_business_id"] = quote_business_id
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
-                quote["quote_notes"] = quote_notes
+                quote["quote_pm_notes"] = quote_pm_notes
                 images = []
                 i = 0
                 while True:
