@@ -10,6 +10,7 @@ import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
+import ast
 
 from maintenance_mapper import mapMaintenanceStatusByUserType, mapMaintenanceStatusForOwner, \
     mapMaintenanceStatusForPropertyManager, mapMaintenanceStatusForMaintenancePerson, mapMaintenanceStatusForTenant
@@ -446,13 +447,13 @@ class MaintenanceQuotes(Resource):
         try:
             quote_from_db = query.get('result')[0]
             images = quote_from_db.get("quote_maintenance_images")
+            images = ast.literal_eval(images) if images else []  # convert to list of URLs
+            print('type: ', type(images))
             print(f'previously saved images: {images}')
         except IndexError as e:
             print(e)
             raise BadRequest("Request failed, no such Maintenance Quote in the database.")
 
-        if not images:
-            images = []
         i = 0
         s3_i = len(images) if len(images) else 0
         while True:
