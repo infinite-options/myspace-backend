@@ -454,19 +454,22 @@ class MaintenanceQuotes(Resource):
         if not images:
             images = []
         i = 0
+        s3_i = len(images) if len(images) else 0
         while True:
             filename = f'img_{i}'
+            s3_filename = f'img_{s3_i}'
             print("Filename: ", filename)
             file = request.files.get(filename)
             print("File: ", file)
             if file:
-                S3key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                S3key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{s3_filename}'
                 print("S3 Key: ", S3key)
                 image = uploadImage(file, S3key, '')
                 images.append(image)
             else:
                 break
             i += 1
+            s3_i += 1
         print("Images: ",images)    
         quote["quote_maintenance_images"] = json.dumps(images)
 
