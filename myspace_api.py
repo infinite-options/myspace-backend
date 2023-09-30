@@ -29,9 +29,9 @@ from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, Tenant
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
-from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, MaintenanceStatusByOwner, \
-    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, MaintenanceStatusByOwnerSimplified, \
-    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceStatusByProfile, MaintenanceDashboard
+from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, \
+    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -408,9 +408,6 @@ api.add_resource(PropertyDashboardByOwner,
 
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 
-api.add_resource(MaintenanceStatusByProfile,
-                 '/maintenanceStatus/<string:profile_uid>')
-
 api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
 api.add_resource(MaintenanceRequestCount, '/maintenanceReqCount/<string:uid>')
 
@@ -421,12 +418,8 @@ api.add_resource(MaintenanceByProperty,
                  '/maintenanceByProperty/<string:property_id>')
 api.add_resource(MaintenanceStatusByProperty,
                  '/maintenanceStatusByProperty/<string:property_id>')
-api.add_resource(MaintenanceStatusByOwner,
-                 '/maintenanceStatusByOwner/<string:owner_id>')
 api.add_resource(MaintenanceSummaryByOwner,
                  '/maintenanceSummaryByOwner/<string:owner_id>')
-api.add_resource(MaintenanceStatusByOwnerSimplified,
-                 '/maintenanceStatusByOwnerSimplified/<string:owner_id>')
 api.add_resource(MaintenanceSummaryAndStatusByOwner,
                  '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
 
