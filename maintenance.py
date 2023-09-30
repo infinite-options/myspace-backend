@@ -12,8 +12,8 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
 
-from maintenance_mapper import mapMaintenanceStatusByUserType, mapMaintenanceStatusForOwner, \
-    mapMaintenanceStatusForPropertyManager, mapMaintenanceStatusForMaintenancePerson, mapMaintenanceStatusForTenant
+from maintenance_mapper import mapMaintenanceForOwner, mapMaintenanceForTenant, mapMaintenanceForProperty, \
+    mapMaintenanceForMaintenance, mapMaintenanceForPropertyManager
 
 
 # MAINTENANCE BY STATUS
@@ -125,56 +125,56 @@ class MaintenanceByProperty(Resource):
 
 
 
-
+# TODO: This can be deprecated, use /maintenanceReq/<id>
 # class OwnerMaintenanceByStatus(Resource):
-class MaintenanceStatusByOwner(Resource): 
-    def get(self, owner_id):
-        print('in New Owner Maintenance Dashboard')
-        response = {}
-
-        # print("Owner UID: ", owner_id)
-
-        with connect() as db:
-            print("in connect loop")
-            maintenanceQuery = db.execute(""" 
-                    -- NEW MAINTENANCE STATUS QUERY
-                    SELECT -- *
-                        maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, user_type, user_name, user_phone, user_email
-                        , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status
-                        , maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                        , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
-                        , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
-                        , o_details.*
-                    FROM space.m_details
-                    LEFT JOIN space.user_profiles ON maintenance_request_created_by = profile_uid
-                    LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                    LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                    ORDER BY maintenance_request_status;
-                    """)
-
-            # print("Query: ", maintenanceQuery)  # This is a list
-            # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
-            # response["MaintenanceProjects"] = maintenanceQuery
-            # return response
-        
-
-            # Format Output to be a dictionary of lists
-            property_dict = {}
-            for item in maintenanceQuery["result"]:
-                # print("item: ", item)
-                maintenance_status = item["maintenance_request_status"]
-                # print("maintenance_status: ", maintenance_status)
-                property_info = {k: v for k, v in item.items() if k != 'maintenance_request_status'}
-                
-                if maintenance_status in property_dict:
-                    property_dict[maintenance_status].append(property_info)
-                else:
-                    property_dict[maintenance_status] = [property_info]
-
-            # Print the resulting dictionary
-            # print(property_dict)
-            return property_dict
+# class MaintenanceStatusByOwner(Resource):
+#     def get(self, owner_id):
+#         print('in New Owner Maintenance Dashboard')
+#         response = {}
+#
+#         # print("Owner UID: ", owner_id)
+#
+#         with connect() as db:
+#             print("in connect loop")
+#             maintenanceQuery = db.execute("""
+#                     -- NEW MAINTENANCE STATUS QUERY
+#                     SELECT -- *
+#                         maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, user_type, user_name, user_phone, user_email
+#                         , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status
+#                         , maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+#                         , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+#                         , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
+#                         , o_details.*
+#                     FROM space.m_details
+#                     LEFT JOIN space.user_profiles ON maintenance_request_created_by = profile_uid
+#                     LEFT JOIN space.properties ON property_uid = maintenance_property_id
+#                     LEFT JOIN space.o_details ON maintenance_property_id = property_id
+#                     WHERE property_owner_id = \'""" + owner_id + """\'
+#                     ORDER BY maintenance_request_status;
+#                     """)
+#
+#             # print("Query: ", maintenanceQuery)  # This is a list
+#             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
+#             # response["MaintenanceProjects"] = maintenanceQuery
+#             # return response
+#
+#
+#             # Format Output to be a dictionary of lists
+#             property_dict = {}
+#             for item in maintenanceQuery["result"]:
+#                 # print("item: ", item)
+#                 maintenance_status = item["maintenance_request_status"]
+#                 # print("maintenance_status: ", maintenance_status)
+#                 property_info = {k: v for k, v in item.items() if k != 'maintenance_request_status'}
+#
+#                 if maintenance_status in property_dict:
+#                     property_dict[maintenance_status].append(property_info)
+#                 else:
+#                     property_dict[maintenance_status] = [property_info]
+#
+#             # Print the resulting dictionary
+#             # print(property_dict)
+#             return property_dict
         
 
 class MaintenanceRequestsByOwner(Resource):
@@ -232,7 +232,7 @@ class MaintenanceReq(Resource):
 
             with connect() as db:
                 print("in connect loop")
-                maintenanceStatus = db.execute(""" 
+                maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT  -- * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
@@ -258,7 +258,10 @@ class MaintenanceReq(Resource):
                         ORDER BY maintenance_request_created_date;
                         """)
 
-            response["MaintenanceStatus"] = maintenanceStatus
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForOwner(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
             return response
 
 
@@ -267,7 +270,7 @@ class MaintenanceReq(Resource):
             
             with connect() as db:
                 print("in connect loop")
-                maintenanceStatus = db.execute(""" 
+                maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT  -- * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
@@ -293,7 +296,10 @@ class MaintenanceReq(Resource):
                         ORDER BY maintenance_request_created_date;
                         """)
 
-            response["MaintenanceStatus"] = maintenanceStatus
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForTenant(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
             return response
 
         elif uid[:3] == '200':
@@ -301,7 +307,7 @@ class MaintenanceReq(Resource):
             
             with connect() as db:
                 print("in connect loop")
-                maintenanceStatus = db.execute(""" 
+                maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT  -- * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
@@ -327,7 +333,10 @@ class MaintenanceReq(Resource):
                         ORDER BY maintenance_request_created_date;
                         """)
 
-            response["MaintenanceStatus"] = maintenanceStatus
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForProperty(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
             return response
 
         else:
@@ -426,10 +435,34 @@ class MaintenanceQuotes(Resource):
         return response
 
     def post(self):
-        print('in MaintenanceQuotes')
-        payload = request.get_json()
+        response = []
+        payload = request.form
+        quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
+        quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
+        quote_pm_notes = payload["quote_pm_notes"]
         with connect() as db:
-            response = db.insert('maintenanceQuotes', payload)
+            for quote_business_id in quote_maintenance_contacts:
+                quote = {}
+                quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
+                quote["quote_business_id"] = quote_business_id
+                quote["quote_maintenance_request_id"] = quote_maintenance_request_id
+                quote["quote_status"] = "REQUESTED"
+                quote["quote_pm_notes"] = quote_pm_notes
+                images = []
+                i = 0
+                while True:
+                    filename = f'img_{i}'
+                    file = request.files.get(filename)
+                    if file:
+                        key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                        image = uploadImage(file, key, '')
+                        images.append(image)
+                    else:
+                        break
+                    i += 1
+                quote["quote_maintenance_images"] = json.dumps(images)
+                query_response = db.insert('maintenanceQuotes', quote)
+                response.append(query_response)
         return response
 
     def put(self):
@@ -516,113 +549,36 @@ class MaintenanceSummaryByOwner(Resource):
             return response
 
 
-# class MaintenanceStatusByProfile(Resource):
-#     def get(self, profile_uid):
-#         print('in MaintenanceStatusByProfile')
+# # TODO: This can be deprecated, use /maintenanceReq/<id>
+# class MaintenanceStatusByOwnerSimplified(Resource):
+#     def get(self, owner_id):
+#         print('in New Owner Maintenance Dashboard')
+#         response = {}
+#
+#         # print("Owner UID: ", owner_id)
+#
 #         with connect() as db:
-#             query = db.select('user_profiles', {"profile_uid": profile_uid})
-#         try:
-#             user = query.get('result')[0]
-#             business_user_id = user['user_id']
-#             user_type = user['user_type']
-#         except (IndexError, KeyError) as e:
-#             print(e)
-#             raise BadRequest("Request failed, no such user_profile record in the database.")
+#             print("in connect loop")
+#             maintenanceQuery = db.execute("""
+#                     -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH LIMITED DETAILS FOR FLUTTERFLOW
+#                     SELECT property_owner_id
+#                         , property_uid, property_address, property_unit -- , property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
+#                         , maintenance_request_uid, maintenance_title
+#                         , if (ISNULL(JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))),"", JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))) AS image
+#                         , maintenance_request_type, maintenance_request_status, maintenance_request_created_date
+#                     FROM space.maintenanceRequests
+#                     LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
+#                     LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
+#                     LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+#                     WHERE property_owner_id = \'""" + owner_id + """\'
+#                     ORDER BY maintenance_request_status;
+#                     """)
+#
+#             # print("Query: ", maintenanceQuery)  # This is a list
+#             # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
+#             response["MaintenanceSummary"] = maintenanceQuery
+#             return response
 
-#         with connect() as db:
-#             response = db.execute("""SELECT business_uid,
-#                 property_uid, properties.property_address,
-#                 purchase_uid, purchase_status, purchase_type, 
-#                 payment_uid, pay_amount, payment_notes, payment_type,
-#                 maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
-#                 maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
-#                 FROM b_details 
-#                 JOIN properties ON contract_property_id = property_uid
-#                 JOIN pp_details ON property_uid = pur_property_id
-#                 JOIN m_details ON property_uid = maintenance_property_id
-#                 WHERE business_user_id = \'""" + business_user_id + """\'
-#                 ORDER BY maintenance_request_created_date;""")
-#         if response.get('code') == 200 and response.get('result'):
-#             return mapMaintenanceStatusByUserType(response, user_type)
-#         return response
-
-class MaintenanceStatusByProfile(Resource):
-    def get(self, profile_uid):
-        print('in MaintenanceStatusByProfile')
-        print(profile_uid)
-        with connect() as db:
-            query = db.select('user_profiles', {"profile_uid": profile_uid})
-        try:
-            user = query.get('result')[0]
-            business_user_id = user['user_id']
-            user_type = user['user_type']
-        except (IndexError, KeyError) as e:
-            print(e)
-            raise BadRequest("Request failed, no such user_profile record in the database.")
-
-        with connect() as db:
-            response = db.execute("""
-                                  SELECT -- *
-                                    maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
-                                    , maintenance_assigned_business, maintenance_assigned_worker
-                                    , maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                                    , maintenance_callback_number, maintenance_estimated_cost
-                                    , maintenance_quote_uid, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
-                                    -- , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
-                                    , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
-                                    , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                                    , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
-                                    , cf_month, cf_year
-                                    , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
-                                    , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
-                                    , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
-                                    , property_address, property_unit, property_city, property_state, property_zip, property_type, property_images, property_description, property_notes
-                                    , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_address, owner_unit, owner_city, owner_state, owner_zip
-                                    , contract_start_date, contract_end_date, contract_status, business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
-                                    , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                                FROM space.m_details 
-                                -- LEFT JOIN space.properties ON maintenance_property_id = property_uid
-                                LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-                                LEFT JOIN space.pp_details ON pur_bill_id = bill_uid
-                                WHERE quote_business_id = \'""" + profile_uid + """\' AND  quote_business_id IS NOT NULL
-                                ORDER BY maintenance_request_created_date;
-                                  """)
-
-
-        if response.get('code') == 200 and response.get('result'):
-            return mapMaintenanceStatusByUserType(response, user_type)
-        return response
-
-
-class MaintenanceStatusByOwnerSimplified(Resource): 
-    def get(self, owner_id):
-        print('in New Owner Maintenance Dashboard')
-        response = {}
-
-        # print("Owner UID: ", owner_id)
-
-        with connect() as db:
-            print("in connect loop")
-            maintenanceQuery = db.execute(""" 
-                    -- MAINTENANCE STATUS BY OWNER BY PROPERTY BY STATUS WITH LIMITED DETAILS FOR FLUTTERFLOW
-                    SELECT property_owner_id
-                        , property_uid, property_address, property_unit -- , property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_uid, maintenance_title
-                        , if (ISNULL(JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))),"", JSON_UNQUOTE(JSON_EXTRACT(maintenance_images, '$[0]'))) AS image
-                        , maintenance_request_type, maintenance_request_status, maintenance_request_created_date
-                    FROM space.maintenanceRequests 
-                    LEFT JOIN space.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
-                    LEFT JOIN space.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
-                    LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-                    WHERE property_owner_id = \'""" + owner_id + """\'
-                    ORDER BY maintenance_request_status;
-                    """)
-
-            # print("Query: ", maintenanceQuery)  # This is a list
-            # # FOR DEBUG ONLY - THESE STATEMENTS ALLOW YOU TO CHECK THAT THE QUERY WORKS
-            response["MaintenanceSummary"] = maintenanceQuery
-            return response
-        
 class MaintenanceDashboard(Resource):
     def post(self):
         response = {}
@@ -787,7 +743,7 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceStatusForOwner(maintenanceStatus)
+                return mapMaintenanceForOwner(maintenanceStatus)
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
@@ -861,7 +817,7 @@ class MaintenanceStatus(Resource):
                             """)
 
                 if maintenanceStatus.get('code') == 200:
-                    return mapMaintenanceStatusForPropertyManager(maintenanceStatus)
+                    return mapMaintenanceForPropertyManager(maintenanceStatus)
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
@@ -912,7 +868,7 @@ class MaintenanceStatus(Resource):
                             """)
 
                 if maintenanceStatus.get('code') == 200:
-                    return mapMaintenanceStatusForMaintenancePerson(maintenanceStatus)
+                    return mapMaintenanceForMaintenance(maintenanceStatus)
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
@@ -968,7 +924,7 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceStatusForTenant(maintenanceStatus)
+                return mapMaintenanceForTenant(maintenanceStatus)
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
@@ -1019,7 +975,7 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceStatusForTenant(maintenanceStatus)
+                return mapMaintenanceForProperty(maintenanceStatus)
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
