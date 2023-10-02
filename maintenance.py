@@ -787,7 +787,7 @@ class MaintenanceStatus(Resource):
                                 , quote_services_expenses -- WHERE DOES THIS COME FROM
                                 -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
                                 , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
-                                , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                , quote_status, quote_pm_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                 -- Properties
                                 , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
@@ -838,7 +838,7 @@ class MaintenanceStatus(Resource):
                                 , quote_services_expenses -- WHERE DOES THIS COME FROM
                                 -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
                                 , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
-                                , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                , quote_status, quote_pm_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                 -- Properties
                                 , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
@@ -894,7 +894,7 @@ class MaintenanceStatus(Resource):
                             , quote_services_expenses -- WHERE DOES THIS COME FROM
                             -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
                             , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
-                            , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                            , quote_status, quote_pm_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                             -- Properties
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
@@ -945,7 +945,7 @@ class MaintenanceStatus(Resource):
                             , quote_services_expenses -- WHERE DOES THIS COME FROM
                             -- DO WE NEED PARTS INCLUDED? quote_parts (JSON Object), quote_parts_estimate ($), 
                             , quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes
-                            , quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                            , quote_status, quote_pm_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                             -- Properties
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
