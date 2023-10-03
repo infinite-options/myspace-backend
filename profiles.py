@@ -24,7 +24,7 @@ def clean_json_data(data):
         elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
             data[field] = json.dumps(value)
     
-    data = {key: value for key, value in data.items() if "-DNU" not in key}
+    # data = {key: value for key, value in data.items() if "-DNU" not in key}
 
     print("Cleaned data")
     print(data)
@@ -101,7 +101,7 @@ class TenantProfile(Resource):
             raise BadRequest("Request failed, no UID in payload.")
         key = {'tenant_uid': payload.pop('tenant_uid')}
         with connect() as db:
-            response = db.update('tenantProfileInfo', key, payload)
+            response = db.update('tenantProfileInfo', key, clean_json_data(payload))
         return response
 
 class TenantProfileByTenantUid(Resource):
