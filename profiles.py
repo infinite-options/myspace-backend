@@ -17,6 +17,19 @@ from werkzeug.exceptions import BadRequest
 # BY MONTH    X           X               X
 # BY YEAR     X           X               X
 
+def clean_json_data(data):
+    for field, value in data.items():
+        if value == '':
+            value = None
+        elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
+            data[field] = json.dumps(value)
+    
+    data = {key: value for key, value in data.items() if "-DNU" not in key}
+
+    print("Cleaned data")
+    print(data)
+    return data
+
 class OwnerProfile(Resource):
     def post(self):
         response = {}
