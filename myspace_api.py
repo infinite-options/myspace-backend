@@ -239,13 +239,13 @@ class ownerDashboard(Resource):
             print("in owner dashboard")
             maintenanceQuery = db.execute(""" 
                     -- MAINTENANCE STATUS BY USER
-                    SELECT property_owner.property_owner_id
-                        , maintenanceRequests.maintenance_request_status
-                        , COUNT(maintenanceRequests.maintenance_request_status) AS num
-                    FROM space.properties
-                    LEFT JOIN space.property_owner ON property_id = property_uid
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
-                    WHERE property_owner_id = \'""" + owner_id + """\'
+                    SELECT -- * 
+                        property_owner_id
+                        , maintenance_request_status
+                        , COUNT(maintenance_request_status) AS num
+                    FROM space.maintenanceRequests
+                    LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                    WHERE owner_uid = \'""" + owner_id + """\'
                     GROUP BY maintenance_request_status;
                     """)
 
@@ -460,6 +460,62 @@ class managerDashboard(Resource):
             print(response)
             return response
 
+
+class maintenanceDashboard(Resource):
+    def get(self, business_id):
+        print('in Maintenance Dashboard')
+        response = {}
+
+        # print("Owner UID: ", owner_id)
+
+        with connect() as db:
+            print("in owner dashboard")
+            currentActivity = db.execute(""" 
+                    -- CURRENT ACTIVITY
+                    SELECT *,
+                        COUNT(maintenance_status) AS num
+                        ,SUM(quote_total_estimate) AS total_estimate
+                    FROM (
+                        SELECT quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
+                            , CASE
+                                    WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
+                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
+                                    WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
+                                    WHEN quote_status = "COMPLETED"   THEN "PAID"
+                                    ELSE quote_status
+                                END AS maintenance_status
+                        FROM space.m_details
+                        WHERE quote_business_id = \'""" + business_id + """\'
+                        ) AS ms
+                    GROUP BY maintenance_status;
+                    """)
+
+            # print("Query: ", maintenanceQuery)
+            response["MaintenanceStatus"] = currentActivity
+
+            workOrders = db.execute(""" 
+                    -- WORK ORDERS
+                    SELECT *
+                    FROM (
+                        SELECT * -- , quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
+                            , CASE
+                                    WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
+                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
+                                    WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
+                                    WHEN quote_status = "COMPLETED"   THEN "PAID"
+                                    ELSE quote_status
+                                END AS maintenance_status
+                        FROM space.m_details
+                        WHERE quote_business_id = \'""" + business_id + """\'
+                            ) AS ms
+                    ORDER BY maintenance_status;
+                    """)
+
+            # print("Query: ", leaseQuery)
+            response["LeaseStatus"] = workOrders
+
+            return response
+
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
 # New APIs, uses connect() and disconnect()
@@ -579,7 +635,7 @@ api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
 
-api.add_resource(MaintenanceDashboard, '/maintenanceDashboard')
+api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
 api.add_resource(PaymentMethod, '/paymentMethod')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
