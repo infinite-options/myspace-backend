@@ -33,7 +33,7 @@ from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, Maintena
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
 from purchases import Bills, AddExpense, AddRevenue
-from cron import RentPurchaseTest
+# from cron import RentPurchaseTest
 from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
@@ -568,7 +568,7 @@ api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
-api.add_resource(RentPurchaseTest, '/RentPurchase')
+# api.add_resource(RentPurchaseTest, '/RentPurchase')
 
 api.add_resource(List, '/lists')
 
