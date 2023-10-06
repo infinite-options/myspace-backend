@@ -1,7 +1,7 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
 from announcements import Announcements, AnnouncementsByUserId
-from profiles import RolesByUserid
+# from profiles import RolesByUserid
 from password import Password
 # To run program:  python3 myspace_api.py
 
@@ -30,13 +30,13 @@ from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, \
-    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
-    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
+    MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPost
 from purchases import Bills, AddExpense, AddRevenue
 # from cron import RentPurchaseTest
-from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
-    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
-    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
+# from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
+#     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
+#     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -397,12 +397,12 @@ class managerDashboard(Resource):
             print("in Manager dashboard")
             maintenanceQuery = db.execute(""" 
                     -- MAINTENANCE STATUS BY Manager
-                    SELECT b.contract_business_id
-                        , maintenanceRequests.maintenance_request_status
-                        , COUNT(maintenanceRequests.maintenance_request_status) AS num
-                    FROM space.properties
-                    LEFT JOIN space.b_details AS b ON contract_property_id = property_uid
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+                    SELECT -- * 
+                        contract_business_id
+                        , maintenance_request_status
+                        , COUNT(maintenance_request_status) AS num
+                    FROM space.maintenanceRequests
+                    LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
                     WHERE contract_business_id = \'""" + manager_id + """\'
                     GROUP BY maintenance_request_status;
                     """)
@@ -457,7 +457,7 @@ class managerDashboard(Resource):
 
             # print("rent Query: ", rentQuery)
             response["RentStatus"] = rentQuery
-            print(response)
+            # print(response)
             return response
 
 
@@ -491,7 +491,7 @@ class maintenanceDashboard(Resource):
                     """)
 
             # print("Query: ", maintenanceQuery)
-            response["MaintenanceStatus"] = currentActivity
+            response["CurrentActivities"] = currentActivity
 
             workOrders = db.execute(""" 
                     -- WORK ORDERS
@@ -512,7 +512,7 @@ class maintenanceDashboard(Resource):
                     """)
 
             # print("Query: ", leaseQuery)
-            response["LeaseStatus"] = workOrders
+            response["WorkOrders"] = workOrders
 
             return response
 
@@ -549,8 +549,8 @@ api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
 api.add_resource(MaintenanceRequestCount, '/maintenanceReqCount/<string:uid>')
 
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
-api.add_resource(MaintenanceRequestsByOwner,
-                 '/maintenanceRequestsByOwner/<string:owner_id>')
+# api.add_resource(MaintenanceRequestsByOwner,
+#                  '/maintenanceRequestsByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty,
                  '/maintenanceByProperty/<string:property_id>')
 api.add_resource(MaintenanceStatusByProperty,
@@ -622,7 +622,7 @@ api.add_resource(ContactsMaintenanceTenantDetails,
 
 api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
-api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
+# api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 # api.add_resource(RentPurchaseTest, '/RentPurchase')
 
