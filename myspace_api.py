@@ -32,6 +32,11 @@ from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, \
     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
+from purchases import Bills, AddExpense, AddRevenue
+from cron import RentPurchaseTest
+from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
+    MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
+    MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboard
 from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
@@ -381,6 +386,80 @@ class TenantDashboard(Resource):
             return response
 
 
+class managerDashboard(Resource):
+    def get(self,manager_id):
+        print('in Manager Dashboard')
+        response = {}
+
+        # print("Owner UID: ", owner_id)
+
+        with connect() as db:
+            print("in Manager dashboard")
+            maintenanceQuery = db.execute(""" 
+                    -- MAINTENANCE STATUS BY Manager
+                    SELECT b.contract_business_id
+                        , maintenanceRequests.maintenance_request_status
+                        , COUNT(maintenanceRequests.maintenance_request_status) AS num
+                    FROM space.properties
+                    LEFT JOIN space.b_details AS b ON contract_property_id = property_uid
+                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+                    WHERE contract_business_id = \'""" + manager_id + """\'
+                    GROUP BY maintenance_request_status;
+                    """)
+
+            # print("Query: ", maintenanceQuery)
+            response["MaintenanceStatus"] = maintenanceQuery
+
+            leaseQuery = db.execute(""" 
+                    -- LEASE STATUS BY USER
+                    SELECT b_details.contract_business_id
+                        , leases.lease_end
+                        , COUNT(lease_end) AS num
+                    FROM space.leases
+                    LEFT JOIN space.properties ON property_uid = lease_property_id
+                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+                    WHERE lease_status = "ACTIVE"
+                        AND contract_status = "ACTIVE"
+                        AND fee_name = "RENT"
+                        AND ld_type = "LEASE"
+                        AND contract_business_id = \'""" + manager_id + """\'
+                    GROUP BY MONTH(lease_end),
+                            YEAR(lease_end); 
+                    """)
+
+            # print("lease Query: ", leaseQuery)
+            response["LeaseStatus"] = leaseQuery
+
+            rentQuery = db.execute(""" 
+                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
+                    SELECT -- *,
+                        contract_business_id
+                        , rent_status
+                        , COUNT(rent_status) AS num
+                    FROM (
+                        SELECT b.contract_property_id, contract_business_id
+                            , pp_status.*
+                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                        FROM space.b_details AS b
+                        LEFT JOIN space.properties ON property_uid = b.contract_property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = b.contract_property_id
+                        WHERE contract_business_id = \'""" + manager_id + """\'
+                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        GROUP BY b.contract_property_id
+                        ) AS rs
+                    GROUP BY rent_status
+                                        """)
+
+            # print("rent Query: ", rentQuery)
+            response["RentStatus"] = rentQuery
+            print(response)
+            return response
+
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
 # New APIs, uses connect() and disconnect()
@@ -396,6 +475,8 @@ class TenantDashboard(Resource):
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 api.add_resource(ownerDashboardProperties,
                  '/ownerDashboardProperties/<string:owner_id>')
+
+api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
 
 api.add_resource(Rents, '/rents/<string:owner_id>')
 api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
@@ -487,7 +568,7 @@ api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
-api.add_resource(RentPurchase, '/rentPurchase')
+api.add_resource(RentPurchaseTest, '/RentPurchase')
 
 api.add_resource(List, '/lists')
 
