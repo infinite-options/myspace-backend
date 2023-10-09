@@ -18,6 +18,8 @@ from password import Password
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
+from dashboard import ownerDashboard
+
 from rents import Rents, RentDetails
 from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
@@ -30,7 +32,7 @@ from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceStatusByProperty, MaintenanceByProperty, \
-    MaintenanceRequests, MaintenanceReq, MaintenanceRequestCount, MaintenanceSummaryByOwner, \
+    MaintenanceRequests, MaintenanceReq, MaintenanceSummaryByOwner, \
     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPost
 from purchases import Bills, AddExpense, AddRevenue
 # from cron import RentPurchaseTest
@@ -228,128 +230,128 @@ class stripe_key(Resource):
             return {"publicKey": stripe_public_live_key}
 
 
-class ownerDashboard(Resource):
-    def get(self, owner_id):
-        print('in Owner Dashboard')
-        response = {}
+# class ownerDashboard(Resource):
+#     def get(self, owner_id):
+#         print('in Owner Dashboard')
+#         response = {}
 
-        # print("Owner UID: ", owner_id)
+#         # print("Owner UID: ", owner_id)
 
-        with connect() as db:
-            print("in owner dashboard")
-            maintenanceQuery = db.execute(""" 
-                    -- MAINTENANCE STATUS BY USER
-                    SELECT -- * 
-                        property_owner_id
-                        , maintenance_request_status
-                        , COUNT(maintenance_request_status) AS num
-                    FROM space.maintenanceRequests
-                    LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                    WHERE owner_uid = \'""" + owner_id + """\'
-                    GROUP BY maintenance_request_status;
-                    """)
+#         with connect() as db:
+#             print("in owner dashboard")
+#             maintenanceQuery = db.execute(""" 
+#                     -- MAINTENANCE STATUS BY USER
+#                     SELECT -- * 
+#                         property_owner_id
+#                         , maintenance_request_status
+#                         , COUNT(maintenance_request_status) AS num
+#                     FROM space.maintenanceRequests
+#                     LEFT JOIN space.o_details ON maintenance_property_id = property_id
+#                     WHERE owner_uid = \'""" + owner_id + """\'
+#                     GROUP BY maintenance_request_status;
+#                     """)
 
-            # print("Query: ", maintenanceQuery)
-            response["MaintenanceStatus"] = maintenanceQuery
+#             # print("Query: ", maintenanceQuery)
+#             response["MaintenanceStatus"] = maintenanceQuery
 
-            leaseQuery = db.execute(""" 
-                    -- LEASE STATUS BY USER
-                    SELECT o_details.property_owner_id
-                        , leases.lease_end
-                        , COUNT(lease_end) AS num
-                    FROM space.leases
-                    LEFT JOIN space.o_details ON property_id = lease_property_id
-                    LEFT JOIN space.properties ON property_uid = lease_property_id
-                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
-                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
-                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-                    WHERE lease_status = "ACTIVE"
-                        AND contract_status = "ACTIVE"
-                        AND fee_name = "RENT"
-                        AND ld_type = "LEASE"
-                        AND property_owner_id = \'""" + owner_id + """\'
-                    GROUP BY MONTH(lease_end),
-                            YEAR(lease_end);
-                    """)
+#             leaseQuery = db.execute(""" 
+#                     -- LEASE STATUS BY USER
+#                     SELECT o_details.property_owner_id
+#                         , leases.lease_end
+#                         , COUNT(lease_end) AS num
+#                     FROM space.leases
+#                     LEFT JOIN space.o_details ON property_id = lease_property_id
+#                     LEFT JOIN space.properties ON property_uid = lease_property_id
+#                     LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+#                     LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
+#                     LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+#                     LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+#                     WHERE lease_status = "ACTIVE"
+#                         AND contract_status = "ACTIVE"
+#                         AND fee_name = "RENT"
+#                         AND ld_type = "LEASE"
+#                         AND property_owner_id = \'""" + owner_id + """\'
+#                     GROUP BY MONTH(lease_end),
+#                             YEAR(lease_end);
+#                     """)
 
-            # print("Query: ", leaseQuery)
-            response["LeaseStatus"] = leaseQuery
+#             # print("Query: ", leaseQuery)
+#             response["LeaseStatus"] = leaseQuery
 
-            rentQuery = db.execute(""" 
-                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
-                    SELECT -- *,
-                        property_owner_id
-                        , rent_status
-                        , COUNT(rent_status) AS num
-                    FROM (
-                        SELECT property_id, property_owner_id, po_owner_percent
-                            , property_address, property_unit, property_city, property_state, property_zip
-                            , pp_status.*
-                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
-                        FROM space.property_owner
-                        LEFT JOIN space.properties ON property_uid = property_id
-                        LEFT JOIN space.pp_status ON pur_property_id = property_id
-                        WHERE property_owner_id = \'""" + owner_id + """\'
-                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        GROUP BY property_id
-                        ) AS rs
-                    GROUP BY rent_status
-                    """)
+#             rentQuery = db.execute(""" 
+#                     -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
+#                     SELECT -- *,
+#                         property_owner_id
+#                         , rent_status
+#                         , COUNT(rent_status) AS num
+#                     FROM (
+#                         SELECT property_id, property_owner_id, po_owner_percent
+#                             , property_address, property_unit, property_city, property_state, property_zip
+#                             , pp_status.*
+#                             , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+#                         FROM space.property_owner
+#                         LEFT JOIN space.properties ON property_uid = property_id
+#                         LEFT JOIN space.pp_status ON pur_property_id = property_id
+#                         WHERE property_owner_id = \'""" + owner_id + """\'
+#                             AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+#                             AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+#                             AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+#                         GROUP BY property_id
+#                         ) AS rs
+#                     GROUP BY rent_status
+#                     """)
 
-            # print("Query: ", leaseQuery)
-            response["RentStatus"] = rentQuery
+#             # print("Query: ", leaseQuery)
+#             response["RentStatus"] = rentQuery
 
-            return response
+#             return response
 
 
-class ownerDashboardProperties(Resource):
-    def get(self, owner_id):
-        print('in Owner Dashboard Properties')
-        response = {}
+# class ownerDashboardProperties(Resource):
+#     def get(self, owner_id):
+#         print('in Owner Dashboard Properties')
+#         response = {}
 
-        # print("Owner UID: ", owner_id)
+#         # print("Owner UID: ", owner_id)
 
-        with connect() as db:
-            print("in owner dashboard properties")
-            property_list = db.execute(""" 
-                    -- PROPERTY DETAILS INCLUDING MAINTENANCE      
-                    SELECT property_uid, property_address
-                        , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
-                        , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-                    FROM space.properties
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid		-- SO WE HAVE MAINTENANCE INFO
-                    LEFT JOIN space.property_owner ON property_id = property_uid 						-- SO WE CAN SORT BY OWNER
-                    WHERE property_owner_id = \'""" + owner_id + """\';
-                    """)
+#         with connect() as db:
+#             print("in owner dashboard properties")
+#             property_list = db.execute(""" 
+#                     -- PROPERTY DETAILS INCLUDING MAINTENANCE      
+#                     SELECT property_uid, property_address
+#                         , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
+#                         , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
+#                     FROM space.properties
+#                     LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid		-- SO WE HAVE MAINTENANCE INFO
+#                     LEFT JOIN space.property_owner ON property_id = property_uid 						-- SO WE CAN SORT BY OWNER
+#                     WHERE property_owner_id = \'""" + owner_id + """\';
+#                     """)
 
-            # print("Query: ", maintenanceQuery, type(maintenanceQuery))
-            # items = execute(maintenanceQuery, "get", conn)
-            # print(type(items), items)  # This is a Dictionary
-            # print(type(items["result"]), items["result"])  # This is a list
+#             # print("Query: ", maintenanceQuery, type(maintenanceQuery))
+#             # items = execute(maintenanceQuery, "get", conn)
+#             # print(type(items), items)  # This is a Dictionary
+#             # print(type(items["result"]), items["result"])  # This is a list
 
-            # property_list = items["result"]
+#             # property_list = items["result"]
 
-            print(type(property_list))
-            print(type(property_list["result"]))
+#             print(type(property_list))
+#             print(type(property_list["result"]))
 
-            # Format Output to be a dictionary of lists
-            property_dict = {}
-            for item in property_list["result"]:
-                property_id = item['property_uid']
-                property_info = {k: v for k,
-                                 v in item.items() if k != 'property_uid'}
+#             # Format Output to be a dictionary of lists
+#             property_dict = {}
+#             for item in property_list["result"]:
+#                 property_id = item['property_uid']
+#                 property_info = {k: v for k,
+#                                  v in item.items() if k != 'property_uid'}
 
-                if property_id in property_dict:
-                    property_dict[property_id].append(property_info)
-                else:
-                    property_dict[property_id] = [property_info]
+#                 if property_id in property_dict:
+#                     property_dict[property_id].append(property_info)
+#                 else:
+#                     property_dict[property_id] = [property_info]
 
-            # Print the resulting dictionary
-            # print(property_dict)
-            return property_dict
+#             # Print the resulting dictionary
+#             # print(property_dict)
+#             return property_dict
 
 
 class TenantDashboard(Resource):
@@ -528,9 +530,12 @@ class maintenanceDashboard(Resource):
 # GET requests
 
 
-api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
-api.add_resource(ownerDashboardProperties,
-                 '/ownerDashboardProperties/<string:owner_id>')
+# Dashboard Queries (Maintenance,Lease, Rent, Vacancy, Cashflow)
+api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>') # Need to add Cashflow
+
+
+# api.add_resource(ownerDashboardProperties,
+#                  '/ownerDashboardProperties/<string:owner_id>')
 
 api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
 
@@ -546,31 +551,31 @@ api.add_resource(PropertyDashboardByOwner,
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 
 api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
-api.add_resource(MaintenanceRequestCount, '/maintenanceReqCount/<string:uid>')
+# api.add_resource(MaintenanceRequestCount, '/maintenanceReqCount/<string:uid>')
 
 api.add_resource(MaintenanceRequests, '/maintenanceRequests')
 # api.add_resource(MaintenanceRequestsByOwner,
 #                  '/maintenanceRequestsByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty,
                  '/maintenanceByProperty/<string:property_id>')
-api.add_resource(MaintenanceStatusByProperty,
-                 '/maintenanceStatusByProperty/<string:property_id>')
-api.add_resource(MaintenanceSummaryByOwner,
-                 '/maintenanceSummaryByOwner/<string:owner_id>')
-api.add_resource(MaintenanceSummaryAndStatusByOwner,
-                 '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
+# api.add_resource(MaintenanceStatusByProperty,
+#                  '/maintenanceStatusByProperty/<string:property_id>')
+# api.add_resource(MaintenanceSummaryByOwner,
+#                  '/maintenanceSummaryByOwner/<string:owner_id>')
+# api.add_resource(MaintenanceSummaryAndStatusByOwner,
+#                  '/maintenanceSummaryAndStatusByOwner/<string:owner_id>')
 
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
 api.add_resource(MaintenanceQuotesByUid,
                  '/maintenanceQuotes/<string:maintenance_quote_uid>')
 api.add_resource(Quotes, '/quotes')
-api.add_resource(QuotesByBusiness, '/quotesByBusiness')
-api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
-api.add_resource(StatusUpdate, '/statusUpdate')
-api.add_resource(QuotesByRequest, '/quotesByRequest')
+# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
+# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
+# api.add_resource(StatusUpdate, '/statusUpdate')
+# api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 api.add_resource(Bills, '/bills')
-api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
+# api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
@@ -578,9 +583,9 @@ api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(
     CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 
-api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
-api.add_resource(TransactionsByOwnerByProperty,
-                 '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
+# api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
+# api.add_resource(TransactionsByOwnerByProperty,
+#                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
 api.add_resource(AllTransactions, '/allTransactions')
 
 api.add_resource(Payments, '/makePayment')
@@ -603,8 +608,8 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
-api.add_resource(ContactsOwnerContactsDetails,
-                 '/contactsOwnerContactsDetails/<string:owner_uid>')
+# api.add_resource(ContactsOwnerContactsDetails,
+#                  '/contactsOwnerContactsDetails/<string:owner_uid>')
 api.add_resource(ContactsBusinessContacts,
                  '/contactsBusinessContacts/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsOwnerDetails,
@@ -613,12 +618,12 @@ api.add_resource(ContactsBusinessContactsTenantDetails,
                  '/contactsBusinessContactsTenantDetails/<string:business_uid>')
 api.add_resource(ContactsBusinessContactsMaintenanceDetails,
                  '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
-api.add_resource(ContactsOwnerManagerDetails,
-                 '/contactsOwnerManagerDetails/<string:owner_uid>')
-api.add_resource(ContactsMaintenanceManagerDetails,
-                 '/contactsMaintenanceManagerDetails/<string:business_uid>')
-api.add_resource(ContactsMaintenanceTenantDetails,
-                 '/contactsMaintenanceTenantDetails/<string:business_uid>')
+# api.add_resource(ContactsOwnerManagerDetails,
+#                  '/contactsOwnerManagerDetails/<string:owner_uid>')
+# api.add_resource(ContactsMaintenanceManagerDetails,
+#                  '/contactsMaintenanceManagerDetails/<string:business_uid>')
+# api.add_resource(ContactsMaintenanceTenantDetails,
+#                  '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')

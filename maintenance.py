@@ -986,62 +986,62 @@ class MaintenanceStatus(Resource):
             return response
 
    
-class MaintenanceRequestCount(Resource):
-    def get(self, uid):
-        print('in Maintenance Request Count')
-        response = {}
+# class MaintenanceRequestCount(Resource):
+#     def get(self, uid):
+#         print('in Maintenance Request Count')
+#         response = {}
 
-        print("UID: ", uid)
+#         print("UID: ", uid)
 
-        if uid[:3] == '110':
-            print("In Owner ID")
+#         if uid[:3] == '110':
+#             print("In Owner ID")
 
-            with connect() as db:
-                print("in connect loop")
-                maintenanceStatus = db.execute(""" 
-                        -- MAINTENANCE REQUEST COUNT BY OWNER OR TENENT
-                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
-                            maintenance_request_status, COUNT(maintenance_request_uid)
-                        FROM space.maintenanceRequests
-                        LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                        WHERE owner_uid = "110-000003"
-                        -- WHERE tenant_uid = \'""" + uid + """\'
-                        GROUP BY maintenance_request_status;
-                        """)
+#             with connect() as db:
+#                 print("in connect loop")
+#                 maintenanceStatus = db.execute(""" 
+#                         -- MAINTENANCE REQUEST COUNT BY OWNER OR TENENT
+#                         SELECT  -- * -- bill_property_id,  maintenance_property_id,
+#                             maintenance_request_status, COUNT(maintenance_request_uid)
+#                         FROM space.maintenanceRequests
+#                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
+#                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
+#                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+#                         LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+#                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+#                         WHERE owner_uid = "110-000003"
+#                         -- WHERE tenant_uid = \'""" + uid + """\'
+#                         GROUP BY maintenance_request_status;
+#                         """)
 
-            response["MaintenanceStatus"] = maintenanceStatus
-            return response
+#             response["MaintenanceStatus"] = maintenanceStatus
+#             return response
 
 
-        elif uid[:3] == '350':
-            print("In Tenant ID")
+#         elif uid[:3] == '350':
+#             print("In Tenant ID")
             
-            with connect() as db:
-                print("in connect loop")
-                maintenanceStatus = db.execute(""" 
-                        -- MAINTENANCE REQUEST COUNT BY OWNER OR TENENT
-                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
-                            maintenance_request_status, COUNT(maintenance_request_uid)
-                        FROM space.maintenanceRequests
-                        LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                        -- WHERE owner_uid = "110-000003"
-                        WHERE tenant_uid = \'""" + uid + """\'
-                        GROUP BY maintenance_request_status;
-                        """)
+#             with connect() as db:
+#                 print("in connect loop")
+#                 maintenanceStatus = db.execute(""" 
+#                         -- MAINTENANCE REQUEST COUNT BY OWNER OR TENENT
+#                         SELECT  -- * -- bill_property_id,  maintenance_property_id,
+#                             maintenance_request_status, COUNT(maintenance_request_uid)
+#                         FROM space.maintenanceRequests
+#                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
+#                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
+#                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+#                         LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+#                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+#                         -- WHERE owner_uid = "110-000003"
+#                         WHERE tenant_uid = \'""" + uid + """\'
+#                         GROUP BY maintenance_request_status;
+#                         """)
 
-            response["MaintenanceStatus"] = maintenanceStatus
-            return response
+#             response["MaintenanceStatus"] = maintenanceStatus
+#             return response
 
-        else:
-            print("UID Not found")
-            response["MaintenanceStatus"] = "UID Not Found"
-            return response    
+#         else:
+#             print("UID Not found")
+#             response["MaintenanceStatus"] = "UID Not Found"
+#             return response    
 
