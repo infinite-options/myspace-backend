@@ -419,6 +419,21 @@ api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_i
 # Owner Queries
 
 
+# Payment Queries
+api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
+api.add_resource(Payments, '/makePayment')
+
+
+# Maintenance Queries
+# Maintenance Status for Businesses (Property Manager and Maintenance Company) 
+api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
+# Mainentance Requests is POST and PUT for new and modified maintenance requests
+api.add_resource(MaintenanceRequests, '/maintenanceRequests')
+# Maintenance Req is Maintenance Status for Owner and Tenant
+api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
+# 
+
+
 
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
@@ -428,18 +443,18 @@ api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_i
 api.add_resource(Rents, '/rents/<string:owner_id>')
 api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
-api.add_resource(Properties, '/properties')
+api.add_resource(Properties, '/properties/<string:user_id>')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertyDashboardByOwner,
                  '/propertyDashboardByOwner/<string:owner_id>')
 
 
-api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 
-api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
+
+
 # api.add_resource(MaintenanceRequestCount, '/maintenanceReqCount/<string:uid>')
 
-api.add_resource(MaintenanceRequests, '/maintenanceRequests')
+
 # api.add_resource(MaintenanceRequestsByOwner,
 #                  '/maintenanceRequestsByOwner/<string:owner_id>')
 api.add_resource(MaintenanceByProperty,
@@ -474,8 +489,7 @@ api.add_resource(
 #                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
 api.add_resource(AllTransactions, '/allTransactions')
 
-api.add_resource(Payments, '/makePayment')
-api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
+
 
 
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')

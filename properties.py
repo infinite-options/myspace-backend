@@ -66,16 +66,19 @@ class PropertiesByOwner(Resource):
 # 8. rent payment status
 
 class Properties(Resource):
-    def get(self):
+    def get(self, user_id):
         print('in Properties')
         response = {}
+        # conn = connect()
+
+        print("Property User UID: ", user_id)
 
         with connect() as db:
             print("in connect loop")
             propertiesQuery = db.execute(""" 
                     -- PROPERTIES
                     SELECT * FROM space.p_details
-                    WHERE contract_status = 'ACTIVE'
+                    WHERE owner_uid = \'""" + user_id + """\'
                     """)
             
 
