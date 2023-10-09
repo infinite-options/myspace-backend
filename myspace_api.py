@@ -412,7 +412,11 @@ api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
 # Tenant Dashboard: Property Maintenance, Announcements
 api.add_resource(tenantDashboard, '/tenantDashboard/<string:tenant_id>')
+# Maintenance Dashboard: Current Activities, Work Orders
+api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
 
+
+# Owner Queries
 
 
 
@@ -522,7 +526,6 @@ api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
 
-api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
 api.add_resource(PaymentMethod, '/paymentMethod')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
