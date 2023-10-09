@@ -81,7 +81,7 @@ class PaymentStatus(Resource):
         with connect() as db:
             # print("in connect loop")
             paymentStatus = db.execute(""" 
-                    SELECT DISTINCT *
+                    SELECT *
                     FROM space.pp_details
                     WHERE pur_payer = \'""" + user_id + """\' AND ISNULL(payment_uid);
                     """)
@@ -91,7 +91,7 @@ class PaymentStatus(Resource):
             response["PaymentStatus"] = paymentStatus
 
             paidStatus = db.execute(""" 
-                    SELECT DISTINCT *
+                    SELECT *
                     FROM space.pp_details
                     WHERE pur_payer = \'""" + user_id + """\' AND payment_uid != "NULL";
                     """)

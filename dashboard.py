@@ -197,6 +197,7 @@ class tenantDashboard(Resource):
 
 
             maintenance = db.execute("""
+                    -- TENENT MAINTENANCE TICKETS
                     SELECT mr.maintenance_images, mr.maintenance_title,
                         mr.maintenance_request_status, mr.maintenance_priority,
                         mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
@@ -208,6 +209,7 @@ class tenantDashboard(Resource):
 
 
             announcements = db.execute("""
+                -- TENENT ANNOUNCEMENTS
                 SELECT * FROM announcements
                 WHERE announcement_receiver LIKE '%""" + tenant_id + """%'
                 AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
