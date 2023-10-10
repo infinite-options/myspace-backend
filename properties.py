@@ -66,24 +66,58 @@ class PropertiesByOwner(Resource):
 # 8. rent payment status
 
 class Properties(Resource):
-    def get(self, user_id):
+    def get(self, uid):
         print('in Properties')
         response = {}
         # conn = connect()
 
-        print("Property User UID: ", user_id)
+        print("Property User UID: ", uid)
 
-        with connect() as db:
-            print("in connect loop")
-            propertiesQuery = db.execute(""" 
-                    -- PROPERTIES
-                    SELECT * FROM space.p_details
-                    WHERE owner_uid = \'""" + user_id + """\'
-                    """)
-            
+        if uid[:3] == '110':
+            print("In Owner ID")
+            with connect() as db:
+                # print("in connect loop")
+                propertiesQuery = db.execute(""" 
+                        -- PROPERTIES
+                        SELECT * FROM space.p_details
+                        WHERE owner_uid = \'""" + uid + """\'
+                        """)  
 
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
+            return response
+        
+        elif uid[:3] == '600':
+            print("In Business ID")
+            with connect() as db:
+                # print("in connect loop")
+                propertiesQuery = db.execute(""" 
+                        -- PROPERTIES
+                        SELECT * FROM space.p_details
+                        WHERE business_uid = \'""" + uid + """\'
+                        """)  
+
+            # print("Query: ", propertiesQuery)
+            response["Property"] = propertiesQuery
+            return response
+        
+        elif uid[:3] == '350':
+            print("In Tenant ID")
+            with connect() as db:
+                # print("in connect loop")
+                propertiesQuery = db.execute(""" 
+                        -- PROPERTIES
+                        SELECT * FROM space.p_details
+                        WHERE tenant_uid = \'""" + uid + """\'
+                        """)  
+
+            # print("Query: ", propertiesQuery)
+            response["Property"] = propertiesQuery
+            return response
+        
+        else:
+            print("UID Not found")
+            response["Property"] = "UID Not Found"
             return response
 
     

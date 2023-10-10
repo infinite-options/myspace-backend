@@ -443,7 +443,7 @@ api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
 api.add_resource(Rents, '/rents/<string:owner_id>')
 api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
-api.add_resource(Properties, '/properties/<string:user_id>')
+api.add_resource(Properties, '/properties/<string:uid>')
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertyDashboardByOwner,
                  '/propertyDashboardByOwner/<string:owner_id>')
