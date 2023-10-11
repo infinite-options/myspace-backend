@@ -36,22 +36,16 @@ class ownerDashboard(Resource):
             response["MaintenanceStatus"] = maintenanceQuery
 
             leaseQuery = db.execute(""" 
-                    -- LEASE STATUS BY OWNER
-                    SELECT o_details.property_owner_id
-                        , leases.lease_end
+                    -- LEASE STATUS BY OWNER - REWRITE
+                    SELECT -- *
+                        property_owner_id
+                        , lease_end
+                        -- , DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
                         , COUNT(lease_end) AS num
-                    FROM space.leases
-                    LEFT JOIN space.o_details ON property_id = lease_property_id
-                    LEFT JOIN space.properties ON property_uid = lease_property_id
-                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
-                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
-                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-                    WHERE lease_status = "ACTIVE"
-                        AND contract_status = "ACTIVE"
-                        AND fee_name = "RENT"
-                        AND ld_type = "LEASE"
-                        AND property_owner_id = \'""" + owner_id + """\'
+                    FROM space.property_owner
+                    LEFT JOIN space.leases ON lease_property_id = property_id
+                    WHERE property_owner_id = \'""" + owner_id + """\' AND lease_status = "ACTIVE" 
+                        AND lease_end >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
                     GROUP BY MONTH(lease_end),
                             YEAR(lease_end);
                     """)
@@ -60,26 +54,52 @@ class ownerDashboard(Resource):
             response["LeaseStatus"] = leaseQuery
 
             rentQuery = db.execute(""" 
-                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
+                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD - REWRITE
                     SELECT -- *,
                         property_owner_id
                         , rent_status
                         , COUNT(rent_status) AS num
                     FROM (
-                        SELECT property_id, property_owner_id, po_owner_percent
-                            , property_address, property_unit, property_city, property_state, property_zip
-                            , pp_status.*
-                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
-                        FROM space.property_owner
-                        LEFT JOIN space.properties ON property_uid = property_id
-                        LEFT JOIN space.pp_status ON pur_property_id = property_id
-                        WHERE property_owner_id = \'""" + owner_id + """\'
-                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        GROUP BY property_id
+
+                        SELECT *,
+                            CASE
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status
+                        FROM (
+                            -- OWNER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
+                            SELECT -- *
+                                property_id, property_owner_id, po_owner_percent, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
+                                , property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_images
+                                , l.*
+                            FROM space.property_owner
+                            LEFT JOIN space.properties ON property_uid = property_id
+                            LEFT JOIN (
+                                    SELECT -- *
+                                        lease_uid, lease_property_id, lease_status  
+                                    FROM space.leases 
+                                    WHERE lease_status = "ACTIVE")
+                                AS l 
+                                ON property_uid = lease_property_id
+                            WHERE property_owner_id = \'""" + owner_id + """\'
+                            ) AS o
+                        LEFT JOIN (
+                            SELECT -- *
+                                purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type
+                                , pur_bill_id, purchase_date, pur_due_date
+                                , pur_amount_due, purchase_status, pur_notes, pur_description
+                                -- , pur_receiver, pur_initiator, pur_payer, pur_amount_paid-DNU, purchase_frequency-DNU, payment_frequency-DNU, linked_tenantpur_id-DNU
+                                -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date
+                                , total_paid, payment_status, amt_remaining, cf_month, cf_year
+                            FROM space.pp_status
+                            WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
+                                AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                                AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                            ) as r
+                            ON pur_property_id = property_id
                         ) AS rs
-                    GROUP BY rent_status
+                    GROUP BY rent_status;
                     """)
 
             # print("Query: ", leaseQuery)

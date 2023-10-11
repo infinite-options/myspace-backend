@@ -701,7 +701,7 @@ class MaintenanceStatus(Resource):
             print("In Owner ID")
 
             with connect() as db:
-                print("in connect loop")
+                # print("in connect loop")
                 maintenanceStatus = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT -- * -- bill_property_id,  maintenance_property_id,
@@ -753,7 +753,7 @@ class MaintenanceStatus(Resource):
 
             # CHECK IF MAINTENANCE OR MANAGEMENT
             with connect() as db:
-                print("in check loop")
+                # print("in check loop")
                 businessType = db.execute(""" 
                         -- CHECK BUSINESS TYPE
                         SELECT -- *
@@ -775,7 +775,7 @@ class MaintenanceStatus(Resource):
             elif businessType["result"][0]["business_type"] == "MANAGEMENT":
 
                 with connect() as db:
-                    print("in connect loop")
+                    print("in MANAGEMENT")
                     maintenanceStatus = db.execute(""" 
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT -- * -- bill_property_id,  maintenance_property_id,
@@ -825,7 +825,7 @@ class MaintenanceStatus(Resource):
             elif businessType["result"][0]["business_type"] == "MAINTENANCE":
 
                 with connect() as db:
-                    print("in connect loop")
+                    print("in MAINTENANCE")
                     maintenanceStatus = db.execute(""" 
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
