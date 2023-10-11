@@ -118,14 +118,30 @@ class managerDashboard(Resource):
             print("in Manager dashboard")
             maintenanceQuery = db.execute(""" 
                     -- MAINTENANCE STATUS BY MANAGER
-                    SELECT -- * 
-                        contract_business_id
-                        , maintenance_request_status
-                        , COUNT(maintenance_request_status) AS num
-                    FROM space.maintenanceRequests
-                    LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                    WHERE contract_business_id = \'""" + manager_id + """\'
-                    GROUP BY maintenance_request_status;
+                    SELECT contract_business_id
+                        , maintenance_status
+                        , COUNT(maintenance_status) AS num
+                        ,SUM(quote_total_estimate) AS total_estimate
+                    FROM (
+                        SELECT *
+                            -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
+                            , CASE
+                                    WHEN quote_status = "REQUESTED" OR quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "QUOTES REQUESTED"
+                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "QUOTES ACCEPTED"
+                                    WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
+                                    WHEN quote_status = "WITHDRAWN" OR quote_status = "FINISHED" THEN "COMPLETED"
+                                    WHEN quote_status = "COMPLETED"  THEN "PAID"
+                                    WHEN quote_status IS NULL AND (maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO') THEN "NEW REQUEST"
+                                    WHEN quote_status IS NULL AND (maintenance_request_status = 'COMPLETED' OR maintenance_request_status = 'CANCELLED') THEN "COMPLETED"
+                                    WHEN quote_status IS NULL AND maintenance_request_status = 'SCHEDULED' THEN "SCHEDULED"
+                                    WHEN quote_status IS NULL AND maintenance_request_status = 'PROCESSING' THEN "QUOTES REQUESTED"
+                                    ELSE quote_status
+                                END AS maintenance_status
+                        FROM space.m_details
+                        LEFT JOIN space.contracts ON maintenance_property_id = contract_property_id
+                        WHERE contract_business_id = "600-000003"
+                        ) AS ms
+                    GROUP BY maintenance_status;
                     """)
 
             # print("Query: ", maintenanceQuery)
