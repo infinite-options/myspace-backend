@@ -1,6 +1,6 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-from announcements import Announcements, AnnouncementsByUserId
+# from announcements import Announcements
 # from profiles import RolesByUserid
 from password import Password
 # To run program:  python3 myspace_api.py
@@ -175,6 +175,48 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # isDebug = False
 # NOTIFICATION_HUB_KEY = os.environ.get('NOTIFICATION_HUB_KEY')
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME')
+def sendEmail(recipient, subject, body):
+    with app.app_context():
+        print(recipient, subject, body)
+        msg = Message(
+            sender=app.config["MAIL_USERNAME"],
+            recipients=[recipient],
+            subject=subject,
+            body=body
+        )
+        mail.send(msg)
+
+class Announcements(Resource):
+    def post(self, user_id):
+        payload = request.get_json()
+        manager_id = user_id
+
+        with connect() as db:
+
+            for i in range(len(payload["announcement_receiver"])):
+
+                newRequest = {}
+                newRequest['announcement_title'] = payload["announcement_title"]
+                newRequest['announcement_msg'] = payload["announcement_msg"]
+                newRequest['announcement_sender'] = manager_id
+                newRequest['announcement_mode'] = payload["announcement_mode"]
+                newRequest['announcement_receiver'] = payload["announcement_receiver"][i]
+                db.insert('announcements', newRequest)
+
+                user_query = db.execute(""" 
+                                    -- Find all the properties associated with the manager
+                                    SELECT * 
+                                    FROM space.user_profiles AS b
+                                    WHERE b.profile_uid = \'""" + payload["announcement_receiver"][i] + """\';
+                                    """)
+                user_email = user_query['result'][0]['user_email']
+                sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+        return 200
+
+    def get(self, user_id):
+        with connect() as db:
+            response = db.select('announcements', {"announcement_sender": user_id})
+        return response
 
 # Twilio settings
 # from twilio.rest import Client
@@ -525,8 +567,8 @@ api.add_resource(ContactsBusinessContactsMaintenanceDetails,
 # api.add_resource(ContactsMaintenanceTenantDetails,
 #                  '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
-api.add_resource(Announcements, '/announcements')
-api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
+api.add_resource(Announcements, '/announcements/<string:user_id>')
+# api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 # api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 # api.add_resource(RentPurchaseTest, '/RentPurchase')
