@@ -132,49 +132,66 @@ class managerDashboard(Resource):
             response["MaintenanceStatus"] = maintenanceQuery
 
             leaseQuery = db.execute(""" 
-                    -- LEASE STATUS BY MANAGER
-                    SELECT b_details.contract_business_id
-                        , leases.lease_end
-                        , COUNT(lease_end) AS num
-                    FROM space.leases
-                    LEFT JOIN space.properties ON property_uid = lease_property_id
-                    LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
-                    LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
-                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-                    WHERE lease_status = "ACTIVE"
-                        AND contract_status = "ACTIVE"
-                        AND fee_name = "RENT"
-                        AND ld_type = "LEASE"
-                        AND contract_business_id = \'""" + manager_id + """\'
-                    GROUP BY MONTH(lease_end),
-                            YEAR(lease_end); 
+                        -- LEASE STATUS BY MANAGER - REWRITE
+                        SELECT -- *
+                            contract_business_id
+                            , lease_end
+                            , COUNT(lease_end) AS num
+                        FROM space.contracts
+                        LEFT JOIN space.leases ON lease_property_id = contract_property_id
+                        WHERE contract_business_id = \'""" + manager_id + """\' AND contract_status = 'ACTIVE' AND lease_status = "ACTIVE" 
+                            AND lease_end >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
+                        GROUP BY MONTH(lease_end),
+                                YEAR(lease_end);
                     """)
 
             # print("lease Query: ", leaseQuery)
             response["LeaseStatus"] = leaseQuery
 
             rentQuery = db.execute(""" 
-                    -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
+                    -- RENT STATUS BY PROPERTY FOR MANAGER DASHBOARD - REWRITE
                     SELECT -- *,
                         contract_business_id
                         , rent_status
                         , COUNT(rent_status) AS num
                     FROM (
-                        SELECT b.contract_property_id, contract_business_id
-                            , pp_status.*
-                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
-                        FROM space.b_details AS b
-                        LEFT JOIN space.properties ON property_uid = b.contract_property_id
-                        LEFT JOIN space.pp_status ON pur_property_id = b.contract_property_id
-                        WHERE contract_business_id = \'""" + manager_id + """\'
-                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        GROUP BY b.contract_property_id
+                        SELECT *,
+                            CASE
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status
+                        FROM (
+                            -- MANAGER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
+                            SELECT *
+                            FROM space.contracts
+                            LEFT JOIN space.properties ON property_uid = contract_property_id
+                            LEFT JOIN (
+                                    SELECT -- *
+                                        lease_uid, lease_property_id, lease_status  
+                                    FROM space.leases 
+                                    WHERE lease_status = "ACTIVE")
+                                AS l 
+                                ON property_uid = lease_property_id
+                            WHERE contract_business_id = \'""" + manager_id + """\' AND contract_status = 'ACTIVE'
+                        ) AS pm 
+                        LEFT JOIN (
+                            SELECT -- *
+                                purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type
+                                , pur_bill_id, purchase_date, pur_due_date
+                                , pur_amount_due, purchase_status, pur_notes, pur_description
+                                -- , pur_receiver, pur_initiator, pur_payer, pur_amount_paid-DNU, purchase_frequency-DNU, payment_frequency-DNU, linked_tenantpur_id-DNU
+                                -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date
+                                , total_paid, payment_status, amt_remaining, cf_month, cf_year
+                            FROM space.pp_status
+                            WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
+                                AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                                AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                            ) as r
+                            ON pur_property_id = contract_property_id
                         ) AS rs
-                    GROUP BY rent_status
-                                        """)
+                    GROUP BY rent_status;
+                    """)
 
             # print("rent Query: ", rentQuery)
             response["RentStatus"] = rentQuery
