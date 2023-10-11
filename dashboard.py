@@ -139,7 +139,7 @@ class managerDashboard(Resource):
                                 END AS maintenance_status
                         FROM space.m_details
                         LEFT JOIN space.contracts ON maintenance_property_id = contract_property_id
-                        WHERE contract_business_id = "600-000003"
+                        WHERE contract_business_id = \'""" + manager_id + """\'
                         ) AS ms
                     GROUP BY maintenance_status;
                     """)
