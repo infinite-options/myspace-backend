@@ -345,6 +345,129 @@ class MaintenanceReq(Resource):
             return response
 
 class MaintenanceRequests(Resource):
+    def get(self, uid):
+        print('in Maintenance Request')
+        response = {}
+
+        print("UID: ", uid)
+
+        if uid[:3] == '110':
+            print("In Owner ID")
+
+            with connect() as db:
+                print("in connect loop")
+                maintenanceRequests = db.execute(""" 
+                        -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
+                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                            -- maintenance_request_status, quote_status
+                            maintenanceRequests.*
+                            -- Properties
+                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        -- WHERE tenant_uid = \'""" + uid + """\'
+                        -- WHERE quote_business_id = \'""" + uid + """\'
+                        -- WHERE maintenance_property_id = = \'""" + uid + """\'
+                        ORDER BY maintenance_request_created_date;
+                        """)
+
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForOwner(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
+            return response
+
+
+        elif uid[:3] == '350':
+            print("In Tenant ID")
+            
+            with connect() as db:
+                print("in connect loop")
+                maintenanceRequests = db.execute(""" 
+                        -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
+                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                            -- maintenance_request_status, quote_status
+                            maintenanceRequests.*
+                            -- Properties
+                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        -- WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        WHERE tenant_uid = \'""" + uid + """\'
+                        -- WHERE quote_business_id = \'""" + uid + """\'
+                        -- WHERE maintenance_property_id = = \'""" + uid + """\'
+                        ORDER BY maintenance_request_created_date;
+                        """)
+
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForTenant(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
+            return response
+
+        elif uid[:3] == '200':
+            print("In Property ID")
+            
+            with connect() as db:
+                print("in connect loop")
+                maintenanceRequests = db.execute(""" 
+                        -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
+                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                            -- maintenance_request_status, quote_status
+                            maintenanceRequests.*
+                            -- Properties
+                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        -- WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        -- WHERE tenant_uid = \'""" + uid + """\'
+                        -- WHERE quote_business_id = \'""" + uid + """\'
+                        WHERE maintenance_property_id = \'""" + uid + """\'
+                        ORDER BY maintenance_request_created_date;
+                        """)
+
+            if maintenanceRequests.get('code') == 200:
+                return mapMaintenanceForProperty(maintenanceRequests)
+
+            response["maintenanceRequests"] = maintenanceRequests
+            return response
+
+        else:
+            print("UID Not found")
+            response["MaintenanceStatus"] = "UID Not Found"
+            return response
+
     def post(self):
         print("In Maintenace Requests")
         response = {}

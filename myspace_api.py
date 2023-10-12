@@ -428,9 +428,9 @@ api.add_resource(Payments, '/makePayment')
 # Maintenance Status for Businesses (Property Manager and Maintenance Company) 
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 # Mainentance Requests is POST and PUT for new and modified maintenance requests
-api.add_resource(MaintenanceRequests, '/maintenanceRequests')
+api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
 # Maintenance Req is Maintenance Status for Owner and Tenant
-api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
+# api.add_resource(MaintenanceReq, '/maintenanceReq/<string:uid>')
 # 
 
 
