@@ -28,7 +28,7 @@ class Payments(Resource):
         response = {}
         with connect() as db:
             data = request.get_json(force=True)
-            # print(data)
+            print(data)
 
             fields = [
                 'pay_purchase_id'
@@ -49,24 +49,78 @@ class Payments(Resource):
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
-                # print(field, " = ", newRequest[field])
+                print(field, " = ", newRequest[field])
 
 
             # # GET NEW UID
-            # print("Get New Request UID")
+            print("Get New Request UID")
             newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
             newRequest['payment_uid'] = newRequestID
             print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
             newRequest['payment_date'] = date.today()
+            newRequest['payment_verify'] = "Unverified"
 
-            # print(newRequest)
+
+            print(newRequest)
 
             response = db.insert('payments', newRequest)
             response['Payments_UID'] = newRequestID
 
+
+
+    def put(self):
+        print('in Update Payment Status')
+        payload = request.get_json()
+        print(payload)
+        if payload.get('pay_purchase_id') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'purchase_uid': payload.pop('pay_purchase_id')}
+        print(key)
+        with connect() as db:
+            response = db.update('purchases', key, payload)
         return response
+
+
+
+
+        #     print("Purchase ID: ", newRequest['pay_purchase_id'])
+        #     amt_due = db.execute("""
+        #             -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+        #             SELECT -- *,
+        #                 pur_amount_due
+        #             FROM space.purchases
+        #             WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+        #             """)
+        #     print("Amount Due: ", amt_due['result'][0]['pur_amount_due'])
+
+        #     purchase_status = "Payment Error"
+        #     print(type(newRequest['pay_amount']))
+        #     print(type(amt_due['result'][0]['pur_amount_due']))
+        #     if newRequest['pay_amount'] >= float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PAID"
+        #     elif newRequest['pay_amount'] < float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PARTIALLY PAID"
+        #     print(purchase_status)
+        #     print(newRequest['pay_purchase_id'])
+
+        #     # purRequest = {}
+        #     # purRequest['purchase_status'] = purchase_status
+        #     # pur_response = db.insert('purchases', purRequest)
+
+
+
+        #     pur_response = db.execute("""
+        #             -- UPDATE PURCHASE STATUS
+        #             UPDATE space.purchases
+        #             SET purchase_status =  \'""" + purchase_status + """\'
+        #             WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+        #             """)
+
+        #     print(pur_response)
+        #     response['Purchase_Status'] = pur_response
+            
+
+        # return response
 
 
 class PaymentStatus(Resource):

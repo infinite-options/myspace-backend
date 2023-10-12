@@ -26,8 +26,7 @@ from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
 from employees import Employee
-from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, \
-    BusinessProfileByUid
+from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from leases import LeaseDetails
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
@@ -417,12 +416,14 @@ api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_i
 # Owner Queries
 
 
-# Payment Queries
+# Payment Endpoints
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(Payments, '/makePayment')
+api.add_resource(PaymentMethod, '/paymentMethod')
+api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 
-# Maintenance Queries
+# Maintenance Endpoints
 # Maintenance Status for Businesses (Property Manager and Maintenance Company) 
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 # Mainentance Requests GET for Owner and Tenant and POST and PUT for new and modified maintenance requests
@@ -433,6 +434,8 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
+
+
 
 
 
@@ -518,8 +521,8 @@ api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
 
-api.add_resource(PaymentMethod, '/paymentMethod')
-api.add_resource(stripe_key, "/stripe_key/<string:desc>")
+
+
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
