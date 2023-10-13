@@ -66,40 +66,70 @@ class Payments(Resource):
             # print(newRequest)
             response['Payment_Insert'] = db.insert('payments', newRequest)
             response['Payments_UID'] = newRequestID
+            # print(response)
 
-
-            # DETERMINE PURCHASE STATUS
-            # print("Purchase ID: ", newRequest['pay_purchase_id'])
+            # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
             amt_due = db.execute("""
-                    -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
-                    SELECT -- *,
-                        pur_amount_due
-                    FROM space.purchases
-                    WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
-                    """)
-            # print("Amount Due: ", amt_due['result'][0]['pur_amount_due'])
+                        -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+                        SELECT -- *,
+                            amt_remaining
+                        FROM space.pp_status
+                        WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+                        """)
+            # print(amt_due)
+            # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
 
-            purchase_status = "Payment Error"
-
-            # print(type(newRequest['pay_amount']))
-            # print(type(amt_due['result'][0]['pur_amount_due']))
-
-            if newRequest['pay_amount'] >= float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PAID"
-            elif newRequest['pay_amount'] < float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PARTIALLY PAID"
-            
+            purchase_status = "UNPAID"
+            # print(type(amt_due['result'][0]['amt_remaining']))
+            if float(amt_due['result'][0]['amt_remaining']) <= 0: purchase_status = "PAID"
             # print(purchase_status)
-            # print(newRequest['pay_purchase_id'])
 
-            # purRequest = {}
-            # purRequest['purchase_status'] = purchase_status
-            # pur_response = db.insert('purchases', purRequest)
-
-            key = {'purchase_uid': newRequest['pay_purchase_id']}
-            # print(key)
+            # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
             payload = {'purchase_status': purchase_status}
-            # print(payload)
-            response['Purchase_Status_Update'] = db.update('purchases', key, payload)
-            response['Purchase_Status'] = purchase_status
+            key = {'purchase_uid': newRequest['pay_purchase_id']}
+            print(key, payload)
+
+            
+            # response['b'] = db.update('purchases', key, purchase_status)
+            response['purchase_table_update'] = db.update('purchases', key, payload)
+            response['purchase_status'] = purchase_status
+
+
+            # # DETERMINE PURCHASE STATUS
+
+            # # DETERMINE AMOUNT DUE
+            # # print("Purchase ID: ", newRequest['pay_purchase_id'])
+            # amt_due = db.execute("""
+            #         -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+            #         SELECT -- *,
+            #             pur_amount_due
+            #         FROM space.purchases
+            #         WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+            #         """)
+            # # print("Amount Due: ", amt_due['result'][0]['pur_amount_due'])
+
+            # # DETERMINE HOW MUCH WAS PAID BEFORE
+            # purchase_status = "Payment Error"
+
+            # # print(type(newRequest['pay_amount']))
+            # # print(type(amt_due['result'][0]['pur_amount_due']))
+
+            # if newRequest['pay_amount'] >= float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PAID"
+            # elif newRequest['pay_amount'] < float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PARTIALLY PAID"
+            
+            # # print(purchase_status)
+            # # print(newRequest['pay_purchase_id'])
+
+            # # purRequest = {}
+            # # purRequest['purchase_status'] = purchase_status
+            # # pur_response = db.insert('purchases', purRequest)
+
+            # key = {'purchase_uid': newRequest['pay_purchase_id']}
+            # # print(key)
+            # payload = {'purchase_status': purchase_status}
+            # # print(payload)
+            # response['Purchase_Status_Update'] = db.update('purchases', key, payload)
+            # response['Purchase_Status'] = purchase_status
 
         return response  
 
