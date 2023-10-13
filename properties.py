@@ -57,29 +57,28 @@ class PropertiesByOwner(Resource):
 
 
 class PropertiesByManager(Resource):
-    def get(self, owner_id, manager_id):
+    def get(self, owner_id, manager_business_id):
         print('in Properties by Manager')
         response = {}
         # conn = connect()
 
         print("Property Owner UID: ", owner_id)
-        print("Property Manager UID: ", manager_id)
+        print("Property Manager UID: ", manager_business_id)
 
         with connect() as db:
             print("in connect loop")
-            propertiesQuery = db.execute(""" 
+            response = db.execute(""" 
                     -- PROPERTIES BY MANAGER
                     SELECT *
                     FROM space.property_owner
                     LEFT JOIN space.properties ON property_id = property_uid
                     LEFT JOIN space.b_details ON contract_property_id = property_uid
-                    WHERE property_owner_id = '110-000003' AND contract_business_id = '600-000003';
+                    WHERE property_owner_id = \'""" + owner_id + """\' AND contract_business_id = \'""" + manager_business_id + """\';
                     """)
             
 
             # print("Query: ", propertiesQuery)
             # items = execute(propertiesQuery, "get", conn)
-            response["Properties By Manager"] = propertiesQuery
             return response
 
 # 1. rent due date

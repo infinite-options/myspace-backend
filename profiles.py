@@ -161,7 +161,7 @@ class BusinessProfile(Resource):
     
     def get(self):
         response = {}
-        where = { "business_type": request.args["type"] }
+        where = request.args.to_dict()
         with connect() as db:
             response = db.select('businessProfileInfo', where)
         return response
