@@ -36,7 +36,7 @@ from purchases import Bills, AddExpense, AddRevenue
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
-from contacts import ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
+from contacts import Contacts, ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
@@ -436,7 +436,6 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
 
-api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<string:manager_business_id>')
 
 
 api.add_resource(Rents, '/rents/<string:owner_id>')
@@ -444,8 +443,8 @@ api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
 api.add_resource(Properties, '/properties/<string:uid>', '/properties/' )
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
-api.add_resource(PropertyDashboardByOwner,
-                 '/propertyDashboardByOwner/<string:owner_id>')
+api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<string:manager_business_id>')
+api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
 
 
@@ -488,6 +487,8 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
 
+
+api.add_resource(Contacts, '/contacts/<string:uid>')
 api.add_resource(ContactsMaintenance, '/contactsMaintenance')
 # api.add_resource(ContactsOwnerContactsDetails,
 #                  '/contactsOwnerContactsDetails/<string:owner_uid>')
