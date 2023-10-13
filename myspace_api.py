@@ -22,7 +22,7 @@ from dashboard import ownerDashboard, managerDashboard, tenantDashboard, mainten
 
 from rents import Rents, RentDetails
 from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
-from properties import Properties, PropertiesByOwner, PropertyDashboardByOwner
+from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
 from employees import Employee
@@ -436,7 +436,7 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
 
-
+api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<string:manager_id>')
 
 
 api.add_resource(Rents, '/rents/<string:owner_id>')
