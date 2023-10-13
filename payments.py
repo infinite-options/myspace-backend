@@ -80,19 +80,23 @@ class Payments(Resource):
             # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
 
             purchase_status = "UNPAID"
-            # print(type(amt_due['result'][0]['amt_remaining']))
-            if float(amt_due['result'][0]['amt_remaining']) <= 0: purchase_status = "PAID"
-            # print(purchase_status)
+            print(type(amt_due['result'][0]['amt_remaining']))
+            if float(amt_due['result'][0]['amt_remaining']) <= 0: 
+                purchase_status = "PAID"
+                # print(purchase_status)
 
-            # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
-            payload = {'purchase_status': purchase_status}
-            key = {'purchase_uid': newRequest['pay_purchase_id']}
-            print(key, payload)
+                # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
+                payload = {'purchase_status': purchase_status}
+                key = {'purchase_uid': newRequest['pay_purchase_id']}
+                # print(key, payload)
 
-            
-            # response['b'] = db.update('purchases', key, purchase_status)
-            response['purchase_table_update'] = db.update('purchases', key, payload)
-            response['purchase_status'] = purchase_status
+                
+                # response['b'] = db.update('purchases', key, purchase_status)
+                response['purchase_table_update'] = db.update('purchases', key, payload)
+                response['purchase_status'] = purchase_status
+
+            else:
+                response['purchase_status'] = 'UNPAID'
 
 
             # # DETERMINE PURCHASE STATUS
