@@ -347,43 +347,57 @@ class Contacts(Resource):
 
             if business_type == "MANAGEMENT":
                 print("In Contacts - Get Management Contacts")
+                response["management_contacts"] = {}
                 with connect() as db:
                     print("in connect loop")
+                   
+                    #owners
+                    ('    -in Get Owner Contacts for Management')
                     profileQuery = db.execute(""" 
-                        -- FIND ALL CURRENT BUSINESS CONTACTS
                             SELECT owner_uid AS contact_uid, "Owner" AS contact_type, owner_first_name AS contact_first_name, owner_last_name AS contact_last_name, owner_phone_number AS contact_phone_numnber, owner_email AS contact_email, owner_address AS contact_address, owner_unit AS contact_unit, owner_city AS contact_city, owner_state AS contact_state, owner_zip AS contact_zip
                             FROM space.b_details AS b
                             LEFT JOIN space.o_details ON b.contract_property_id = property_id
                             WHERE b.business_uid = \'""" + uid + """\'
                             GROUP BY b.business_uid, owner_uid
-                            UNION
+                    """)
+                    
+                    if len(profileQuery["result"]) > 0:
+                        response["management_contacts"]["owners"] = profileQuery["result"]
+
+                    # tenants
+                    ('    -in Get Tenant Contacts for Management')
+                    profileQuery = db.execute(""" 
                             SELECT tenant_uid AS contact_uid, "Tenant" AS contact_type, tenant_first_name AS contact_first_name, tenant_last_name AS contact_last_name, tenant_phone_number AS contact_phone_numnber, tenant_email AS contact_email, tenant_address AS contact_address, tenant_unit AS contact_unit, tenant_city AS contact_city, tenant_state AS contact_state, tenant_zip AS contact_zip
                             FROM space.b_details AS b
                             LEFT JOIN space.leases ON b.contract_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                             WHERE b.business_uid = \'""" + uid + """\' AND lease_uid IS NOT NULL
                             GROUP BY b.business_uid, tenant_uid
-                            UNION
-                            SELECT m.business_uid AS contact_uid, "Business" AS contact_type, m.business_name AS contact_first_name, m.business_type AS contact_last_name, m.business_phone_number AS contact_phone_numnber, m.business_email AS contact_email, m.business_address AS contact_address, m.business_unit AS contact_unit, m.business_city AS contact_city, m.business_state AS contact_state, m.business_zip AS contact_zip
+                    """)
+                    
+                    if len(profileQuery["result"]) > 0:
+                        response["management_contacts"]["tenants"] = profileQuery["result"]
+
+
+                    #maintenance
+                    ('    -in Get Business(Maintenance?) Contacts for Management')
+                    profileQuery = db.execute(""" 
+                            SELECT m.business_uid AS contact_uid, "Maintenance" AS contact_type, m.business_name AS contact_first_name, m.business_type AS contact_last_name, m.business_phone_number AS contact_phone_numnber, m.business_email AS contact_email, m.business_address AS contact_address, m.business_unit AS contact_unit, m.business_city AS contact_city, m.business_state AS contact_state, m.business_zip AS contact_zip
                             FROM space.b_details AS b
                             LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
                             LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
-                            WHERE b.business_uid = \'""" + uid + """\' AND m.business_uid IS NOT NULL
+                            WHERE b.business_uid = \'""" + uid + """\' AND m.business_uid IS NOT NULL AND m.business_type = 'MAINTENANCE'
                             GROUP BY b.business_uid, m.business_uid;
-                            """)
+                    """)
                     
+                    if len(profileQuery["result"]) > 0:
+                        response["management_contacts"]["maintenance"] = profileQuery["result"]
 
-                    # print("Query: ", profileQuery)
-                    # items = execute(profileQuery, "get", conn)
-                    # print(items)
-                    # response["Profile"] = items["result"]
-
-                    response["Management_Contacts"] = profileQuery
                     return response
 
             elif business_type == "MAINTENANCE":
                 print("In Contacts - Get Maintenance Contacts")
-                response["Maintenance_Contacts"] = {}
+                response["maintenance_contacts"] = {}
 
                 print('    -in Get Tenant Contacts for Maintenance')
                 with connect() as db:
@@ -411,7 +425,8 @@ class Contacts(Resource):
                         GROUP BY 
                             tenant_uid;       
                     """)
-                    response["Maintenance_Contacts"]["Tenants"] = profileQuery["result"][0]
+                    if len(profileQuery["result"]) > 0:
+                        response["maintenance_contacts"]["tenants"] = profileQuery["result"][0]
 
 
 
@@ -440,14 +455,17 @@ class Contacts(Resource):
                             business_uid;
                         
                     """)
-                    response["Maintenance_Contacts"]["Managers"] = profileQuery["result"][0]
+                    if len(profileQuery["result"]) > 0:
+                        response["maintenance_contacts"]["managers"] = profileQuery["result"][0]
                     return response
                     
         #owner contacts
         elif uid.startswith("110"):
             # print('in Get Owner Contacts')
-            print('in Contacts - Get Manager Contacts for Owners')
+            print('in Contacts - Get Contacts for Owners')
+            response["owner_contacts"] = {}
 
+            print('    -in Get Manager Contacts for Owner')
             with connect() as db:
                 print("in connect loop")
                 profileQuery = db.execute(f"""
@@ -475,7 +493,50 @@ class Contacts(Resource):
                     GROUP BY
                         b.business_uid;
                 """)
-                response["Owner_Contacts"] = profileQuery
+
+                if len(profileQuery["result"]) > 0:
+                    response["owner_contacts"]["managers"] = profileQuery["result"]
+
+
+
+
+
+
+
+                print('    -in Get Tenant Contacts for Owner')
+                with connect() as db:
+                    print("in connect loop")
+                    #change query
+                    profileQuery = db.execute(f"""
+                        SELECT
+                            tenant_uid as contact_uid,
+                            "Tenant" as contact_type,
+                            tenant_first_name as contact_first_name,
+                            tenant_last_name as contact_last_name,
+                            tenant_phone_number as contact_phone_number,
+                            tenant_email as contact_email,
+                            tenant_address as contact_address,
+                            tenant_city as contact_city,
+                            tenant_state as contact_state,
+                            tenant_zip as contact_zip
+                        FROM 
+                            space.t_details as t
+                        LEFT JOIN
+                            space.leases as l on t.lt_lease_id = l.lease_uid
+                        LEFT JOIN 
+                            space.properties as p on l.lease_property_id = p.property_uid
+                        LEFT JOIN
+                            space.o_details as o on p.property_uid = o.property_id
+                        WHERE
+                            o.property_owner_id = '{uid}'
+                        GROUP BY
+                            t.tenant_uid;
+                    """)
+
+                    if len(profileQuery["result"]) > 0:
+                        response["owner_contacts"]["tenants"] = profileQuery["result"]
+
+                
                 return response
 
         else:

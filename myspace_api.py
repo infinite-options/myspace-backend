@@ -532,8 +532,6 @@ api.add_resource(Contacts,
 #                  '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
 
-
-
 api.add_resource(Announcements, '/announcements')
 api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 # api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
