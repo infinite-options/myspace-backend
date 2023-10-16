@@ -1,6 +1,6 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-from announcements import Announcements, AnnouncementsByUserId
+# from announcements import Announcements, AnnouncementsByUserId
 # from profiles import RolesByUserid
 from password import Password
 # To run program:  python3 myspace_api.py
@@ -136,7 +136,8 @@ app.config['MAIL_USERNAME'] = 'support@manifestmy.space'
 app.config['MAIL_PASSWORD'] = 'Support4MySpace'
 app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
 
-
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 # app.config['MAIL_DEBUG'] = True
@@ -149,6 +150,12 @@ s = URLSafeTimedSerializer('thisisaverysecretkey')
 # API
 api = Api(app)
 
+
+# Twilio settings
+from twilio.rest import Client
+
+# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 
 # convert to UTC time zone when testing in local time zone
 utc = pytz.utc
@@ -171,7 +178,138 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # For Push notification
 # isDebug = False
 # NOTIFICATION_HUB_KEY = os.environ.get('NOTIFICATION_HUB_KEY')
-# NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME')
+# NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
+def sendEmail(recipient, subject, body):
+    with app.app_context():
+        print(recipient, subject, body)
+        msg = Message(
+            sender=app.config["MAIL_USERNAME"],
+            recipients=[recipient],
+            subject=subject,
+            body=body
+        )
+        mail.send(msg)
+
+def Send_Twilio_SMS(message, phone_number):
+    items = {}
+    numbers = phone_number
+    message = message
+    numbers = list(set(numbers.split(',')))
+    client = Client(app.config['TWILIO_ACCOUNT_SID'], app.config['TWILIO_AUTH_TOKEN'])
+    for destination in numbers:
+        message = client.messages.create(
+            body=message,
+            from_='+19254815757',
+            to="+1" + destination
+        )
+    items['code'] = 200
+    items['Message'] = 'SMS sent successfully to the recipient'
+    return items
+
+class Announcements(Resource):
+    def post(self, user_id):
+        payload = request.get_json()
+        manager_id = user_id
+
+        with connect() as db:
+
+            for i in range(len(payload["announcement_receiver"])):
+                newRequest = {}
+                newRequest['announcement_title'] = payload["announcement_title"]
+                newRequest['announcement_msg'] = payload["announcement_msg"]
+                newRequest['announcement_sender'] = manager_id
+                newRequest['announcement_mode'] = payload["announcement_mode"]
+                newRequest['announcement_receiver'] = payload["announcement_receiver"][i]
+                user_query = db.execute(""" 
+                                    -- Find the user details
+                                    SELECT * 
+                                    FROM space.user_profiles AS b
+                                    WHERE b.profile_uid = \'""" + payload["announcement_receiver"][i] + """\';
+                                    """)
+                for j in range(len(payload["announcement_type"])):
+                    if payload["announcement_type"][j] == "Email":
+                        newRequest['Email'] = "1"
+                        user_email = user_query['result'][0]['user_email']
+                        sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+
+                    if payload["announcement_type"][j] == "Text":
+                        newRequest['Text'] = "1"
+                        user_phone = user_query['result'][0]['user_phone']
+                        msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+                        Send_Twilio_SMS(msg, user_phone)
+                    if payload["announcement_type"][j] == "App":
+                        newRequest['App'] = "1"
+                db.insert('announcements', newRequest)
+
+
+        return 200
+
+    def get(self, user_id):
+        with connect() as db:
+            if user_id.startswith("600-"):
+                response = db.select('announcements', {"announcement_sender": user_id})
+            else:
+                response = db.execute(""" 
+                                        -- Find the user details
+                                        SELECT * 
+                                        FROM space.announcements AS a
+                                        WHERE a.announcement_receiver = \'""" + user_id + """\'
+                                        AND a.App = '1'
+                                        ORDER BY a.announcement_date DESC;
+                                        """)
+        return response
+
+
+class LeaseExpiringNotify(Resource):
+    def get(self):
+        with connect() as db:
+            response = db.execute("""
+            SELECT *
+            FROM space.leases l
+            LEFT JOIN space.t_details t ON t.lt_lease_id = l.lease_uid
+            LEFT JOIN space.b_details b ON b.contract_property_id = l.lease_property_id
+            LEFT JOIN space.properties p ON p.property_uid = l.lease_property_id
+            WHERE l.lease_end = DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 2 MONTH), "%Y-%m-%d")
+            AND l.lease_status='ACTIVE'
+            AND b.contract_status='ACTIVE'; """)
+            print(response)
+            if len(response['result']) > 0:
+                for i in range(len(response['result'])):
+                    name = response['result'][i]['tenant_first_name'] + \
+                           ' ' + response['result'][i]['tenant_last_name']
+                    address = response['result'][i]["tenant_address"] + \
+                              ' ' + response['result'][i]["tenant_unit"] + ", " + response['result'][i]["tenant_city"] + \
+                              ', ' + response['result'][i]["tenant_state"] + \
+                              ' ' + response['result'][i]["tenant_zip"]
+                    start_date = response['result'][i]['lease_start']
+                    end_date = response['result'][i]['lease_end']
+                    business_name = response['result'][i]['business_name']
+                    phone = response['result'][i]['business_phone_number']
+                    email = response['result'][i]['business_email']
+                    recipient = response['result'][i]['tenant_email']
+                    subject = "Lease ending soon..."
+                    body = (
+                            "Hello " + str(name) + "," + "\n"
+                             "\n"
+                             "Property: " + str(address) + "\n"
+                           "This is your 2 month reminder, that your lease is ending. \n"
+                           "Here are your lease details: \n"
+                           "Start Date: " +
+                            str(start_date) + "\n"
+                          "End Date: " +
+                            str(end_date) + "\n"
+                        "Please contact your Property Manager if you wish to renew or end your lease before the time of expiry. \n"
+                        "\n"
+                        "Name: " + str(business_name) + "\n"
+                        "Phone: " + str(phone) + "\n"
+                         "Email: " + str(email) + "\n"
+                                 "\n"
+                                 "Thank you - Team Property Management\n\n"
+                    )
+                    sendEmail(recipient, subject, body)
+                    print('sending')
+
+                return response
 
 # Twilio settings
 # from twilio.rest import Client
@@ -231,7 +369,7 @@ class stripe_key(Resource):
 #         response = {}
 #         with connect() as db:
 #             property = db.execute("""
-#                     SELECT SUM(pur_amount_due) AS balance, 
+#                     SELECT SUM(pur_amount_due) AS balance,
 #                         CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date,
 #                         p.property_uid, p.property_address, p.property_unit
 #                     FROM space.properties p
@@ -269,9 +407,9 @@ class stripe_key(Resource):
 
 #         with connect() as db:
 #             print("in Manager dashboard")
-#             maintenanceQuery = db.execute(""" 
+#             maintenanceQuery = db.execute("""
 #                     -- MAINTENANCE STATUS BY Manager
-#                     SELECT -- * 
+#                     SELECT -- *
 #                         contract_business_id
 #                         , maintenance_request_status
 #                         , COUNT(maintenance_request_status) AS num
@@ -284,7 +422,7 @@ class stripe_key(Resource):
 #             # print("Query: ", maintenanceQuery)
 #             response["MaintenanceStatus"] = maintenanceQuery
 
-#             leaseQuery = db.execute(""" 
+#             leaseQuery = db.execute("""
 #                     -- LEASE STATUS BY USER
 #                     SELECT b_details.contract_business_id
 #                         , leases.lease_end
@@ -301,13 +439,13 @@ class stripe_key(Resource):
 #                         AND ld_type = "LEASE"
 #                         AND contract_business_id = \'""" + manager_id + """\'
 #                     GROUP BY MONTH(lease_end),
-#                             YEAR(lease_end); 
+#                             YEAR(lease_end);
 #                     """)
 
 #             # print("lease Query: ", leaseQuery)
 #             response["LeaseStatus"] = leaseQuery
 
-#             rentQuery = db.execute(""" 
+#             rentQuery = db.execute("""
 #                     -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
 #                     SELECT -- *,
 #                         contract_business_id
@@ -344,7 +482,7 @@ class stripe_key(Resource):
 
 #         with connect() as db:
 #             print("in owner dashboard")
-#             currentActivity = db.execute(""" 
+#             currentActivity = db.execute("""
 #                     -- CURRENT ACTIVITY
 #                     SELECT *,
 #                         COUNT(maintenance_status) AS num
@@ -367,7 +505,7 @@ class stripe_key(Resource):
 #             # print("Query: ", maintenanceQuery)
 #             response["CurrentActivities"] = currentActivity
 
-#             workOrders = db.execute(""" 
+#             workOrders = db.execute("""
 #                     -- WORK ORDERS
 #                     SELECT *
 #                     FROM (
@@ -402,7 +540,7 @@ class stripe_key(Resource):
 # GET requests
 
 
-# Dashboard Queries 
+# Dashboard Queries
 # Owner Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 # Manager Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
@@ -424,7 +562,7 @@ api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 
 # Maintenance Endpoints
-# Maintenance Status for Businesses (Property Manager and Maintenance Company) 
+# Maintenance Status for Businesses (Property Manager and Maintenance Company)
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 # Mainentance Requests GET for Owner and Tenant and POST and PUT for new and modified maintenance requests
 api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
@@ -508,7 +646,7 @@ api.add_resource(ContactsBusinessContactsMaintenanceDetails,
 #                  '/contactsMaintenanceTenantDetails/<string:business_uid>')
 
 api.add_resource(Announcements, '/announcements')
-api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
+# api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 # api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 # api.add_resource(RentPurchaseTest, '/RentPurchase')
@@ -532,6 +670,7 @@ api.add_resource(Password, '/password')
 # api.add_resource(UserSocialLogin, '/userSocialLogin/<string:email>')
 # api.add_resource(UserSocialSignup, '/userSocialSignup')
 
-
+#CRON JOBS
+api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=4000)
