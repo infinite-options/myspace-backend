@@ -102,11 +102,41 @@ class Properties(Resource):
             print("In Owner ID")
             with connect() as db:
                 # print("in connect loop")
-                propertiesQuery = db.execute(""" 
-                        -- PROPERTIES
-                        SELECT * FROM space.p_details
-                        WHERE owner_uid = \'""" + uid + """\'
-                        """)  
+                propertiesQuery = db.execute("""                
+                        -- PROPERTIES BY OWNER
+                        SELECT -- *,
+                            property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
+                            , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                            , num
+                            , CASE
+                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                    ELSE 'VACANT'
+                                END AS rent_status
+                        FROM (
+                            SELECT * FROM space.p_details
+                            WHERE owner_uid = \'""" + uid + """\'
+                            ) as p
+                        LEFT JOIN (
+                            SELECT * 
+                            FROM space.pp_details 
+                            WHERE owner_uid = \'""" + uid + """\'
+                            AND (purchase_type = "RENT" OR ISNULL(purchase_type))
+                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                            ) AS r ON property_uid = pur_property_id
+                        LEFT JOIN (
+                            SELECT -- * 
+                            property_owner_id
+                            , maintenance_property_id
+                            -- , maintenance_request_status
+                            , COUNT(maintenance_property_id) AS num
+                            FROM space.maintenanceRequests
+                            LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                            WHERE owner_uid = \'""" + uid + """\' AND maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
+                            GROUP BY maintenance_property_id
+                            ) AS m ON property_uid = maintenance_property_id;
+                        """)
 
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
