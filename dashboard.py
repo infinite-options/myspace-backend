@@ -24,7 +24,11 @@ class ownerDashboard(Resource):
                     -- MAINTENANCE STATUS BY OWNER
                     SELECT -- * 
                         property_owner_id
-                        , maintenance_request_status AS maintenance_status
+                        , CASE
+                            WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
+                            WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
+                            ELSE maintenance_request_status
+                        END AS maintenance_status
                         , COUNT(maintenance_request_status) AS num
                     FROM space.maintenanceRequests
                     LEFT JOIN space.o_details ON maintenance_property_id = property_id
@@ -228,26 +232,25 @@ class tenantDashboard(Resource):
                     """)
             response["property"] = property
 
+            if len(property['result']) > 0 and property['result'][0]['property_uid']:
+                maintenance = db.execute("""
+                        -- TENENT MAINTENANCE TICKETS
+                        SELECT mr.maintenance_images, mr.maintenance_title,
+                            mr.maintenance_request_status, mr.maintenance_priority,
+                            mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                        FROM space.maintenanceRequests mr
+                            INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
+                        WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
+                        """)
+                response["maintenanceRequests"] = maintenance
 
-            maintenance = db.execute("""
-                    -- TENENT MAINTENANCE TICKETS
-                    SELECT mr.maintenance_images, mr.maintenance_title,
-                        mr.maintenance_request_status, mr.maintenance_priority,
-                        mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
-                    FROM space.maintenanceRequests mr
-                        INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
-                    WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
-                    """)
-            response["maintenanceRequests"] = maintenance
-
-
-            announcements = db.execute("""
-                -- TENENT ANNOUNCEMENTS
-                SELECT * FROM announcements
-                WHERE announcement_receiver LIKE '%""" + tenant_id + """%'
-                AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
-                AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
-            response["announcements"] = announcements
+                announcements = db.execute("""
+                    -- TENENT ANNOUNCEMENTS
+                    SELECT * FROM announcements
+                    WHERE announcement_receiver LIKE '%""" + tenant_id + """%'
+                    AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
+                    AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
+                response["announcements"] = announcements
 
             return response
 

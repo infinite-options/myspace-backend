@@ -126,17 +126,21 @@ class DatabaseConnection:
             print('RESPONSE ERROR', response)
         return response
 
-    def select(self, tables, where={}, cols='*'):
+    def select(self, tables, where={}, cols='*', exact_match = True, limit = None):
         response = {}
         try:
             sql = f'SELECT {cols} FROM {tables}'
             for i, key in enumerate(where.keys()):
                 if i == 0:
                     sql += ' WHERE '
-                sql += f'{key} = %({key})s'
+                if exact_match:
+                    sql += f'{key} = %({key})s'
+                else:
+                    sql += f"{key} LIKE CONCAT('%%', %({key})s ,'%%')"
                 if i != len(where.keys()) - 1:
                     sql += ' AND '
-
+            if limit:
+                sql += f' LIMIT {limit}'
             response = self.execute(sql, where, 'get')
         except Exception as e:
             print(e)
