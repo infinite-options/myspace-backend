@@ -105,16 +105,22 @@ class Bills(Resource):
                     if bill_utility_type == "maintenance": 
                         queryResponse = (""" 
                             -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
-                                SELECT -- *
-                                    property_owner_id
-                                FROM space.property_owner
-                                WHERE property_id = \'""" + pur_property_id + """\';
+                            SELECT *, 
+                                IF(contract_status = "ACTIVE",contract_business_id,property_owner_id) AS responsible_party
+                            FROM space.property_owner
+                            LEFT JOIN (
+                                SELECT * 
+                                FROM space.contracts
+                                WHERE contract_status = 'ACTIVE'
+                                ) as c
+                            ON property_id = contract_property_id
+                            WHERE property_id = \'""" + pur_property_id + """\';
                             """)
 
                         # print("queryResponse is: ", queryResponse)
                         responsibleArray = db.execute(queryResponse)
                         # print("Responsible Party is: ", responsibleArray)
-                        responsibleParty = responsibleArray['result'][0]['property_owner_id']
+                        responsibleParty = responsibleArray['result'][0]['responsible_party']
                         # print("Responsible Party is: ", responsibleParty)
 
                     else:
