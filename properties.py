@@ -151,6 +151,8 @@ class Properties(Resource):
                     -- PROPERTIES BY MANAGER
                     SELECT -- *,
                         property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
+                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
+                        , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
                         , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
                         , num
                         , CASE
