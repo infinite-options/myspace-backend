@@ -24,7 +24,7 @@ class ownerDashboard(Resource):
                     -- MAINTENANCE STATUS BY OWNER
                     SELECT -- * 
                         property_owner_id
-                        , maintenance_request_status
+                        , maintenance_request_status AS maintenance_status
                         , COUNT(maintenance_request_status) AS num
                     FROM space.maintenanceRequests
                     LEFT JOIN space.o_details ON maintenance_property_id = property_id
