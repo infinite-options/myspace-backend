@@ -475,7 +475,14 @@ class Contacts(Resource):
                             tenant_address as contact_address,
                             tenant_city as contact_city,
                             tenant_state as contact_state,
-                            tenant_zip as contact_zip 
+                            tenant_zip as contact_zip,
+                            tenant_photo_url as contact_photo_url,
+                            tenant_adult_occupants as contact_adult_occupants,
+                            tenant_children_occupants as contact_children_occupants,
+                            tenant_pet_occupants as contact_pet_occupants,
+                            tenant_vehicle_info as contact_vehicle_info,
+                            tenant_drivers_license_number as contact_drivers_license_number,
+                            tenant_drivers_license_state as contact_drivers_license_state 
                         FROM 
                             space.t_details as t 
                         INNER JOIN 
@@ -506,7 +513,13 @@ class Contacts(Resource):
                             business_address as contact_address,
                             business_city as contact_city,
                             business_state as contact_state,
-                            business_zip as contact_zip 
+                            business_zip as contact_zip,
+                            b.business_paypal AS contact_paypal,
+                            b.business_venmo AS contact_venmo,
+                            b.business_apple_pay AS contact_apple_pay,
+                            b.business_zelle AS contact_zelle,
+                            b.business_photo_url AS contact_photo_url,
+                            b.business_ein_number as contact_ein_number                         
                         FROM 
                             space.m_details as m
                         INNER JOIN 
