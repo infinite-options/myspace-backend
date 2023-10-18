@@ -322,6 +322,7 @@ class ContactsMaintenanceTenantDetails(Resource):
             response["Maintenance_Contacts_Tenants"] = profileQuery
             return response
 
+
 class Contacts(Resource):
     # decorators = [jwt_required()]
 
@@ -354,36 +355,9 @@ class Contacts(Resource):
                     #owners
                     ('    -in Get Owner Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT 
-                                owner_uid AS contact_uid,
-                                "Owner" AS contact_type,
-                                owner_first_name AS contact_first_name,
-                                owner_last_name AS contact_last_name,
-                                owner_phone_number AS contact_phone_number,
-                                owner_email AS contact_email,
-                                owner_address AS contact_address,
-                                owner_unit AS contact_unit,
-                                owner_city AS contact_city,
-                                owner_state AS contact_state,
-                                owner_zip AS contact_zip,
-                                owner_photo_url as contact_photo_url,
-                                owner_paypal AS contact_paypal,
-                                owner_venmo AS contact_venmo,
-                                owner_apple_pay AS contact_apple_pay,
-                                owner_zelle AS contact_zelle,
-                                owner_ein_number AS contact_ein_number,
-                                COUNT(property_id) AS property_count,
-                                JSON_ARRAYAGG(
-                                    JSON_OBJECT(
-                                        'property_address', p.property_address,
-                                        'property_city', p.property_city,
-                                        'property_state', p.property_state,
-                                        'property_zip', p.property_zip
-                                    )
-                                ) AS properties
+                            SELECT owner_uid AS contact_uid, "Owner" AS contact_type, owner_first_name AS contact_first_name, owner_last_name AS contact_last_name, owner_phone_number AS contact_phone_numnber, owner_email AS contact_email, owner_address AS contact_address, owner_unit AS contact_unit, owner_city AS contact_city, owner_state AS contact_state, owner_zip AS contact_zip
                             FROM space.b_details AS b
-                            LEFT JOIN space.o_details AS o ON b.contract_property_id = o.property_id
-                            LEFT JOIN space.properties AS p ON o.property_id = p.property_uid
+                            LEFT JOIN space.o_details ON b.contract_property_id = property_id
                             WHERE b.business_uid = \'""" + uid + """\'
                             GROUP BY b.business_uid, owner_uid
                     """)
@@ -394,25 +368,7 @@ class Contacts(Resource):
                     # tenants
                     ('    -in Get Tenant Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT 
-                                tenant_uid AS contact_uid,
-                                "Tenant" AS contact_type,
-                                tenant_first_name AS contact_first_name,
-                                tenant_last_name AS contact_last_name,
-                                tenant_phone_number AS contact_phone_number,
-                                tenant_email AS contact_email, 
-                                tenant_address AS contact_address,
-                                tenant_unit AS contact_unit,
-                                tenant_city AS contact_city,
-                                tenant_state AS contact_state,
-                                tenant_zip AS contact_zip,
-                                tenant_photo_url as contact_photo_url,
-                                tenant_adult_occupants as contact_adult_occupants,
-                                tenant_children_occupants as contact_children_occupants,
-                                tenant_pet_occupants as contact_pet_occupants,
-                                tenant_vehicle_info as contact_vehicle_info,
-                                tenant_drivers_license_number as contact_drivers_license_number,
-                                tenant_drivers_license_state as contact_drivers_license_state
+                            SELECT tenant_uid AS contact_uid, "Tenant" AS contact_type, tenant_first_name AS contact_first_name, tenant_last_name AS contact_last_name, tenant_phone_number AS contact_phone_numnber, tenant_email AS contact_email, tenant_address AS contact_address, tenant_unit AS contact_unit, tenant_city AS contact_city, tenant_state AS contact_state, tenant_zip AS contact_zip
                             FROM space.b_details AS b
                             LEFT JOIN space.leases ON b.contract_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lease_uid = lt_lease_id
@@ -425,26 +381,9 @@ class Contacts(Resource):
 
 
                     #maintenance
-                    ('    -in Get Maintenance Contacts for Management')
+                    ('    -in Get Business(Maintenance?) Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT 
-                                m.business_uid AS contact_uid,
-                                "Maintenance" AS contact_type,
-                                m.business_name AS contact_first_name,
-                                m.business_type AS contact_last_name,
-                                m.business_phone_number AS contact_phone_number,
-                                m.business_email AS contact_email,
-                                m.business_address AS contact_address,
-                                m.business_unit AS contact_unit,
-                                m.business_city AS contact_city, 
-                                m.business_state AS contact_state,
-                                m.business_zip AS contact_zip,
-                                m.business_photo_url as contact_photo_url,
-                                m.business_paypal AS contact_paypal,
-                                m.business_venmo AS contact_venmo,
-                                m.business_apple_pay AS contact_apple_pay,
-                                m.business_zelle AS contact_zelle,
-                                m.business_locations AS contact_business_locations                                             
+                            SELECT m.business_uid AS contact_uid, "Maintenance" AS contact_type, m.business_name AS contact_first_name, m.business_type AS contact_last_name, m.business_phone_number AS contact_phone_numnber, m.business_email AS contact_email, m.business_address AS contact_address, m.business_unit AS contact_unit, m.business_city AS contact_city, m.business_state AS contact_state, m.business_zip AS contact_zip
                             FROM space.b_details AS b
                             LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
                             LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
@@ -475,14 +414,7 @@ class Contacts(Resource):
                             tenant_address as contact_address,
                             tenant_city as contact_city,
                             tenant_state as contact_state,
-                            tenant_zip as contact_zip,
-                            tenant_photo_url as contact_photo_url,
-                            tenant_adult_occupants as contact_adult_occupants,
-                            tenant_children_occupants as contact_children_occupants,
-                            tenant_pet_occupants as contact_pet_occupants,
-                            tenant_vehicle_info as contact_vehicle_info,
-                            tenant_drivers_license_number as contact_drivers_license_number,
-                            tenant_drivers_license_state as contact_drivers_license_state 
+                            tenant_zip as contact_zip 
                         FROM 
                             space.t_details as t 
                         INNER JOIN 
@@ -495,7 +427,7 @@ class Contacts(Resource):
                             tenant_uid;       
                     """)
                     if len(profileQuery["result"]) > 0:
-                        response["maintenance_contacts"]["tenants"] = profileQuery["result"]
+                        response["maintenance_contacts"]["tenants"] = profileQuery["result"][0]
 
 
 
@@ -513,13 +445,7 @@ class Contacts(Resource):
                             business_address as contact_address,
                             business_city as contact_city,
                             business_state as contact_state,
-                            business_zip as contact_zip,
-                            b.business_paypal AS contact_paypal,
-                            b.business_venmo AS contact_venmo,
-                            b.business_apple_pay AS contact_apple_pay,
-                            b.business_zelle AS contact_zelle,
-                            b.business_photo_url AS contact_photo_url,
-                            b.business_ein_number as contact_ein_number                         
+                            business_zip as contact_zip 
                         FROM 
                             space.m_details as m
                         INNER JOIN 
@@ -531,7 +457,7 @@ class Contacts(Resource):
                         
                     """)
                     if len(profileQuery["result"]) > 0:
-                        response["maintenance_contacts"]["managers"] = profileQuery["result"]
+                        response["maintenance_contacts"]["managers"] = profileQuery["result"][0]
                     return response
                     
         #owner contacts
@@ -555,21 +481,8 @@ class Contacts(Resource):
                         b.business_city AS contact_city,
                         b.business_state AS contact_state,
                         b.business_zip AS contact_zip,
-                        b.business_paypal AS contact_paypal,
-                        b.business_venmo AS contact_venmo,
-                        b.business_apple_pay AS contact_apple_pay,
-                        b.business_zelle AS contact_zelle,
-                        b.business_photo_url AS contact_photo_url,
-                        b.business_ein_number as contact_ein_number,
                         COUNT(p.property_uid) AS property_count,
-                        JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                'property_address', p.property_address,
-                                'property_city', p.property_city,
-                                'property_state', p.property_state,
-                                'property_zip', p.property_zip
-                            )
-                        ) AS properties
+                        GROUP_CONCAT(p.property_address) AS property_addresses
                     FROM
                         space.b_details AS b
                     LEFT JOIN
@@ -586,6 +499,11 @@ class Contacts(Resource):
                     response["owner_contacts"]["managers"] = profileQuery["result"]
 
 
+
+
+
+
+
                 print('    -in Get Tenant Contacts for Owner')
                 with connect() as db:
                     print("in connect loop")
@@ -597,19 +515,11 @@ class Contacts(Resource):
                             tenant_first_name as contact_first_name,
                             tenant_last_name as contact_last_name,
                             tenant_phone_number as contact_phone_number,
-                            tenant_ssn as contact_ssn,
                             tenant_email as contact_email,
                             tenant_address as contact_address,
                             tenant_city as contact_city,
                             tenant_state as contact_state,
-                            tenant_zip as contact_zip,
-                            tenant_photo_url as contact_photo_url,
-                            tenant_adult_occupants as contact_adult_occupants,
-                            tenant_children_occupants as contact_children_occupants,
-                            tenant_pet_occupants as contact_pet_occupants,
-                            tenant_vehicle_info as contact_vehicle_info,
-                            tenant_drivers_license_number as contact_drivers_license_number,
-                            tenant_drivers_license_state as contact_drivers_license_state
+                            tenant_zip as contact_zip
                         FROM 
                             space.t_details as t
                         LEFT JOIN

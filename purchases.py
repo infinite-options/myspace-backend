@@ -185,7 +185,10 @@ class Bills(Resource):
                     # print(new_purchase_uid)
 
                     # Determine if this is a revenue or expense
-                    if responsibleParty[:3] == "350": pur_cf_type = "revenue"
+                    if responsibleParty[:3] == "350": 
+                        pur_cf_type = "revenue"
+                        pur_receiver = ""
+
                     else: pur_cf_type = "expense"
                     # print(pur_cf_type)
 
@@ -204,7 +207,7 @@ class Bills(Resource):
                             , purchase_status = "UNPAID"
                             , pur_notes = "THIS IS A TEST"
                             , pur_description = "THIS IS ONLY A TEST"
-                            , pur_receiver = "600-000003"
+                            , pur_receiver = \'""" + bill_created_by + """\'
                             , pur_payer = \'""" + responsibleParty + """\'
                             , pur_initiator = \'""" + bill_created_by + """\';
                         """)
