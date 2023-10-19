@@ -41,6 +41,7 @@ from contacts import Contacts, ContactsMaintenance, ContactsOwnerContactsDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
+from listings import Listings
 from managers import SearchManager
 from status_update import StatusUpdate
 from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
@@ -655,6 +656,7 @@ api.add_resource(Announcements, '/announcements/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')
+api.add_resource(Listings, '/listings')
 
 api.add_resource(Account, '/account')
 

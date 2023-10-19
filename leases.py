@@ -105,3 +105,69 @@ class LeaseDetails(Resource):
 
 
             return response
+
+
+
+
+
+class LeaseApplication(Resource):
+    # decorators = [jwt_required()]
+
+    def post(self):
+        print("In Add Expense")
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+            # print(data)
+
+            fields = [
+                "pur_property_id"
+                , "purchase_type"
+                , "pur_cf_type"
+                , "purchase_date"
+                , "pur_due_date"
+                , "pur_amount_due"
+                , "purchase_status"
+                , "pur_notes"
+                , "pur_description"
+                , "pur_receiver"
+                , "pur_initiator"
+                , "pur_payer"
+            ]
+
+            fields = [
+                "lease_property_id"
+                , "lease_start"
+                , "lease_end"
+                , "lease_status"
+                , "lease_assigned_contacts"
+                , "lease_documents"
+                , "lease_adults"
+                , "lease_children"
+                , "lease_pets"
+                , "lease_vehicles"
+                , "lease_referred"
+            ]
+
+            # PUTS JSON DATA INTO EACH FIELD
+            newRequest = {}
+            for field in fields:
+                newRequest[field] = data.get(field)
+                # print(field, " = ", newRequest[field])
+
+
+            # # GET NEW UID
+            # print("Get New Request UID")
+            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequest['purchase_uid'] = newRequestID
+            # print(newRequestID)
+
+            # SET TRANSACTION DATE TO NOW
+            newRequest['lease_effective_date'] = datetime.date.today()
+
+            # print(newRequest)
+
+            response = db.insert('leases', newRequest)
+            response['Lease_UID'] = newRequestID
+
+        return response
