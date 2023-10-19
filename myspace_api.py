@@ -40,6 +40,7 @@ from contacts import Contacts, ContactsMaintenance, ContactsOwnerContactsDetails
 from contracts import Contracts, ContractsByBusiness
 from settings import Account
 from lists import List
+from listings import Listings
 from managers import SearchManager
 from status_update import StatusUpdate
 from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
@@ -447,7 +448,7 @@ api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<s
 api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
 
 
-
+api.add_resource(Listings, '/listings' )
 
 api.add_resource(Quotes, '/quotes')
 # api.add_resource(QuotesByBusiness, '/quotesByBusiness')
