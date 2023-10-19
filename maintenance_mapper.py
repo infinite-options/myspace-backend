@@ -126,7 +126,7 @@ def mapMaintenanceForPropertyManager(response):
     for record in response['result']:
         if record['maintenance_request_status'] == 'NEW' or record['maintenance_request_status'] == 'INFO':
             mapped_items['NEW REQUEST']['maintenance_items'].append(record)
-        elif record['maintenance_request_status'] == 'COMPLETED':
+        elif record['maintenance_request_status'] == 'COMPLETED' or record['maintenance_request_status'] == 'CANCELLED':
             mapped_items['COMPLETED']['maintenance_items'].append(record)
         elif record['quote_status'] == 'REQUESTED' or record['quote_status'] == 'SENT' \
                 or record['quote_status'] == 'WITHDRAWN' or record['quote_status'] == 'REFUSED' \
