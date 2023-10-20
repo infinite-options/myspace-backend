@@ -29,7 +29,7 @@ from employees import Employee
 from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
-from leases import LeaseDetails
+from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from purchases import Bills, AddExpense, AddRevenue
@@ -625,6 +625,7 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(Documents, '/documents/<string:user_id>')
 
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
+api.add_resource(LeaseApplication, '/leaseApplication')
 
 
 api.add_resource(Contacts, '/contacts/<string:uid>')
