@@ -594,7 +594,7 @@ api.add_resource(Quotes, '/quotes')
 # api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 api.add_resource(Bills, '/bills')
-# api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
+api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
