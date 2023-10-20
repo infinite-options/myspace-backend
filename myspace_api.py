@@ -579,7 +579,7 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 api.add_resource(Rents, '/rents/<string:owner_id>')
 api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
 
-api.add_resource(Properties, '/properties/<string:uid>', '/properties/' )
+api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
 api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<string:manager_business_id>')
 api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')

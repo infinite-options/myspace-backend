@@ -120,26 +120,25 @@ class LeaseApplication(Resource):
     def post(self):
         print("In Lease Application POST")
         response = {}
+
+        data = request.get_json(force=True)
+        print(data)
+
         with connect() as db:
-            data = request.get_json(force=True)
-            print(data)
-
             response = db.insert('leases',data)
-
             return response
         
 
     def put(self):
         print("In Lease Application PUT")
         response = {}
-        # payload = request.form.to_dict()  <== PREVIOUS STATMENT FROM properties.py
         
         data = request.get_json(force=True)
+        # data = request.form.to_dict()  <== IF data came in as Form Data
         print(data)
         
         if data.get('lease_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
-       
        
         key = {'lease_uid': data.pop('lease_uid')}
         print(key)

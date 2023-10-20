@@ -157,7 +157,7 @@ class Documents(Resource):
 
         with connect() as db:
             print("in connect loop")
-            if user_id.startswith("600-"):
+            if user_id.startswith("110-"):
                 documentQuery = db.execute(""" 
                         -- OWNER DOCUMENTS
                         SELECT property_owner_id, po_owner_percent
@@ -172,16 +172,16 @@ class Documents(Resource):
                         """)
             else:
                 documentQuery = db.execute(""" 
-                                    -- TENANT DOCUMENTS
-                                    SELECT tenant_uid, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                                        ,lease_uid, lease_property_id, lease_end, lease_status
-                                        ,tenant_documents
-                                        ,lease_documents
-                                    FROM space.tenantProfileInfo
-                                    LEFT JOIN space.lease_tenant ON tenant_uid = lt_tenant_id
-                                    LEFT JOIN space.leases ON lease_uid = lt_lease_id
-                                    WHERE tenant_uid = \'""" + user_id + """\';
-                                    """)
+                        -- TENANT DOCUMENTS
+                        SELECT tenant_uid, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                            ,lease_uid, lease_property_id, lease_end, lease_status
+                            ,tenant_documents
+                            ,lease_documents
+                        FROM space.tenantProfileInfo
+                        LEFT JOIN space.lease_tenant ON tenant_uid = lt_tenant_id
+                        LEFT JOIN space.leases ON lease_uid = lt_lease_id
+                        WHERE tenant_uid = \'""" + user_id + """\';
+                        """)
 
             # print("Query: ", documentQuery)
             # items = execute(documentQuery, "get", conn)

@@ -342,8 +342,10 @@ class Properties(Resource):
     
     
     def put(self):
+        print("In update Property")
         response = {}
         payload = request.form.to_dict()
+        print(payload)
         if payload.get('property_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'property_uid': payload.pop('property_uid')}
