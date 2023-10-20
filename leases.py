@@ -11,6 +11,7 @@ import datetime
 # from datetime import date, datetime, timedelta
 # from dateutil.relativedelta import relativedelta
 # import calendar
+from werkzeug.exceptions import BadRequest
 
 
 class LeaseDetails(Resource):
@@ -114,8 +115,10 @@ class LeaseDetails(Resource):
 class LeaseApplication(Resource):
     # decorators = [jwt_required()]
 
+    # Trigger to generate UIDs created using Alter Table in MySQL
+
     def post(self):
-        print("In Lease Application")
+        print("In Lease Application POST")
         response = {}
         with connect() as db:
             data = request.get_json(force=True)
@@ -124,43 +127,23 @@ class LeaseApplication(Resource):
             response = db.insert('leases',data)
 
             return response
+        
 
-        #     fields = [
-        #         "lease_property_id"
-        #         , "lease_start"
-        #         , "lease_end"
-        #         , "lease_status"
-        #         , "lease_assigned_contacts"
-        #         , "lease_documents"
-        #         , "lease_adults"
-        #         , "lease_children"
-        #         , "lease_pets"
-        #         , "lease_vehicles"
-        #         , "lease_referred"
-        #         , "lease_effective_date"
-        #     ]
-
-        #     # PUTS JSON DATA INTO EACH FIELD
-        #     newRequest = {}
-        #     for field in fields:
-        #         newRequest[field] = data.get(field)
-        #         print(field, " = ", newRequest[field])
-
-        #     print("Completed importing JSON")
-        #     # # GET NEW UID
-        #     # print("Get New Request UID")
-        #     # newRequestID = db.call('new_lease_uid')['result'][0]['new_id']
-        #     # newRequest['lease_uid'] = newRequestID
-        #     # print(newRequestID)
-
-        #     # SET TRANSACTION DATE TO NOW
-        #     print("Get Date")
-        #     print(str(datetime.date.today()))
-        #     # newRequest['lease_effective_date'] = str(datetime.date.today())
-
-        #     print(newRequest)
-
-        #     response = db.insert('leases', newRequest)
-        #     # response['Lease_UID'] = newRequestID
-
-        # return response
+    def put(self):
+        print("In Lease Application PUT")
+        response = {}
+        # payload = request.form.to_dict()  <== PREVIOUS STATMENT FROM properties.py
+        
+        data = request.get_json(force=True)
+        print(data)
+        
+        if data.get('lease_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+       
+       
+        key = {'lease_uid': data.pop('lease_uid')}
+        print(key)
+        
+        with connect() as db:
+            response = db.update('leases', key, data)
+        return response
