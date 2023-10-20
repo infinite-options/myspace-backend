@@ -113,7 +113,7 @@ class Properties(Resource):
                             , contract_documents
                             , business_uid, p.business_name, p.business_email, p.business_phone_number
                             , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num
+                            , num AS num_open_maintenace_req
                             , CASE
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
@@ -162,7 +162,7 @@ class Properties(Resource):
                             , contract_documents
                             , business_uid, p.business_name, p.business_email, p.business_phone_number
                             , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num
+                            , num AS num_open_maintenace_req
                             , CASE
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
@@ -205,7 +205,7 @@ class Properties(Resource):
                         SELECT -- *,
                             property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
                             , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num
+                            , num AS num_open_maintenace_req
                             , CASE
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                     WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
