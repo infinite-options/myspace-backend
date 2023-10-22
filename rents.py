@@ -66,7 +66,7 @@ class Rents(Resource):
                     """)
 
             # print("Query: ", propertiesQuery)
-            response["Property"] = rentsQuery
+            response["RentStatus"] = rentsQuery
             return response
         
         elif uid[:3] == '600':
@@ -104,7 +104,7 @@ class Rents(Resource):
                     """) 
 
             # print("Query: ", propertiesQuery)
-            response["Property"] = rentsQuery
+            response["RentStatus"] = rentsQuery
             return response
         
         # elif uid[:3] == '350':
@@ -117,7 +117,7 @@ class Rents(Resource):
         
         else:
             print("UID Not found")
-            response["Property"] = "UID Not Found"
+            response["RentStatus"] = "UID Not Found"
             return response
 
 

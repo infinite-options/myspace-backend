@@ -6,13 +6,6 @@ from data_pm import connect
 
 
 class Contracts(Resource):
-    def get(self):
-        print('in Contracts')
-        # payload = request.get_json()
-        with connect() as db:
-            response = db.select('contracts')
-        return response
-
     def post(self):
         print('in Contracts')
         payload = request.get_json()
