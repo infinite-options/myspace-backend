@@ -24,16 +24,18 @@ import calendar
 
 
 class Rents(Resource):
-    def get(self, owner_id):
+    def get(self, uid):
         print("in Get Rent Status")
 
         response = {}
 
         # print("Property UID: ", property_id)
 
-        with connect() as db:
-            print("in connect loop")
-            rentQuery = db.execute(""" 
+        if uid[:3] == '110':
+            print("In Owner ID")
+            with connect() as db:
+                # print("in connect loop")
+                rentsQuery = db.execute("""  
                     -- RENT STATUS BY PROPERTY FOR OWNER PAGE
                     SELECT -- *,
                         property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
@@ -52,7 +54,7 @@ class Rents(Resource):
                             END AS rent_status
                     FROM (
                         SELECT * FROM space.p_details
-                        WHERE owner_uid = \'""" + owner_id + """\'
+                        WHERE owner_uid = \'""" + uid + """\'
                         ) as p
                     LEFT JOIN (
                         SELECT * 
@@ -63,10 +65,68 @@ class Rents(Resource):
                         ) AS r ON property_uid = pur_property_id
                     """)
 
-            
-            # print("Query: ", maintenanceQuery)
-            response["RentStatus"] = rentQuery
+            # print("Query: ", propertiesQuery)
+            response["Property"] = rentsQuery
             return response
+        
+        elif uid[:3] == '600':
+            print("In Business ID")
+            with connect() as db:
+                # print("in connect loop")
+                rentsQuery = db.execute(""" 
+                    -- RENT STATUS BY MANAGER FOR MANAGER PAGE
+                    SELECT -- *,
+                        property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
+                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
+                        , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
+                        , tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
+                        , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
+                        , contract_documents
+                        , business_uid, p.business_name, p.business_email, p.business_phone_number
+                        , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                    -- 	, num AS num_open_maintenace_req
+                        , CASE
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status
+                    FROM (
+                        SELECT * FROM space.p_details
+                        WHERE business_uid = \'""" + uid + """\'
+                        ) as p
+                    LEFT JOIN (
+                        SELECT * 
+                        FROM space.pp_details 
+                        WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        ) AS r ON property_uid = pur_property_id;
+                    """) 
+
+            # print("Query: ", propertiesQuery)
+            response["Property"] = rentsQuery
+            return response
+        
+        # elif uid[:3] == '350':
+        #     print("In Tenant ID")
+            
+
+        #     # print("Query: ", propertiesQuery)
+        #     response["Property"] = propertiesQuery
+        #     return response
+        
+        else:
+            print("UID Not found")
+            response["Property"] = "UID Not Found"
+            return response
+
+
+
+
+
+
+
+       
 
 
 
