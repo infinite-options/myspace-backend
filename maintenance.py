@@ -436,7 +436,13 @@ class MaintenanceStatus(Resource):
                             , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                        LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        LEFT JOIN (
+                            SELECT -- *
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                , sum(bill_amount) AS bill_amount
+                            FROM space.bills
+                            GROUP BY bill_maintenance_quote_id
+                            ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
                         LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
@@ -510,7 +516,13 @@ class MaintenanceStatus(Resource):
                                 , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                             FROM space.m_details
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                            LEFT JOIN (
+                                SELECT -- *
+                                    bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                    , sum(bill_amount) AS bill_amount
+                                FROM space.bills
+                                GROUP BY bill_maintenance_quote_id
+                                ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
                             LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
@@ -561,7 +573,13 @@ class MaintenanceStatus(Resource):
                                 , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                             FROM space.m_details
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                            LEFT JOIN (
+                                SELECT -- *
+                                    bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                    , sum(bill_amount) AS bill_amount
+                                FROM space.bills
+                                GROUP BY bill_maintenance_quote_id
+                                ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
                             LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
@@ -617,7 +635,13 @@ class MaintenanceStatus(Resource):
                             , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                        LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        LEFT JOIN (
+                            SELECT -- *
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                , sum(bill_amount) AS bill_amount
+                            FROM space.bills
+                            GROUP BY bill_maintenance_quote_id
+                            ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
                         LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
@@ -668,7 +692,13 @@ class MaintenanceStatus(Resource):
                             , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                        LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        LEFT JOIN (
+                            SELECT -- *
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                , sum(bill_amount) AS bill_amount
+                            FROM space.bills
+                            GROUP BY bill_maintenance_quote_id
+                            ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
                         LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id

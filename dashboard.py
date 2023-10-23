@@ -114,19 +114,17 @@ class managerDashboard(Resource):
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
                             , CASE
-                                    WHEN quote_status = "REQUESTED" OR quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "QUOTES REQUESTED"
-                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "QUOTES ACCEPTED"
-                                    WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
-                                    WHEN quote_status = "WITHDRAWN" OR quote_status = "FINISHED" THEN "COMPLETED"
-                                    WHEN quote_status = "COMPLETED"  THEN "PAID"
-                                    WHEN quote_status IS NULL AND (maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO') THEN "NEW REQUEST"
-                                    WHEN quote_status IS NULL AND (maintenance_request_status = 'COMPLETED' OR maintenance_request_status = 'CANCELLED') THEN "COMPLETED"
-                                    WHEN quote_status IS NULL AND maintenance_request_status = 'SCHEDULED' THEN "SCHEDULED"
-                                    WHEN quote_status IS NULL AND maintenance_request_status = 'PROCESSING' THEN "QUOTES REQUESTED"
+                                    WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
+                                    WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
+                                    WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
+                                    WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
+                                      OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
+                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
+                                    WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
                                     ELSE quote_status
                                 END AS maintenance_status
                         FROM space.m_details
-                        LEFT JOIN space.contracts ON maintenance_property_id = contract_property_id
+                        LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         WHERE contract_business_id = \'""" + manager_id + """\'
                         ) AS ms
                     GROUP BY maintenance_status;

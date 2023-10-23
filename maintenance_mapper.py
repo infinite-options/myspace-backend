@@ -124,24 +124,46 @@ def mapMaintenanceForPropertyManager(response):
 
     mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in status_colors.items()}
     for record in response['result']:
+
         if record['maintenance_request_status'] == 'NEW' or record['maintenance_request_status'] == 'INFO':
             mapped_items['NEW REQUEST']['maintenance_items'].append(record)
+
         elif record['maintenance_request_status'] == 'SCHEDULED':
             mapped_items['SCHEDULED']['maintenance_items'].append(record)
-        elif record['maintenance_request_status'] == 'COMPLETED' or record['maintenance_request_status'] == 'CANCELLED':
+
+        elif record['maintenance_request_status'] == 'CANCELLED' or record['quote_status'] == 'FINISHED':
             mapped_items['COMPLETED']['maintenance_items'].append(record)
-        elif record['quote_status'] == 'REQUESTED' or record['quote_status'] == 'SENT' \
-                or record['quote_status'] == 'WITHDRAWN' or record['quote_status'] == 'REFUSED' \
-                or record['quote_status'] == 'REJECTED':
+
+        elif record['quote_status'] == 'SENT' or record['quote_status'] == 'REFUSED' or record['quote_status'] == 'REQUESTED' or record['quote_status'] == 'REJECTED' or record['quote_status'] == 'WITHDRAWN':
             mapped_items['QUOTES REQUESTED']['maintenance_items'].append(record)
+
         elif record['quote_status'] == 'ACCEPTED' or record['quote_status'] == 'SCHEDULE':
-            mapped_items['QUOTES ACCEPTED']['maintenance_items'].append(record)
-        elif record['quote_status'] == 'SCHEDULED' or record['quote_status'] == 'RESCHEDULE':
-            mapped_items['SCHEDULED']['maintenance_items'].append(record)
-        elif record['quote_status'] == 'WITHDRAWN' or record['quote_status'] == 'FINISHED':
-            mapped_items['COMPLETED']['maintenance_items'].append(record)
+            mapped_items['QUOTES ACCEPTED']['maintenance_items'].append(record)     
+
         elif record['quote_status'] == 'COMPLETED':
             mapped_items['PAID']['maintenance_items'].append(record)
+
+
+
+        # ORIGINAL MAPPING
+        # if record['maintenance_request_status'] == 'NEW' or record['maintenance_request_status'] == 'INFO':
+        #     mapped_items['NEW REQUEST']['maintenance_items'].append(record)
+        # elif record['maintenance_request_status'] == 'SCHEDULED':
+        #     mapped_items['SCHEDULED']['maintenance_items'].append(record)
+        # elif record['maintenance_request_status'] == 'COMPLETED' or record['maintenance_request_status'] == 'CANCELLED':
+        #     mapped_items['COMPLETED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'REQUESTED' or record['quote_status'] == 'SENT' \
+        #         or record['quote_status'] == 'WITHDRAWN' or record['quote_status'] == 'REFUSED' \
+        #         or record['quote_status'] == 'REJECTED':
+        #     mapped_items['QUOTES REQUESTED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'ACCEPTED' or record['quote_status'] == 'SCHEDULE':
+        #     mapped_items['QUOTES ACCEPTED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'SCHEDULED' or record['quote_status'] == 'RESCHEDULE':
+        #     mapped_items['SCHEDULED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'WITHDRAWN' or record['quote_status'] == 'FINISHED':
+        #     mapped_items['COMPLETED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'COMPLETED':
+        #     mapped_items['PAID']['maintenance_items'].append(record)
 
     response['result'] = mapped_items
     return response
