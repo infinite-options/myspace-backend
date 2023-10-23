@@ -141,7 +141,7 @@ class TenantDocuments(Resource):
                     """)
 
 
-            # print("Query: ", documentQuery)
+            print("Query: ", documentQuery)
             # items = execute(documentQuery, "get", conn)
             # print(items)
             response["Documents"] = documentQuery
@@ -212,7 +212,7 @@ class Documents(Resource):
             # file = request.files.get(filename)
             # print("File: ", file)
 
-            key = f'owners/{user_id}/{filename}'
+            key = f'{user_id}/{filename}'
             # link = uploadImage(file, key, '')
             # print(link)
             newDocument['document_link'] = "link"
@@ -220,7 +220,6 @@ class Documents(Resource):
         with connect() as db:
             data = request.form
             fields = [
-                # "property_owner_id",
                 'document_type',
                 'document_title',
                 'document_date_created',
