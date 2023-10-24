@@ -174,3 +174,79 @@ class BusinessProfileByUid(Resource):
             response = db.select('businessProfileInfo', {"business_uid": business_uid})
         return response
 
+
+class Profile(Resource):
+    def get(self, user_id):
+        with connect() as db:
+            if user_id.startswith("110"):
+                    response = db.select('ownerProfileInfo', {"owner_uid": user_id})
+
+            elif user_id.startswith("600"):
+                    response = db.select('businessProfileInfo', {"business_uid": user_id})
+
+            elif user_id.startswith("350"):
+                    response = db.select('tenantProfileInfo', {"tenant_uid": user_id})
+            else:
+                raise BadRequest("Request failed, no UID in payload.")
+
+            return response
+
+    def post(self):
+        response = {}
+        profile_info = request.form.to_dict()
+        owner = [key for key in profile_info.keys() if "owner" in key]
+        tenant = [key for key in profile_info.keys() if "tenant" in key]
+        prop_man = [key for key in profile_info.keys() if "business" in key]
+
+        if owner:
+            print("owner")
+            with connect() as db:
+                profile_info["owner_uid"] = db.call('space.new_owner_uid')['result'][0]['new_id']
+                file = request.files.get("owner_photo")
+                if file:
+                    key = f'ownerProfileInfo/{profile_info["owner_uid"]}/owner_photo'
+                    profile_info["owner_photo_url"] = uploadImage(file, key, '')
+                response = db.insert('ownerProfileInfo', profile_info)
+                response["owner_uid"] = profile_info["owner_uid"]
+        elif tenant:
+            print("tenant")
+            with connect() as db:
+                profile_info["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
+                file = request.files.get("tenant_photo")
+                if file:
+                    key = f'tenantProfileInfo/{profile_info["tenant_uid"]}/tenant_photo'
+                    profile_info["tenant_photo_url"] = uploadImage(file, key, '')
+                response = db.insert('tenantProfileInfo', profile_info)
+                response["tenant_uid"] = profile_info["tenant_uid"]
+        elif prop_man:
+            print("manager")
+            with connect() as db:
+                profile_info["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
+                file = request.files.get("business_photo")
+                if file:
+                    key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
+                    profile_info["business_photo_url"] = uploadImage(file, key, '')
+                response = db.insert('businessProfileInfo', profile_info)
+                response["business_uid"] = profile_info["business_uid"]
+        else:
+            raise BadRequest("Request failed, check payload.")
+
+        return response
+
+    def put(self):
+        payload = request.get_json()
+        if payload.get('business_uid'):
+            key = {'business_uid': payload.pop('business_uid')}
+            with connect() as db:
+                response = db.update('businessProfileInfo', key, payload)
+        elif payload.get('tenant_uid'):
+            key = {'tenant_uid': payload.pop('tenant_uid')}
+            with connect() as db:
+                response = db.update('tenantProfileInfo', key, clean_json_data(payload))
+        elif payload.get('owner_uid'):
+            key = {'owner_uid': payload.pop('owner_uid')}
+            with connect() as db:
+                response = db.update('ownerProfileInfo', key, payload)
+        else:
+            raise BadRequest("Request failed, no UID in payload.")
+        return response
