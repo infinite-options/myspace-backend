@@ -1,6 +1,6 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-from announcements import Announcements, AnnouncementsByUserId
+# from announcements import AnnouncementsByUserId # , Announcements,
 # from profiles import RolesByUserid
 from password import Password
 # To run program:  python3 myspace_api.py
@@ -33,7 +33,7 @@ from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from purchases import Bills, AddExpense, AddRevenue
-from cron import RentPurchaseTest, ExtendLease
+# from cron import RentPurchaseTest, ExtendLease
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
@@ -364,169 +364,6 @@ class stripe_key(Resource):
         else:
             return {"publicKey": stripe_public_live_key}
 
-# class TenantDashboard(Resource):
-#     def get(self, tenant_id):
-#         response = {}
-#         with connect() as db:
-#             property = db.execute("""
-#                     SELECT SUM(pur_amount_due) AS balance,
-#                         CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date,
-#                         p.property_uid, p.property_address, p.property_unit
-#                     FROM space.properties p
-#                         LEFT JOIN space.leases l ON l.lease_property_id = p.property_uid
-#                         LEFT JOIN space.lease_tenant lt ON lt.lt_lease_id = l.lease_uid
-#                         LEFT JOIN space.purchases pur ON p.property_uid = pur.pur_property_id
-#                     WHERE pur.purchase_status = 'UNPAID' AND lt.lt_tenant_id = \'""" + tenant_id + """\'
-#                     GROUP BY property_uid;
-#                     """)
-#             response["property"] = property
-#             maintenance = db.execute("""
-#                     SELECT mr.maintenance_images, mr.maintenance_title,
-#                         mr.maintenance_request_status, mr.maintenance_priority,
-#                         mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
-#                     FROM space.maintenanceRequests mr
-#                         INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
-#                     WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
-#                     """)
-#             response["maintenanceRequests"] = maintenance
-#             announcements = db.execute("""
-#                 SELECT * FROM announcements
-#                 WHERE announcement_receiver LIKE '%""" + tenant_id + """%'
-#                 AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
-#                 AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
-#             response["announcements"] = announcements
-#             return response
-
-
-# class managerDashboard(Resource):
-#     def get(self,manager_id):
-#         print('in Manager Dashboard')
-#         response = {}
-
-#         # print("Owner UID: ", owner_id)
-
-#         with connect() as db:
-#             print("in Manager dashboard")
-#             maintenanceQuery = db.execute("""
-#                     -- MAINTENANCE STATUS BY Manager
-#                     SELECT -- *
-#                         contract_business_id
-#                         , maintenance_request_status
-#                         , COUNT(maintenance_request_status) AS num
-#                     FROM space.maintenanceRequests
-#                     LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-#                     WHERE contract_business_id = \'""" + manager_id + """\'
-#                     GROUP BY maintenance_request_status;
-#                     """)
-
-#             # print("Query: ", maintenanceQuery)
-#             response["MaintenanceStatus"] = maintenanceQuery
-
-#             leaseQuery = db.execute("""
-#                     -- LEASE STATUS BY USER
-#                     SELECT b_details.contract_business_id
-#                         , leases.lease_end
-#                         , COUNT(lease_end) AS num
-#                     FROM space.leases
-#                     LEFT JOIN space.properties ON property_uid = lease_property_id
-#                     LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
-#                     LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
-#                     LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-#                     LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-#                     WHERE lease_status = "ACTIVE"
-#                         AND contract_status = "ACTIVE"
-#                         AND fee_name = "RENT"
-#                         AND ld_type = "LEASE"
-#                         AND contract_business_id = \'""" + manager_id + """\'
-#                     GROUP BY MONTH(lease_end),
-#                             YEAR(lease_end);
-#                     """)
-
-#             # print("lease Query: ", leaseQuery)
-#             response["LeaseStatus"] = leaseQuery
-
-#             rentQuery = db.execute("""
-#                     -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD
-#                     SELECT -- *,
-#                         contract_business_id
-#                         , rent_status
-#                         , COUNT(rent_status) AS num
-#                     FROM (
-#                         SELECT b.contract_property_id, contract_business_id
-#                             , pp_status.*
-#                             , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
-#                         FROM space.b_details AS b
-#                         LEFT JOIN space.properties ON property_uid = b.contract_property_id
-#                         LEFT JOIN space.pp_status ON pur_property_id = b.contract_property_id
-#                         WHERE contract_business_id = \'""" + manager_id + """\'
-#                             AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-#                             AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-#                             AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-#                         GROUP BY b.contract_property_id
-#                         ) AS rs
-#                     GROUP BY rent_status
-#                                         """)
-
-#             # print("rent Query: ", rentQuery)
-#             response["RentStatus"] = rentQuery
-#             # print(response)
-#             return response
-
-
-# class maintenanceDashboard(Resource):
-#     def get(self, business_id):
-#         print('in Maintenance Dashboard')
-#         response = {}
-
-#         # print("Owner UID: ", owner_id)
-
-#         with connect() as db:
-#             print("in owner dashboard")
-#             currentActivity = db.execute("""
-#                     -- CURRENT ACTIVITY
-#                     SELECT *,
-#                         COUNT(maintenance_status) AS num
-#                         ,SUM(quote_total_estimate) AS total_estimate
-#                     FROM (
-#                         SELECT quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-#                             , CASE
-#                                     WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
-#                                     WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
-#                                     WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
-#                                     WHEN quote_status = "COMPLETED"   THEN "PAID"
-#                                     ELSE quote_status
-#                                 END AS maintenance_status
-#                         FROM space.m_details
-#                         WHERE quote_business_id = \'""" + business_id + """\'
-#                         ) AS ms
-#                     GROUP BY maintenance_status;
-#                     """)
-
-#             # print("Query: ", maintenanceQuery)
-#             response["CurrentActivities"] = currentActivity
-
-#             workOrders = db.execute("""
-#                     -- WORK ORDERS
-#                     SELECT *
-#                     FROM (
-#                         SELECT * -- , quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-#                             , CASE
-#                                     WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
-#                                     WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
-#                                     WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
-#                                     WHEN quote_status = "COMPLETED"   THEN "PAID"
-#                                     ELSE quote_status
-#                                 END AS maintenance_status
-#                         FROM space.m_details
-#                         WHERE quote_business_id = \'""" + business_id + """\'
-#                             ) AS ms
-#                     ORDER BY maintenance_status;
-#                     """)
-
-#             # print("Query: ", leaseQuery)
-#             response["WorkOrders"] = workOrders
-
-#             return response
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
@@ -667,9 +504,9 @@ api.add_resource(SearchManager, '/searchManager')
 api.add_resource(Password, '/password')
 
 #CRON JOBS
-api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
-api.add_resource(RentPurchaseTest, '/RentPurchase')
-api.add_resource(ExtendLease, '/ExtendLease')
+# api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
+# api.add_resource(RentPurchaseTest, '/RentPurchase')
+# api.add_resource(ExtendLease, '/ExtendLease')
 
 
 # refresh
