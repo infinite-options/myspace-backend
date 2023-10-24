@@ -210,44 +210,55 @@ class Announcements(Resource):
     def post(self, user_id):
         payload = request.get_json()
         manager_id = user_id
+        if isinstance(payload["announcement_receiver"], list):
+            receivers = payload["announcement_receiver"]
+        else:
+            receivers = [payload["announcement_receiver"]]
 
+        if isinstance(payload["announcement_properties"], list):
+            properties = payload["announcement_properties"]
+        else:
+            properties = [payload["announcement_properties"]]
         with connect() as db:
+            for k in range(len(properties)):
+                for i in range(len(receivers)):
+                    newRequest = {}
+                    newRequest['announcement_title'] = payload["announcement_title"]
+                    newRequest['announcement_msg'] = payload["announcement_msg"]
+                    newRequest['announcement_sender'] = manager_id
+                    newRequest['announcement_mode'] = payload["announcement_mode"]
+                    newRequest['announcement_properties'] = properties[k]
+                    newRequest['announcement_receiver'] = receivers[i]
+                    user_query = db.execute(""" 
+                                        -- Find the user details
+                                        SELECT * 
+                                        FROM space.user_profiles AS b
+                                        WHERE b.profile_uid = \'""" + payload["announcement_receiver"][i] + """\';
+                                        """)
+                    for j in range(len(payload["announcement_type"])):
+                        if payload["announcement_type"][j] == "Email":
+                            newRequest['Email'] = "1"
+                            user_email = user_query['result'][0]['user_email']
+                            sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+                        if payload["announcement_type"][j] == "Text":
+                            newRequest['Text'] = "1"
+                            user_phone = user_query['result'][0]['user_phone']
+                            msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+                            Send_Twilio_SMS(msg, user_phone)
+                        if payload["announcement_type"][j] == "App":
+                            newRequest['App'] = "1"
+                    response = db.insert('announcements', newRequest)
 
-            for i in range(len(payload["announcement_receiver"])):
-                newRequest = {}
-                newRequest['announcement_title'] = payload["announcement_title"]
-                newRequest['announcement_msg'] = payload["announcement_msg"]
-                newRequest['announcement_sender'] = manager_id
-                newRequest['announcement_mode'] = payload["announcement_mode"]
-                newRequest['announcement_receiver'] = payload["announcement_receiver"][i]
-                user_query = db.execute(""" 
-                                    -- Find the user details
-                                    SELECT * 
-                                    FROM space.user_profiles AS b
-                                    WHERE b.profile_uid = \'""" + payload["announcement_receiver"][i] + """\';
-                                    """)
-                for j in range(len(payload["announcement_type"])):
-                    if payload["announcement_type"][j] == "Email":
-                        newRequest['Email'] = "1"
-                        user_email = user_query['result'][0]['user_email']
-                        sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
 
-                    if payload["announcement_type"][j] == "Text":
-                        newRequest['Text'] = "1"
-                        user_phone = user_query['result'][0]['user_phone']
-                        msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
-                        Send_Twilio_SMS(msg, user_phone)
-                    if payload["announcement_type"][j] == "App":
-                        newRequest['App'] = "1"
-                db.insert('announcements', newRequest)
-
-
-        return 200
+        return response
 
     def get(self, user_id):
+        response = {}
         with connect() as db:
             if user_id.startswith("600-"):
-                response = db.select('announcements', {"announcement_sender": user_id})
+                response["sent"] = db.select('announcements', {"announcement_sender": user_id})
+                response["received"] = db.select('announcements', {"announcement_receiver": user_id})
+
             else:
                 response = db.execute(""" 
                                         -- Find the user details
