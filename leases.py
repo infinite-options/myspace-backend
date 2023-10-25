@@ -145,8 +145,6 @@ class LeaseApplication(Resource):
         return ("New Application")
 
 
-
-
     # decorators = [jwt_required()]
 
     # Trigger to generate UIDs created using Alter Table in MySQL
@@ -225,6 +223,8 @@ class LeaseApplication(Resource):
         # key = {'lease_uid': data.pop('lease_uid')}
         # print(key)
 
+        response["UID"] = ApplicationStatus
+        print(response["UID"])
         
         return response
         
