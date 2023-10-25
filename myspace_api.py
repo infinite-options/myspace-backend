@@ -18,7 +18,7 @@ from password import Password
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
-from dashboard import ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
+from dashboard import Dashboard, ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
 
 from rents import Rents, RentDetails
 from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
@@ -26,7 +26,7 @@ from properties import Properties, PropertiesByOwner, PropertiesByManager, Prope
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
 from employees import Employee
-from profiles import OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
+from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
@@ -389,6 +389,8 @@ class stripe_key(Resource):
 
 
 # Dashboard Queries
+
+api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 # Owner Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
 api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
 # Manager Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
@@ -458,6 +460,7 @@ api.add_resource(AllTransactions, '/allTransactions')
 
 
 
+api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
 api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
 api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
 api.add_resource(BusinessProfileByUid,
