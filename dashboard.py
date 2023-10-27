@@ -195,8 +195,6 @@ class managerDashboard(Resource):
             return response
 
 
-
-
 class tenantDashboard(Resource):
     def get(self, tenant_id):
         response = {}

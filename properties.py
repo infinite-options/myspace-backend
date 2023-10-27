@@ -103,44 +103,45 @@ class Properties(Resource):
             with connect() as db:
                 # print("in connect loop")
                 propertiesQuery = db.execute("""  
-                        -- PROPERTIES BY OWNER
-                        SELECT -- *,
-                            property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                            , property_available_to_rent, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                            , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
-                            , tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
-                            , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                            , contract_documents
-                            , business_uid, p.business_name, p.business_email, p.business_phone_number
-                            , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num AS num_open_maintenace_req
-                            , CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
-                        FROM (
-                            SELECT * FROM space.p_details
-                             WHERE owner_uid = \'""" + uid + """\'
-                            ) as p
-                        LEFT JOIN (
-                            SELECT * 
-                            FROM space.pp_details 
-                            WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                            ) AS r ON property_uid = pur_property_id
-                        LEFT JOIN (
-                            SELECT -- * 
-                            property_owner_id
-                            , maintenance_property_id
-                            -- , maintenance_request_status
-                            , COUNT(maintenance_property_id) AS num
-                            FROM space.maintenanceRequests
-                            LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                            WHERE maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
-                            GROUP BY maintenance_property_id
-                            ) AS m ON property_uid = maintenance_property_id;                      
+                    -- PROPERTIES BY OWNER
+                    SELECT -- *,
+                        p.*
+                        , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                        , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                        , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                        , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                        , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                        , num AS num_open_maintenace_req
+                        , CASE
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status 
+                    FROM (
+                        SELECT * FROM space.p_details
+                        -- WHERE business_uid = "600-000003"
+                        WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        -- WHERE tenant_uid = \'""" + uid + """\'
+                        ) as p
+                    LEFT JOIN (
+                        SELECT * 
+                        FROM space.pp_details 
+                        WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        ) AS r ON p.property_uid = pur_property_id
+                    LEFT JOIN (
+                        SELECT -- * 
+                        property_owner_id
+                        , maintenance_property_id
+                        -- , maintenance_request_status
+                        , COUNT(maintenance_property_id) AS num
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
+                        GROUP BY maintenance_property_id
+                        ) AS m ON p.property_uid = maintenance_property_id;                      
                         """)
 
             # print("Query: ", propertiesQuery)
@@ -153,43 +154,44 @@ class Properties(Resource):
                 # print("in connect loop")
                 propertiesQuery = db.execute(""" 
                     -- PROPERTIES BY MANAGER
-                        SELECT -- *,
-                            property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                            , property_available_to_rent, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                            , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
-                            , tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
-                            , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                            , contract_documents
-                            , business_uid, p.business_name, p.business_email, p.business_phone_number
-                            , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num AS num_open_maintenace_req
-                            , CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
-                        FROM (
-                            SELECT * FROM space.p_details
-                             WHERE business_uid = \'""" + uid + """\'
-                            ) as p
-                        LEFT JOIN (
-                            SELECT * 
-                            FROM space.pp_details 
-                            WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                            ) AS r ON property_uid = pur_property_id
-                        LEFT JOIN (
-                            SELECT -- * 
-                            property_owner_id
-                            , maintenance_property_id
-                            -- , maintenance_request_status
-                            , COUNT(maintenance_property_id) AS num
-                            FROM space.maintenanceRequests
-                            LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                            WHERE maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
-                            GROUP BY maintenance_property_id
-                            ) AS m ON property_uid = maintenance_property_id; 
+                    SELECT -- *,
+                        p.*
+                        , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                        , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                        , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                        , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                        , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                        , num AS num_open_maintenace_req
+                        , CASE
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status 
+                    FROM (
+                        SELECT * FROM space.p_details
+                        -- WHERE business_uid = "600-000003"
+                        -- WHERE owner_uid = \'""" + uid + """\'
+                        WHERE business_uid = \'""" + uid + """\'
+                        -- WHERE tenant_uid = \'""" + uid + """\'
+                        ) as p
+                    LEFT JOIN (
+                        SELECT * 
+                        FROM space.pp_details 
+                        WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        ) AS r ON p.property_uid = pur_property_id
+                    LEFT JOIN (
+                        SELECT -- * 
+                        property_owner_id
+                        , maintenance_property_id
+                        -- , maintenance_request_status
+                        , COUNT(maintenance_property_id) AS num
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
+                        GROUP BY maintenance_property_id
+                        ) AS m ON p.property_uid = maintenance_property_id; 
                         """)  
 
             # print("Query: ", propertiesQuery)
@@ -201,38 +203,45 @@ class Properties(Resource):
             with connect() as db:
                 # print("in connect loop")
                 propertiesQuery = db.execute(""" 
-                        -- PROPERTIES BY TENANT
-                        SELECT -- *,
-                            property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type, property_available_to_rent
-                            , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                            , num AS num_open_maintenace_req
-                            , CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
-                        FROM (
-                            SELECT * FROM space.p_details
-                            WHERE tenant_uid = \'""" + uid + """\'
-                            ) as p
-                        LEFT JOIN (
-                            SELECT * 
-                            FROM space.pp_details 
-                            WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
-                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                            ) AS r ON property_uid = pur_property_id
-                        LEFT JOIN (
-                            SELECT -- * 
-                            property_owner_id
-                            , maintenance_property_id
-                            -- , maintenance_request_status
-                            , COUNT(maintenance_property_id) AS num
-                            FROM space.maintenanceRequests
-                            LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                            WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
-                            GROUP BY maintenance_property_id
-                            ) AS m ON property_uid = maintenance_property_id;
+                    -- PROPERTIES BY TENANT
+                    SELECT -- *,
+                        p.*
+                        , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                        , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                        , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                        , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                        , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                        , num AS num_open_maintenace_req
+                        , CASE
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                ELSE 'VACANT'
+                            END AS rent_status 
+                    FROM (
+                        SELECT * FROM space.p_details
+                        -- WHERE business_uid = "600-000003"
+                        -- WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        WHERE tenant_uid = \'""" + uid + """\'
+                        ) as p
+                    LEFT JOIN (
+                        SELECT * 
+                        FROM space.pp_details 
+                        WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        ) AS r ON p.property_uid = pur_property_id
+                    LEFT JOIN (
+                        SELECT -- * 
+                        property_owner_id
+                        , maintenance_property_id
+                        -- , maintenance_request_status
+                        , COUNT(maintenance_property_id) AS num
+                        FROM space.maintenanceRequests
+                        LEFT JOIN space.o_details ON maintenance_property_id = property_id
+                        WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
+                        GROUP BY maintenance_property_id
+                        ) AS m ON p.property_uid = maintenance_property_id; 
                         """)  
 
             # print("Query: ", propertiesQuery)
