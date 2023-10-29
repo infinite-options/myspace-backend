@@ -98,6 +98,24 @@ class Properties(Resource):
 
         print("Property User UID: ", uid)
 
+        print("In Owner ID")
+        with connect() as db:
+            # print("in connect loop")
+            propertiesQuery = db.execute("""
+                -- FIND APPLICATIONS CURRENTLY IN PROGRESS
+                SELECT property_uid
+                    , leases.*
+                    , t_details.*
+                FROM space.properties
+                LEFT JOIN space.leases ON property_uid = lease_property_id
+                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED");
+                 """)
+
+        # print("Query: ", propertiesQuery)
+        response["Applications"] = propertiesQuery
+
+
         if uid[:3] == '110':
             print("In Owner ID")
             with connect() as db:
@@ -146,7 +164,7 @@ class Properties(Resource):
 
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
-            return response
+            # return response
         
         elif uid[:3] == '600':
             print("In Business ID")
@@ -196,7 +214,7 @@ class Properties(Resource):
 
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
-            return response
+            # return response
         
         elif uid[:3] == '350':
             print("In Tenant ID")
@@ -246,18 +264,20 @@ class Properties(Resource):
 
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
-            return response
+            # return response
         
         elif uid[:3] == '200':
             print("In Property ID")
             with connect() as db:
                 response = db.select('properties', {"property_uid": uid})
-            return response
+            # return response
         
         else:
             print("UID Not found")
             response["Property"] = "UID Not Found"
-            return response
+            
+        
+        return response        
 
     
     def post(self):
