@@ -28,12 +28,14 @@ class LeaseDetails(Resource):
                         -- OWNER LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE owner_uid = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            AND fee_name = "Rent";
 
                         """)
                 
@@ -43,12 +45,14 @@ class LeaseDetails(Resource):
                         -- TENANT LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE lt_tenant_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            AND fee_name = "Rent";
                         """)
 
             elif filter_id[:3] == "600":
@@ -57,12 +61,14 @@ class LeaseDetails(Resource):
                         -- PROPERTY MANAGEMENT LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE contract_business_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            AND fee_name = "Rent";
                         """)
                 
             else:
