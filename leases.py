@@ -35,7 +35,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE owner_uid = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            AND fee_name = "Rent";
+                            -- AND fee_name = "Rent";
 
                         """)
                 
@@ -52,7 +52,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE lt_tenant_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            AND fee_name = "Rent";
+                            -- AND fee_name = "Rent";
                         """)
 
             elif filter_id[:3] == "600":
@@ -68,7 +68,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE contract_business_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            AND fee_name = "Rent";
+                            -- AND fee_name = "Rent";
                         """)
                 
             else:
