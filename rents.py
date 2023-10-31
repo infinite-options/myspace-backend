@@ -38,18 +38,17 @@ class Rents(Resource):
                 rentsQuery = db.execute("""  
                     -- RENT STATUS BY PROPERTY FOR OWNER PAGE
                     SELECT -- *,
-                        property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
-                        , tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
+                        p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
+                        , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
+                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_rent, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
+                        , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
                         , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                        , contract_documents
-                        , business_uid, p.business_name, p.business_email, p.business_phone_number
-                        , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                    -- 	, num AS num_open_maintenace_req
+                        , p.contract_documents
+                        , p.business_uid, p.business_name, p.business_email, p.business_phone_number
+                        , r.latest_date, r.total_paid, r.payment_status, r.amt_remaining, r.cf_month, r.cf_year
                         , CASE
-                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NOT NULL) THEN payment_status
+                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NULL) THEN 'UNPAID'
                                 ELSE 'VACANT'
                             END AS rent_status
                     FROM (
@@ -62,7 +61,7 @@ class Rents(Resource):
                         WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
                         AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
                         AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        ) AS r ON property_uid = pur_property_id
+                        ) AS r ON p.property_uid = r.pur_property_id
                     """)
 
             # print("Query: ", propertiesQuery)
@@ -76,18 +75,17 @@ class Rents(Resource):
                 rentsQuery = db.execute(""" 
                     -- RENT STATUS BY MANAGER FOR MANAGER PAGE
                     SELECT -- *,
-                        property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                        , property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , lease_uid, lease_start, lease_end, lease_status, lease_rent, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_actual_rent
-                        , tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
+                        p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
+                        , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
+                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_rent, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
+                        , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
                         , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                        , contract_documents
-                        , business_uid, p.business_name, p.business_email, p.business_phone_number
-                        , latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
-                    -- 	, num AS num_open_maintenace_req
+                        , p.contract_documents
+                        , p.business_uid, p.business_name, p.business_email, p.business_phone_number
+                        , r.latest_date, r.total_paid, r.payment_status, r.amt_remaining, r.cf_month, r.cf_year
                         , CASE
-                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NOT NULL) THEN payment_status
+                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NULL) THEN 'UNPAID'
                                 ELSE 'VACANT'
                             END AS rent_status
                     FROM (
@@ -100,7 +98,7 @@ class Rents(Resource):
                         WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
                         AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
                         AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        ) AS r ON property_uid = pur_property_id;
+                        ) AS r ON p.property_uid = r.pur_property_id;
                     """) 
 
             # print("Query: ", propertiesQuery)
