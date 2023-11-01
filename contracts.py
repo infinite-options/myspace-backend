@@ -90,51 +90,33 @@ class Contracts(Resource):
                 print(e)
                 raise BadRequest("Request failed, no such CONTRACT in the database.")
 
-
-
-
-            # for file in files:
-            #     print("ROHIT")
-            #     print(file.filename)
-
-            # for file in request.files:
-            #     print("ROHIT- FILE")
-            #     print(file)
-
-            # print(request.files)
-            # files = request.files.getlist('contract_documents')
             files = request.files
             files_details = json.loads(data.get('contract_documents_details'))
             
-            print("ROHIT - FILES LIST")
+            print("FILES DETAILS LIST")
             print(files_details)
             # contract_docs = []
 
             if files:
                 detailsIndex = 0
                 for key in files:
-                    print("ROHIT - KEY")
-                    print(key)
                     file = files[key]
                     file_info = files_details[detailsIndex]
-                    print("ROHIT- FILE INFO")
-                    print(file_info)
-                    file_path = os.path.join(os.getcwd(), file.filename)
-                    file.save(file_path)
+                    # print("FILE DETAILS")
+                    # print(file_info)
+                    # file_path = os.path.join(os.getcwd(), file.filename)
+                    # file.save(file_path)
                     if file and allowed_file(file.filename):
                         key = f'contracts/{contract_id}/{file.filename}'
-                        # link = uploadImage(file, key, '')
-                        # contract_docs.append(link)
+                        s3_link = uploadImage(file, key, '')
                         docObject = {}
-                        docObject["link"] = "s3-link"
+                        docObject["link"] = s3_link
                         docObject["filename"] = file.filename
                         docObject["type"] = file_info["fileType"]
                         contract_docs.append(docObject)
                     detailsIndex += 1
 
                 updated_contract['contract_documents'] = json.dumps(contract_docs)
-                # updated_contract['contract_documents'] = contract_docs
-                print("ROHIT - UPDATED CONTRACT DOCUMENTS")
                 print(updated_contract['contract_documents'])
 
             # Check if there are fields to update
