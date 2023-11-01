@@ -21,12 +21,11 @@ class Listings (Resource):
         with connect() as db:
             print("in connect loop")
             listingsQuery = db.execute(""" 
-                        -- AVAILABLE LISTINGS
-                        SELECT * FROM space.contracts
-                        LEFT JOIN space.properties ON contract_property_id = property_uid
-                        LEFT JOIN space.leases ON lease_property_id = property_uid
-                        WHERE contract_status = "ACTIVE" AND property_available_to_rent = "1"
-                            AND (lease_end < DATE_ADD(CURDATE(), INTERVAL 1 MONTH) OR ISNULL(lease_end));
+                    -- AVAILABLE LISTINGS
+                    SELECT * FROM space.contracts
+                    LEFT JOIN space.properties ON contract_property_id = property_uid
+                    LEFT JOIN (SELECT * FROM space.leases WHERE lease_end < DATE_ADD(CURDATE(), INTERVAL 1 MONTH) AND lease_end != "") AS l ON lease_property_id = property_uid
+                    WHERE contract_status = "ACTIVE" AND property_available_to_rent = "1"
                     """)
             
 

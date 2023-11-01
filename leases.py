@@ -28,12 +28,14 @@ class LeaseDetails(Resource):
                         -- OWNER LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE owner_uid = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            -- AND fee_name = "Rent";
 
                         """)
                 
@@ -43,12 +45,14 @@ class LeaseDetails(Resource):
                         -- TENANT LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE lt_tenant_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            -- AND fee_name = "Rent";
                         """)
 
             elif filter_id[:3] == "600":
@@ -57,21 +61,36 @@ class LeaseDetails(Resource):
                         -- PROPERTY MANAGEMENT LEASES
                         SELECT *
                         FROM space.leases
+                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN space.b_details ON contract_property_id = lease_property_id
                         WHERE contract_business_id = \'""" + filter_id + """\'
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
+                            -- AND fee_name = "Rent";
                         """)
-                
             else:
                 leaseQuery = "UID Not Found"
 
             # print("Lease Query: ", leaseQuery)
             # items = execute(leaseQuery, "get", conn)
             # print(items)
-            response["Lease_Details"] = leaseQuery
+
+            for i in range(len(leaseQuery['result'])):
+                lease_id = leaseQuery['result'][i]["lease_uid"]
+                leaseFeesQuery = db.execute("""
+                                        SELECT *
+                                        FROM space.leaseFees
+                                        WHERE fees_lease_id = \'""" + lease_id + """\';
+                                        """)
+
+                fees_dic = {}
+                for i in range(len(leaseFeesQuery['result'])):
+                    fee_name = leaseFeesQuery['result'][i]["fee_name"]
+                    fees_dic[fee_name] = leaseFeesQuery['result'][i]
+                leaseQuery['result'][i]["fees"] = fees_dic
+                response["Lease_Details"] = leaseQuery
 
 
             return response
@@ -132,87 +151,106 @@ class LeaseApplication(Resource):
             del data['tenant_uid']
 
 
-        ApplicationStatus = LeaseApplication.get(self, tenant_uid, data.get('lease_property_id'))
-        print(ApplicationStatus)
-        if ApplicationStatus != "New Application":
-            print(ApplicationStatus)
+        # ApplicationStatus = LeaseApplication.get(self, tenant_uid, data.get('lease_property_id'))
+        # print(ApplicationStatus)
+        # if ApplicationStatus != "New Application":
+        #     print(ApplicationStatus)
+        #
+        #     # key = {'lease_uid': data.pop('lease_uid')}
+        #     # key = ApplicationStatus
+        #     # print(key)
+        #     key = {'lease_uid': ApplicationStatus}
+        #     print(key)
+        #
+        #     with connect() as db:
+        #         response = db.update('leases', key, data)
+        #
+        #     print(response)
 
-            # key = {'lease_uid': data.pop('lease_uid')}
-            # key = ApplicationStatus
-            # print(key)
-            key = {'lease_uid': ApplicationStatus}
-            print(key)
-        
-            with connect() as db:
-                response = db.update('leases', key, data)
+        # else:
+        ApplicationStatus = "New"
 
-            print(response)
+        response = {}
+        fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
+                  "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
+                  "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
+                  "lease_rent_late_by",
+                  "lease_rent_perDay_late_fee", "lease_actual_rent"]
+        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred",
+                             "lease_rent"]
+        with connect() as db:
+            data = request.get_json(force=True)
 
-        else:
-            ApplicationStatus = "New"
-            print(ApplicationStatus)
+            newLease = {}
+            for field in fields:
+                if field in data:
+                    newLease[field] = data.get(field)
+            for field in fields_with_lists:
+                if field not in data:
+                    newLease[field] = []
+            db.insert('leases', newLease)
 
-            with connect() as db:
-                response = db.insert('leases',data)
-
-
-            with connect() as db:
-                print("Need to find lease_uid")
-                leaseQuery = db.execute(""" 
-                        -- FIND lease_uid
-                        SELECT * FROM space.leases
-                        ORDER BY lease_uid DESC
-                        LIMIT 1;
-                        """)
-            
-            print(leaseQuery)
+        fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                            "perDay_late_fee", "late_fee"]
+        with connect() as db:
+            print("Need to find lease_uid")
+            leaseQuery = db.execute(""" 
+                    -- FIND lease_uid
+                    SELECT * FROM space.leases
+                    ORDER BY lease_uid DESC
+                    LIMIT 1;
+                    """)
             print(leaseQuery['result'][0]['lease_uid'])
             lease_id = leaseQuery['result'][0]['lease_uid']
+            response["lease_uid"] = lease_id
 
-            tenant_responsibiity = str(1)
-            print(tenant_responsibiity, type(tenant_responsibiity))
+            for fees in data.get("lease_rent"):
+                new_leaseFees = {}
+                new_leaseFees["fees_lease_id"] = lease_id
+                for item in fields_leaseFees:
+                    if item in fees:
+                        new_leaseFees[item] = fees[item]
+                db.insert('leaseFees', new_leaseFees)
 
-            print(lease_id, tenant_uid, tenant_responsibiity )
 
-            with connect() as db:
-                print("Add record in lease_tenant table")
-                ltQuery = (""" 
-                        INSERT INTO space.lease_tenant
-                        SET lt_lease_id = \'""" + lease_id + """\'
-                           , lt_tenant_id = \'""" + tenant_uid + """\'
-                           , lt_responsibility = \'""" + tenant_responsibiity + """\';
-                        """)
-                
-                response = db.execute(ltQuery, [], 'post')
+        tenant_responsibiity = str(1)
+
+        with connect() as db:
+            print("Add record in lease_tenant table")
+            ltQuery = (""" 
+                    INSERT INTO space.lease_tenant
+                    SET lt_lease_id = \'""" + lease_id + """\'
+                       , lt_tenant_id = \'""" + tenant_uid + """\'
+                       , lt_responsibility = \'""" + tenant_responsibiity + """\';
+                    """)
+
+            response["lt_query"] = db.execute(ltQuery, [], 'post')
             
-                print(ltQuery)
+                # print(ltQuery)
 
 
         # key = {'lease_uid': data.pop('lease_uid')}
         # print(key)
 
         response["UID"] = ApplicationStatus
-        print(response["UID"])
-        
         return response
-        
 
-        
-
-    def put(self):
+    def put(self, uid):
         print("In Lease Application PUT")
         response = {}
-        
         data = request.get_json(force=True)
         # data = request.form.to_dict()  <== IF data came in as Form Data
         print(data)
-        
-        if data.get('lease_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-       
-        key = {'lease_uid': data.pop('lease_uid')}
-        print(key)
-        
-        with connect() as db:
-            response = db.update('leases', key, data)
+        # if data.get('lease_uid') is None:
+        #     raise BadRequest("Request failed, no UID in payload.")
+        if uid.startswith("300"):
+            key = {'lease_uid': uid}
+            print(key)
+            with connect() as db:
+                response = db.update('leases', key, data)
+        elif uid.startswith("370"):
+            key = {'leaseFees_uid': uid}
+            print(key)
+            with connect() as db:
+                response = db.update('leaseFees', key, data)
         return response

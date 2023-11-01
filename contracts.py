@@ -44,8 +44,9 @@ class Contracts(Resource):
             ]
             newContract = {}
             for field in fields:
-                newContract[field] = data.get(field)
-                print(newContract[field])
+                if field in data:
+                    newContract[field] = data.get(field)
+                    # print(newContract[field])
 
             response = db.insert('contracts', newContract)
         return response
