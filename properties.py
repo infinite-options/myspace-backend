@@ -109,7 +109,7 @@ class Properties(Resource):
                 FROM space.properties
                 LEFT JOIN space.leases ON property_uid = lease_property_id
                 LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED");
+                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED");
                  """)
 
         # print("Query: ", propertiesQuery)
