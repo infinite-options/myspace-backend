@@ -30,7 +30,6 @@ class Contracts(Resource):
         with connect() as db:
             data = request.form
             fields = [
-                "contract_uid"
                 ,"contract_property_id"
                 , 'contract_business_id'
                 , "contract_start_date"
