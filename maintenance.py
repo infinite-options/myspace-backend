@@ -124,7 +124,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                         WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
@@ -162,7 +162,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
@@ -199,7 +199,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
-                        LEFT JOIN space.leases ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
