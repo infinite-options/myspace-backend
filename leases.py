@@ -84,14 +84,15 @@ class LeaseDetails(Resource):
                                         FROM space.leaseFees
                                         WHERE fees_lease_id = \'""" + lease_id + """\';
                                         """)
-
-                fees_dic = {}
-                for i in range(len(leaseFeesQuery['result'])):
-                    fee_name = leaseFeesQuery['result'][i]["fee_name"]
-                    fees_dic[fee_name] = leaseFeesQuery['result'][i]
-                leaseQuery['result'][i]["fees"] = fees_dic
+                if len(leaseFeesQuery['result']) >= 1:
+                    fees_dic = {}
+                    for j in range(len(leaseFeesQuery['result'])):
+                        fee_name = leaseFeesQuery['result'][j]["fee_name"]
+                        fees_dic[fee_name] = leaseFeesQuery['result'][j]
+                    leaseQuery['result'][i]["fees"] = fees_dic
+                else:
+                    leaseQuery['result'][i]["fees"] = '[]'
                 response["Lease_Details"] = leaseQuery
-
 
             return response
 
@@ -175,19 +176,20 @@ class LeaseApplication(Resource):
                   "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
                   "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                   "lease_rent_late_by",
-                  "lease_rent_perDay_late_fee", "lease_actual_rent"]
-        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred",
-                             "lease_rent"]
+                  "lease_rent_perDay_late_fee", "lease_actual_rent","lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"]
+        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"
+                             ]
         with connect() as db:
             data = request.get_json(force=True)
-
+            print("data", data["lease_fees"])
             newLease = {}
             for field in fields:
                 if field in data:
-                    newLease[field] = data.get(field)
+                    newLease[field] = data[field]
             for field in fields_with_lists:
-                if field not in data:
-                    newLease[field] = []
+                if data[field] is None:
+                    newLease[field] = '[]'
+            print("new_lease",newLease)
             db.insert('leases', newLease)
 
         fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
@@ -204,7 +206,8 @@ class LeaseApplication(Resource):
             lease_id = leaseQuery['result'][0]['lease_uid']
             response["lease_uid"] = lease_id
 
-            for fees in data.get("lease_rent"):
+            for fees in data["lease_fees"]:
+                # print("fees",fees)
                 new_leaseFees = {}
                 new_leaseFees["fees_lease_id"] = lease_id
                 for item in fields_leaseFees:
@@ -235,22 +238,44 @@ class LeaseApplication(Resource):
         response["UID"] = ApplicationStatus
         return response
 
-    def put(self, uid):
+    def put(self):
         print("In Lease Application PUT")
         response = {}
         data = request.get_json(force=True)
         # data = request.form.to_dict()  <== IF data came in as Form Data
-        print(data)
+        # print(data)
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
-        if uid.startswith("300"):
-            key = {'lease_uid': uid}
-            print(key)
+        lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
+                  "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
+                  "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
+                  "lease_rent_late_by",
+                  "lease_rent_perDay_late_fee", "lease_actual_rent","lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"]
+        fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                            "perDay_late_fee", "late_fee"]
+
+        if "lease_uid" in data:
+            lease_id = data['lease_uid']
+            del data['lease_uid']
+            payload = {}
+            for field in data:
+                if field in lease_fields:
+                    payload[field] = data[field]
             with connect() as db:
-                response = db.update('leases', key, data)
-        elif uid.startswith("370"):
-            key = {'leaseFees_uid': uid}
-            print(key)
-            with connect() as db:
-                response = db.update('leaseFees', key, data)
+                key = {'lease_uid': lease_id}
+                response["lease_update"] = db.update('leases', key, payload)
+
+        if "lease_fees" in data:
+            for fees in data["lease_fees"]:
+                leaseFees_id = fees['lease_fees_id']
+                del fees['lease_fees_id']
+                payload = {}
+                for field in fees:
+                    if field in fields_leaseFees:
+                        payload[field] = fees[field]
+                with connect() as db:
+                    key = {'leaseFees_uid': leaseFees_id}
+                    response["leaseFees_update"] = db.update('leaseFees', key, payload)
+        else:
+            raise BadRequest("Request failed, no lease_uid in payload.")
         return response

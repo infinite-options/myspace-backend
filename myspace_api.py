@@ -475,7 +475,7 @@ api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(Documents, '/documents/<string:user_id>')
 
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>')
-api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>', '/leaseApplication/<string:uid>')
+api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
 
 
 api.add_resource(Contacts, '/contacts/<string:uid>')
