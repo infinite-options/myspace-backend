@@ -1,8 +1,20 @@
 from flask import request
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
 
-from data_pm import connect
+
+from data_pm import connect, uploadImage, s3
+import json
+import os
+import ast
+
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class Contracts(Resource):
@@ -18,7 +30,7 @@ class Contracts(Resource):
         with connect() as db:
             data = request.form
             fields = [
-                 "contract_property_id"
+                "contract_property_id"
                 , 'contract_business_id'
                 , "contract_start_date"
                 , 'contract_end_date'
@@ -45,6 +57,7 @@ class Contracts(Resource):
         print(f"Updating contract with ID {contract_id}")
         with connect() as db:
 
+
             fields = [
                 "contract_property_id",
                 "contract_business_id",
@@ -62,6 +75,50 @@ class Contracts(Resource):
             for field in fields:
                 if field in data:
                     updated_contract[field] = data.get(field)
+
+
+            # get previously uploaded documents
+            contract_uid = {'contract_uid': contract_id}
+            query = db.select('contracts', contract_uid)
+            print(f"QUERY: {query}")
+            try:
+                contract_from_db = query.get('result')[0]
+                contract_docs = contract_from_db.get("contract_documents")
+                contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
+                print('type: ', type(contract_docs))
+                print(f'previously saved documents: {contract_docs}')
+            except IndexError as e:
+                print(e)
+                raise BadRequest("Request failed, no such CONTRACT in the database.")
+
+            files = request.files
+            files_details = json.loads(data.get('contract_documents_details'))
+            
+            print("FILES DETAILS LIST")
+            print(files_details)
+            # contract_docs = []
+
+            if files:
+                detailsIndex = 0
+                for key in files:
+                    file = files[key]
+                    file_info = files_details[detailsIndex]
+                    # print("FILE DETAILS")
+                    # print(file_info)
+                    # file_path = os.path.join(os.getcwd(), file.filename)
+                    # file.save(file_path)
+                    if file and allowed_file(file.filename):
+                        key = f'contracts/{contract_id}/{file.filename}'
+                        s3_link = uploadImage(file, key, '')
+                        docObject = {}
+                        docObject["link"] = s3_link
+                        docObject["filename"] = file.filename
+                        docObject["type"] = file_info["fileType"]
+                        contract_docs.append(docObject)
+                    detailsIndex += 1
+
+                updated_contract['contract_documents'] = json.dumps(contract_docs)
+                print(updated_contract['contract_documents'])
 
             # Check if there are fields to update
             if updated_contract:
