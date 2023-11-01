@@ -57,6 +57,7 @@ class Contracts(Resource):
         print(f"Updating contract with ID {contract_id}")
         with connect() as db:
 
+
             fields = [
                 "contract_property_id",
                 "contract_business_id",
