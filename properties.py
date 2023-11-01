@@ -98,10 +98,10 @@ class Properties(Resource):
 
         print("Property User UID: ", uid)
 
-        print("In Owner ID")
+        print("In Find Applications")
         with connect() as db:
             # print("in connect loop")
-            propertiesQuery = db.execute("""
+            applicationQuery = db.execute("""
                 -- FIND APPLICATIONS CURRENTLY IN PROGRESS
                 SELECT property_uid
                     , leases.*
@@ -113,7 +113,7 @@ class Properties(Resource):
                  """)
 
         # print("Query: ", propertiesQuery)
-        response["Applications"] = propertiesQuery
+        response["Applications"] = applicationQuery
 
 
         if uid[:3] == '110':
@@ -215,6 +215,23 @@ class Properties(Resource):
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
             # return response
+
+
+            print("In New PM Requests")
+            with connect() as db:
+            # print("in connect loop")
+                contractsQuery = db.execute("""
+                    -- NEW PROPERTIES FOR MANAGER
+                    SELECT *
+                    FROM space.property_owner
+                    LEFT JOIN space.properties ON property_id = property_uid
+                    LEFT JOIN space.b_details ON contract_property_id = property_uid
+                    WHERE contract_business_id = "600-000003"
+                        AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
+                    """)
+
+            # print("Query: ", propertiesQuery)
+            response["NewPMRequests"] = contractsQuery
         
         elif uid[:3] == '350':
             print("In Tenant ID")
