@@ -255,19 +255,19 @@ class Announcements(Resource):
     def get(self, user_id):
         response = {}
         with connect() as db:
-            if user_id.startswith("600-"):
-                response["sent"] = db.select('announcements', {"announcement_sender": user_id})
-                response["received"] = db.select('announcements', {"announcement_receiver": user_id})
+            # if user_id.startswith("600-"):
+            response["sent"] = db.select('announcements', {"announcement_sender": user_id})
+            response["received"] = db.select('announcements', {"announcement_receiver": user_id})
 
-            else:
-                response = db.execute(""" 
-                                        -- Find the user details
-                                        SELECT * 
-                                        FROM space.announcements AS a
-                                        WHERE a.announcement_receiver = \'""" + user_id + """\'
-                                        AND a.App = '1'
-                                        ORDER BY a.announcement_date DESC;
-                                        """)
+            # else:
+            #     response = db.execute("""
+            #                             -- Find the user details
+            #                             SELECT *
+            #                             FROM space.announcements AS a
+            #                             WHERE a.announcement_receiver = \'""" + user_id + """\'
+            #                             AND a.App = '1'
+            #                             ORDER BY a.announcement_date DESC;
+            #                             """)
         return response
 
 
