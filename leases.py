@@ -276,6 +276,4 @@ class LeaseApplication(Resource):
                 with connect() as db:
                     key = {'leaseFees_uid': leaseFees_id}
                     response["leaseFees_update"] = db.update('leaseFees', key, payload)
-        else:
-            raise BadRequest("Request failed, no lease_uid in payload.")
         return response
