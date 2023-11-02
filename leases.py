@@ -262,7 +262,6 @@ class LeaseApplication(Resource):
 
         if "lease_uid" in data:
             lease_id = data['lease_uid']
-            del data['lease_uid']
             payload = {}
             for field in data:
                 if field in lease_fields:
@@ -273,13 +272,23 @@ class LeaseApplication(Resource):
 
         if "lease_fees" in data:
             for fees in data["lease_fees"]:
-                leaseFees_id = fees['lease_fees_id']
-                del fees['lease_fees_id']
-                payload = {}
-                for field in fees:
-                    if field in fields_leaseFees:
-                        payload[field] = fees[field]
-                with connect() as db:
-                    key = {'leaseFees_uid': leaseFees_id}
-                    response["leaseFees_update"] = db.update('leaseFees', key, payload)
+                if "lease_fees_id" in fees:
+                    leaseFees_id = fees['lease_fees_id']
+                    del fees['lease_fees_id']
+                    payload = {}
+                    for field in fees:
+                        if field in fields_leaseFees:
+                            payload[field] = fees[field]
+                    with connect() as db:
+                        key = {'leaseFees_uid': leaseFees_id}
+                        response["leaseFees_update"] = db.update('leaseFees', key, payload)
+                else:
+                    payload = {}
+                    for field in fees:
+                        if field in fields_leaseFees:
+                            payload[field] = fees[field]
+                    payload["fees_lease_id"] = data['lease_uid']
+                    with connect() as db:
+                        response["leaseFees_update"] = db.insert('leaseFees', payload)
+
         return response
