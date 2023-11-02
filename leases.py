@@ -185,7 +185,7 @@ class LeaseApplication(Resource):
                              ]
         with connect() as db:
             data = request.get_json(force=True)
-            print("data", data["lease_fees"])
+            # print("data", data["lease_fees"])
             newLease = {}
             for field in fields:
                 if field in data:
@@ -210,14 +210,16 @@ class LeaseApplication(Resource):
             lease_id = leaseQuery['result'][0]['lease_uid']
             response["lease_uid"] = lease_id
 
-            for fees in data["lease_fees"]:
-                # print("fees",fees)
-                new_leaseFees = {}
-                new_leaseFees["fees_lease_id"] = lease_id
-                for item in fields_leaseFees:
-                    if item in fees:
-                        new_leaseFees[item] = fees[item]
-                db.insert('leaseFees', new_leaseFees)
+            if "lease_fees" in data:
+
+                for fees in data["lease_fees"]:
+                    # print("fees",fees)
+                    new_leaseFees = {}
+                    new_leaseFees["fees_lease_id"] = lease_id
+                    for item in fields_leaseFees:
+                        if item in fees:
+                            new_leaseFees[item] = fees[item]
+                    db.insert('leaseFees', new_leaseFees)
 
 
         tenant_responsibiity = str(1)
