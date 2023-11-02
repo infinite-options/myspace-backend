@@ -54,6 +54,8 @@ class LeaseDetails(Resource):
                             AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
                             -- AND fee_name = "Rent";
                         """)
+                
+                print(leaseQuery)
 
             elif filter_id[:3] == "600":
 
@@ -76,6 +78,8 @@ class LeaseDetails(Resource):
             # print("Lease Query: ", leaseQuery)
             # items = execute(leaseQuery, "get", conn)
             # print(items)
+
+            response["Lease_Details"] = leaseQuery
 
             for i in range(len(leaseQuery['result'])):
                 lease_id = leaseQuery['result'][i]["lease_uid"]
