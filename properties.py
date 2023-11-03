@@ -226,7 +226,7 @@ class Properties(Resource):
                     FROM space.property_owner
                     LEFT JOIN space.properties ON property_id = property_uid
                     LEFT JOIN space.b_details ON contract_property_id = property_uid
-                    WHERE contract_business_id = "600-000003"
+                    WHERE contract_business_id = \'""" + uid + """\'
                         AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                     """)
 
