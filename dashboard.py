@@ -210,7 +210,7 @@ class tenantDashboard(Resource):
                         , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                         , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
                         -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign
-                        -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_rent, lease_actual_rent
+                        -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent
                         , property_uid
                         -- , property_available_to_rent, property_active_date
                         , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
@@ -557,7 +557,7 @@ class Dashboard(Resource):
                             , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                             , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
                             -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign
-                            -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_rent, lease_actual_rent
+                            -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent
                             , property_uid
                             -- , property_available_to_rent, property_active_date
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
