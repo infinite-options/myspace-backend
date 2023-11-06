@@ -325,6 +325,8 @@ class Properties(Resource):
                 , "property_mortgages"
                 , "property_insurance"
                 , "property_featured"
+                , "property_value"
+                , "property_area"
                 , "property_description"
                 , "property_notes"
             ]
