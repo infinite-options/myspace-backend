@@ -12,6 +12,13 @@ import datetime
 # from dateutil.relativedelta import relativedelta
 # import calendar
 from werkzeug.exceptions import BadRequest
+import ast
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class LeaseDetails(Resource):
@@ -145,16 +152,15 @@ class LeaseApplication(Resource):
         print("In Lease Application POST")
         response = {}
 
-        data = request.get_json(force=True)
+        data = request.form
         print(data)
 
-        # Remove tenenat_uid from data and store as an independant variable 
+        # Remove tenenat_uid from data and store as an independant variable
         if 'tenant_uid' in data:
             print(data['tenant_uid'])
             tenant_uid = data.get('tenant_uid')
             print(tenant_uid)
-            del data['tenant_uid']
-
+            # del data['tenant_uid']
 
         # ApplicationStatus = LeaseApplication.get(self, tenant_uid, data.get('lease_property_id'))
         # print(ApplicationStatus)
@@ -180,11 +186,12 @@ class LeaseApplication(Resource):
                   "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
                   "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                   "lease_rent_late_by",
-                  "lease_rent_perDay_late_fee", "lease_actual_rent","lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"]
+                  "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
+                  "lease_vehicles", "lease_referred"]
         fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"
                              ]
         with connect() as db:
-            data = request.get_json(force=True)
+            data = request.form
             # print("data", data["lease_fees"])
             newLease = {}
             for field in fields:
@@ -193,7 +200,7 @@ class LeaseApplication(Resource):
             for field in fields_with_lists:
                 if data[field] is None:
                     newLease[field] = '[]'
-            print("new_lease",newLease)
+            print("new_lease", newLease)
             db.insert('leases', newLease)
 
         fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
@@ -221,7 +228,6 @@ class LeaseApplication(Resource):
                             new_leaseFees[item] = fees[item]
                     db.insert('leaseFees', new_leaseFees)
 
-
         tenant_responsibiity = str(1)
 
         with connect() as db:
@@ -234,9 +240,8 @@ class LeaseApplication(Resource):
                     """)
 
             response["lt_query"] = db.execute(ltQuery, [], 'post')
-            
-                # print(ltQuery)
 
+            # print(ltQuery)
 
         # key = {'lease_uid': data.pop('lease_uid')}
         # print(key)
@@ -247,16 +252,16 @@ class LeaseApplication(Resource):
     def put(self):
         print("In Lease Application PUT")
         response = {}
-        data = request.get_json(force=True)
+        data = request.form
         # data = request.form.to_dict()  <== IF data came in as Form Data
         # print(data)
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
-                  "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
-                  "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
-                  "lease_rent_late_by",
-                  "lease_rent_perDay_late_fee", "lease_actual_rent","lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"]
+                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_effective_date",
+                        "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
+                        "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children",
+                        "lease_pets", "lease_vehicles", "lease_referred"]
         fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
 
@@ -266,6 +271,43 @@ class LeaseApplication(Resource):
             for field in data:
                 if field in lease_fields:
                     payload[field] = data[field]
+            with connect() as db:
+                lease_uid = {'lease_uid': lease_id}
+                query = db.select('leases', lease_uid)
+                print(f"QUERY: {query}")
+                try:
+                    lease_from_db = query.get('result')[0]
+                    lease_docs = lease_from_db.get("lease_documents")
+                    lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
+                    print('type: ', type(lease_docs))
+                    print(f'previously saved documents: {lease_docs}')
+                except IndexError as e:
+                    print(e)
+                    raise BadRequest("Request failed, no such CONTRACT in the database.")
+
+            files = request.files
+            # print("files", files)
+            # files_details = json.loads(data.get('lease_documents_details'))
+            if files:
+                detailsIndex = 0
+                for key in files:
+                    print("key", key)
+                    file = files[key]
+                    print("file", file)
+                    # file_info = files_details[detailsIndex]
+                    if file and allowed_file(file.filename):
+                        key = f'leases/{lease_id}/{file.filename}'
+                        print("key", key)
+                        s3_link = uploadImage(file, key, '')
+                        docObject = {}
+                        docObject["link"] = s3_link
+                        docObject["filename"] = file.filename
+                        # docObject["type"] = file_info["fileType"]
+                        lease_docs.append(docObject)
+                    detailsIndex += 1
+
+                payload['lease_documents'] = json.dumps(lease_docs)
+                print(payload['lease_documents'])
             with connect() as db:
                 key = {'lease_uid': lease_id}
                 response["lease_update"] = db.update('leases', key, payload)
