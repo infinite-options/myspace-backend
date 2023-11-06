@@ -92,10 +92,12 @@ class Contracts(Resource):
                 raise BadRequest("Request failed, no such CONTRACT in the database.")
 
             files = request.files
-            files_details = json.loads(data.get('contract_documents_details'))
             
-            print("FILES DETAILS LIST")
-            print(files_details)
+            if(data.get('contract_documents_details')):
+                files_details = json.loads(data.get('contract_documents_details'))
+                print("FILES DETAILS LIST")
+                print(files_details)
+
             # contract_docs = []
 
             if files:
