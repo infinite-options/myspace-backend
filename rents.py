@@ -40,7 +40,7 @@ class Rents(Resource):
                     SELECT -- *,
                         p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
                         , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_rent, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
+                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_fees, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
                         , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
                         , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
                         , p.contract_documents
@@ -77,7 +77,7 @@ class Rents(Resource):
                     SELECT -- *,
                         p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
                         , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_rent, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
+                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.lease_fees, p.lease_rent_available_topay, p.lease_rent_due_by, p.lease_rent_late_by, p.lease_rent_late_fee, p.lease_rent_perDay_late_fee, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status, p.lease_actual_rent
                         , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
                         , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
                         , p.contract_documents
