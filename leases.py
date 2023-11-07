@@ -62,7 +62,7 @@ class LeaseDetails(Resource):
                             -- AND fee_name = "Rent";
                         """)
                 
-                print(leaseQuery)
+                # print(leaseQuery)
 
             elif filter_id[:3] == "600":
 
@@ -184,7 +184,7 @@ class LeaseApplication(Resource):
         response = {}
         fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
                   "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
-                  "lease_effective_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
+                  "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                   "lease_rent_late_by",
                   "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
                   "lease_vehicles", "lease_referred"]
@@ -202,6 +202,7 @@ class LeaseApplication(Resource):
                     newLease[field] = '[]'
             print("new_lease", newLease)
             db.insert('leases', newLease)
+            
 
         fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
