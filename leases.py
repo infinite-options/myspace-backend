@@ -153,13 +153,13 @@ class LeaseApplication(Resource):
         response = {}
 
         data = request.form
-        print(data)
+        # print("data",data)
 
         # Remove tenenat_uid from data and store as an independant variable
         if 'tenant_uid' in data:
-            print(data['tenant_uid'])
+            print("TENANT_ID",data['tenant_uid'])
             tenant_uid = data.get('tenant_uid')
-            print(tenant_uid)
+            # print(tenant_uid)
             # del data['tenant_uid']
 
         # ApplicationStatus = LeaseApplication.get(self, tenant_uid, data.get('lease_property_id'))
@@ -188,17 +188,18 @@ class LeaseApplication(Resource):
                   "lease_rent_late_by",
                   "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
                   "lease_vehicles", "lease_referred"]
-        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred"
-                             ]
+        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
+                             , "lease_documents"]
         with connect() as db:
-            data = request.form
+            # data = request.form
             # print("data", data["lease_fees"])
             newLease = {}
             for field in fields:
                 if field in data:
                     newLease[field] = data[field]
             for field in fields_with_lists:
-                if data[field] is None:
+                if data.get(field) is None:
+                    # print(field,"None")
                     newLease[field] = '[]'
             print("new_lease", newLease)
             db.insert('leases', newLease)
@@ -219,9 +220,10 @@ class LeaseApplication(Resource):
             response["lease_uid"] = lease_id
 
             if "lease_fees" in data:
-
-                for fees in data["lease_fees"]:
-                    # print("fees",fees)
+                json_object = json.loads(data["lease_fees"])
+                print("json_object", json_object)
+                for fees in json_object:
+                    print("fees",fees)
                     new_leaseFees = {}
                     new_leaseFees["fees_lease_id"] = lease_id
                     for item in fields_leaseFees:
@@ -254,8 +256,8 @@ class LeaseApplication(Resource):
         print("In Lease Application PUT")
         response = {}
         data = request.form
-        # data = request.form.to_dict()  <== IF data came in as Form Data
-        # print(data)
+        # data = request.form.to_dict()  #<== IF data came in as Form Data
+        # print("data",data)
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
@@ -275,7 +277,7 @@ class LeaseApplication(Resource):
             with connect() as db:
                 lease_uid = {'lease_uid': lease_id}
                 query = db.select('leases', lease_uid)
-                print(f"QUERY: {query}")
+                # print(f"QUERY: {query}")
                 try:
                     lease_from_db = query.get('result')[0]
                     lease_docs = lease_from_db.get("lease_documents")
@@ -314,10 +316,13 @@ class LeaseApplication(Resource):
                 response["lease_update"] = db.update('leases', key, payload)
 
         if "lease_fees" in data:
-            for fees in data["lease_fees"]:
+            json_object = json.loads(data["lease_fees"])
+            # print("json_object",json_object)
+            for fees in json_object:
+                # print("fees",fees)
                 if "lease_fees_id" in fees:
                     leaseFees_id = fees['lease_fees_id']
-                    del fees['lease_fees_id']
+                    # del fees['lease_fees_id']
                     payload = {}
                     for field in fees:
                         if field in fields_leaseFees:
