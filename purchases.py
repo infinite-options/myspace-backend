@@ -19,6 +19,11 @@ import calendar
 # BY YEAR     X           X               X
 
 
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # def get_new_billUID(conn):
 #     newBillQuery = execute("CALL space.new_bill_uid;", "get", conn)
@@ -41,7 +46,7 @@ class Bills(Resource):
 
         with connect() as db:
             response['message'] = []
-            data = request.get_json(force=True)
+            data = request.form
             # print(data)
 
             #  Get New Bill UID
@@ -56,12 +61,42 @@ class Bills(Resource):
             bill_created_by = data["bill_created_by"]
             bill_utility_type = data["bill_utility_type"]
             bill_split = data["bill_split"]
-            bill_property_id = data["bill_property_id"]
-            # print(str(json.dumps(bill_property_id)))
-            bill_docs = data["bill_docs"]
+            # bill_property_id = data["bill_property_id"]
+            bill_property_id = json.loads(data["bill_property_id"])
+            print("property_id is ", bill_property_id)
+            #bill_docs = json.loads(data["bill_docs"])
             bill_maintenance_quote_id  = data["bill_maintenance_quote_id"]
-            bill_notes  = data["bill_notes"]
+            bill_notes = data["bill_notes"]
             # print("bill_notes: ", bill_notes, type(bill_notes))
+            #, bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
+            #, bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
+            # bill_property_id = \'""" + str(bill_property_id) + """\'
+            files = request.files
+            bill_documents = []
+            if files:
+                detailsIndex = 0
+                for key in files:
+                    file = files[key]
+                    print("file",file)
+                    # file_info = files_details[detailsIndex]
+                    # print("FILE DETAILS")
+                    # print(file_info)
+                    if file and allowed_file(file.filename):
+                        key = f'bills/{new_bill_uid}/{file.filename}'
+                        s3_link = uploadImage(file, key, '')
+                        docObject = {}
+                        docObject["link"] = s3_link
+                        docObject["filename"] = file.filename
+                        # docObject["type"] = file_info["fileType"]
+                        bill_documents.append(docObject)
+                    detailsIndex += 1
+                bill_docs = json.dumps(bill_documents)
+                print("bill_docs",bill_docs)
+                # updated_contract['contract_documents'] = json.dumps(contract_docs)
+                # print(updated_contract['contract_documents'])
+            else:
+                bill_docs = json.dumps('[]')
+                print("bill_docs", bill_docs)
 
             billQuery = (""" 
                     -- CREATE NEW BILL
@@ -74,8 +109,8 @@ class Bills(Resource):
                     , bill_utility_type = \'""" + bill_utility_type + """\'
                     , bill_split = \'""" + bill_split + """\'
                     , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
-                    , bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
-                    , bill_notes = \'""" + bill_description + """\'
+                    , bill_docs = \'""" + bill_docs + """\'
+                    , bill_notes = \'""" + bill_notes + """\'
                     , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
                     """)
 
@@ -89,8 +124,8 @@ class Bills(Resource):
             # print("made it here", bill_property_id)
             pur_ids = []
             split_num = len(bill_property_id)
-            print(split_num)
-            split_bill_amount = round(bill_amount/split_num,2)
+            # print(split_num)
+            split_bill_amount = round(int(bill_amount)/split_num,2)
 
             for data_dict in bill_property_id:
                 for key, value in data_dict.items():
