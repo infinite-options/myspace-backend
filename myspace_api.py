@@ -45,6 +45,7 @@ from listings import Listings
 from managers import SearchManager
 from status_update import StatusUpdate
 from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
+from utilities import Utilities
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -508,6 +509,7 @@ api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')
 api.add_resource(Listings, '/listings')
+api.add_resource(Utilities, '/utilities')
 
 api.add_resource(Account, '/account')
 
