@@ -42,8 +42,8 @@ class Utilities(Resource):
     
 
     
-    def put(self):
-        print("In update Property")
+    def post(self):
+        print("In Insert Property Utility")
         response = {}
         payload = request.form.to_dict()
         print(payload)
@@ -78,6 +78,50 @@ class Utilities(Resource):
                         SET utility_property_id = \'""" + property_uid_value + """\',
                         utility_type_id = \'""" + key + """\',
                         utility_payer_id = \'""" + value + """\';
+                    """)
+
+                    response["Utility_query"] = db.execute(utilityQuery, [], 'post')
+
+            return response
+        
+
+
+    def put(self):
+        print("In update Property Utility")
+        response = {}
+        payload = request.form.to_dict()
+        print(payload)
+        if payload.get('property_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'property_uid': payload.pop('property_uid')}
+
+        if payload.get('property_utility') is None:
+            raise BadRequest("No Utilities in payload.")
+        else:
+            keyUtility = {'property_utility': payload.pop('property_utility')}
+
+            print(type(key), key)
+            property_uid_value = key['property_uid']
+            print(property_uid_value)
+            print(type(keyUtility), keyUtility)
+
+            json_string = keyUtility['property_utility']
+
+            # Parse the JSON string into a Python dictionary
+            data = json.loads(json_string)
+
+            # Now, you can iterate over the items in the dictionary
+            for key, value in data.items():
+                print(f'Key: {key}, Value: {value}')
+
+                with connect() as db:
+                    print("in connect")
+                    
+                    utilityQuery = ("""
+                        UPDATE space.property_utility
+                        SET utility_payer_id = \'""" + value + """\'
+                        WHERE utility_property_id = \'""" + property_uid_value + """\'
+                            AND utility_type_id = \'""" + key + """\';
                     """)
 
                     response["Utility_query"] = db.execute(utilityQuery, [], 'post')
