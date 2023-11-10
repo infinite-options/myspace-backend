@@ -26,7 +26,39 @@ from werkzeug.exceptions import BadRequest
 #     if newPropertyQuery["code"] == 280:
 #         return newPropertyQuery["result"][0]["new_id"]
 #     return "Could not generate new property UID", 500
+def updateImages(imageFiles, property_uid):
+    content = []
 
+    for filename in imageFiles:
+
+        if type(imageFiles[filename]) == str:
+
+            bucket = 'io-pm'
+            key = imageFiles[filename].split('/io-pm/')[1]
+            data = s3.get_object(
+                Bucket=bucket,
+                Key=key
+            )
+            imageFiles[filename] = data['Body']
+            content.append(data['ContentType'])
+        else:
+            content.append('')
+
+    s3Resource = boto3.resource('s3')
+    bucket = s3Resource.Bucket('io-pm')
+    bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
+    images = []
+    for i in range(len(imageFiles.keys())):
+
+        filename = f'img_{i-1}'
+        if i == 0:
+            filename = 'img_cover'
+        key = f'properties/{property_uid}/{filename}'
+        image = uploadImage(
+            imageFiles[filename], key, content[i])
+
+        images.append(image)
+    return images
 
 class PropertiesByOwner(Resource):
     def get(self, owner_id):
@@ -397,14 +429,77 @@ class Properties(Resource):
     
     def put(self):
         print("In update Property")
-        response = {}
-        payload = request.form.to_dict()
-        print(payload)
-        if payload.get('property_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'property_uid': payload.pop('property_uid')}
+        # response = {}
+        # payload = request.form.to_dict()
+        # print(payload)
+        # if payload.get('property_uid') is None:
+        #     raise BadRequest("Request failed, no UID in payload.")
+        # key = {'property_uid': payload.pop('property_uid')}
+        # with connect() as db:
+        #     response = db.update('properties', key, payload)
+        # return response
+
+        data = request.form
+        print(data)
+        property_uid = data.get('property_uid')
+        fields = [
+            'property_available_to_rent'
+            , "property_active_date"
+            , 'property_address'
+            , "property_unit"
+            , "property_city"
+            , "property_state"
+            , "property_zip"
+            , "property_type"
+            , "property_num_beds"
+            , "property_num_baths"
+            , "property_area"
+            , "property_listed_rent"
+            , "property_deposit"
+            , "property_pets_allowed"
+            , "property_deposit_for_rent"
+            , "property_taxes"
+            , "property_mortgages"
+            , "property_insurance"
+            , "property_featured"
+            , "property_value"
+            , "property_area"
+            , "property_description"
+            , "property_notes"
+        ]
+
+        newProperty = {}
+        for field in fields:
+            fieldValue = data.get(field)
+            print(field, fieldValue)
+            if fieldValue:
+                newProperty[field] = data.get(field)
+
+        images = []
+        i = -1
+        imageFiles = {}
+        while True:
+            filename = f'img_{i}'
+            if i == -1:
+                filename = 'img_cover'
+            file = request.files.get(filename)
+            s3Link = data.get(filename)
+            if file:
+                imageFiles[filename] = file
+            elif s3Link:
+                imageFiles[filename] = s3Link
+            else:
+                break
+            i += 1
+        print("image_files", imageFiles)
+        images = updateImages(imageFiles, property_uid)
+        print("images",images)
+        newProperty['property_images'] = json.dumps(images)
+
+        key = {'property_uid': property_uid}
         with connect() as db:
-            response = db.update('properties', key, payload)
+            response = db.update('properties', key, newProperty)
+        response['images'] = newProperty['property_images']
         return response
 
 
