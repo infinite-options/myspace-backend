@@ -26,39 +26,41 @@ from werkzeug.exceptions import BadRequest
 #     if newPropertyQuery["code"] == 280:
 #         return newPropertyQuery["result"][0]["new_id"]
 #     return "Could not generate new property UID", 500
-def updateImages(imageFiles, property_uid):
-    content = []
 
-    for filename in imageFiles:
-
-        if type(imageFiles[filename]) == str:
-
-            bucket = 'io-pm'
-            key = imageFiles[filename].split('/io-pm/')[1]
-            data = s3.get_object(
-                Bucket=bucket,
-                Key=key
-            )
-            imageFiles[filename] = data['Body']
-            content.append(data['ContentType'])
-        else:
-            content.append('')
-
-    s3Resource = boto3.resource('s3')
-    bucket = s3Resource.Bucket('io-pm')
-    bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
-    images = []
-    for i in range(len(imageFiles.keys())):
-
-        filename = f'img_{i-1}'
-        if i == 0:
-            filename = 'img_cover'
-        key = f'properties/{property_uid}/{filename}'
-        image = uploadImage(
-            imageFiles[filename], key, content[i])
-
-        images.append(image)
-    return images
+# def updateImages(imageFiles, property_uid):
+    # content = []
+    #
+    # for filename in imageFiles:
+    #
+    #     if type(imageFiles[filename]) == str:
+    #
+    #         bucket = 'io-pm'
+    #         key = imageFiles[filename].split('/io-pm/')[1]
+    #         data = s3.get_object(
+    #             Bucket=bucket,
+    #             Key=key
+    #         )
+    #         imageFiles[filename] = data['Body']
+    #         content.append(data['ContentType'])
+    #     else:
+    #         content.append('')
+    #
+    # s3Resource = boto3.resource('s3')
+    # bucket = s3Resource.Bucket('io-pm')
+    # bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
+    # images = []
+    # for i in range(len(imageFiles.keys())):
+    #
+    #     filename = f'img_{i-1}'
+    #     if i == 0:
+    #         filename = 'img_cover'
+    #     key = f'properties/{property_uid}/{filename}'
+    #     image = uploadImage(
+    #         # imageFiles[filename], key, content[i])
+    #         imageFiles[filename], key, '')
+    #
+    #     images.append(image)
+    # return images
 
 class PropertiesByOwner(Resource):
     def get(self, owner_id):
@@ -480,7 +482,7 @@ class Properties(Resource):
 
         images = []
         i = -1
-        imageFiles = {}
+        # imageFiles = {}
         while True:
             filename = f'img_{i}'
             if i == -1:
@@ -488,17 +490,29 @@ class Properties(Resource):
             file = request.files.get(filename)
             s3Link = data.get(filename)
             if file:
-                imageFiles[filename] = file
+                # imageFiles[filename] = file
+                key = f'properties/{property_uid}/{filename}'
+                image = uploadImage(file, key, '')
+                print("image_link_from_s3", image)
+                images.append(image)
             elif s3Link:
-                imageFiles[filename] = s3Link
+                # images[filename] = s3Link
+                images.append(s3Link)
             else:
                 break
             i += 1
-        print("image_files", imageFiles)
-        images = updateImages(imageFiles, property_uid)
-        print("images",images)
-        newProperty['property_images'] = json.dumps(images)
+        print("image_files", images)
+        # images = updateImages(imageFiles, property_uid)
+        # print("images",images)
+        # if len(imageLinks) > 0:
+        #     for item in images:
+        #         imageLinks.append(item)
+        #     newProperty['property_images'] = json.dumps(imageLinks)
 
+        # else:
+        newProperty['property_images'] = json.dumps(images)
+        # newProperty['property_images'] = images
+        print("new_Property", newProperty)
         key = {'property_uid': property_uid}
         with connect() as db:
             response = db.update('properties', key, newProperty)
