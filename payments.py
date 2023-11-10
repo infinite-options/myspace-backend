@@ -194,7 +194,7 @@ class PaymentStatus(Resource):
                     -- FIND TENANT PAYABLES
                     SELECT *
                     FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\' AND ISNULL(payment_uid);
+                    WHERE pur_payer = \'""" + user_id + """\';
                     """)
 
             
@@ -205,7 +205,7 @@ class PaymentStatus(Resource):
                     -- FIND TENANT PAYMENT HISTORY
                     SELECT *
                     FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\' AND payment_uid != "NULL" AND payment_date >= DATE_SUB(NOW(), INTERVAL 365 DAY);
+                    WHERE pur_payer = \'""" + user_id + """\' AND latest_date >= DATE_SUB(NOW(), INTERVAL 365 DAY);
                     """)
 
             
