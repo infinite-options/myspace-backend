@@ -427,7 +427,7 @@ class MaintenanceStatus(Resource):
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                             , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                             , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                            , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                            -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
                             , cf_month, cf_year
                             -- Properties
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
@@ -507,7 +507,7 @@ class MaintenanceStatus(Resource):
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                                 , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                                 , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                                , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
                                 , cf_month, cf_year
                                 -- Properties
                                 , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
@@ -564,7 +564,7 @@ class MaintenanceStatus(Resource):
                                 -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                                 , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                                 , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                                , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                                -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
                                 , cf_month, cf_year
                                 -- Properties
                                 , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
@@ -626,7 +626,7 @@ class MaintenanceStatus(Resource):
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                             , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                             , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                            , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                            -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
                             , cf_month, cf_year
                             -- Properties
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
@@ -683,7 +683,7 @@ class MaintenanceStatus(Resource):
                             -- DO WE NEED FINAL INVOICE AMOUNTS OR DOES THAT GO INTO BILLS?
                             , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
                             , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-                            , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
+                            -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date, total_paid, payment_status, amt_remaining
                             , cf_month, cf_year
                             -- Properties
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
