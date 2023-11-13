@@ -366,6 +366,10 @@ class Properties(Resource):
                 , "property_area"
                 , "property_description"
                 , "property_notes"
+                , "property_utilities"
+                , "property_amenities_unit"
+                , "property_amenities_community"
+                , "property_amenities_nearby"
             ]
 
             newRequest = {}
@@ -445,7 +449,7 @@ class Properties(Resource):
         # return response
 
         data = request.form
-        print(data)
+        # print(data)
         property_uid = data.get('property_uid')
         fields = [
             'property_available_to_rent'
@@ -471,6 +475,10 @@ class Properties(Resource):
             , "property_area"
             , "property_description"
             , "property_notes"
+            , "property_utilities"
+            , "property_amenities_unit"
+            , "property_amenities_community"
+            , "property_amenities_nearby"
         ]
 
         newProperty = {}
@@ -501,7 +509,7 @@ class Properties(Resource):
             else:
                 break
             i += 1
-        print("image_files", images)
+        # print("image_files", images)
         # images = updateImages(imageFiles, property_uid)
         # print("images",images)
         # if len(imageLinks) > 0:
@@ -512,7 +520,7 @@ class Properties(Resource):
         # else:
         newProperty['property_images'] = json.dumps(images)
         # newProperty['property_images'] = images
-        print("new_Property", newProperty)
+        # print("new_Property", newProperty)
         key = {'property_uid': property_uid}
         with connect() as db:
             response = db.update('properties', key, newProperty)
