@@ -42,12 +42,16 @@ class Contracts(Resource):
                 , "contract_early_end_date"
             ]
             newContract = {}
+            newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
+            newContract['contract_uid'] = newRequestID
+            print("In /contracts - POST. new contract UID = ", newRequestID)
             for field in fields:
                 if field in data:
                     newContract[field] = data.get(field)
                     # print(newContract[field])
 
             response = db.insert('contracts', newContract)
+            response['contract_UID'] = newRequestID
         return response
 
     def put(self):
