@@ -194,7 +194,6 @@ class managerDashboard(Resource):
             # print(response)
             return response
 
-
 class tenantDashboard(Resource):
     def get(self, tenant_id):
         response = {}
@@ -249,7 +248,6 @@ class tenantDashboard(Resource):
                 response["announcements"] = announcements
 
             return response
-
 
 class maintenanceDashboard(Resource):
     def get(self, business_id):
@@ -331,12 +329,15 @@ class Dashboard(Resource):
                     # print("in maintenance dashboard")
                     currentActivity = db.execute(""" 
                             -- CURRENT ACTIVITY
-                            SELECT *,
-                                COUNT(maintenance_status) AS num
-                                ,SUM(quote_total_estimate) AS total_estimate
+                            SELECT -- *,
+                                quote_business_id
+                                , maintenance_status
+                                , COUNT(maintenance_status) AS num
+                                , SUM(quote_total_estimate) AS total_estimate
                             FROM (
                                 SELECT quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
                                     , CASE
+                                            -- WHEN quote_status = "SENT" THEN "SUBMITTED"
                                             WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
                                             WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
                                             WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"

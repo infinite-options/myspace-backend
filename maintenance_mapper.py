@@ -183,6 +183,8 @@ def mapMaintenanceForMaintenance(response):
     for record in response['result']:
         if record['quote_status'] == 'REQUESTED':
             mapped_items['REQUESTED']['maintenance_items'].append(record)
+        # elif record['quote_status'] == 'SENT':
+        #     mapped_items['SUBMITTED']['maintenance_items'].append(record)
         elif record['quote_status'] == 'SENT' or record['quote_status'] == 'WITHDRAWN' \
                 or record['quote_status'] == 'REFUSED' or record['quote_status'] == 'REJECTED':
             mapped_items['SUBMITTED']['maintenance_items'].append(record)
