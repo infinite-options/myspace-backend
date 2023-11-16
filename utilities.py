@@ -13,33 +13,6 @@ class Utilities(Resource):
         with connect() as db:
             response = db.select('property_utility', where )
         return response
-    
-
-    def post(self):
-        print("In Utilities")
-        with connect() as db:
-            data = request.form
-            fields = [
-                "contract_property_id"
-                , 'contract_business_id'
-                , "contract_start_date"
-                , 'contract_end_date'
-                , "contract_fees"
-                , "contract_assigned_contacts"
-                , "contract_documents"
-                , "contract_name"
-                , "contract_status"
-                , "contract_early_end_date"
-            ]
-            newContract = {}
-            for field in fields:
-                if field in data:
-                    newContract[field] = data.get(field)
-                    # print(newContract[field])
-
-            response = db.insert('contracts', newContract)
-        return response
-    
 
     
     def post(self):
