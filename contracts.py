@@ -81,19 +81,24 @@ class Contracts(Resource):
                     updated_contract[field] = data.get(field)
 
 
-            # get previously uploaded documents
-            contract_uid = {'contract_uid': contract_id}
-            query = db.select('contracts', contract_uid)
-            print(f"QUERY: {query}")
-            try:
-                contract_from_db = query.get('result')[0]
-                contract_docs = contract_from_db.get("contract_documents")
-                contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
-                print('type: ', type(contract_docs))
-                print(f'previously saved documents: {contract_docs}')
-            except IndexError as e:
-                print(e)
-                raise BadRequest("Request failed, no such CONTRACT in the database.")
+            # # get previously uploaded documents from DB
+            # contract_uid = {'contract_uid': contract_id}
+            # query = db.select('contracts', contract_uid)
+            # print(f"QUERY: {query}")
+            # try:
+            #     contract_from_db = query.get('result')[0]
+            #     contract_docs = contract_from_db.get("contract_documents")
+            #     contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
+            #     print('type: ', type(contract_docs))
+            #     print(f'previously saved documents: {contract_docs}')
+            # except IndexError as e:
+            #     print(e)
+            #     raise BadRequest("Request failed, no such CONTRACT in the database.")
+            
+            contract_docs = data.get('contract_documents')
+            contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
+            # print("contract_docs")
+            # print(contract_docs)
 
             files = request.files
             
@@ -116,6 +121,7 @@ class Contracts(Resource):
                     if file and allowed_file(file.filename):
                         key = f'contracts/{contract_id}/{file.filename}'
                         s3_link = uploadImage(file, key, '')
+                        # s3_link = 'doc_link' # to test locally
                         docObject = {}
                         docObject["link"] = s3_link
                         docObject["filename"] = file.filename
@@ -124,7 +130,8 @@ class Contracts(Resource):
                     detailsIndex += 1
 
                 updated_contract['contract_documents'] = json.dumps(contract_docs)
-                print(updated_contract['contract_documents'])
+                # print("------updated_contract['contract_documents']------")
+                # print(updated_contract['contract_documents'])
 
             # Check if there are fields to update
             if updated_contract:
