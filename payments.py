@@ -235,6 +235,17 @@ class PaymentMethod(Resource):
             response = db.update('paymentMethods', key, payload)
         return response
 
+    def get(self, user_id):
+        print('in PaymentMethod GET')
+        with connect() as db:
+            paymentMethodQuery = db.execute("""
+                -- FIND APPLICATIONS CURRENTLY IN PROGRESS
+                SELECT *
+                FROM space.paymentMethods
+                WHERE paymentMethod_profile_id = \'""" + user_id + """\';
+                 """)
+        return paymentMethodQuery
+
 class RequestPayment(Resource):
     def post(self):
         print('in Request Payment')
