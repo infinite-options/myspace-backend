@@ -239,7 +239,7 @@ def test_PM_Tenant_Flow():
 
     print(response)
 
-def test_PM_Owner():
+def test_PM_Owner_Flow():
 
     payload = {'property_owner_id': ['110-000099'], 'property_available_to_rent': ['0'], 'property_active_date': ['2023-11-07'], 'property_address': ['253rd Arizona'], 'property_unit': ['2'], 'property_city': ['Tucson'], 'property_state': ['AZ'], 'property_zip': ['80000'], 'property_type': ['Condo'], 'property_num_beds': ['2'], 'property_num_baths': ['3'], 'property_value': ['200000'], 'property_area': ['2323'], 'property_listed': ['0'], 'property_deposit': ['0'], 'property_pets_allowed': ['0'], 'property_deposit_for_rent': ['0'], 'property_taxes': ['0'], 'property_mortgages': ['0'], 'property_insurance': ['0'], 'property_featured': ['0'], 'property_description': [''], 'property_notes': ['test'], 'img_cover': ['']}
 
@@ -330,7 +330,7 @@ def test_PM_Owner():
 
     print(response, response2, response3)
 
-def test_Maintenance_flow():
+def test_Maintenance_Flow():
 # Request URL:
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
 # Request Method:

@@ -25,59 +25,102 @@ class LeaseDetails(Resource):
     # decorators = [jwt_required()]
 
     def get(self, filter_id):
-        print('in Lease Details')
+        print('in Lease Details', filter_id)
         response = {}
 
         with connect() as db:
             if filter_id[:3] == "110":
+                print('in Owner Lease Details')
 
                 leaseQuery = db.execute(""" 
-                        -- OWNER LEASES
-                        SELECT *
-                        FROM space.leases
-                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                        -- OWNER, PROPERTY MANAGER, TENANT LEASES
+                        SELECT * 
+                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
-                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                        LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
                         WHERE owner_uid = \'""" + filter_id + """\'
-                            AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            -- AND fee_name = "Rent";
-
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        -- WHERE tenants LIKE '%""" + filter_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        ;
                         """)
                 
-            elif filter_id[:3] == "350":
+            elif filter_id[:3] == "600":
+                print('in PM Lease Details')
 
                 leaseQuery = db.execute(""" 
-                        -- TENANT LEASES
-                        SELECT *
-                        FROM space.leases
-                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                        -- OWNER, PROPERTY MANAGER, TENANT LEASES
+                        SELECT * 
+                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
-                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                        LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-                        WHERE lt_tenant_id = \'""" + filter_id + """\'
-                            AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            -- AND fee_name = "Rent";
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        -- WHERE owner_uid = \'""" + filter_id + """\'
+                        -- WHERE owner_uid = "110-000003"
+                        WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        -- WHERE tenants LIKE '%""" + filter_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        
+                        ;
                         """)
                 
                 # print(leaseQuery)
 
-            elif filter_id[:3] == "600":
+            elif filter_id[:3] == "350":
+                print('in Tenant Lease Details')
 
                 leaseQuery = db.execute(""" 
-                        -- PROPERTY MANAGEMENT LEASES
-                        SELECT *
-                        FROM space.leases
-                        LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
+                        -- OWNER, PROPERTY MANAGER, TENANT LEASES
+                        SELECT * 
+                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
-                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                        LEFT JOIN space.b_details ON contract_property_id = lease_property_id
-                        WHERE contract_business_id = \'""" + filter_id + """\'
-                            AND (lease_status = "NEW" OR lease_status = "REJECTED" OR lease_status = "PROCESSING" OR lease_status = "ACTIVE" OR lease_status = "REFUSED")
-                            -- AND fee_name = "Rent";
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        -- WHERE owner_uid = \'""" + filter_id + """\'
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        WHERE tenants LIKE '%""" + filter_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        
+                        ;
                         """)
             else:
                 leaseQuery = "UID Not Found"
@@ -88,22 +131,22 @@ class LeaseDetails(Resource):
 
             response["Lease_Details"] = leaseQuery
 
-            for i in range(len(leaseQuery['result'])):
-                lease_id = leaseQuery['result'][i]["lease_uid"]
-                leaseFeesQuery = db.execute("""
-                                        SELECT *
-                                        FROM space.leaseFees
-                                        WHERE fees_lease_id = \'""" + lease_id + """\';
-                                        """)
-                if len(leaseFeesQuery['result']) >= 1:
-                    fees_dic = {}
-                    for j in range(len(leaseFeesQuery['result'])):
-                        fee_name = leaseFeesQuery['result'][j]["fee_name"]
-                        fees_dic[fee_name] = leaseFeesQuery['result'][j]
-                    leaseQuery['result'][i]["fees"] = fees_dic
-                else:
-                    leaseQuery['result'][i]["fees"] = '[]'
-                response["Lease_Details"] = leaseQuery
+            # for i in range(len(leaseQuery['result'])):
+            #     lease_id = leaseQuery['result'][i]["lease_uid"]
+            #     leaseFeesQuery = db.execute("""
+            #                             SELECT *
+            #                             FROM space.leaseFees
+            #                             WHERE fees_lease_id = \'""" + lease_id + """\';
+            #                             """)
+            #     if len(leaseFeesQuery['result']) >= 1:
+            #         fees_dic = {}
+            #         for j in range(len(leaseFeesQuery['result'])):
+            #             fee_name = leaseFeesQuery['result'][j]["fee_name"]
+            #             fees_dic[fee_name] = leaseFeesQuery['result'][j]
+            #         leaseQuery['result'][i]["fees"] = fees_dic
+            #     else:
+            #         leaseQuery['result'][i]["fees"] = '[]'
+            #     response["Lease_Details"] = leaseQuery
 
             return response
 
