@@ -412,13 +412,15 @@ class Dashboard(Resource):
                                 SELECT -- *
                                     contract_business_id
                                     , lease_end
+                                    -- , DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%m-%d-%Y')
                                     , COUNT(lease_end) AS num
                                 FROM space.contracts
                                 LEFT JOIN space.leases ON lease_property_id = contract_property_id
+                                -- WHERE contract_business_id = "600-000003" AND contract_status = 'ACTIVE' AND lease_status = "ACTIVE" 
                                 WHERE contract_business_id = \'""" + user_id + """\' AND contract_status = 'ACTIVE' AND lease_status = "ACTIVE" 
-                                    AND lease_end >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
-                                GROUP BY MONTH(lease_end),
-                                        YEAR(lease_end);
+                                    AND STR_TO_DATE(lease_end, '%m-%d-%Y') >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%m-%d-%Y')
+                                GROUP BY MONTH(STR_TO_DATE(lease_end, '%m-%d-%Y')),
+                                        YEAR(STR_TO_DATE(lease_end, '%m-%d-%Y'));
                             """)
 
                     # print("lease Query: ", leaseQuery)
@@ -495,15 +497,17 @@ class Dashboard(Resource):
                         -- LEASE STATUS BY OWNER - REWRITE
                         SELECT -- *
                             property_owner_id
+                            , lease_status
                             , lease_end
-                            -- , DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
+                            -- , DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%m-%d-%Y')
                             , COUNT(lease_end) AS num
                         FROM space.property_owner
                         LEFT JOIN space.leases ON lease_property_id = property_id
-                        WHERE property_owner_id = \'""" + user_id + """\' AND lease_status = "ACTIVE" 
-                            AND lease_end >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
-                        GROUP BY MONTH(lease_end),
-                                YEAR(lease_end);
+                        -- WHERE property_owner_id = "110-000003" AND lease_status = "ACTIVE"
+                        WHERE property_owner_id = \'""" + user_id + """\' AND lease_status = "ACTIVE"  
+                            AND STR_TO_DATE(lease_end, '%m-%d-%Y') >= DATE_FORMAT(LAST_DAY(CURDATE() - INTERVAL 1 MONTH) + INTERVAL 1 DAY, '%Y-%m-%d')
+                        GROUP BY MONTH(STR_TO_DATE(lease_end, '%m-%d-%Y')),
+                                YEAR(STR_TO_DATE(lease_end, '%m-%d-%Y'));
                         """)
 
                 # print("Query: ", leaseQuery)
