@@ -110,27 +110,28 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                        SELECT   * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
-                            maintenanceRequests.*
+                            -- maintenanceRequests.*
                             -- Properties
-                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
-                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
-                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                            --  property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                        -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                        -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                        -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.maintenanceRequests
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        -- WHERE owner_uid = "110-000095"
                         WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'
                         -- WHERE quote_business_id = \'""" + uid + """\'
-                        -- WHERE maintenance_property_id = = \'""" + uid + """\'
+                        -- WHERE maintenance_property_id = \'""" + uid + """\'
                         ORDER BY maintenance_request_created_date;
                         """)
 
@@ -148,27 +149,28 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                        SELECT   * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
-                            maintenanceRequests.*
+                            -- maintenanceRequests.*
                             -- Properties
-                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
-                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
-                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                            --  property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                        -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                        -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                        -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.maintenanceRequests
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
                         WHERE tenant_uid = \'""" + uid + """\'
                         -- WHERE quote_business_id = \'""" + uid + """\'
-                        -- WHERE maintenance_property_id = = \'""" + uid + """\'
+                        -- WHERE maintenance_property_id = \'""" + uid + """\'
                         ORDER BY maintenance_request_created_date;
                         """)
 
@@ -185,22 +187,23 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT  -- * -- bill_property_id,  maintenance_property_id,
+                        SELECT   * -- bill_property_id,  maintenance_property_id,
                             -- maintenance_request_status, quote_status
-                            maintenanceRequests.*
+                            -- maintenanceRequests.*
                             -- Properties
-                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
-                            , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                            , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
-                            , lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
+                            --  property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_images
+                        -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+                        -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
+                        -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
                         FROM space.maintenanceRequests
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         -- LEFT JOIN space.bills ON bill_maintenance_quote_id = maintenance_quote_uid
                         -- LEFT JOIN space.pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN space.b_details ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                        -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'
