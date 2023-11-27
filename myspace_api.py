@@ -419,7 +419,7 @@ api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 # Mainentance Requests GET for Owner and Tenant and POST and PUT for new and modified maintenance requests
 api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
 api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
-api.add_resource(MaintenanceQuotes, '/maintenanceQuotes')
+api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
 
 # api.add_resource(ownerDashboardProperties,
