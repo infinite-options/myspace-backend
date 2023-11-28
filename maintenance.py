@@ -308,7 +308,7 @@ class MaintenanceRequests(Resource):
 
 
 class MaintenanceQuotes(Resource):
-        def get(self, uid):
+    def get(self, uid):
         response = {}
 
         print("UID: ", uid)
