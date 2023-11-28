@@ -392,14 +392,42 @@ class Dashboard(Resource):
                                             WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
                                             WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
                                             WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                              OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
+                                            OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
                                             WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
                                             WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
                                             ELSE quote_status
                                         END AS maintenance_status
-                                FROM space.m_details
+                                FROM (
+                                    -- WORKING QUERY FOR NEW PM DASHBOARD
+                                    SELECT * 
+                                    FROM (
+                                        SELECT * FROM space.maintenanceRequests
+                                        LEFT JOIN (
+                                            SELECT -- *
+                                            maintenance_quote_uid AS maint_quote_uid_DNU
+                                            , quote_maintenance_request_id AS maint_req_id_DNU
+                                            , quote_status AS q_status_DNU
+                                            , MAX(quote_rank) AS max_quote_rank_DNU
+                                        FROM (
+                                            SELECT *,
+                                                CASE
+                                                    WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
+                                                    OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "1"
+                                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "2"
+                                                    WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULED"                      THEN "3"
+                                                    WHEN quote_status = "WITHDRAWN" OR quote_status = "FINISHED"                         THEN "4"
+                                                    WHEN quote_status = "COMPLETED"                                                      THEN "5"     
+                                                    ELSE 0
+                                                END AS quote_rank
+                                            FROM space.maintenanceQuotes) AS qr
+                                        -- ORDER BY quote_maintenance_request_id DESC, quote_rank DESC
+                                        GROUP BY quote_maintenance_request_id) AS quote ON maint_req_id_DNU = maintenance_request_uid
+                                        ) AS maint_rq
+                                    LEFT JOIN space.maintenanceQuotes ON maintenance_quote_uid = maint_quote_uid_DNU
+                                ) AS quote
                                 LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                                 WHERE contract_business_id = \'""" + user_id + """\'
+                                -- WHERE contract_business_id = "600-000032"
                                 ) AS ms
                             GROUP BY maintenance_status;
                             """)
