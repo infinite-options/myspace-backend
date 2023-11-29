@@ -517,7 +517,35 @@ class MaintenanceStatus(Resource):
                     maintenanceStatus = db.execute(""" 
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT * -- bill_property_id,  maintenance_property_id,
-                            FROM space.m_details
+                            -- FROM space.m_details
+                            FROM (
+                                -- WORKING QUERY FOR NEW PM DASHBOARD
+                                SELECT * 
+                                FROM (
+                                    SELECT * FROM space.maintenanceRequests
+                                    LEFT JOIN (
+                                        SELECT -- *
+                                        maintenance_quote_uid AS maint_quote_uid_DNU
+                                        , quote_maintenance_request_id AS maint_req_id_DNU
+                                        , quote_status AS q_status_DNU
+                                        , MAX(quote_rank) AS max_quote_rank_DNU
+                                    FROM (
+                                        SELECT *,
+                                            CASE
+                                                WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
+                                                OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "1"
+                                                WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "2"
+                                                WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULED"                      THEN "3"
+                                                WHEN quote_status = "WITHDRAWN" OR quote_status = "FINISHED"                         THEN "4"
+                                                WHEN quote_status = "COMPLETED"                                                      THEN "5"     
+                                                ELSE 0
+                                            END AS quote_rank
+                                        FROM space.maintenanceQuotes) AS qr
+                                    -- ORDER BY quote_maintenance_request_id DESC, quote_rank DESC
+                                    GROUP BY quote_maintenance_request_id) AS quote ON maint_req_id_DNU = maintenance_request_uid
+                                    ) AS maint_rq
+                                LEFT JOIN space.maintenanceQuotes ON maintenance_quote_uid = maint_quote_uid_DNU
+                            ) AS quote
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN (
                                 SELECT -- *
@@ -533,6 +561,7 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                             -- WHERE owner_uid = \'""" + uid + """\'
                             WHERE business_uid = \'""" + uid + """\'
+                            -- WHERE business_uid = '600-000032'
                             -- WHERE tenant_uid = \'""" + uid + """\'
                             -- WHERE quote_business_id = \'""" + uid + """\'
                             -- WHERE maintenance_property_id = \'""" + uid + """\'
