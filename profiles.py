@@ -234,17 +234,32 @@ class Profile(Resource):
         return response
 
     def put(self):
-        payload = request.get_json()
+        payload = request.form.to_dict()
         if payload.get('business_uid'):
             key = {'business_uid': payload.pop('business_uid')}
+            file = request.files.get("business_photo")
+            if file:
+                key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
+                payload["business_photo_url"] = uploadImage(file, key1, '')
+            print("business")
             with connect() as db:
                 response = db.update('businessProfileInfo', key, payload)
         elif payload.get('tenant_uid'):
             key = {'tenant_uid': payload.pop('tenant_uid')}
+            file = request.files.get("tenant_photo")
+            if file:
+                key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
+                payload["tenant_photo_url"] = uploadImage(file, key1, '')
+            print("tenant")
             with connect() as db:
                 response = db.update('tenantProfileInfo', key, clean_json_data(payload))
         elif payload.get('owner_uid'):
             key = {'owner_uid': payload.pop('owner_uid')}
+            file = request.files.get("owner_photo")
+            if file:
+                key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+                payload["owner_photo_url"] = uploadImage(file, key1, '')
+            print("owner")
             with connect() as db:
                 response = db.update('ownerProfileInfo', key, payload)
         else:
