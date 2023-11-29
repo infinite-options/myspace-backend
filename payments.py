@@ -219,10 +219,11 @@ class PaymentMethod(Resource):
     def post(self):
         response = []
         payload = request.get_json()
+        print(payload)
         with connect() as db:
-            for payment_method in payload:
-                query_response = db.insert('paymentMethods', payment_method)
-                response.append(query_response)
+            query_response = db.insert('paymentMethods', payload)
+            print(query_response)
+            response.append(query_response)
         return response
     
     def put(self):
