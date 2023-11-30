@@ -446,8 +446,8 @@ class Dashboard(Resource):
                                     ) AS quote_summary ON maintenance_request_uid = qmr_id
                                 ) AS quotes
                             LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                -- WHERE contract_business_id = \'""" + user_id + """\'
-                                WHERE contract_business_id = "600-000032"
+                                WHERE contract_business_id = \'""" + user_id + """\'
+                                -- WHERE contract_business_id = "600-000032"
                                 ) AS ms
                             GROUP BY maintenance_status;
                             """)
