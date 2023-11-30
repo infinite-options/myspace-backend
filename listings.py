@@ -13,7 +13,7 @@ class Template(Resource):
         return response
     
 class Listings (Resource):
-        def get(self, tenant_id):
+    def get(self, tenant_id):
         print('in Listings')
         response = {}
         # conn = connect()
