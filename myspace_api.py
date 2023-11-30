@@ -508,7 +508,7 @@ api.add_resource(Announcements, '/announcements/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')
-api.add_resource(Listings, '/listings')
+api.add_resource(Listings, '/listings/<string:tenant_id>')
 api.add_resource(Utilities, '/utilities')
 
 api.add_resource(Account, '/account')
