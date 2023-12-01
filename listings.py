@@ -31,8 +31,8 @@ class Listings (Resource):
                                                     'tenant_last_name', tenant_last_name,
                                                     'tenant_phone_number', tenant_phone_number,
                                                     'tenant_email', tenant_email
-                                                    )) AS tenants, space.leases.*, lt_tenant_id, CASE WHEN lt_tenant_id = '350-000002' AND lease_status NOT IN ("EXPIRED","TERMINATED") THEN 1 ELSE NULL END AS is_target_tenant FROM space.leases LEFT JOIN space.t_details ON lt_lease_id = lease_uid WHERE (lease_end < DATE_ADD(CURDATE(), INTERVAL 1 MONTH) AND lease_end != "") OR (lt_tenant_id = '350-000002') GROUP BY lt_lease_id) AS l ON lease_property_id = property_uid
-                    WHERE (contract_status = "ACTIVE" AND property_available_to_rent = "1") OR (lt_tenant_id = '350-000002')
+                                                    )) AS tenants, space.leases.*, lt_tenant_id, CASE WHEN lt_tenant_id = \'""" + tenant_id + """\' AND lease_status NOT IN ("EXPIRED","TERMINATED") THEN 1 ELSE NULL END AS is_target_tenant FROM space.leases LEFT JOIN space.t_details ON lt_lease_id = lease_uid WHERE (lease_end < DATE_ADD(CURDATE(), INTERVAL 1 MONTH) AND lease_end != "") OR (lt_tenant_id = \'""" + tenant_id + """\') GROUP BY lt_lease_id) AS l ON lease_property_id = property_uid
+                    WHERE (contract_status = "ACTIVE" AND property_available_to_rent = "1") OR (lt_tenant_id = \'""" + tenant_id + """\')
                     GROUP BY contract_property_id;
                     """)
 
