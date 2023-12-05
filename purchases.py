@@ -272,7 +272,20 @@ class Bills(Resource):
             # response["purchase_ids added"] = json.dumps(pur_ids)
             return response
 
-    
+    def put(self):
+        print('in bills')
+        payload = request.form
+        if payload.get('bill_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'bill_uid': payload['bill_uid']}
+        print("Key: ", key)
+        bills = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", bills)
+        with connect() as db:
+            print("In actual PUT")
+            response = db.update('bills', key, bills)
+        return response
+        
     def delete(self):
         print("In delete Bill - works but need to delete from Purchases as well")
         response = {}
