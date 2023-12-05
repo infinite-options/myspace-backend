@@ -240,8 +240,8 @@ class Bills(Resource):
                             , pur_due_date = DATE_ADD(LAST_DAY(CURRENT_DATE()), INTERVAL 1 DAY)
                             , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                             , purchase_status = "UNPAID"
-                            , pur_notes = "THIS IS A TEST"
-                            , pur_description = "THIS IS ONLY A TEST"
+                            , pur_notes = \'""" + bill_notes + """\'
+                            , pur_description = \'""" + bill_description + """\'
                             , pur_receiver = \'""" + bill_created_by + """\'
                             , pur_payer = \'""" + responsibleParty + """\'
                             , pur_initiator = \'""" + bill_created_by + """\';
