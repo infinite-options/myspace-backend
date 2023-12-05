@@ -583,7 +583,7 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                            -- WHERE business_uid = \'""" + uid + """\'
+                            WHERE business_uid = \'""" + uid + """\'
                             -- WHERE business_uid = '600-000032'
                             ORDER BY maintenance_request_created_date;
                             """)
