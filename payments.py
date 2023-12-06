@@ -192,9 +192,10 @@ class PaymentStatus(Resource):
             # print("in connect loop")
             paymentStatus = db.execute(""" 
                     -- FIND TENANT PAYABLES
-                    SELECT *
+                    SELECT pp_details.*, bill_maintenance_quote_id
                     FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\' AND purchase_status IN ('UNPAID','PARTIALLY PAID');
+                    LEFT JOIN space.bills ON bill_uid = pur_bill_id
+                    WHERE pur_payer = \'""" + user_id + """\' and purchase_status IN ('UNPAID','PARTIALLY PAID');
                     """)
 
             
@@ -203,8 +204,9 @@ class PaymentStatus(Resource):
 
             paidStatus = db.execute("""
                     -- FIND TENANT PAYMENT HISTORY
-                    SELECT *
+                    SELECT pp_details.*, bill_maintenance_quote_id
                     FROM space.pp_details
+                    LEFT JOIN space.bills ON bill_uid = pur_bill_id
                     WHERE pur_payer = \'""" + user_id + """\' AND latest_date >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
                     """)
 
