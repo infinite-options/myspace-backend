@@ -249,6 +249,23 @@ class PaymentMethod(Resource):
                  """)
         return paymentMethodQuery
 
+    def delete(self, paymentMethod_uid):
+        print("In paymentMethods DELETE")
+        print(paymentMethod_uid)
+        response = {}
+        with connect() as db:
+
+            paymentQuery = ("""
+                    DELETE 
+                    FROM space.paymentMethods
+                    WHERE paymentMethod_uid = \'""" + paymentMethod_uid + """\';
+                    """)
+
+            response["delete_paymentMethods"] = db.delete(paymentQuery)
+
+
+        return response
+
 class RequestPayment(Resource):
     def post(self):
         print('in Request Payment')
