@@ -233,7 +233,7 @@ class Bills(Resource):
                         SET purchase_uid = \'""" + new_purchase_uid + """\'
                             , pur_timestamp = CURRENT_TIMESTAMP()
                             , pur_property_id = \'""" + pur_property_id  + """\'
-                            , purchase_type = "BILL POSTING"
+                            , purchase_type = "MAINTENANCE"
                             , pur_cf_type = \'""" + pur_cf_type  + """\'
                             , pur_bill_id = \'""" + new_bill_uid + """\'
                             , purchase_date = CURRENT_DATE()
