@@ -43,15 +43,28 @@ class Bills(Resource):
     def get(self,user_id):
         print(user_id)
         response = {}
-        with connect() as db:
-            queryResponse = (""" 
-                                        -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
-                                        SELECT *
-                                        FROM space.bills
-                                        WHERE bill_uid = \'""" + user_id + """\';
-                                        """)
-            response = db.execute(queryResponse)
-        return response
+
+        if user_id[:3] == '040':
+            with connect() as db:
+                queryResponse = (""" 
+                                            
+                                            SELECT *
+                                            FROM space.bills
+                                            WHERE bill_uid = \'""" + user_id + """\';
+                                            """)
+                response = db.execute(queryResponse)
+            return response
+
+        elif user_id[:3] == '900':
+            with connect() as db:
+                queryResponse = (""" 
+                                            
+                                            SELECT * 
+                                            FROM space.bills 
+                                            WHERE bill_maintenance_quote_id = \'""" + user_id + """\';
+                                            """)
+                response = db.execute(queryResponse)
+            return response
     def post(self):
         print("In add Bill")
         response = {}
