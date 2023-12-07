@@ -40,6 +40,18 @@ def allowed_file(filename):
 
 
 class Bills(Resource):
+    def get(self,user_id):
+        print(user_id)
+        response = {}
+        with connect() as db:
+            queryResponse = (""" 
+                                        -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
+                                        SELECT *
+                                        FROM space.bills
+                                        WHERE bill_uid = \'""" + user_id + """\';
+                                        """)
+            response = db.execute(queryResponse)
+        return response
     def post(self):
         print("In add Bill")
         response = {}
