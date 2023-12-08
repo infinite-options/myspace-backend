@@ -21,19 +21,25 @@ class Listings (Resource):
         with connect() as db:
             print("in connect loop")
             listingsQuery = db.execute(""" 
-                    -- AVAILABLE LISTINGS
-                    SELECT * FROM space.contracts
-                    LEFT JOIN space.properties ON contract_property_id = property_uid
-                    LEFT JOIN (SELECT JSON_ARRAYAGG(JSON_OBJECT
-                                                    ('tenant_uid', tenant_uid,
-                                                    'lt_responsibility', lt_responsibility,
-                                                    'tenant_first_name', tenant_first_name,
-                                                    'tenant_last_name', tenant_last_name,
-                                                    'tenant_phone_number', tenant_phone_number,
-                                                    'tenant_email', tenant_email
-                                                    )) AS tenants, space.leases.*, lt_tenant_id, CASE WHEN lt_tenant_id = \'""" + tenant_id + """\' AND lease_status NOT IN ("EXPIRED","TERMINATED") THEN 1 ELSE NULL END AS is_target_tenant FROM space.leases LEFT JOIN space.t_details ON lt_lease_id = lease_uid WHERE (lease_end < DATE_ADD(CURDATE(), INTERVAL 1 MONTH) AND lease_end != "") OR (lt_tenant_id = \'""" + tenant_id + """\') GROUP BY lt_lease_id) AS l ON lease_property_id = property_uid
-                    WHERE (contract_status = "ACTIVE" AND property_available_to_rent = "1") OR (lt_tenant_id = \'""" + tenant_id + """\')
-                    GROUP BY contract_property_id;
+                     -- AVAILABLE LISTINGS
+                    SELECT * FROM space.properties
+                    RIGHT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") as c 
+                        ON contract_property_id = property_uid
+                    LEFT JOIN (SELECT lease_property_id
+                            , JSON_ARRAYAGG(JSON_OBJECT
+                            ('lt_tenant_id', lt_tenant_id
+                            , 'lt_responsibility', lt_responsibility
+                            , 'lease_status', lease_status
+                            , 'lease_end', lease_end
+                            )) AS tenants
+                        FROM space.leases
+                        LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
+                        WHERE lease_status NOT IN ("EXPIRED","TERMINATED") AND
+                            -- lt_tenant_id = "350-000084" 
+                            lt_tenant_id = \'""" + tenant_id + """\'
+                        GROUP BY lease_property_id) as l
+                        ON lease_property_id = property_uid
+                    WHERE property_available_to_rent = 1;
                     """)
 
             # print("Query: ", listingsQuery)
