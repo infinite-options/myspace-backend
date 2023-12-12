@@ -41,7 +41,7 @@ class Listings (Resource):
 
             # print("Query: ", listingsQuery)
             # items = execute(istingsQuery, "get", conn)
-            response["Available Listings"] = listingsQuery
+            response["Available_Listings"] = listingsQuery
 
         with connect() as db:
             print("in tenant loop")
@@ -55,7 +55,7 @@ class Listings (Resource):
                     """)
             # print("Query: ", tenantsQuery)
             # items = execute(istingsQuery, "get", conn)
-            response["Tenant Leases"] = tenantsQuery
+            response["Tenant_Leases"] = tenantsQuery
 
             return response
                                        

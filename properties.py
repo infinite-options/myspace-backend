@@ -27,40 +27,40 @@ from werkzeug.exceptions import BadRequest
 #         return newPropertyQuery["result"][0]["new_id"]
 #     return "Could not generate new property UID", 500
 
-# def updateImages(imageFiles, property_uid):
-    # content = []
-    #
-    # for filename in imageFiles:
-    #
-    #     if type(imageFiles[filename]) == str:
-    #
-    #         bucket = 'io-pm'
-    #         key = imageFiles[filename].split('/io-pm/')[1]
-    #         data = s3.get_object(
-    #             Bucket=bucket,
-    #             Key=key
-    #         )
-    #         imageFiles[filename] = data['Body']
-    #         content.append(data['ContentType'])
-    #     else:
-    #         content.append('')
-    #
-    # s3Resource = boto3.resource('s3')
-    # bucket = s3Resource.Bucket('io-pm')
-    # bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
-    # images = []
-    # for i in range(len(imageFiles.keys())):
-    #
-    #     filename = f'img_{i-1}'
-    #     if i == 0:
-    #         filename = 'img_cover'
-    #     key = f'properties/{property_uid}/{filename}'
-    #     image = uploadImage(
-    #         # imageFiles[filename], key, content[i])
-    #         imageFiles[filename], key, '')
-    #
-    #     images.append(image)
-    # return images
+def updateImages(imageFiles, property_uid):
+    content = []
+    
+    for filename in imageFiles:
+    
+        if type(imageFiles[filename]) == str:
+    
+            bucket = 'io-pm'
+            key = imageFiles[filename].split('/io-pm/')[1]
+            data = s3.get_object(
+                Bucket=bucket,
+                Key=key
+            )
+            imageFiles[filename] = data['Body']
+            content.append(data['ContentType'])
+        else:
+            content.append('')
+    
+    s3Resource = boto3.resource('s3')
+    bucket = s3Resource.Bucket('io-pm')
+    bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
+    images = []
+    for i in range(len(imageFiles.keys())):
+    
+        filename = f'img_{i-1}'
+        if i == 0:
+            filename = 'img_cover'
+        key = f'properties/{property_uid}/{filename}'
+        image = uploadImage(
+            # imageFiles[filename], key, content[i])
+            imageFiles[filename], key, '')
+    
+        images.append(image)
+    return images
 
 class PropertiesByOwner(Resource):
     def get(self, owner_id):
@@ -181,8 +181,8 @@ class Properties(Resource):
                         SELECT * 
                         FROM space.pp_details 
                         WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
-                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        -- AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        -- AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
                         ) AS r ON p.property_uid = pur_property_id
                     LEFT JOIN (
                         SELECT -- * 
