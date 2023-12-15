@@ -1,7 +1,8 @@
 import datetime
+
 from flask_restful import Resource
 from data_pm import connect
-from datetime import date, timedelta, datetime
+# from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 import json
 import calendar
@@ -2524,3 +2525,92 @@ class ExtendLeaseTest(Resource):
                     response = db.update(
                         'leases', pkNL, newLeaseUpdate)
         return response
+
+
+class MonthlyRent_CLASS(Resource):
+    def get(self):
+        print("In Monthly Rent")
+        response = {}
+
+        with connect() as db:
+            print("in connect loop")
+            monthlyRentQuery = db.execute(""" 
+                -- BASIC QUERY FOR RENTS
+                SELECT -- *,
+                    leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
+                    -- , of_DNU, lease_rent_old_DNU
+                    , lease_uid, lease_property_id, lease_start, lease_end, lease_status
+                    -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred
+                    , lease_effective_date, lease_application_date
+                    -- , linked_application_id-DNU, lease_docuSign
+                    -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent
+                FROM space.leaseFees
+                LEFT JOIN space.leases ON fees_lease_id = lease_uid
+                WHERE fee_name = "Rent" AND
+                    DATEDIFF(LAST_DAY(CURDATE()), CURDATE()) < available_topay;
+                    """)
+            
+
+            # print("Query: ", monthlyRentQuery)
+            response['monthlyRents'] = monthlyRentQuery
+            
+            # Iterate over response result and add a Purchase entry to the Purchases Table
+            if len(response['monthlyRents']['result']) > 0:
+                for i in range(len(response['monthlyRents']['result'])):
+                    # print(response['monthlyRents'])
+                    # print(response['monthlyRents']['result'][i])
+                    # print(response['monthlyRents']['result'][i]['lease_property_id'])
+                    
+                    # WRITE TO PURCHASE DB
+                    newRequest = {}
+
+                    # # GET NEW UID
+                    newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    print("New Purchase ID: ", newRequestID)
+                    newRequest['purchase_uid'] = newRequestID
+
+                    print(datetime.date.today())
+                    newRequest['pur_timestamp'] = str(datetime.date.today())
+                    print(newRequest['pur_timestamp'])
+                    newRequest['pur_property_id'] = response['monthlyRents']['result'][i]['lease_property_id']
+                    newRequest['purchase_type'] = "RENT"
+                    newRequest['pur_cf_type'] = "REVENUE"
+                    newRequest['purchase_date'] = str(datetime.date.today())
+                    newRequest['pur_due_date'] = str(datetime.date.today()+ relativedelta(months=1, day=1))
+                    # print("Date info complete")
+
+                    #get the rent amount
+                    newRequest['pur_amount_due'] = response['monthlyRents']['result'][i]['charge']
+                    newRequest['purchase_status'] = "UNPAID"
+                    newRequest['pur_notes'] = "RENT FOR NEXT MONTH"
+                    newRequest['pur_description'] = "RENT FOR NEXT MONTH"
+                    # print("Rent info complete")
+
+                    #get property owner id
+                    owner_id_st = db.select('property_owner',
+                                            {'property_id': response['monthlyRents']['result'][i]['lease_property_id']})
+                    owner_id = owner_id_st.get('result')[0]['property_owner_id']
+                    newRequest['pur_receiver'] = owner_id
+                    # print("Owner info complete")
+
+                    #get property manager id
+                    manager_id_st = db.select('b_details',
+                                            {'contract_property_id': response['monthlyRents']['result'][i]['lease_property_id'],
+                                            'business_type':"MANAGEMENT"})
+                    manager_id = manager_id_st.get('result')[0]['business_user_id']
+                    newRequest['pur_initiator'] = manager_id
+                    # print("Manager info complete")
+
+                    #get the tenant id
+                    tenant_id_st = db.select('lease_tenant',
+                                            {'lt_lease_id': response['monthlyRents']['result'][i]['fees_lease_id']})
+                    tenant_id = tenant_id_st.get('result')[0]['lt_tenant_id']
+                    newRequest['pur_payer'] = tenant_id
+                    # print("Tenant info complete")
+
+                    print(newRequest)
+                    responsePurchase = db.insert('purchases', newRequest)
+                    print(responsePurchase)
+
+            return response
+

@@ -47,6 +47,7 @@ from managers import SearchManager
 from status_update import StatusUpdate
 from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 from utilities import Utilities
+from cron import MonthlyRent_CLASS
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -522,6 +523,7 @@ api.add_resource(Password, '/password')
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 # api.add_resource(RentPurchaseTest, '/RentPurchase')
 # api.add_resource(ExtendLease, '/ExtendLease')
+api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
 
 # refresh
