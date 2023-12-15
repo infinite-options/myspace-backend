@@ -117,6 +117,7 @@ class DatabaseConnection:
                     self.conn.commit()
                     response['message'] = 'Successfully committed SQL query'
                     response['code'] = 200
+                    response['change'] = str(cur.rowcount) + " rows affected"
                     # print('RESPONSE POST')
         except Exception as e:
             print('ERROR', e)
