@@ -41,7 +41,7 @@ def updateImages(imageFiles, property_uid):
                 Key=key
             )
             imageFiles[filename] = data['Body']
-            content.append(data['ContentType'])
+            content.append(data['ContentType'])            
         else:
             content.append('')
     
@@ -56,8 +56,8 @@ def updateImages(imageFiles, property_uid):
             filename = 'img_cover'
         key = f'properties/{property_uid}/{filename}'
         image = uploadImage(
-            # imageFiles[filename], key, content[i])
-            imageFiles[filename], key, '')
+            imageFiles[filename], key, content[i])
+            # imageFiles[filename], key, '')
     
         images.append(image)
     return images
@@ -181,8 +181,8 @@ class Properties(Resource):
                         SELECT * 
                         FROM space.pp_details 
                         WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
-                        -- AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                        -- AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
                         ) AS r ON p.property_uid = pur_property_id
                     LEFT JOIN (
                         SELECT -- * 
@@ -484,13 +484,13 @@ class Properties(Resource):
         newProperty = {}
         for field in fields:
             fieldValue = data.get(field)
-            print(field, fieldValue)
+            # print(field, fieldValue)
             if fieldValue:
                 newProperty[field] = data.get(field)
 
         images = []
         i = -1
-        # imageFiles = {}
+        imageFiles = {}
         while True:
             filename = f'img_{i}'
             if i == -1:
@@ -498,19 +498,19 @@ class Properties(Resource):
             file = request.files.get(filename)
             s3Link = data.get(filename)
             if file:
-                # imageFiles[filename] = file
+                imageFiles[filename] = file
                 key = f'properties/{property_uid}/{filename}'
                 image = uploadImage(file, key, '')
-                print("image_link_from_s3", image)
                 images.append(image)
             elif s3Link:
-                # images[filename] = s3Link
+                imageFiles[filename] = s3Link
                 images.append(s3Link)
             else:
                 break
             i += 1
         # print("image_files", images)
-        # images = updateImages(imageFiles, property_uid)
+        images = updateImages(imageFiles, property_uid)
+        newProperty['property_images'] = json.dumps(images)
         # print("images",images)
         # if len(imageLinks) > 0:
         #     for item in images:
