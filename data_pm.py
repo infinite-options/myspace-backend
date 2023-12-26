@@ -4,23 +4,55 @@ import json
 import boto3
 from botocore.response import StreamingBody
 from decimal import Decimal
+from werkzeug.datastructures import FileStorage
+import mimetypes
 
 s3 = boto3.client('s3')
 
 
+# def uploadImage(file, key, content):
+#     bucket = 'io-pm'
+#     contentType = ''
+
+#     if type(file) == StreamingBody:
+#         contentType = content
+
+#     if file:
+#         # print('if file', file, bucket, key)
+#         filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
+#         upload_file = s3.put_object(
+#             Bucket=bucket,
+#             Body=file.read(),
+#             Key=key,
+#             ACL='public-read',
+#             ContentType=contentType
+#         )
+
+#         return filename
+#     return None
+
 def uploadImage(file, key, content):
     bucket = 'io-pm'
-    contentType = ''
 
-    if type(file) == StreamingBody:
+    if isinstance(file, FileStorage): 
+        file.stream.seek(0)
+        file_content = file.stream.read()
+        content_type, _ = mimetypes.guess_type(file.filename)
+        contentType = content_type if content_type else 'application/octet-stream'  # Fallback if MIME type is not detected
+
+
+
+    elif isinstance(file, StreamingBody):
+        file_content = file.read()
         contentType = content
+        # Set content type based on your logic or metadata
+        # Example: contentType = 'image/jpeg' or other appropriate content type
 
-    if file:
-        # print('if file', file, bucket, key)
+    if file_content:
         filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
         upload_file = s3.put_object(
             Bucket=bucket,
-            Body=file.read(),
+            Body=file_content,
             Key=key,
             ACL='public-read',
             ContentType=contentType
