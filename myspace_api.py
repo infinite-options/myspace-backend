@@ -456,7 +456,7 @@ api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 # api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 # api.add_resource(TransactionsByOwnerByProperty,
 #                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
-api.add_resource(AllTransactions, '/allTransactions')
+api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
 
 
 
