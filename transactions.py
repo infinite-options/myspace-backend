@@ -39,6 +39,8 @@ class AllTransactions(Resource):
                                                             OR property_owner_id =\'""" + uid + """\'
                                                             """)
                 response = db.execute(queryResponse)
+                
+            return response
 
         elif uid[:3] == '600':
             print("In Business ID")
@@ -52,7 +54,9 @@ class AllTransactions(Resource):
                                                             """)
                 response = db.execute(queryResponse)
 
-        return response
+            return response
+
+        
 
 
 
