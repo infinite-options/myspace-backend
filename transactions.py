@@ -22,23 +22,42 @@ import calendar
 class AllTransactions(Resource):
     # decorators = [jwt_required()]
 
-    def get(self):
-        print('in All Transactions')
+    def get(self, uid):
+        print('in Maintenance Request')
         response = {}
 
-        with connect() as db:
-            print("in connect loop")
-            transactionQuery = db.execute(""" 
-                    -- ALL PURCHASE TRANSACTIONS TO DETERMINE IF BILLS ARE PAID OR NOT PAID
-                    SELECT * FROM space.pp_details;
-                    """)
-            
+        print("UID: ", uid)
 
-            # print("Query: ", transactionQuery)
-            # items = execute(transactionQuery, "get", conn)
-            # print(items)
-            response["Transactions"] = transactionQuery
+        if uid[:3] == '110':
+            print("In Owner ID")
+            with connect() as db:
+                queryResponse = (""" 
+
+                                                            SELECT * 
+                                                            FROM space.pp_details 
+                                                            WHERE pur_receiver=\'""" + uid + """\' OR pur_payer=\'""" + uid + """\'
+                                                            OR property_owner_id =\'""" + uid + """\'
+                                                            """)
+                response = db.execute(queryResponse)
+                
             return response
+
+        elif uid[:3] == '600':
+            print("In Business ID")
+            with connect() as db:
+                queryResponse = (""" 
+
+                                                            SELECT * 
+                                                            FROM space.pp_details 
+                                                            WHERE pur_receiver=\'""" + uid + """\' OR pur_payer=\'""" + uid + """\'
+                                                            OR business_uid =\'""" + uid + """\'
+                                                            """)
+                response = db.execute(queryResponse)
+
+            return response
+
+        
+
 
 
 class TransactionsByOwner(Resource):
