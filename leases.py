@@ -247,6 +247,7 @@ class LeaseApplication(Resource):
             print("new_lease", newLease)
             db.insert('leases', newLease)
             
+        print("Data inserted into space.leases")
 
         fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
@@ -258,13 +259,15 @@ class LeaseApplication(Resource):
                     ORDER BY lease_uid DESC
                     LIMIT 1;
                     """)
-            print(leaseQuery['result'][0]['lease_uid'])
+            # print(leaseQuery['result'][0]['lease_uid'])
             lease_id = leaseQuery['result'][0]['lease_uid']
             response["lease_uid"] = lease_id
+            print("Lease ID", lease_id)
 
             if "lease_fees" in data:
+                print("lease_fees in data")
                 json_object = json.loads(data["lease_fees"])
-                print("json_object", json_object)
+                print("lease fees json_object", json_object)
                 for fees in json_object:
                     print("fees",fees)
                     new_leaseFees = {}
@@ -277,7 +280,8 @@ class LeaseApplication(Resource):
         tenant_responsibiity = str(1)
 
         with connect() as db:
-            print("Add record in lease_tenant table")
+            print("Add record in lease_tenant table", lease_id, tenant_uid, tenant_responsibiity)
+            # print("Made it to here")
             ltQuery = (""" 
                     INSERT INTO space.lease_tenant
                     SET lt_lease_id = \'""" + lease_id + """\'
@@ -288,6 +292,7 @@ class LeaseApplication(Resource):
             response["lt_query"] = db.execute(ltQuery, [], 'post')
 
             # print(ltQuery)
+            print("Data inserted into space.lease_tenant")
 
         # key = {'lease_uid': data.pop('lease_uid')}
         # print(key)
