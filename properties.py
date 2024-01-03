@@ -166,6 +166,7 @@ class Properties(Resource):
                         , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
                         , num AS num_open_maintenace_req
                         , CASE
+                                WHEN ISNULL(r.lease_status) THEN "NO MANAGER"
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
                                 ELSE 'VACANT'
@@ -217,6 +218,7 @@ class Properties(Resource):
                         , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
                         , num AS num_open_maintenace_req
                         , CASE
+                                WHEN ISNULL(r.lease_status) THEN "NO MANAGER"
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
                                 ELSE 'VACANT'
@@ -285,6 +287,7 @@ class Properties(Resource):
                         , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
                         , num AS num_open_maintenace_req
                         , CASE
+                                WHEN ISNULL(r.lease_status) THEN "NO MANAGER"
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
                                 WHEN (r.lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
                                 ELSE 'VACANT'
