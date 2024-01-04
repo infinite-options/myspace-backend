@@ -160,7 +160,7 @@ class Properties(Resource):
                         property_uid, property_available_to_rent, property_active_date
                         , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                         , property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area
-                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images
+                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_favorite_image
                         , property_taxes, property_mortgages, property_insurance
                         , property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_utilities
                         , po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
@@ -220,7 +220,7 @@ class Properties(Resource):
                         property_uid, property_available_to_rent, property_active_date
                         , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                         , property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area
-                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images
+                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_favorite_image
                         , property_taxes, property_mortgages, property_insurance
                         , property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_utilities
                         , po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
@@ -297,7 +297,7 @@ class Properties(Resource):
                         property_uid, property_available_to_rent, property_active_date
                         , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                         , property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area
-                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images
+                        , property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_favorite_image
                         , property_taxes, property_mortgages, property_insurance
                         , property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_utilities
                         , po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
