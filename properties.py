@@ -516,12 +516,14 @@ class Properties(Resource):
                 newProperty[field] = data.get(field)
 
         images = []
-        i = -1
+        # i = -1
+        i = 0
         imageFiles = {}
+        favorite_image = data.get("img_favorite")
         while True:
             filename = f'img_{i}'
-            if i == -1:
-                filename = 'img_cover'
+            # if i == -1:
+            #     filename = 'img_cover'
             file = request.files.get(filename)
             s3Link = data.get(filename)
             if file:
@@ -529,14 +531,21 @@ class Properties(Resource):
                 key = f'properties/{property_uid}/{filename}'
                 image = uploadImage(file, key, '')
                 images.append(image)
+
+                if filename == favorite_image:
+                    newProperty["property_favorite_image"] = image
+
             elif s3Link:
                 imageFiles[filename] = s3Link
                 images.append(s3Link)
+
+                if filename == favorite_image:
+                    newProperty["property_favorite_image"] = s3Link
             else:
                 break
             i += 1
         # print("image_files", images)
-        images = updateImages(imageFiles, property_uid)
+        # images = updateImages(imageFiles, property_uid)
         newProperty['property_images'] = json.dumps(images)
         # print("images",images)
         # if len(imageLinks) > 0:
