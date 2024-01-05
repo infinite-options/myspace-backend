@@ -202,6 +202,15 @@ class PaymentStatus(Resource):
             # print("Query: ", paymentStatus)
             response["PaymentStatus"] = paymentStatus
 
+            rentStatus = db.execute("""
+                    -- GET RENT DETAILS
+                    SELECT * from space.leaseFees
+                    LEFT JOIN space.leases ON lease_uid = fees_lease_id
+                    LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
+                    WHERE lease_status = "ACTIVE" AND lt_tenant_id = \'""" + user_id + """\' """)
+
+            response["RentStatus"] = rentStatus
+            
             paidStatus = db.execute("""
                     -- FIND TENANT PAYMENT HISTORY
                     SELECT pp_details.*, bill_maintenance_quote_id
