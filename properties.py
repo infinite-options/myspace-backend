@@ -528,6 +528,7 @@ class Properties(Resource):
             s3Link = data.get(filename)
             if file:
                 imageFiles[filename] = file
+                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
                 key = f'properties/{property_uid}/{filename}'
                 image = uploadImage(file, key, '')
                 images.append(image)
