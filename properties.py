@@ -529,7 +529,7 @@ class Properties(Resource):
             if file:
                 imageFiles[filename] = file
                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                key = f'properties/{property_uid}/{filename}'
+                key = f'properties/{property_uid}/{unique_filename}'
                 image = uploadImage(file, key, '')
                 images.append(image)
 
@@ -547,7 +547,7 @@ class Properties(Resource):
             i += 1
         # print("image_files", images)
         # images = updateImages(imageFiles, property_uid)
-        newProperty['property_images'] = json.dumps(images)
+        # newProperty['property_images'] = json.dumps(images)
         # print("images",images)
         # if len(imageLinks) > 0:
         #     for item in images:
@@ -555,8 +555,8 @@ class Properties(Resource):
         #     newProperty['property_images'] = json.dumps(imageLinks)
 
         # else:
-        newProperty['property_images'] = json.dumps(images)
-        # newProperty['property_images'] = images
+        
+        newProperty['property_images'] = json.dumps(images)        
         # print("new_Property", newProperty)
         key = {'property_uid': property_uid}
         with connect() as db:
