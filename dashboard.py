@@ -605,7 +605,7 @@ class Dashboard(Resource):
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
                         SELECT -- *,
-                            SUM(pur_amount_due) AS balance 
+                            SUM(CASE WHEN purchase_status = 'UNPAID' THEN pur_amount_due ELSE 0 END)  AS balance 
                             , CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date
                             , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                             , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
