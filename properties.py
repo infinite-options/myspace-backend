@@ -44,6 +44,8 @@ def updateImages(imageFiles, property_uid):
             content.append(data['ContentType'])            
         else:
             content.append('')
+
+    
     
     s3Resource = boto3.resource('s3')
     bucket = s3Resource.Bucket('io-pm')
@@ -429,27 +431,60 @@ class Properties(Resource):
             newProperty['property_uid'] = newRequestID
             print(newRequestID)
 
+            # image upload - old
+            # images = []
+            # i = -1
+            # # WHILE WHAT IS TRUE?
+            # while True:
+            #     # print("In while loop")
+            #     filename = f'img_{i}'
+            #     # print("Filename: ", filename)
+            #     if i == -1:
+            #         filename = 'img_cover'
+            #     file = request.files.get(filename)
+            #     # print("File: ", file)
+            #     if file:
+            #         key = f'properties/{newRequestID}/{filename}'
+            #         image = uploadImage(file, key, '')
+            #         images.append(image)
+            #         # print("Images: ", images)
+            #     else:
+            #         break
+            #     i += 1
+            # newProperty['property_images'] = json.dumps(images)
+            # # print("Images to be uploaded: ", newProperty['property_images'])
+
+            # image upload - new
             images = []
-            i = -1
-            # WHILE WHAT IS TRUE?
+            i = 0
+            imageFiles = {}
+            favorite_image = data.get("img_favorite")
             while True:
-                # print("In while loop")
-                filename = f'img_{i}'
-                # print("Filename: ", filename)
-                if i == -1:
-                    filename = 'img_cover'
+                filename = f'img_{i}'                
                 file = request.files.get(filename)
-                # print("File: ", file)
+                s3Link = data.get(filename)
                 if file:
-                    key = f'properties/{newRequestID}/{filename}'
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    key = f'properties/{newRequestID}/{unique_filename}'
                     image = uploadImage(file, key, '')
                     images.append(image)
-                    # print("Images: ", images)
+
+                    if filename == favorite_image:
+                        newProperty["property_favorite_image"] = image
+
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        newProperty["property_favorite_image"] = s3Link
                 else:
                     break
                 i += 1
-            newProperty['property_images'] = json.dumps(images)
-            # print("Images to be uploaded: ", newProperty['property_images'])
+            
+            newProperty['property_images'] = json.dumps(images)        
+
 
             # print(newRequest)
             response = db.insert('property_owner', newRequest)
@@ -557,6 +592,25 @@ class Properties(Resource):
         # else:
         
         newProperty['property_images'] = json.dumps(images)        
+
+        # delete images from s3
+        deleted_images = data.get("deleted_images")
+        s3Resource = boto3.resource('s3')
+        bucket_name = 'io-pm'
+
+        if(deleted_images):
+            try:
+                # Extract object keys from the URLs
+                objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
+
+                for obj_key in objects_to_delete:
+                    s3Resource.Object(bucket_name, obj_key).delete()
+            except Exception as e:
+                print(f"Deletion from s3 failed: {str(e)}")
+
+
+
+
         # print("new_Property", newProperty)
         key = {'property_uid': property_uid}
         with connect() as db:
