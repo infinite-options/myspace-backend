@@ -39,7 +39,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_year = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                     SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
+                        purchase_uid, cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -57,7 +57,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_month = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid, cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -76,7 +76,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_month_by_type = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid, cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -95,7 +95,7 @@ class CashflowByOwner(Resource):
                 response_revenue = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid, cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -114,7 +114,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_year = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                     SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
+                        purchase_uid, cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -133,7 +133,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_month = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -152,7 +152,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_month_by_type = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -171,7 +171,7 @@ class CashflowByOwner(Resource):
                 response_expense = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid,cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -190,7 +190,7 @@ class CashflowByOwner(Resource):
                 response_other = db.execute("""
                     -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                       purchase_uid, cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -217,7 +217,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_year = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                     SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
+                        purchase_uid,cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -238,7 +238,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_month = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -259,7 +259,7 @@ class CashflowByOwner(Resource):
                 response_revenue_by_month_by_type = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -280,7 +280,7 @@ class CashflowByOwner(Resource):
                 response_revenue = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid,cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -301,7 +301,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_year = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                     SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
+                        purchase_uid,cf_year -- , cf_month, pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -322,7 +322,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_month = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type -- , purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -343,7 +343,7 @@ class CashflowByOwner(Resource):
                 response_expense_by_month_by_type = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
                     SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
+                        purchase_uid,cf_year, cf_month -- , pur_due_date
                         , pur_cf_type, purchase_type
                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
                         , property_address, property_unit
@@ -364,7 +364,7 @@ class CashflowByOwner(Resource):
                 response_expense = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid,cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -385,7 +385,7 @@ class CashflowByOwner(Resource):
                 response_other = db.execute("""
                     -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid,cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
