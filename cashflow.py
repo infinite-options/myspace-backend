@@ -819,7 +819,7 @@ class HappinessMatrix(Resource):
                                 LEFT JOIN space.properties ON property_uid = property_id
                                 LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON property_uid = lease_property_id
                                 LEFT JOIN space.contracts ON contract_property_id = property_uid
-                                WHERE contract_business_id = '600-000003'
+                                WHERE contract_business_id = \'""" + user_id + """\'
                                 ) AS o
                             LEFT JOIN (
                                 SELECT *
