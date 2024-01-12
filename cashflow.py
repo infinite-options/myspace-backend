@@ -797,53 +797,54 @@ class HappinessMatrix(Resource):
         response = {}
         with connect() as db:
             print("in connect loop")
-            # REVENUE
 
-            delta_cashflow = db.execute("""
-                SELECT -- * , 
-                owner_uid ,sum(amt_remaining) -- , payment_status
-                FROM space.pp_details
-                WHERE owner_uid = \'""" + user_id + """\'
-                AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                AND purchase_status != 'DELETED'
-                AND pur_cf_type = 'expense'
-            """)
-
-            response["delta_cashflow"] = delta_cashflow
-
-            vacancy = db.execute("""SELECT -- *,
-                            property_owner_id
-                            , rent_status
-                            , COUNT(rent_status) AS num
-                        FROM (
-                            SELECT *,
-                                CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
-                            FROM (
-                                -- OWNER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
-                                SELECT * 
-                                FROM space.property_owner
-                                LEFT JOIN space.properties ON property_uid = property_id
-                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON property_uid = lease_property_id
-                                WHERE property_owner_id = \'""" + user_id + """\'
-                                ) AS o
-                            LEFT JOIN (
-                                SELECT *
-                                FROM space.pp_status
-                                WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                                ) as r
-                                ON pur_property_id = property_id
-                            ) AS rs
-						WHERE rent_status = "VACANT"
-                        GROUP BY rent_status;
+            vacancy = db.execute(""" 
+                                            SELECT -- *,
+                property_owner_id as owner_uid
+                , rent_status
+                , COUNT(rent_status) AS num
+                FROM (
+                SELECT *,
+                    CASE
+                        WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                        WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                        ELSE 'VACANT'
+                    END AS rent_status
+                FROM (
+                    -- OWNER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
+                    SELECT * 
+                    FROM space.property_owner
+                    LEFT JOIN space.properties ON property_uid = property_id
+                    LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON property_uid = lease_property_id
+                    LEFT JOIN space.contracts ON contract_property_id = property_uid
+                    WHERE contract_business_id = \'""" + user_id + """\'
+                    ) AS o
+                LEFT JOIN (
+                    SELECT *
+                    FROM space.pp_status 
+                    WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
+                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                    ) as r
+                    ON pur_property_id = property_id
+                ) AS rs
+                WHERE rent_status = "VACANT"
+                GROUP BY property_owner_id,rent_status;
                         """)
             response["vacancy"] = vacancy
 
+            delta_cashflow = db.execute("""
+                        SELECT -- * , 
+                        owner_uid ,ABS((sum(amt_remaining) - sum(total_paid))/sum(total_paid)) as delta_cashflow-- , payment_status
+                        FROM space.pp_details
+                        WHERE contract_business_id = \'""" + user_id + """\'
+                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND purchase_status != 'DELETED'
+                        AND pur_cf_type = 'expense'
+                        GROUP BY owner_uid;
+	            """)
+
+            response["delta_cashflow"] = delta_cashflow
 
             return response
 
