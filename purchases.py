@@ -447,6 +447,20 @@ class AddRevenue(Resource):
             response['Purchases_UID'] = newRequestID
 
         return response
+        
+    def put(self):
+        print('in purchases')
+        payload = request.form
+        if payload.get('purchase_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'purchase_uid': payload['purchase_uid']}
+        print("Key: ", key)
+        purchases = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", purchases)
+        with connect() as db:
+            print("In actual PUT")
+            response = db.update('purchases', key, purchases)
+        return response
 
 class RentPurchase(Resource):
     def post(self):
