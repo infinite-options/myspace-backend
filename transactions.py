@@ -33,7 +33,7 @@ class AllTransactions(Resource):
             with connect() as db:
                 queryResponse = (""" 
 
-                                                            SELECT purchase_uid,pur_timestamp,pur_property_id,purchase_type,pur_cf_type,pur_bill_id,purchase_date,pur_due_date,pur_amount_due,
+                                                            SELECT purchase_uid,property_address,pur_timestamp,pur_property_id,purchase_type,pur_cf_type,pur_bill_id,purchase_date,pur_due_date,pur_amount_due,
                                                             purchase_status,pur_notes,pur_description,pur_receiver,pur_initiator,pur_payer,pay_purchase_id,latest_date,total_paid,payment_status
                                                             payment_status,amt_remaining,cf_month,cf_year,receiver_user_id,receiver_profile_uid,receiver_user_type,receiver_user_name,receiver_user_phone
                                                             receiver_user_email,initiator_user_id,initiator_user_id,initiator_profile_uid,initiator_user_type,initiator_user_name,initiator_user_phone,
@@ -51,7 +51,7 @@ class AllTransactions(Resource):
             with connect() as db:
                 queryResponse = (""" 
 
-                                                            SELECT purchase_uid,pur_timestamp,pur_property_id,purchase_type,pur_cf_type,pur_bill_id,purchase_date,pur_due_date,pur_amount_due,
+                                                            SELECT purchase_uid,property_address,pur_timestamp,pur_property_id,purchase_type,pur_cf_type,pur_bill_id,purchase_date,pur_due_date,pur_amount_due,
                                                             purchase_status,pur_notes,pur_description,pur_receiver,pur_initiator,pur_payer,pay_purchase_id,latest_date,total_paid,payment_status
                                                             payment_status,amt_remaining,cf_month,cf_year,receiver_user_id,receiver_profile_uid,receiver_user_type,receiver_user_name,receiver_user_phone
                                                             receiver_user_email,initiator_user_id,initiator_user_id,initiator_profile_uid,initiator_user_type,initiator_user_name,initiator_user_phone,
