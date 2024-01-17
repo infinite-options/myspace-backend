@@ -296,14 +296,15 @@ class MaintenanceRequests(Resource):
     
     def put(self):
         response = {}
-        payload = request.get_json()
+        payload = request.form
         print(payload)
         if payload.get('maintenance_request_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_request_uid': payload.pop('maintenance_request_uid')}
+        key = {'maintenance_request_uid': payload['maintenance_request_uid']}
+        maintenanceRequests = {k: v for k, v in payload.items()}
         with connect() as db:
             print(key, payload)
-            response = db.update('maintenanceRequests', key, payload)
+            response = db.update('maintenanceRequests', key, maintenanceRequests)
         return response
 
 
