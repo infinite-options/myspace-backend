@@ -185,7 +185,7 @@ class Properties(Resource):
                         SELECT * FROM space.p_details
                         -- WHERE business_uid = "600-000003"
                         -- WHERE owner_uid = "110-000003"
-                        WHERE owner_uid = \'""" + uid + """\' AND contract_status = 'ACTIVE' AND contract_end_date < curdate()
+                        WHERE owner_uid = \'""" + uid + """\' AND contract_end_date < curdate()
                         -- WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'
                         ) as p
