@@ -153,7 +153,7 @@ class Documents(Resource):
 
     def get(self, user_id):
         print('in Owner Documents')
-        response = {}
+        response = {} 
 
         with connect() as db:
             print("in connect loop")
@@ -170,7 +170,9 @@ class Documents(Resource):
                         LEFT JOIN space.leases ON property_uid = lease_property_id
                         WHERE property_owner_id = \'""" + user_id + """\';
                         """)
-            else:
+                response["Documents"] = documentQuery
+
+            elif user_id.startswith("350-"):
                 documentQuery = db.execute(""" 
                         -- TENANT DOCUMENTS
                         SELECT tenant_uid, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
@@ -182,11 +184,50 @@ class Documents(Resource):
                         LEFT JOIN space.leases ON lease_uid = lt_lease_id
                         WHERE tenant_uid = \'""" + user_id + """\';
                         """)
+                response["Documents"] = documentQuery
+
+            elif user_id.startswith("600-"):
+                documents = {}
+                contractsQuery = db.execute(""" 
+                        -- MANAGER CONTRACTS
+                        SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
+                            , contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date                            
+                            FROM space.b_details
+                            LEFT JOIN space.properties ON property_uid = contract_property_id                                                        
+                            WHERE business_uid = \'""" + user_id + """\'  AND contract_status = "ACTIVE";
+                        """)
+                documents["Contracts"] = contractsQuery["result"]
+
+                applicationsQuery = db.execute(""" 
+                        -- TENANT APPLICATIONS
+                        SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type                            
+                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults
+                            FROM space.b_details
+                            LEFT JOIN space.properties ON property_uid = contract_property_id
+                            LEFT JOIN space.leases ON lease_property_id = contract_property_id
+                            WHERE business_uid = \'""" + user_id + """\' AND lease_status = "NEW" AND contract_status = "ACTIVE";
+                        """)
+                documents["Applications"] = applicationsQuery["result"]
+
+                leasesQuery = db.execute(""" 
+                        -- LEASE DOCUMENTS
+                        SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
+                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults
+                            FROM space.b_details
+                            LEFT JOIN space.properties ON property_uid = contract_property_id
+                            LEFT JOIN space.leases ON lease_property_id = contract_property_id
+                            WHERE business_uid = \'""" + user_id + """\' AND lease_status <> "NEW" AND contract_status = "ACTIVE";
+                        """)
+                documents["Leases"] = leasesQuery["result"]
+
+                response["Documents"] = documents
+            else:
+                raise BadRequest("Request failed. Invalid User ID")
 
             # print("Query: ", documentQuery)
             # items = execute(documentQuery, "get", conn)
             # print(items)
-            response["Documents"] = documentQuery
+            
             return response
 
     def post(self, user_id):
