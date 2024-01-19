@@ -833,14 +833,12 @@ GROUP BY property_owner_id;
             response["vacancy"] = vacancy
 
             delta_cashflow = db.execute("""
-                        SELECT -- * , 
-                        owner_uid ,ABS((sum(amt_remaining) - sum(total_paid))/sum(total_paid)) as delta_cashflow-- , payment_status
-                        FROM space.pp_details
-                        WHERE contract_business_id = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND pur_cf_type = 'expense'
-                        GROUP BY owner_uid;
+SELECT -- * , 
+space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url, ABS((sum(pur_amount_due)-sum(total_paid))/sum(total_paid)) as delta_cashflow-- , payment_status
+FROM space.p_details
+LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.owner_uid
+WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
+GROUP BY space.p_details.owner_uid;
 	            """)
 
             response["delta_cashflow"] = delta_cashflow
