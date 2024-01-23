@@ -799,7 +799,7 @@ class HappinessMatrix(Resource):
             print("in connect loop")
 
             vacancy = db.execute(""" 
-                                            SELECT 
+SELECT 
     property_owner_id as owner_uid,
     COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
     COUNT(*) AS total_properties,
@@ -816,7 +816,7 @@ FROM (
         FROM space.property_owner
         LEFT JOIN space.properties ON property_uid = property_id
         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
-        LEFT JOIN space.contracts ON contract_property_id = property_uid
+        LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
         WHERE contract_business_id = \'""" + user_id + """\'
     ) AS o
     LEFT JOIN (
