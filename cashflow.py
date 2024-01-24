@@ -839,7 +839,7 @@ GROUP BY property_owner_id;
             delta_cashflow = db.execute("""
 
 SELECT -- * , 
-space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,ifnull(100*ABS((sum(total_paid)-sum(pur_amount_due))/sum(total_paid)), 0  ) as delta_cashflow_perc , ifnull(sum(total_paid),0) as cashflow , ifnull(sum(pur_amount_due),0) as expected_cashflow -- , payment_status
+space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,ifnull(-100*ABS((sum(total_paid)-sum(pur_amount_due))/sum(total_paid)), 0  ) as delta_cashflow_perc , ifnull(sum(total_paid),0) as cashflow , ifnull(sum(pur_amount_due),0) as expected_cashflow -- , payment_status
 FROM space.p_details
 LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
 WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
