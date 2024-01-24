@@ -203,7 +203,7 @@ class Documents(Resource):
                 applicationsQuery = db.execute(""" 
                         -- TENANT APPLICATIONS
                         SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type                            
-                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults
+                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults, lease_children, lease_pets, lease_application_date
                             , tenant_first_name, tenant_last_name
                             FROM space.b_details
                             LEFT JOIN space.properties ON property_uid = contract_property_id
@@ -216,10 +216,12 @@ class Documents(Resource):
                 leasesQuery = db.execute(""" 
                         -- LEASE DOCUMENTS
                         SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
-                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults
+                            , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults, lease_children, lease_pets, lease_application_date, lease_actual_rent
+                            , tenant_first_name, tenant_last_name
                             FROM space.b_details
                             LEFT JOIN space.properties ON property_uid = contract_property_id
                             LEFT JOIN space.leases ON lease_property_id = contract_property_id
+                            LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                             WHERE business_uid = \'""" + user_id + """\' AND lease_status <> "NEW" AND contract_status = "ACTIVE";
                         """)
                 documents["Leases"] = leasesQuery["result"]
