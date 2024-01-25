@@ -12,6 +12,7 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
 
+
 # OVERVIEW
 #           TENANT      OWNER     PROPERTY MANAGER     
 # BY MONTH    X           X               X
@@ -29,6 +30,12 @@ def clean_json_data(data):
     print("Cleaned data")
     print(data)
     return data
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 class OwnerProfile(Resource):
     def post(self):
@@ -245,12 +252,50 @@ class Profile(Resource):
             with connect() as db:
                 response = db.update('businessProfileInfo', key, payload)
         elif payload.get('tenant_uid'):
-            key = {'tenant_uid': payload.pop('tenant_uid')}
+            tenant_uid = payload.pop('tenant_uid')
+            key = {'tenant_uid': tenant_uid}
             file = request.files.get("tenant_photo")
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
                 payload["tenant_photo_url"] = uploadImage(file, key1, '')
+                del request.files['tenant_photo']
+
+
+            tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
+
+            documents_details = payload.get('tenant_documents_details')
+            if documents_details is not None:
+                tenant_documents_details = json.loads(documents_details)                
+                del payload['tenant_documents_details']
+
+            files = request.files
+
+            if files:
+                detailsIndex = 0
+                for key in files:
+                    file = files[key]
+                    file_info = tenant_documents_details[detailsIndex]
+                    # print("FILE DETAILS")
+                    # print(file_info)
+                    # file_path = os.path.join(os.getcwd(), file.filename)
+                    # file.save(file_path)
+                    if file and allowed_file(file.filename):
+                        key = f'tenantProfileInfo/{tenant_uid}/tenant_documents/{file.filename}'
+                        s3_link = uploadImage(file, key, '')
+                        # s3_link = 'doc_link' # to test locally
+                        docObject = {}
+                        docObject["link"] = s3_link
+                        docObject["filename"] = file.filename
+                        docObject["type"] = file_info["fileType"]
+                        tenant_docs.append(docObject)
+                    detailsIndex += 1
+
+                payload['tenant_documents'] = json.dumps(tenant_docs)
+                # print("------updated_contract['contract_documents']------")
+                # print(updated_contract['contract_documents'])
+            
             print("tenant")
+            
             with connect() as db:
                 response = db.update('tenantProfileInfo', key, clean_json_data(payload))
         elif payload.get('owner_uid'):
