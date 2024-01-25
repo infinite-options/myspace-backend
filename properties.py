@@ -165,7 +165,7 @@ SELECT
 	, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_favorite_image
 	, property_taxes, property_mortgages, property_insurance
 	, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_utilities
-    ,contract_uid,contract_property_id,contract_business_id,contract_start_date,contract_end_date,contract_name,contract_status,business_name,business_phone_number,business_email,business_ein_number
+    ,contract_uid,contract_property_id,contract_business_id,contract_start_date,contract_end_date,contract_name,contract_status,business_uid,business_name,business_phone_number,business_email,business_ein_number
 	, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
 	, lease_uid, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent, lt_lease_id, lt_tenant_id, lt_responsibility
 	, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
@@ -191,7 +191,7 @@ FROM (
     LEFT JOIN space.b_details ON contract_property_id = property_uid
 	-- WHERE business_uid = "600-000003"
 	-- WHERE owner_uid = "110-000003"
-	WHERE owner_uid = \'""" + uid + """\'
+	WHERE owner_uid = \'""" + uid + """\' AND contract_status = "ACTIVE"
 	-- WHERE business_uid = \'""" + uid + """\'
 	-- WHERE tenant_uid = \'""" + uid + """\'
     GROUP BY property_uid
@@ -212,7 +212,7 @@ LEFT JOIN (
 	LEFT JOIN space.o_details ON maintenance_property_id = property_id
 	WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED" 
 	GROUP BY maintenance_property_id
-	) AS m ON p.property_uid = maintenance_property_id;                        
+	) AS m ON p.property_uid = maintenance_property_id;                     
                         """)
 
             # print("Query: ", propertiesQuery)
