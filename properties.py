@@ -191,7 +191,7 @@ FROM (
     LEFT JOIN space.b_details ON contract_property_id = property_uid
 	-- WHERE business_uid = "600-000003"
 	-- WHERE owner_uid = "110-000003"
-	WHERE owner_uid = \'""" + uid + """\' AND contract_status = "ACTIVE"
+	WHERE owner_uid = \'""" + uid + """\' 
 	-- WHERE business_uid = \'""" + uid + """\'
 	-- WHERE tenant_uid = \'""" + uid + """\'
     GROUP BY property_uid
