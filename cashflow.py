@@ -841,7 +841,7 @@ GROUP BY property_owner_id;
 
 SELECT -- * , 
 space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
-cast(ifnull(-100*ABS((sum(pur_amount_due)-sum(total_paid))/sum(pur_amount_due)), 0) as decimal(10,2)) as delta_cashflow_perc 
+cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
 , cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow -- , payment_status
 FROM space.p_details
 LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
