@@ -253,7 +253,7 @@ class Profile(Resource):
                 response = db.update('businessProfileInfo', key, payload)
         elif payload.get('tenant_uid'):
             tenant_uid = payload.pop('tenant_uid')
-            key = {'tenant_uid': tenant_uid}
+            query_key = {'tenant_uid': tenant_uid}
             file = request.files.get("tenant_photo")
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
@@ -297,7 +297,7 @@ class Profile(Resource):
             print("tenant")
             
             with connect() as db:
-                response = db.update('tenantProfileInfo', key, clean_json_data(payload))
+                response = db.update('tenantProfileInfo', query_key, clean_json_data(payload))
         elif payload.get('owner_uid'):
             key = {'owner_uid': payload.pop('owner_uid')}
             file = request.files.get("owner_photo")
