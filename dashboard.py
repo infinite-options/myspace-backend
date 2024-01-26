@@ -378,7 +378,7 @@ class Dashboard(Resource):
             else:
                 with connect() as db:
                     print("in Manager dashboard")
-                                print("in connect loop")
+                    print("in connect loop")
 
                     vacancy = db.execute(""" 
         SELECT 
@@ -703,6 +703,6 @@ class Dashboard(Resource):
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
                         AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
                         AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
-                    response["announcements"] = announcement
+                    response["announcements"] = announcements
 
                 return response
