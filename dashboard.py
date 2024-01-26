@@ -378,6 +378,63 @@ class Dashboard(Resource):
             else:
                 with connect() as db:
                     print("in Manager dashboard")
+                                print("in connect loop")
+
+                    vacancy = db.execute(""" 
+        SELECT 
+            property_owner_id as owner_uid,
+            COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
+            COUNT(*) AS total_properties,
+            cast(COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END)*-100/COUNT(*) as decimal) as vacancy_perc
+        FROM (
+            SELECT *,
+                CASE
+                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                    ELSE 'VACANT'
+                END AS rent_status
+            FROM (
+                SELECT *
+                FROM space.property_owner
+                LEFT JOIN space.properties ON property_uid = property_id
+                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
+                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
+                WHERE contract_business_id = \'""" + user_id + """\'
+            ) AS o
+            LEFT JOIN (
+                SELECT *
+                FROM space.pp_status 
+                WHERE (purchase_type = 'RENT' OR ISNULL(purchase_type))
+                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+            ) as r
+            ON pur_property_id = property_id
+        ) AS rs
+        GROUP BY property_owner_id;
+                                """)
+                    response["vacancy"] = vacancy
+                    for i in range(len(response["vacancy"])):
+                        response["vacancy"]["result"][i]["vacancy_perc"] = float(response["vacancy"]["result"][i]["vacancy_perc"])
+                    delta_cashflow = db.execute("""
+        
+        SELECT -- * , 
+        space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
+        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+        , cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow -- , payment_status
+        FROM space.p_details
+        LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
+        WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
+        GROUP BY space.p_details.owner_uid;
+        	            """)
+        
+                    response["delta_cashflow"] = delta_cashflow
+        
+                    for i in range(len(response["delta_cashflow"])):
+                        response["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
+                        response["delta_cashflow"]["result"][i]["cashflow"] = float(response["delta_cashflow"]["result"][i]["cashflow"])
+                        response["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["delta_cashflow"]["result"][i]["expected_cashflow"])
+
+            
                     maintenanceQuery = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
                             SELECT contract_business_id
@@ -646,6 +703,6 @@ class Dashboard(Resource):
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
                         AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
                         AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
-                    response["announcements"] = announcements
+                    response["announcements"] = announcement
 
                 return response
