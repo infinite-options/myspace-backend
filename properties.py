@@ -596,28 +596,30 @@ class Properties(Resource):
 
         # delete images from s3
         deleted_images_str = data.get("deleted_images")
-        deleted_images = ast.literal_eval(deleted_images_str)
-        s3Resource = boto3.resource('s3')
+        deleted_images = []
+        
+        if deleted_images_str is not None and isinstance(deleted_images_str, str):
+            try:                
+                deleted_images = ast.literal_eval(deleted_images_str)                                
+            except (ValueError, SyntaxError) as e:
+                print(f"Error parsing the deleted_images string: {e}")
+                
+        
         s3Client = boto3.client('s3')
-        # bucket_name = 'io-pm'
+        
 
         response = {'s3_delete_responses': []}
         if(deleted_images):
-            try:
-                # Extract object keys from the URLs
-                # objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
-                # objects_to_delete = [img.split(f"{property_uid}" + "/")[-1] for img in deleted_images]
+            try:                
                 objects_to_delete = []
-                for img in deleted_images:
-                    # Remove the common prefix
+                for img in deleted_images:                    
                     key = "properties/" + img.split("properties/")[-1]
                     objects_to_delete.append(key)               
 
-                for obj_key in objects_to_delete:
-                    
-                    # bucket = s3Resource.Bucket('io-pm')
+                for obj_key in objects_to_delete:                    
                     delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
                     response['s3_delete_responses'].append({obj_key: delete_response})
+                    
             except Exception as e:
                 print(f"Deletion from s3 failed: {str(e)}")
                 response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
@@ -813,7 +815,20 @@ class PropertiesTest(Resource):
 
         # delete images from s3
         deleted_images_str = data.get("deleted_images")
-        deleted_images = ast.literal_eval(deleted_images_str)
+        deleted_images = []
+        
+        if deleted_images_str is not None and isinstance(deleted_images_str, str):
+            try:
+                # Safely evaluate the string into a Python object (list)
+                deleted_images = ast.literal_eval(deleted_images_str)
+
+                # Now, deleted_images is a Python list
+                print(deleted_images)
+            except (ValueError, SyntaxError) as e:
+                print(f"Error parsing the string: {e}")
+        
+
+
         print("ROHIT - deleted_images - ", deleted_images)
         print("ROHIT - deleted_images - type - ", type(deleted_images))
         
