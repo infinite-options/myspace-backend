@@ -230,7 +230,7 @@ class LeaseApplication(Resource):
                   "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                   "lease_rent_late_by",
                   "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
-                  "lease_vehicles", "lease_referred"]
+                  "lease_vehicles", "lease_referred", "lease_consent"]
         fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
                              , "lease_documents"]
         with connect() as db:
