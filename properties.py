@@ -596,18 +596,24 @@ class Properties(Resource):
         # delete images from s3
         deleted_images = data.get("deleted_images")
         s3Resource = boto3.resource('s3')
+        s3Client = boto3.client('s3')
         # bucket_name = 'io-pm'
 
         if(deleted_images):
             try:
                 # Extract object keys from the URLs
                 # objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
-                objects_to_delete = [img.split(f"{property_uid}" + "/")[-1] for img in deleted_images]
+                # objects_to_delete = [img.split(f"{property_uid}" + "/")[-1] for img in deleted_images]
+                objects_to_delete = []
+                for img in deleted_images:
+                    # Remove the common prefix
+                    key = "properties/" + img.split("properties/")[-1]
+                    objects_to_delete.append(key)               
 
                 for obj_key in objects_to_delete:
                     
                     bucket = s3Resource.Bucket('io-pm')
-                    bucket.objects.filter(Prefix=f'properties/{property_uid}/{obj_key}').delete()
+                    s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
             except Exception as e:
                 print(f"Deletion from s3 failed: {str(e)}")
 
