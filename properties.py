@@ -606,6 +606,7 @@ LEFT JOIN (
         s3Client = boto3.client('s3')
         # bucket_name = 'io-pm'
 
+        response = {'s3_delete_responses': []}
         if(deleted_images):
             try:
                 # Extract object keys from the URLs
@@ -620,9 +621,11 @@ LEFT JOIN (
                 for obj_key in objects_to_delete:
                     
                     bucket = s3Resource.Bucket('io-pm')
-                    s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+                    delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+                    response['s3_delete_responses'].append({obj_key: delete_response})
             except Exception as e:
                 print(f"Deletion from s3 failed: {str(e)}")
+                response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
 
 
 
@@ -630,7 +633,7 @@ LEFT JOIN (
         # print("new_Property", newProperty)
         key = {'property_uid': property_uid}
         with connect() as db:
-            response = db.update('properties', key, newProperty)
+            response['database_response'] = db.update('properties', key, newProperty)
         response['images'] = newProperty['property_images']
         return response
 
