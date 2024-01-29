@@ -603,15 +603,18 @@ LEFT JOIN (
         # delete images from s3
         deleted_images = data.get("deleted_images")
         s3Resource = boto3.resource('s3')
-        bucket_name = 'io-pm'
+        # bucket_name = 'io-pm'
 
         if(deleted_images):
             try:
                 # Extract object keys from the URLs
-                objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
+                # objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
+                objects_to_delete = [img.split(f"{property_uid}" + "/")[-1] for img in deleted_images]
 
                 for obj_key in objects_to_delete:
-                    s3Resource.Object(bucket_name, obj_key).delete()
+                    
+                    bucket = s3Resource.Bucket('io-pm')
+                    bucket.objects.filter(Prefix=f'properties/{property_uid}/{obj_key}').delete()
             except Exception as e:
                 print(f"Deletion from s3 failed: {str(e)}")
 
