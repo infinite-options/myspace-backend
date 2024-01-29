@@ -12,6 +12,7 @@ import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
+import ast
 
 
 # MAINTENANCE BY STATUS
@@ -594,7 +595,8 @@ class Properties(Resource):
         newProperty['property_images'] = json.dumps(images)        
 
         # delete images from s3
-        deleted_images = data.get("deleted_images")
+        deleted_images_str = data.get("deleted_images")
+        deleted_images = ast.literal_eval(deleted_images_str)
         s3Resource = boto3.resource('s3')
         s3Client = boto3.client('s3')
         # bucket_name = 'io-pm'
@@ -613,7 +615,7 @@ class Properties(Resource):
 
                 for obj_key in objects_to_delete:
                     
-                    bucket = s3Resource.Bucket('io-pm')
+                    # bucket = s3Resource.Bucket('io-pm')
                     delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
                     response['s3_delete_responses'].append({obj_key: delete_response})
             except Exception as e:
@@ -734,3 +736,115 @@ class PropertyDashboardByOwner (Resource):
             # items = execute(propertiesQuery, "get", conn)
             response["Property_Dashboard"] = propertiesQuery
             return response
+
+
+
+class PropertiesTest(Resource):
+    def put(self):
+        print("In update Property")
+        # response = {}
+        # payload = request.form.to_dict()
+        # print(payload)
+        # if payload.get('property_uid') is None:
+        #     raise BadRequest("Request failed, no UID in payload.")
+        # key = {'property_uid': payload.pop('property_uid')}
+        # with connect() as db:
+        #     response = db.update('properties', key, payload)
+        # return response
+
+        data = request.form
+        # print(data)
+        property_uid = data.get('property_uid')
+        fields = [
+            'property_available_to_rent'
+            , "property_active_date"
+            , 'property_address'
+            , "property_unit"
+            , "property_city"
+            , "property_state"
+            , "property_zip"
+            , "property_type"
+            , "property_num_beds"
+            , "property_num_baths"
+            , "property_area"
+            , "property_listed_rent"
+            , "property_deposit"
+            , "property_pets_allowed"
+            , "property_deposit_for_rent"
+            , "property_taxes"
+            , "property_mortgages"
+            , "property_insurance"
+            , "property_featured"
+            , "property_value"
+            , "property_value_year"
+            , "property_area"
+            , "property_description"
+            , "property_notes"
+            , "property_amenities_unit"
+            , "property_amenities_community"
+            , "property_amenities_nearby"
+        ]
+
+        newProperty = {}
+        for field in fields:
+            fieldValue = data.get(field)
+            # print(field, fieldValue)
+            if fieldValue:
+                newProperty[field] = data.get(field)
+
+        images = []
+        # i = -1
+        i = 0
+        imageFiles = {}
+        favorite_image = data.get("img_favorite")
+        
+        # print("image_files", images)
+        # images = updateImages(imageFiles, property_uid)
+        # newProperty['property_images'] = json.dumps(images)
+        # print("images",images)
+        # if len(imageLinks) > 0:
+        #     for item in images:
+        #         imageLinks.append(item)
+        #     newProperty['property_images'] = json.dumps(imageLinks)
+
+        # else:
+        
+        newProperty['property_images'] = json.dumps(images)        
+
+        # delete images from s3
+        deleted_images_str = data.get("deleted_images")
+        deleted_images = ast.literal_eval(deleted_images_str)
+        print("ROHIT - deleted_images - ", deleted_images)
+        print("ROHIT - deleted_images - type - ", type(deleted_images))
+        
+        # bucket_name = 'io-pm'
+
+        response = {'s3_delete_responses': []}
+        if(deleted_images):
+            try:
+                # Extract object keys from the URLs
+                # objects_to_delete = [img.split("io-pm" + "/")[-1] for img in deleted_images]
+                # objects_to_delete = [img.split(f"{property_uid}" + "/")[-1] for img in deleted_images]
+                objects_to_delete = []
+                for img in deleted_images:
+                    # Remove the common prefix
+                    key = "properties/" + img.split("properties/")[-1]
+                    objects_to_delete.append(key)               
+
+                for obj_key in objects_to_delete:
+                    
+                    print("ROHIT - obj_key - ", obj_key)
+                    
+            except Exception as e:
+                print(f"Deletion from s3 failed: {str(e)}")
+                response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
+
+
+
+
+        # print("new_Property", newProperty)
+        key = {'property_uid': property_uid}
+        # with connect() as db:
+        #     response['database_response'] = db.update('properties', key, newProperty)
+        # response['images'] = newProperty['property_images']
+        return response
