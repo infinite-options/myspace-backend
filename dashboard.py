@@ -495,9 +495,10 @@ class Dashboard(Resource):
                                 """)
                     response["vacancy"] = vacancy
                     for i in range(len(response["vacancy"])):
-                        response["vacancy"]["result"][i]["vacancy_perc"] = float(response["vacancy"]["result"][i]["vacancy_perc"])
+                        response["vacancy"]["result"][i]["vacancy_perc"] = float(
+                            response["vacancy"]["result"][i]["vacancy_perc"])
                     delta_cashflow = db.execute("""
-        
+
         SELECT -- * , 
         space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
         cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
@@ -507,15 +508,17 @@ class Dashboard(Resource):
         WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
         GROUP BY space.p_details.owner_uid;
         	            """)
-        
-                    response["delta_cashflow"] = delta_cashflow
-        
-                    for i in range(len(response["delta_cashflow"])):
-                        response["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
-                        response["delta_cashflow"]["result"][i]["cashflow"] = float(response["delta_cashflow"]["result"][i]["cashflow"])
-                        response["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["delta_cashflow"]["result"][i]["expected_cashflow"])
 
-            
+                    response["delta_cashflow"] = delta_cashflow
+
+                    for i in range(len(response["delta_cashflow"])):
+                        response["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(
+                            response["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
+                        response["delta_cashflow"]["result"][i]["cashflow"] = float(
+                            response["delta_cashflow"]["result"][i]["cashflow"])
+                        response["delta_cashflow"]["result"][i]["expected_cashflow"] = float(
+                            response["delta_cashflow"]["result"][i]["expected_cashflow"])
+
                     maintenanceQuery = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
                             SELECT contract_business_id
@@ -775,7 +778,8 @@ class Dashboard(Resource):
                             FROM space.maintenanceRequests mr
                                 LEFT JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
                                 LEFT JOIN space.leases ON lease_property_id = property_uid
-                                WHERE lease_status = 'ACTIVE' AND p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
+                                WHERE lease_status = 'ACTIVE' AND p.property_uid = \'""" + property['result'][0][
+                        'property_uid'] + """\';
                             """)
                     response["maintenanceRequests"] = maintenance
 
