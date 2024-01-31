@@ -299,6 +299,8 @@ class Profile(Resource):
 
             # delete documents from s3
             deleted_docs_str = payload.get("deleted_documents")
+            if deleted_docs_str is not None:                
+                del payload['deleted_documents']
             deleted_docs = []
             
             if deleted_docs_str is not None and isinstance(deleted_docs_str, str):
@@ -310,7 +312,7 @@ class Profile(Resource):
             
             s3Client = boto3.client('s3')
 
-            response = {'s3_delete_responses': []} #rohit - db response
+            response = {'s3_delete_responses': []}
             if(deleted_docs):
                 try:                
                     objects_to_delete = []
