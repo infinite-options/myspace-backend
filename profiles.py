@@ -10,6 +10,7 @@ import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
+import ast
 
 
 
@@ -27,8 +28,8 @@ def clean_json_data(data):
     
     # data = {key: value for key, value in data.items() if "-DNU" not in key}
 
-    print("Cleaned data")
-    print(data)
+    # print("Cleaned data")
+    # print(data)
     return data
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
@@ -280,7 +281,7 @@ class Profile(Resource):
                     # file_path = os.path.join(os.getcwd(), file.filename)
                     # file.save(file_path)
                     if file and allowed_file(file.filename):
-                        key = f'tenantProfileInfo/{tenant_uid}/tenant_documents/{file.filename}'
+                        key = f'tenants/{tenant_uid}/{file.filename}'
                         s3_link = uploadImage(file, key, '')
                         # s3_link = 'doc_link' # to test locally
                         docObject = {}
@@ -295,9 +296,40 @@ class Profile(Resource):
                 # print(updated_contract['contract_documents'])
             
             print("tenant")
+
+            # delete documents from s3
+            deleted_docs_str = payload.get("deleted_documents")
+            deleted_docs = []
+            
+            if deleted_docs_str is not None and isinstance(deleted_docs_str, str):
+                try:                
+                    deleted_docs = ast.literal_eval(deleted_docs_str)                                
+                except (ValueError, SyntaxError) as e:
+                    print(f"Error parsing the deleted_docs string: {e}")
+                    
+            
+            s3Client = boto3.client('s3')
+
+            response = {'s3_delete_responses': []} #rohit - db response
+            if(deleted_docs):
+                try:                
+                    objects_to_delete = []
+                    for doc in deleted_docs:                    
+                        key = "tenants/" + doc.split("tenants/")[-1]
+                        objects_to_delete.append(key)               
+
+                    for obj_key in objects_to_delete:                    
+                        delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+                        response['s3_delete_responses'].append({obj_key: delete_response})
+
+                except Exception as e:
+                    print(f"Deletion from s3 failed: {str(e)}")
+                    response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
             
             with connect() as db:
-                response = db.update('tenantProfileInfo', query_key, clean_json_data(payload))
+                response['database_response'] = db.update('tenantProfileInfo', query_key, clean_json_data(payload))
+
+
         elif payload.get('owner_uid'):
             key = {'owner_uid': payload.pop('owner_uid')}
             file = request.files.get("owner_photo")
