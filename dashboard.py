@@ -413,7 +413,7 @@ class Dashboard(Resource):
         GROUP BY property_owner_id;
                                 """)
                     response["vacancy"] = vacancy
-                    for i in range(len(response["vacancy"])):
+                    for i in range(0,len(response["vacancy"]["result"])):
                         response["vacancy"]["result"][i]["vacancy_perc"] = float(response["vacancy"]["result"][i]["vacancy_perc"])
                     delta_cashflow = db.execute("""
         
@@ -429,7 +429,7 @@ class Dashboard(Resource):
 
                     response["delta_cashflow"] = delta_cashflow
 
-                    for i in range(len(response["delta_cashflow"])):
+                    for i in range(len(response["delta_cashflow"]["result"])):
                         response["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
                         response["delta_cashflow"]["result"][i]["cashflow"] = float(response["delta_cashflow"]["result"][i]["cashflow"])
                         response["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["delta_cashflow"]["result"][i]["expected_cashflow"])
