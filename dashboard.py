@@ -412,9 +412,10 @@ class Dashboard(Resource):
         ) AS rs
         GROUP BY property_owner_id;
                                 """)
-                    response["vacancy"] = vacancy
-                    for i in range(0,len(response["vacancy"]["result"])):
-                        response["vacancy"]["result"][i]["vacancy_perc"] = float(response["vacancy"]["result"][i]["vacancy_perc"])
+                    response["HappinessMatrix"] = {}
+                    response["HappinessMatrix"]["vacancy"] = vacancy
+                    for i in range(0,len(response["HappinessMatrix"]["vacancy"]["result"])):
+                        response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"] = float(response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"])
                     delta_cashflow = db.execute("""
         
         SELECT -- * , 
@@ -427,12 +428,12 @@ class Dashboard(Resource):
         GROUP BY space.p_details.owner_uid;
         	            """)
 
-                    response["delta_cashflow"] = delta_cashflow
+                    response["HappinessMatrix"]["delta_cashflow"] = delta_cashflow
 
-                    for i in range(0,len(response["delta_cashflow"]["result"])):
-                        response["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
-                        response["delta_cashflow"]["result"][i]["cashflow"] = float(response["delta_cashflow"]["result"][i]["cashflow"])
-                        response["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["delta_cashflow"]["result"][i]["expected_cashflow"])
+                    for i in range(0,len(response["HappinessMatrix"]["delta_cashflow"]["result"])):
+                        response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
+                        response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"])
+                        response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"])
                         
                     maintenanceQuery = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
@@ -657,6 +658,36 @@ class Dashboard(Resource):
 
         elif user_id.startswith("350"):
             with connect() as db:
+                leaseQuery = db.execute(""" 
+                        -- OWNER, PROPERTY MANAGER, TENANT LEASES
+                        SELECT * 
+                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
+                        LEFT JOIN space.properties ON property_uid = lease_property_id
+                        LEFT JOIN space.o_details ON property_id = lease_property_id
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        -- WHERE owner_uid = \'""" + user_id + """\'
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE contract_business_id = \'""" + user_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        WHERE tenants LIKE '%""" + user_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        
+                        ;
+                        """)
+                
+                response["leaseDetails"] = leaseQuery
+                
                 property = db.execute("""
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
