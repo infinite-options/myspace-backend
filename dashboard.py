@@ -716,17 +716,6 @@ class Dashboard(Resource):
                 response["property"] = property
 
                 if len(property['result']) > 0 and property['result'][0]['property_uid']:
-                    maintenance = db.execute("""
-                            -- TENENT MAINTENANCE TICKETS
-                            SELECT mr.maintenance_images, mr.maintenance_title,
-                                mr.maintenance_request_status, mr.maintenance_priority,
-                                mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
-                            FROM space.maintenanceRequests mr
-                                INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
-                            WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
-                            """)
-                    response["maintenanceRequests"] = maintenance
-
                     announcements = db.execute("""
                         -- TENENT ANNOUNCEMENTS
                         SELECT * FROM announcements
@@ -734,5 +723,18 @@ class Dashboard(Resource):
                         AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
                         AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
                     response["announcements"] = announcements
+                    
+                    maintenance = db.execute("""
+                            -- TENENT MAINTENANCE TICKETS
+                            SELECT mr.maintenance_images, mr.maintenance_title,
+                                mr.maintenance_request_status, mr.maintenance_priority,
+                                mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                            FROM space.maintenanceRequests mr
+                                LEFT JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
+                                LEFT JOIN space.leases ON lease_property_id = p.property_uid
+                                LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
+                            WHERE lt_tenant_id = \'""" + user_id + """\';
+                            """)
+                    response["maintenanceRequests"] = maintenance
 
                 return response
