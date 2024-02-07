@@ -37,7 +37,7 @@ class LeaseDetails(Resource):
 SELECT * 
 FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
 lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,
+move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
 lease_docuSign FROM space.leases WHERE lease_status = "ACTIVE") AS l
 LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
 LEFT JOIN space.properties ON property_uid = lease_property_id
@@ -72,7 +72,7 @@ GROUP BY lease_uid
                         SELECT * 
                         FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
 lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,
+move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
 lease_docuSign FROM space.leases WHERE lease_status = "ACTIVE") AS l
 						LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
                         LEFT JOIN space.properties ON property_uid = lease_property_id
@@ -109,7 +109,7 @@ lease_docuSign FROM space.leases WHERE lease_status = "ACTIVE") AS l
 SELECT * 
 FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
 lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,
+move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
 lease_docuSign FROM space.leases WHERE lease_status = "ACTIVE") AS l
 LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
 LEFT JOIN space.properties ON property_uid = lease_property_id
