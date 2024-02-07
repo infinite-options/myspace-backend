@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 import json
 import calendar
 from calendar import monthrange
+from decimal import Decimal
 
 
 
@@ -38,11 +39,19 @@ class RentPurchaseTest(Resource):
                     -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number
                     -- , owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
                     , owner_photo_url
+                    -- , b_details.*
+                    , contract_uid, contract_property_id, contract_business_id
+                    -- , contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                    -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations
+                    -- , business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number
+                    -- , business_documents, business_address, business_unit, business_city, business_state, business_zip
+                    , business_photo_url
                 FROM space.leaseFees	
                 LEFT JOIN space.leases ON fees_lease_id = lease_uid
                 LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                 LEFT JOIN space.o_details ON lease_property_id = property_id
-                WHERE fee_name = 'Rent' and lease_status = "ACTIVE";                 
+                LEFT JOIN space.b_details ON contract_property_id = property_id
+                WHERE fee_name = 'Rent' and lease_status = "ACTIVE";
                 """)
 
             for i in range(len(response['result'])):
@@ -52,6 +61,7 @@ class RentPurchaseTest(Resource):
                 year = dt.year
                 print(dt, month, type(month), year, type(year))
 
+                # Check if due_by is NONE
                 print(response['result'][i]['due_by'])
                 if response['result'][i]['due_by'] is None:
                     print("Is NULL!!")
@@ -59,29 +69,29 @@ class RentPurchaseTest(Resource):
                 else:
                     due_by = response['result'][i]['due_by']
                 print(due_by, type(due_by))
+
                 due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
                 print(due_date)
-                # due_date_2 = datetime(dt.year, dt.month, due_by)
-                # # due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
-                # # due_date_2 = datetime.datetime(dt.year, dt.month, due_by)
+
+                # Calculate number of days untilrent is due
                 days_for_rent = (due_date - dt).days
                 print("Rent due in : ", days_for_rent, " days")
-                # days_for_rent_2 = (due_date_2 - dt).days
 
+                # Check if available_topay is NONE
                 if response['result'][i]['available_topay'] is None:
                     print("Is NULL!!")
                     payable = 10
                 else:
                     payable = response['result'][i]['available_topay']
 
-
-                if days_for_rent == payable + 14:
+                # Check if rent is avaiable to pay
+                if days_for_rent == payable + 14:  # Remove/Change 14 to get query to run and return data
                     print("Rent posted.  Please Pay")
                     newRequest = {}
                     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                     print(newRequestID)
                     newRequest['purchase_uid'] = newRequestID
-                    newRequest['pur_timestamp'] = datetime.datetime.today()
+                    newRequest['pur_timestamp'] = datetime.datetime.today().date()
                     newRequest['pur_property_id'] = response['result'][i]['lease_property_id']
                     newRequest['purchase_type'] = "RENT"
                     newRequest['pur_cf_type'] = "REVENUE"
@@ -91,46 +101,78 @@ class RentPurchaseTest(Resource):
                     newRequest['pur_description'] = f"RENT FOR {month} {year}"
                     newRequest['pur_receiver'] = response['result'][i]['property_owner_id']
                     newRequest['pur_payer'] = response['result'][i]['lt_tenant_id']
-                    # newRequest['pur_initiator'] = response['result'][i]['business_uid']
-                    # due_by = response['result'][i]['due_by']
-                    newRequest['purchase_date'] = datetime.datetime(year, month, due_by)
-                    newRequest['pur_due_date'] = datetime.datetime(year, month, due_by)
+                    newRequest['pur_initiator'] = response['result'][i]['contract_business_id']
+                    newRequest['purchase_date'] = datetime.datetime(year, month, due_by).date()
+                    newRequest['pur_due_date'] = datetime.datetime(year, month, due_by).date()
                     print(newRequest)
                     db.insert('purchases', newRequest)
-                else: 
-                    print("Rent not due yet!")
 
+                    # For each entry posted to the purchases table, post any contract fees based on Rent
+                    print("contract_uid: ", response['result'][i]['contract_uid'])
 
-                
+                    # Find contract fees based rent
+                    manager_fees = db.execute("""
+                                    SELECT -- *
+                                        contract_uid, contract_property_id, contract_business_id
+                                        -- , contract_start_date, contract_end_date
+                                        , contract_fees
+                                        -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                        , jt.*
+                                    FROM 
+                                        space.contracts,
+                                        JSON_TABLE(
+                                            contract_fees,
+                                            "$[*]" COLUMNS (
+                                                of_column VARCHAR(50) PATH "$.of",
+                                                charge_column VARCHAR(50) PATH "$.charge",
+                                                fee_name_column VARCHAR(50) PATH "$.fee_name",
+                                                fee_type_column VARCHAR(10) PATH "$.fee_type",
+                                                frequency_column VARCHAR(20) PATH "$.frequency"
+                                            )
+                                        ) AS jt
+                                    WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
+                                """)
+                    print(manager_fees)
+                    
 
-                # if days_for_rent == 10 or days_for_rent_2 == 10:
-                #     get_rec_st = db.select('purchases',
-                #                            {'pur_property_id': response['result'][i]['lease_property_id'],
-                #                             'pur_notes': f"RENT FOR {month} {year}"})
+            for i in range(len(manager_fees['result'])):
+                # print(i, manager_fees['result'][i]['fee_name_column'])
+                # print(int(manager_fees['result'][i]['charge_column']), type(int(manager_fees['result'][i]['charge_column']))) 
+                # print(response['result'][i]['charge'], type((response['result'][i]['charge'])))
+                # print(Decimal(response['result'][i]['charge']), type(Decimal((response['result'][i]['charge']))))
 
-                #     if (len(get_rec_st.get('result'))) == 0:
-                #         newRequest = {}
-                #         newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                #         newRequest['purchase_uid'] = newRequestID
-                #         newRequest['pur_timestamp'] = datetime.today()
-                #         newRequest['pur_property_id'] = response['result'][i]['lease_property_id']
-                #         newRequest['purchase_type'] = "RENT"
-                #         newRequest['pur_cf_type'] = "REVENUE"
-                #         newRequest['pur_amount_due'] = response['result'][i]['charge']
-                #         newRequest['purchase_status'] = "UNPAID"
-                #         newRequest['pur_notes'] = f"RENT FOR {month} {year}"
-                #         newRequest['pur_description'] = f"RENT FOR {month} {year}"
-                #         newRequest['pur_receiver'] = response['result'][i]['property_owner_id']
-                #         newRequest['pur_payer'] = response['result'][i]['lt_tenant_id']
-                #         newRequest['pur_initiator'] = response['result'][i]['business_uid']
-                #         due_by = response['result'][i]['due_by']
-                #         newRequest['purchase_date'] = datetime(year, month, due_by)
-                #         newRequest['pur_due_date'] = datetime(year, month, due_by)
+                # Check if fees is monthly 
+                if manager_fees['result'][i]['frequency_column'] == 'Monthly':
 
-                #         if days_for_rent == 10:
-                #             newRequest['purchase_date'] = datetime(year, month + 1, due_by)
-                #             newRequest['pur_due_date'] = datetime(year, month + 1, due_by)
-                #         db.insert('purchases', newRequest)
+                    # Check if charge is a % or Fixed $ Amount
+
+                    if manager_fees['result'][i]['fee_type_column'] == '%':
+                        charge_amt = Decimal(manager_fees['result'][i]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
+                    else:
+                        charge_amt = Decimal(manager_fees['result'][i]['charge_column'])
+                        
+                    newPMRequest = {}
+                    newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    print(newPMRequestID)
+                    newPMRequest['purchase_uid'] = newPMRequestID
+                    newPMRequest['pur_timestamp'] = datetime.datetime.today().date()
+                    newPMRequest['pur_property_id'] = manager_fees['result'][i]['contract_property_id']
+                    newPMRequest['purchase_type'] = "PROPERTY MANAGEMENT FEE"
+                    newPMRequest['pur_cf_type'] = "EXPENSE"
+                    newPMRequest['pur_amount_due'] = charge_amt
+                    newPMRequest['purchase_status'] = "UNPAID"
+                    newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
+                    newPMRequest['pur_description'] = f"FEES FOR {month} {year}"
+                    newPMRequest['pur_receiver'] = response['result'][i]['contract_business_id']
+                    newPMRequest['pur_payer'] = response['result'][i]['property_owner_id']
+                    newPMRequest['pur_initiator'] = response['result'][i]['contract_business_id']
+                    newPMRequest['purchase_date'] = datetime.datetime(year, month, due_by).date()
+                    newPMRequest['pur_due_date'] = datetime.datetime(year, month, due_by).date()
+                    print(newPMRequest)
+                    db.insert('purchases', newPMRequest)
+
+                    # For each fee, post to purchases table
+
         return 200
 
 
