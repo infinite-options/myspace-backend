@@ -30,8 +30,7 @@ class Contracts(Resource):
         with connect() as db:
             data = request.form
             fields = [
-                "contract_property_id"
-                , 'contract_business_id'
+                'contract_business_id'
                 , "contract_start_date"
                 , 'contract_end_date'
                 , "contract_fees"
@@ -41,18 +40,24 @@ class Contracts(Resource):
                 , "contract_status"
                 , "contract_early_end_date"
             ]
-            newContract = {}
-            newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
-            newContract['contract_uid'] = newRequestID
-            print("In /contracts - POST. new contract UID = ", newRequestID)
-            for field in fields:
-                if field in data:
-                    newContract[field] = data.get(field)
-                    # print(newContract[field])
+            properties_l = data.get("contract_property_id")
+            print(properties_l)
+            properties = json.loads(properties_l)
+            for i in range(len(properties)):
+                newContract = {}
+                newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
+                newContract['contract_uid'] = newRequestID
+                print("In /contracts - POST. new contract UID = ", newRequestID)
+                newContract["contract_property_id"] = properties[i]
+                for field in fields:
+                    if field in data:
+                        newContract[field] = data.get(field)
+                        # print(newContract[field])
 
-            response = db.insert('contracts', newContract)
-            response['contract_UID'] = newRequestID
+                response = db.insert('contracts', newContract)
+                response['contract_UID'] = newRequestID
         return response
+
 
     def put(self):
         response = {}
