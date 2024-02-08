@@ -733,7 +733,7 @@ class Dashboard(Resource):
                             FROM space.maintenanceRequests mr
                             	LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
                             	LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
-                            WHERE tenant_uid = \'""" + user_id + """\;
+                            WHERE tenant_uid = \'""" + user_id + """\';
                             """)
                     response["maintenanceRequests"] = maintenance
 
