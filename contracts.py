@@ -40,7 +40,7 @@ class Contracts(Resource):
                 , "contract_status"
                 , "contract_early_end_date"
             ]
-            properties_l = data.get("contract_property_id")
+            properties_l = data.get("contract_property_ids")
             print(properties_l)
             properties = json.loads(properties_l)
             for i in range(len(properties)):
