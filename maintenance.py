@@ -319,11 +319,14 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 ownerQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.* FROM space.maintenanceQuotes
+                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip 
+                                        , business_name, business_email, business_phone_number FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid 
-                                        LEFT JOIN property_owner ON property_id = property_uid
-                                        LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                                        LEFT JOIN space.property_owner ON property_id = property_uid
+                                        LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
+                                        LEFT JOIN space.contracts ON contract_property_id = property_uid 
+                                        LEFT JOIN space.businessProfileInfo ON business_uid = contract_business_id
                                         WHERE owner_uid = \'""" + uid + """\'
                                         """)
 
@@ -332,11 +335,14 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 businessQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.* FROM space.maintenanceQuotes
+                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip 
+                                        , business_name, business_email, business_phone_number FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                        LEFT JOIN space.properties ON maintenance_property_id = property_uid
-                                        LEFT JOIN space.contracts ON property_uid = contract_property_id
-                                        LEFT JOIN businessProfileInfo ON contract_business_id = business_uid
+                                        LEFT JOIN space.properties ON maintenance_property_id = property_uid 
+                                        LEFT JOIN space.property_owner ON property_id = property_uid
+                                        LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
+                                        LEFT JOIN space.contracts ON contract_property_id = property_uid 
+                                        LEFT JOIN space.businessProfileInfo ON business_uid = contract_business_id
                                         WHERE business_uid = \'""" + uid + """\'
                                         """)
             response["maintenanceQuotes"] = businessQuery
@@ -345,12 +351,15 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 tenantQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.* FROM space.maintenanceQuotes
+                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip 
+                                        , business_name, business_email, business_phone_number FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid
                                         LEFT JOIN space.leases ON lease_property_id = property_uid
                                         LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
                                         LEFT JOIN space.tenantProfileInfo ON tenant_uid = lt_tenant_id
+                                        LEFT JOIN space.contracts ON contract_property_id = property_uid
+                                        LEFT JOIN space.businessProfileInfo ON business_uid = contract_business_id
                                         WHERE tenant_uid = \'""" + uid + """\'
                                         """)
             response["maintenanceQuotes"] = tenantQuery
