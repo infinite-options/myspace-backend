@@ -14,6 +14,14 @@ from decimal import Decimal
 class RentPurchaseTest(Resource):
     def get(self):
         print("In RentPurchaseTest")
+
+        # Establish current month and year
+        dt = datetime.datetime.now()
+        month = dt.month
+        year = dt.year
+        print(dt, month, type(month), year, type(year))
+
+        # Run query to find rents of ACTIVE leases
         with connect() as db:
             response = db.execute("""
                  SELECT 
@@ -55,11 +63,7 @@ class RentPurchaseTest(Resource):
                 """)
 
             for i in range(len(response['result'])):
-                print(i, response['result'][i]['leaseFees_uid'])
-                dt = datetime.datetime.now()
-                month = dt.month
-                year = dt.year
-                print(dt, month, type(month), year, type(year))
+                print(i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'])
 
                 # Check if due_by is NONE
                 print(response['result'][i]['due_by'])
@@ -73,7 +77,7 @@ class RentPurchaseTest(Resource):
                 due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
                 print(due_date)
 
-                # Calculate number of days untilrent is due
+                # Calculate number of days until rent is due
                 days_for_rent = (due_date - dt).days
                 print("Rent due in : ", days_for_rent, " days")
 
@@ -83,6 +87,7 @@ class RentPurchaseTest(Resource):
                     payable = 10
                 else:
                     payable = response['result'][i]['available_topay']
+                print(payable)
 
                 # Check if rent is avaiable to pay
                 if days_for_rent == payable + 14:  # Remove/Change 14 to get query to run and return data
@@ -135,43 +140,43 @@ class RentPurchaseTest(Resource):
                     print(manager_fees)
                     
 
-            for i in range(len(manager_fees['result'])):
-                # print(i, manager_fees['result'][i]['fee_name_column'])
-                # print(int(manager_fees['result'][i]['charge_column']), type(int(manager_fees['result'][i]['charge_column']))) 
-                # print(response['result'][i]['charge'], type((response['result'][i]['charge'])))
-                # print(Decimal(response['result'][i]['charge']), type(Decimal((response['result'][i]['charge']))))
+                    for i in range(len(manager_fees['result'])):
+                        # print(i, manager_fees['result'][i]['fee_name_column'])
+                        # print(int(manager_fees['result'][i]['charge_column']), type(int(manager_fees['result'][i]['charge_column']))) 
+                        # print(response['result'][i]['charge'], type((response['result'][i]['charge'])))
+                        # print(Decimal(response['result'][i]['charge']), type(Decimal((response['result'][i]['charge']))))
 
-                # Check if fees is monthly 
-                if manager_fees['result'][i]['frequency_column'] == 'Monthly':
+                        # Check if fees is monthly 
+                        if manager_fees['result'][i]['frequency_column'] == 'Monthly':
 
-                    # Check if charge is a % or Fixed $ Amount
+                            # Check if charge is a % or Fixed $ Amount
 
-                    if manager_fees['result'][i]['fee_type_column'] == '%':
-                        charge_amt = Decimal(manager_fees['result'][i]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
-                    else:
-                        charge_amt = Decimal(manager_fees['result'][i]['charge_column'])
-                        
-                    newPMRequest = {}
-                    newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    print(newPMRequestID)
-                    newPMRequest['purchase_uid'] = newPMRequestID
-                    newPMRequest['pur_timestamp'] = datetime.datetime.today().date()
-                    newPMRequest['pur_property_id'] = manager_fees['result'][i]['contract_property_id']
-                    newPMRequest['purchase_type'] = "PROPERTY MANAGEMENT FEE"
-                    newPMRequest['pur_cf_type'] = "EXPENSE"
-                    newPMRequest['pur_amount_due'] = charge_amt
-                    newPMRequest['purchase_status'] = "UNPAID"
-                    newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
-                    newPMRequest['pur_description'] = f"FEES FOR {month} {year}"
-                    newPMRequest['pur_receiver'] = response['result'][i]['contract_business_id']
-                    newPMRequest['pur_payer'] = response['result'][i]['property_owner_id']
-                    newPMRequest['pur_initiator'] = response['result'][i]['contract_business_id']
-                    newPMRequest['purchase_date'] = datetime.datetime(year, month, due_by).date()
-                    newPMRequest['pur_due_date'] = datetime.datetime(year, month, due_by).date()
-                    print(newPMRequest)
-                    db.insert('purchases', newPMRequest)
+                            if manager_fees['result'][i]['fee_type_column'] == '%':
+                                charge_amt = Decimal(manager_fees['result'][i]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
+                            else:
+                                charge_amt = Decimal(manager_fees['result'][i]['charge_column'])
+                                
+                            newPMRequest = {}
+                            newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                            print(newPMRequestID)
+                            newPMRequest['purchase_uid'] = newPMRequestID
+                            newPMRequest['pur_timestamp'] = datetime.datetime.today().date()
+                            newPMRequest['pur_property_id'] = manager_fees['result'][i]['contract_property_id']
+                            newPMRequest['purchase_type'] = "PROPERTY MANAGEMENT FEE"
+                            newPMRequest['pur_cf_type'] = "EXPENSE"
+                            newPMRequest['pur_amount_due'] = charge_amt
+                            newPMRequest['purchase_status'] = "UNPAID"
+                            newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
+                            newPMRequest['pur_description'] = f"FEES FOR {month} {year}"
+                            newPMRequest['pur_receiver'] = response['result'][i]['contract_business_id']
+                            newPMRequest['pur_payer'] = response['result'][i]['property_owner_id']
+                            newPMRequest['pur_initiator'] = response['result'][i]['contract_business_id']
+                            newPMRequest['purchase_date'] = datetime.datetime(year, month, due_by).date()
+                            newPMRequest['pur_due_date'] = datetime.datetime(year, month, due_by).date()
+                            print(newPMRequest)
+                            db.insert('purchases', newPMRequest)
 
-                    # For each fee, post to purchases table
+                            # For each fee, post to purchases table
 
         return 200
 
