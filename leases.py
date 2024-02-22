@@ -330,7 +330,7 @@ class LeaseApplication(Resource):
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
-                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_effective_date",
+                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
                         "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
                         "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children",
                         "lease_pets", "lease_vehicles", "lease_referred"]
