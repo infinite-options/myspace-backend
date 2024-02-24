@@ -19,7 +19,7 @@ import calendar
 
 class CashflowByOwner(Resource):
     def get(self, owner_id, year):
-        print("In Cashflow")
+        print("In Cashflow By Owner")
         response = {}
 
         # filters = ['owner_id', 'year']
@@ -607,7 +607,6 @@ class Cashflow(Resource):
                 return response
 
         else:
-
             print("In Cashflow TTM")
             with connect() as db:
                 print("in connect loop")

@@ -88,11 +88,31 @@ class Quotes(Resource):
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
                 quote["quote_pm_notes"] = quote_pm_notes
+
+                # images = []
+                # i = 0
+                # while True:
+                #     filename = f'img_{i}'
+                #     file = request.files.get(filename)
+                #     if file:
+                #         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                #         image = uploadImage(file, key, '')
+                #         images.append(image)
+                #     else:
+                #         break
+                #     i += 1
+
                 images = []
-                i = 0
+                i = -1
+                # WHILE WHAT IS TRUE?
                 while True:
+                    print("In while loop")
                     filename = f'img_{i}'
+                    # print("Filename: ", filename)
+                    if i == -1:
+                        filename = 'img_cover'
                     file = request.files.get(filename)
+                    # print("File: ", file)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
                         image = uploadImage(file, key, '')
@@ -100,6 +120,8 @@ class Quotes(Resource):
                     else:
                         break
                     i += 1
+                    
+
                 quote["quote_maintenance_images"] = json.dumps(images)
                 query_response = db.insert('maintenanceQuotes', quote)
                 response.append(query_response)
