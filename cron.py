@@ -25,7 +25,7 @@ class MonthlyRentPurchase_CLASS(Resource):
         # Run query to find rents of ACTIVE leases
         with connect() as db:
             response = db.execute("""
-                 SELECT 
+                    SELECT 
                     leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
                     -- , of_DNU, lease_rent_old_DNU
                     , lease_uid, lease_property_id
@@ -64,53 +64,53 @@ class MonthlyRentPurchase_CLASS(Resource):
                 """)
 
             for i in range(len(response['result'])):
-                print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+                # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
                 # Check Frequecy of Rent Payment
-                rentFrequency = response['result'][i]['frequency']
+                # rentFrequency = response['result'][i]['frequency']
 
-                print(response['result'][i]['frequency'])
-                if rentFrequency == "Weekly":
-                    print("Weekly Rent Fee")
-                elif rentFrequency == "Anually":
-                    print("Annual Rent Fee") 
-                elif rentFrequency == "Monthly" or rentFrequency is None:
-                    print("Monthly Rent Fee")
-                else: print("Investigate")
+                # print(response['result'][i]['frequency'])
+                # if rentFrequency == "Weekly":
+                #     print("Weekly Rent Fee")
+                # elif rentFrequency == "Anually":
+                #     print("Annual Rent Fee") 
+                # elif rentFrequency == "Monthly" or rentFrequency is None:
+                #     print("Monthly Rent Fee")
+                # else: print("Investigate")
 
 
                 # Check if due_by is NONE
-                print(response['result'][i]['due_by'])
+                # print(response['result'][i]['due_by'])
                 if response['result'][i]['due_by'] is None:
-                    print("Is NULL!!")
+                    # print("Is NULL!!")
                     due_by = 1
                 else:
                     due_by = response['result'][i]['due_by']
-                print(due_by, type(due_by))
+                # print(due_by, type(due_by))
 
                 due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
-                print(due_date)
+                # print(due_date)
 
 
                 # Calculate number of days until rent is due
                 days_for_rent = (due_date - dt).days
-                print("Rent due in : ", days_for_rent, " days")
+                # print("Rent due in : ", days_for_rent, " days")
 
 
                 # Check if available_topay is NONE
                 if response['result'][i]['available_topay'] is None:
-                    print("Is NULL!!")
+                    # print("Is NULL!!")
                     payable = 10
                 else:
                     payable = response['result'][i]['available_topay']
-                print(payable)
+                # print(payable)
 
-                print("contract_uid: ", response['result'][i]['contract_uid'])
+                # print("contract_uid: ", response['result'][i]['contract_uid'])
 
 
                 # Check if rent is avaiable to pay
-                if days_for_rent == payable + 1:  # Remove/Change number to get query to run and return data
-                    print("Rent posted.  Please Pay")
+                if days_for_rent == payable + 0:  # Remove/Change number to get query to run and return data
+                    # print("Rent posted.  Please Pay")
 
                     # Establish payer, initiator and receiver
                     contract_uid = response['result'][i]['contract_uid']
@@ -118,12 +118,12 @@ class MonthlyRentPurchase_CLASS(Resource):
                     tenant = response['result'][i]['lt_tenant_id']
                     owner = response['result'][i]['property_owner_id']
                     manager = response['result'][i]['contract_business_id']
-                    print("Purchase Parameters: ", contract_uid, tenant, owner, manager)
+                    # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
                     # Create JSON Object for Rent Purchase
                     newRequest = {}
                     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    print(newRequestID)
+                    # print(newRequestID)
                     newRequest['purchase_uid'] = newRequestID
                     newRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                     newRequest['pur_property_id'] = property
@@ -138,7 +138,8 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_initiator'] = manager
                     newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                     newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                    print(newRequest)
+                    # print(newRequest)
+                    print("Purchase Parameters: ", i, newRequestID, contract_uid, tenant, owner, manager)
                     db.insert('purchases', newRequest)
 
 
@@ -166,7 +167,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                     -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
                                     WHERE contract_uid = \'""" + contract_uid + """\' AND of_column LIKE '%rent%';
                                 """)
-                    print(manager_fees)
+                    # print(manager_fees)
                     
 
                     for i in range(len(manager_fees['result'])):
@@ -183,7 +184,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             # Create JSON Object for Fee Purchase
                             newPMRequest = {}
                             newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                            print(newPMRequestID)
+                            # print(newPMRequestID)
                             newPMRequest['purchase_uid'] = newPMRequestID
                             newPMRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                             newPMRequest['pur_property_id'] = property
@@ -198,7 +199,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_initiator'] = manager
                             newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                             newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                            print(newPMRequest)
+                            # print(newPMRequest)
                             db.insert('purchases', newPMRequest)
 
                             # For each fee, post to purchases table
@@ -257,53 +258,53 @@ def MonthlyRentPurchase_CRON(self):
             """)
 
         for i in range(len(response['result'])):
-            print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+            # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
             # Check Frequecy of Rent Payment
-            rentFrequency = response['result'][i]['frequency']
+            # rentFrequency = response['result'][i]['frequency']
 
-            print(response['result'][i]['frequency'])
-            if rentFrequency == "Weekly":
-                print("Weekly Rent Fee")
-            elif rentFrequency == "Anually":
-                print("Annual Rent Fee") 
-            elif rentFrequency == "Monthly" or rentFrequency is None:
-                print("Monthly Rent Fee")
-            else: print("Investigate")
+            # print(response['result'][i]['frequency'])
+            # if rentFrequency == "Weekly":
+            #     print("Weekly Rent Fee")
+            # elif rentFrequency == "Anually":
+            #     print("Annual Rent Fee") 
+            # elif rentFrequency == "Monthly" or rentFrequency is None:
+            #     print("Monthly Rent Fee")
+            # else: print("Investigate")
 
 
             # Check if due_by is NONE
-            print(response['result'][i]['due_by'])
+            # print(response['result'][i]['due_by'])
             if response['result'][i]['due_by'] is None:
-                print("Is NULL!!")
+                # print("Is NULL!!")
                 due_by = 1
             else:
                 due_by = response['result'][i]['due_by']
-            print(due_by, type(due_by))
+            # print(due_by, type(due_by))
 
             due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
-            print(due_date)
+            # print(due_date)
 
 
             # Calculate number of days until rent is due
             days_for_rent = (due_date - dt).days
-            print("Rent due in : ", days_for_rent, " days")
+            # print("Rent due in : ", days_for_rent, " days")
 
 
             # Check if available_topay is NONE
             if response['result'][i]['available_topay'] is None:
-                print("Is NULL!!")
+                # print("Is NULL!!")
                 payable = 10
             else:
                 payable = response['result'][i]['available_topay']
-            print(payable)
+            # print(payable)
 
-            print("contract_uid: ", response['result'][i]['contract_uid'])
+            # print("contract_uid: ", response['result'][i]['contract_uid'])
 
 
             # Check if rent is avaiable to pay
-            if days_for_rent == payable + 1:  # Remove/Change number to get query to run and return data
-                print("Rent posted.  Please Pay")
+            if days_for_rent == payable + 0:  # Remove/Change number to get query to run and return data
+                # print("Rent posted.  Please Pay")
 
                 # Establish payer, initiator and receiver
                 contract_uid = response['result'][i]['contract_uid']
@@ -311,12 +312,12 @@ def MonthlyRentPurchase_CRON(self):
                 tenant = response['result'][i]['lt_tenant_id']
                 owner = response['result'][i]['property_owner_id']
                 manager = response['result'][i]['contract_business_id']
-                print("Purchase Parameters: ", contract_uid, tenant, owner, manager)
+                # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
                 # Create JSON Object for Rent Purchase
                 newRequest = {}
                 newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                print(newRequestID)
+                # print(newRequestID)
                 newRequest['purchase_uid'] = newRequestID
                 newRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                 newRequest['pur_property_id'] = property
@@ -331,7 +332,8 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_initiator'] = manager
                 newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                 newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                print(newRequest)
+                # print(newRequest)
+                print("Purchase Parameters: ", i, newRequestID, contract_uid, tenant, owner, manager)
                 db.insert('purchases', newRequest)
 
 
@@ -359,7 +361,7 @@ def MonthlyRentPurchase_CRON(self):
                                 -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
                                 WHERE contract_uid = \'""" + contract_uid + """\' AND of_column LIKE '%rent%';
                             """)
-                print(manager_fees)
+                # print(manager_fees)
                 
 
                 for i in range(len(manager_fees['result'])):
@@ -376,7 +378,7 @@ def MonthlyRentPurchase_CRON(self):
                         # Create JSON Object for Fee Purchase
                         newPMRequest = {}
                         newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                        print(newPMRequestID)
+                        # print(newPMRequestID)
                         newPMRequest['purchase_uid'] = newPMRequestID
                         newPMRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                         newPMRequest['pur_property_id'] = property
@@ -391,7 +393,7 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['pur_initiator'] = manager
                         newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                         newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                        print(newPMRequest)
+                        # print(newPMRequest)
                         db.insert('purchases', newPMRequest)
 
                         # For each fee, post to purchases table
