@@ -34,29 +34,36 @@ class LeaseDetails(Resource):
 
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-                        SELECT * 
-                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
-                        LEFT JOIN space.properties ON property_uid = lease_property_id
-                        LEFT JOIN space.o_details ON property_id = lease_property_id
-                        LEFT JOIN (
-                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                                ('tenant_uid', tenant_uid,
-                                'lt_responsibility', lt_responsibility,
-                                'tenant_first_name', tenant_first_name,
-                                'tenant_last_name', tenant_last_name,
-                                'tenant_phone_number', tenant_phone_number,
-                                'tenant_email', tenant_email
-                                )) AS tenants
-                                FROM space.t_details 
-                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                        WHERE owner_uid = \'""" + filter_id + """\'
-                        -- WHERE owner_uid = "110-000003"
-                        -- WHERE contract_business_id = \'""" + filter_id + """\'
-                        -- WHERE contract_business_id = "600-000003"
-                        -- WHERE tenants LIKE '%""" + filter_id + """%'
-                        -- WHERE tenants LIKE "%350-000040%"
-                        ;
+SELECT * 
+FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
+lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED") 
+AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+) AS l
+LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
+LEFT JOIN space.properties ON property_uid = lease_property_id
+LEFT JOIN space.o_details ON property_id = lease_property_id
+LEFT JOIN (
+	SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+		('tenant_uid', tenant_uid,
+		'lt_responsibility', lt_responsibility,
+		'tenant_first_name', tenant_first_name,
+		'tenant_last_name', tenant_last_name,
+		'tenant_phone_number', tenant_phone_number,
+		'tenant_email', tenant_email
+		)) AS tenants
+		FROM space.t_details 
+		GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+WHERE owner_uid = \'""" + filter_id + """\'
+GROUP BY lease_uid
+-- WHERE owner_uid = "110-000003"
+-- WHERE contract_business_id = \'""" + filter_id + """\'
+-- WHERE contract_business_id = "600-000003"
+-- WHERE tenants LIKE '%""" + filter_id + """%'
+-- WHERE tenants LIKE "%350-000040%"
+;
                         """)
                 
             elif filter_id[:3] == "600":
@@ -65,7 +72,13 @@ class LeaseDetails(Resource):
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
+                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
+lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+) AS l
+						LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN (
@@ -86,7 +99,7 @@ class LeaseDetails(Resource):
                         -- WHERE contract_business_id = "600-000003"
                         -- WHERE tenants LIKE '%""" + filter_id + """%'
                         -- WHERE tenants LIKE "%350-000040%"
-                        
+                        GROUP BY lease_uid
                         ;
                         """)
                 
@@ -97,30 +110,36 @@ class LeaseDetails(Resource):
 
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-                        SELECT * 
-                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
-                        LEFT JOIN space.properties ON property_uid = lease_property_id
-                        LEFT JOIN space.o_details ON property_id = lease_property_id
-                        LEFT JOIN (
-                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                                ('tenant_uid', tenant_uid,
-                                'lt_responsibility', lt_responsibility,
-                                'tenant_first_name', tenant_first_name,
-                                'tenant_last_name', tenant_last_name,
-                                'tenant_phone_number', tenant_phone_number,
-                                'tenant_email', tenant_email
-                                )) AS tenants
-                                FROM space.t_details 
-                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                        -- WHERE owner_uid = \'""" + filter_id + """\'
-                        -- WHERE owner_uid = "110-000003"
-                        -- WHERE contract_business_id = \'""" + filter_id + """\'
-                        -- WHERE contract_business_id = "600-000003"
-                        WHERE tenants LIKE '%""" + filter_id + """%'
-                        -- WHERE tenants LIKE "%350-000040%"
-                        
-                        ;
+			SELECT * 
+			FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
+			lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+			move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+			lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+			AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+			) AS l
+			LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
+			LEFT JOIN space.properties ON property_uid = lease_property_id
+			LEFT JOIN space.o_details ON property_id = lease_property_id
+			LEFT JOIN (
+				SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+					('tenant_uid', tenant_uid,
+					'lt_responsibility', lt_responsibility,
+					'tenant_first_name', tenant_first_name,
+					'tenant_last_name', tenant_last_name,
+					'tenant_phone_number', tenant_phone_number,
+					'tenant_email', tenant_email
+					)) AS tenants
+					FROM space.t_details 
+					GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+			LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+			-- WHERE owner_uid = \'""" + filter_id + """\'
+			-- WHERE owner_uid = "110-000003"
+			-- WHERE contract_business_id = \'""" + filter_id + """\'
+			-- WHERE contract_business_id = "600-000003"
+			WHERE tenants LIKE '%""" + filter_id + """%'
+			-- WHERE tenants LIKE "%350-000040%"
+			GROUP BY lease_uid
+			;
                         """)
             else:
                 leaseQuery = "UID Not Found"
@@ -199,7 +218,7 @@ class LeaseApplication(Resource):
         # print("data",data)
 
         # Remove tenenat_uid from data and store as an independant variable
-        if 'tenant_uid' in data:
+        if 'tenant_uid' in data and data['tenant_uid']!="":
             print("TENANT_ID",data['tenant_uid'])
             tenant_uid = data.get('tenant_uid')
             # print(tenant_uid)
@@ -222,84 +241,86 @@ class LeaseApplication(Resource):
         #     print(response)
 
         # else:
-        ApplicationStatus = "New"
+            ApplicationStatus = "New"
 
-        response = {}
-        fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
-                  "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date",
-                  "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
-                  "lease_rent_late_by",
-                  "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
-                  "lease_vehicles", "lease_referred"]
-        fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
-                             , "lease_documents"]
-        with connect() as db:
-            # data = request.form
-            # print("data", data["lease_fees"])
-            newLease = {}
-            for field in fields:
-                if field in data:
-                    newLease[field] = data[field]
-            for field in fields_with_lists:
-                if data.get(field) is None:
-                    # print(field,"None")
-                    newLease[field] = '[]'
-            print("new_lease", newLease)
-            db.insert('leases', newLease)
-            
-        print("Data inserted into space.leases")
+            response = {}
+            fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
+                      "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
+                      "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
+                      "lease_rent_late_by",
+                      "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children", "lease_pets",
+                      "lease_vehicles", "lease_referred"]
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
+                                 , "lease_documents"]
+            with connect() as db:
+                # data = request.form
+                # print("data", data["lease_fees"])
+                newLease = {}
+                for field in fields:
+                    if field in data:
+                        newLease[field] = data[field]
+                for field in fields_with_lists:
+                    if data.get(field) is None:
+                        # print(field,"None")
+                        newLease[field] = '[]'
+                print("new_lease", newLease)
+                db.insert('leases', newLease)
 
-        fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
-                            "perDay_late_fee", "late_fee"]
-        with connect() as db:
-            print("Need to find lease_uid")
-            leaseQuery = db.execute(""" 
-                    -- FIND lease_uid
-                    SELECT * FROM space.leases
-                    ORDER BY lease_uid DESC
-                    LIMIT 1;
-                    """)
-            # print(leaseQuery['result'][0]['lease_uid'])
-            lease_id = leaseQuery['result'][0]['lease_uid']
-            response["lease_uid"] = lease_id
-            print("Lease ID", lease_id)
+            print("Data inserted into space.leases")
 
-            if "lease_fees" in data:
-                print("lease_fees in data")
-                json_object = json.loads(data["lease_fees"])
-                print("lease fees json_object", json_object)
-                for fees in json_object:
-                    print("fees",fees)
-                    new_leaseFees = {}
-                    new_leaseFees["fees_lease_id"] = lease_id
-                    for item in fields_leaseFees:
-                        if item in fees:
-                            new_leaseFees[item] = fees[item]
-                    db.insert('leaseFees', new_leaseFees)
+            fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                                "perDay_late_fee", "late_fee"]
+            with connect() as db:
+                print("Need to find lease_uid")
+                leaseQuery = db.execute(""" 
+                        -- FIND lease_uid
+                        SELECT * FROM space.leases
+                        ORDER BY lease_uid DESC
+                        LIMIT 1;
+                        """)
+                # print(leaseQuery['result'][0]['lease_uid'])
+                lease_id = leaseQuery['result'][0]['lease_uid']
+                response["lease_uid"] = lease_id
+                print("Lease ID", lease_id)
 
-        tenant_responsibiity = str(1)
+                if "lease_fees" in data:
+                    print("lease_fees in data")
+                    json_object = json.loads(data["lease_fees"])
+                    print("lease fees json_object", json_object)
+                    for fees in json_object:
+                        print("fees",fees)
+                        new_leaseFees = {}
+                        new_leaseFees["fees_lease_id"] = lease_id
+                        for item in fields_leaseFees:
+                            if item in fees:
+                                new_leaseFees[item] = fees[item]
+                        db.insert('leaseFees', new_leaseFees)
 
-        with connect() as db:
-            print("Add record in lease_tenant table", lease_id, tenant_uid, tenant_responsibiity)
-            # print("Made it to here")
-            ltQuery = (""" 
-                    INSERT INTO space.lease_tenant
-                    SET lt_lease_id = \'""" + lease_id + """\'
-                       , lt_tenant_id = \'""" + tenant_uid + """\'
-                       , lt_responsibility = \'""" + tenant_responsibiity + """\';
-                    """)
+            tenant_responsibiity = str(1)
 
-            response["lt_query"] = db.execute(ltQuery, [], 'post')
+            with connect() as db:
+                print("Add record in lease_tenant table", lease_id, tenant_uid, tenant_responsibiity)
+                # print("Made it to here")
+                ltQuery = (""" 
+                        INSERT INTO space.lease_tenant
+                        SET lt_lease_id = \'""" + lease_id + """\'
+                           , lt_tenant_id = \'""" + tenant_uid + """\'
+                           , lt_responsibility = \'""" + tenant_responsibiity + """\';
+                        """)
 
-            # print(ltQuery)
-            print("Data inserted into space.lease_tenant")
+                response["lt_query"] = db.execute(ltQuery, [], 'post')
 
-        # key = {'lease_uid': data.pop('lease_uid')}
-        # print(key)
+                # print(ltQuery)
+                print("Data inserted into space.lease_tenant")
 
-        response["UID"] = ApplicationStatus
+            # key = {'lease_uid': data.pop('lease_uid')}
+            # print(key)
+
+            response["UID"] = ApplicationStatus
+        else:
+            response['error'] = "Please Enter a correct tenant_id. Database was not updated"
         return response
-
+	
     def put(self):
         print("In Lease Application PUT")
         response = {}
@@ -309,7 +330,7 @@ class LeaseApplication(Resource):
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
-                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_effective_date",
+                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
                         "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
                         "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children",
                         "lease_pets", "lease_vehicles", "lease_referred"]

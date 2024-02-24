@@ -373,7 +373,7 @@ class CashflowByOwner(Resource):
 			, space.bills.*
                     FROM space.pp_details
 		    LEFT JOIN space.bills ON pur_bill_id = bill_uid
-                    WHERE owner_uid = \'""" + owner_id + """\'
+                    WHERE owner_uid = \'""" + owner_id + """\' 
                         AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND pur_cf_type = 'expense'
@@ -493,7 +493,9 @@ class Cashflow(Resource):
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
+			, space.bills.*
                     FROM space.pp_details
+		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
                         AND cf_year = \'""" + year + """\'
                         AND purchase_status != 'DELETED'
@@ -569,7 +571,9 @@ class Cashflow(Resource):
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
+			, space.bills.*
                     FROM space.pp_details
+		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
                     WHERE pur_payer = \'""" + user_id + """\'
                         AND cf_year = \'""" + year + """\'
                         AND purchase_status != 'DELETED'
@@ -617,7 +621,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                         GROUP BY property_address, property_unit
@@ -638,7 +642,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                         GROUP BY property_address, property_unit, cf_month, cf_year
@@ -659,7 +663,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                         GROUP BY property_address, property_unit, cf_month, cf_year, purchase_type
@@ -678,9 +682,11 @@ class Cashflow(Resource):
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
+			, space.bills.*
                     FROM space.pp_details
+		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                     ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
@@ -701,7 +707,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE pur_payer = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         GROUP BY property_address, property_unit
@@ -722,7 +728,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE pur_payer = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         GROUP BY property_address, property_unit, cf_month
@@ -743,7 +749,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE pur_payer = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         GROUP BY property_address, property_unit, cf_month,  purchase_type
@@ -762,9 +768,11 @@ class Cashflow(Resource):
                         , pur_cf_type, purchase_type
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
+			, space.bills.*
                     FROM space.pp_details
+		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
                     WHERE pur_payer = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                     ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
@@ -785,7 +793,7 @@ class Cashflow(Resource):
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                         AND purchase_status != 'DELETED'
                         AND (pur_cf_type != 'expense' AND pur_cf_type != 'revenue' AND  pur_cf_type != 'EXPENSE' AND pur_cf_type != 'REVENUE')
                     ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;

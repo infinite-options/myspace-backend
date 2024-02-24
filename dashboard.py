@@ -692,9 +692,9 @@ class Dashboard(Resource):
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
                         SELECT -- *,
-                         SUM(distinct CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_amount_due ELSE 0 END) as balance,
-                         CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date
-                        , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
+                        SUM(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_amount_due ELSE 0 END) as balance,
+                        CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date,
+                         lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                         , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
                         -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign
                         -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent
@@ -704,29 +704,19 @@ class Dashboard(Resource):
                         , property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent
                         , property_images
                         -- , property_taxes, property_mortgages, property_insurance, property_featured
-                        , property_description, property_notes
+                        , property_description, property_notes,
+                        MAX(CASE WHEN lease_status = 'ACTIVE' THEN 1 ELSE 0 END) as active_priority
                         -- , property_owner_id-DNU, property_manager_id-DNU, property_appliances-DNU, property_appliance_id-DNU, property_utilities-DNU, property_utility_id-DNU
                         FROM space.lease_tenant
                         LEFT JOIN space.leases ON lease_uid = lt_lease_id
                         LEFT JOIN space.properties l ON lease_property_id = property_uid
                         LEFT JOIN space.purchases pur ON property_uid = pur_property_id
                         WHERE lt_tenant_id = \'""" + user_id + """\' AND lease_status!= 'REJECTED' AND property_uid!=""
-                        GROUP BY property_uid;
+                        GROUP BY lease_uid;
                         """)
                 response["property"] = property
 
                 if len(property['result']) > 0 and property['result'][0]['property_uid']:
-                    maintenance = db.execute("""
-                            -- TENENT MAINTENANCE TICKETS
-                            SELECT mr.maintenance_images, mr.maintenance_title,
-                                mr.maintenance_request_status, mr.maintenance_priority,
-                                mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
-                            FROM space.maintenanceRequests mr
-                                INNER JOIN space.properties p ON p.property_uid = mr.maintenance_property_id
-                            WHERE p.property_uid = \'""" + property['result'][0]['property_uid'] + """\';
-                            """)
-                    response["maintenanceRequests"] = maintenance
-
                     announcements = db.execute("""
                         -- TENENT ANNOUNCEMENTS
                         SELECT * FROM announcements
@@ -734,5 +724,18 @@ class Dashboard(Resource):
                         AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
                         AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
                     response["announcements"] = announcements
+                    
+                    maintenance = db.execute("""
+                            -- TENENT MAINTENANCE TICKETS
+                            SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
+                            	p.business_name, p.business_phone_number, p.business_email,mr.maintenance_request_uid, mr.maintenance_images, mr.maintenance_title,
+                            	mr.maintenance_request_status, mr.maintenance_priority,
+                            	mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                            FROM space.maintenanceRequests mr
+                            	LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
+                            	LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
+                            WHERE tenant_uid = \'""" + user_id + """\';
+                            """)
+                    response["maintenanceRequests"] = maintenance
 
                 return response
