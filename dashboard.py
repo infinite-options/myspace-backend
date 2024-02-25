@@ -659,7 +659,7 @@ class Dashboard(Resource):
                         -- CURRENT MONTH CASHFLOW FOR A PARTICULAR OWNER
                         SELECT -- * , 
                             pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date
-                            , SUM(pur_amount_due)
+                            , SUM(pur_amount_due) AS amount
                             , cf_month, cf_year
                         FROM space.pp_details
                         WHERE (-- receiver_profile_uid = '110-000003'
