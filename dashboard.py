@@ -656,21 +656,29 @@ class Dashboard(Resource):
 
 
                 cashFlow = db.execute(""" 
-                        -- CURRENT MONTH CASHFLOW FOR A PARTICULAR OWNER
-                        SELECT -- * , 
-                            pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date
+                        -- CASHFLOW FOR A PARTICULAR OWNER
+                        SELECT -- *
+                            pur_cf_type
                             , SUM(pur_amount_due) AS amount
                             , cf_month, cf_year
                         FROM space.pp_details
-                        WHERE (-- receiver_profile_uid = '110-000003'
-                                receiver_profile_uid = \'""" + user_id + """\'
-                                OR pur_payer = '110-000003')
+                        WHERE -- pur_receiver = '110-000003'
+                            pur_receiver = \'""" + user_id + """\'
                             AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                             AND purchase_status != 'DELETED'
-                            AND cf_year = YEAR(CURDATE())
-                            AND cf_month = MONTHNAME(CURDATE())
-                        GROUP BY cf_month, cf_year, pur_cf_type
-                        ORDER BY pur_timestamp DESC;
+                        GROUP BY cf_month, cf_year
+                        UNION
+                        SELECT -- *
+                            pur_cf_type
+                            , SUM(pur_amount_due) AS amount
+                            , cf_month, cf_year
+                        FROM space.pp_details
+                        WHERE -- pur_payer = '110-000003'
+                            pur_payer = \'""" + user_id + """\' 
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                        GROUP BY cf_month, cf_year
+                        ORDER BY cf_year, cf_month;
                         """)
 
                 # print("Query: ", leaseQuery)
