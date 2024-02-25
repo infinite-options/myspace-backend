@@ -25,7 +25,7 @@ from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from cashflow import Cashflow, HappinessMatrix
+from cashflow import Cashflow, CashflowSimplified, HappinessMatrix
 from employees import Employee
 from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
@@ -453,6 +453,8 @@ api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
+api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
+
 # api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 # api.add_resource(TransactionsByOwnerByProperty,
 #                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')

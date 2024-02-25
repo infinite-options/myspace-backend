@@ -865,3 +865,29 @@ GROUP BY space.p_details.owner_uid;
 
             return response
 
+class CashflowSimplified(Resource):
+    def get(self, user_id):
+        print("In Cashflow Simplified")
+        response = {}
+
+        today = date.today()
+
+        with connect() as db:
+            print("in connect loop")
+            cashflow = db.execute("""                            
+                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                    SELECT -- * , 
+                        purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
+                        , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
+                        , property_uid
+                        , property_address, property_unit, property_city, property_state, property_zip
+                        , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                    FROM space.pp_details
+                    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+                    WHERE -- receiver_profile_uid = '110-000003'
+                        receiver_profile_uid = \'""" + user_id + """\'
+                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 21*30 DAY)
+                        AND purchase_status != 'DELETED'
+                    ORDER BY pur_timestamp DESC;
+                    """)
+            return cashflow
