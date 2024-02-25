@@ -5,7 +5,7 @@ from data_pm import connect
 # # from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 # import json
-# import calendar
+import calendar
 # from calendar import monthrange
 from decimal import Decimal
 
@@ -20,7 +20,7 @@ class MonthlyRentPurchase_CLASS(Resource):
         month = dt.month
         year = dt.year
         nextMonth = (dt + relativedelta(months=1))
-        print(dt, month, type(month), year, type(year), nextMonth.month, type(nextMonth.month), nextMonth.year, type(nextMonth.year))
+        print(dt, month, type(month), year, type(year), nextMonth.month, type(nextMonth.month), calendar.month_name[nextMonth.month], nextMonth.year, type(nextMonth.year))
 
         # Run query to find rents of ACTIVE leases
         with connect() as db:
@@ -105,11 +105,10 @@ class MonthlyRentPurchase_CLASS(Resource):
                     payable = response['result'][i]['available_topay']
                 # print(payable)
 
-                # print("contract_uid: ", response['result'][i]['contract_uid'])
-
+                print(i, days_for_rent, payable, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
                 # Check if rent is avaiable to pay
-                if days_for_rent == payable + 0:  # Remove/Change number to get query to run and return data
+                if days_for_rent == payable + (-1):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
 
                     # Establish payer, initiator and receiver
@@ -127,12 +126,12 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['purchase_uid'] = newRequestID
                     newRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                     newRequest['pur_property_id'] = property
-                    newRequest['purchase_type'] = "RENT"
-                    newRequest['pur_cf_type'] = "REVENUE"
+                    newRequest['purchase_type'] = "Rent"
+                    newRequest['pur_cf_type'] = "revenue"
                     newRequest['pur_amount_due'] = response['result'][i]['charge']
                     newRequest['purchase_status'] = "UNPAID"
-                    newRequest['pur_notes'] = f"RENT FOR {nextMonth.month} {nextMonth.year}"
-                    newRequest['pur_description'] = f"RENT FOR {nextMonth.month} {nextMonth.year}"
+                    newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                    newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                     newRequest['pur_receiver'] = owner
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
@@ -188,12 +187,12 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_uid'] = newPMRequestID
                             newPMRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                             newPMRequest['pur_property_id'] = property
-                            newPMRequest['purchase_type'] = "PROPERTY MANAGEMENT FEE"
-                            newPMRequest['pur_cf_type'] = "EXPENSE"
+                            newPMRequest['purchase_type'] = "Property Management Fee"
+                            newPMRequest['pur_cf_type'] = "expense"
                             newPMRequest['pur_amount_due'] = charge_amt
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
-                            newPMRequest['pur_description'] = f"FEES FOR {nextMonth.month} {nextMonth.year}"
+                            newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
