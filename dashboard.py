@@ -674,7 +674,7 @@ class Dashboard(Resource):
                         """)
 
                 # print("Query: ", leaseQuery)
-                response["CashFlow"] = cashFlow
+                response["CashflowStatus"] = cashFlow
 
                 return response
 
