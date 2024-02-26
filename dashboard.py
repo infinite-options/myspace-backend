@@ -744,7 +744,8 @@ class Dashboard(Resource):
                         LEFT JOIN space.properties l ON lease_property_id = property_uid
                         LEFT JOIN space.purchases pur ON property_uid = pur_property_id
                         WHERE lt_tenant_id = \'""" + user_id + """\' AND property_uid!=""
-                        GROUP BY lease_uid;
+                        GROUP BY lease_uid
+                        order by lease_status;
                         """)
                 response["property"] = property
 
