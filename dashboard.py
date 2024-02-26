@@ -661,24 +661,26 @@ class Dashboard(Resource):
                             pur_cf_type
                             , SUM(pur_amount_due) AS amount
                             , cf_month, cf_year
+                            , payment_status
                         FROM space.pp_details
                         WHERE -- pur_receiver = '110-000003'
                             pur_receiver = \'""" + user_id + """\'
                             AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                             AND purchase_status != 'DELETED'
-                        GROUP BY cf_month, cf_year
+                        GROUP BY cf_month, cf_year, payment_status
                         UNION
                         SELECT -- *
                             pur_cf_type
                             , SUM(pur_amount_due) AS amount
                             , cf_month, cf_year
+                            , payment_status
                         FROM space.pp_details
                         WHERE -- pur_payer = '110-000003'
                             pur_payer = \'""" + user_id + """\' 
                             AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
                             AND purchase_status != 'DELETED'
                         GROUP BY cf_month, cf_year
-                        ORDER BY cf_year, cf_month;
+                        ORDER BY cf_year, cf_month, payment_status;
                         """)
 
                 # print("Query: ", leaseQuery)
