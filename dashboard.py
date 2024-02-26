@@ -743,7 +743,7 @@ class Dashboard(Resource):
                         LEFT JOIN space.leases ON lease_uid = lt_lease_id
                         LEFT JOIN space.properties l ON lease_property_id = property_uid
                         LEFT JOIN space.purchases pur ON property_uid = pur_property_id
-                        WHERE lt_tenant_id = \'""" + user_id + """\' AND lease_status!= 'REJECTED' AND property_uid!=""
+                        WHERE lt_tenant_id = \'""" + user_id + """\' AND property_uid!=""
                         GROUP BY lease_uid;
                         """)
                 response["property"] = property
