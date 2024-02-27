@@ -78,10 +78,12 @@ class Quotes(Resource):
         response = []
         payload = request.form
         quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
-        quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
+        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
+        # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
         quote_pm_notes = payload["quote_pm_notes"]
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
+                # print("Business ID: ", quote_business_id)
                 quote = {}
                 quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
                 quote["quote_business_id"] = quote_business_id

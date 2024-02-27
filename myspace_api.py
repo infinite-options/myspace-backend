@@ -426,7 +426,11 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
-
+api.add_resource(Quotes, '/quotes')
+# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
+# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
+# api.add_resource(StatusUpdate, '/statusUpdate')
+# api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 
 api.add_resource(Rents, '/rents/<string:uid>')
@@ -440,11 +444,7 @@ api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:ow
 
 
 
-api.add_resource(Quotes, '/quotes')
-# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
-# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
-# api.add_resource(StatusUpdate, '/statusUpdate')
-# api.add_resource(QuotesByRequest, '/quotesByRequest')
+
 
 api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 # api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
