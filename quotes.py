@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from data_pm import connect, uploadImage
+from datetime import date, datetime, timedelta
 import json
 
 class QuotesStatusByBusiness(Resource): 
@@ -81,6 +82,7 @@ class Quotes(Resource):
         quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
         # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
         quote_pm_notes = payload["quote_pm_notes"]
+        today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
                 # print("Business ID: ", quote_business_id)
@@ -90,6 +92,7 @@ class Quotes(Resource):
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
                 quote["quote_pm_notes"] = quote_pm_notes
+                quote["quote_created_date"] = today
 
                 # images = []
                 # i = 0
