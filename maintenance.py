@@ -644,8 +644,8 @@ class MaintenanceStatus(Resource):
                             ORDER BY maintenance_request_created_date;
                             """)
 
-                # if maintenanceStatus.get('code') == 200:
-                #     return mapMaintenanceForMaintenance(maintenanceStatus)
+                if maintenanceStatus.get('code') == 200:
+                    return mapMaintenanceForMaintenance(maintenanceStatus)
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
