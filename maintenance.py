@@ -609,8 +609,18 @@ class MaintenanceStatus(Resource):
                 with connect() as db:
                     print("in MAINTENANCE")
                     maintenanceStatus = db.execute(""" 
-                            -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
+                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT * -- bill_property_id,  maintenance_property_id,
+                            , CASE
+                                        WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
+                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"  	THEN "SUBMITTED"
+                                        WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          								THEN "ACCEPTED"
+                                        WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"                       								THEN "SCHEDULED"
+                                        WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
+                                        WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
+                                        WHEN quote_status = "CANCELLED" OR quote_status = "ARCHIVE"                       									THEN "ARCHIVE"
+                                        ELSE quote_status
+                                    END AS maintenance_status
                             FROM space.m_details
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN (
@@ -629,12 +639,13 @@ class MaintenanceStatus(Resource):
                             -- WHERE business_uid = \'""" + uid + """\'
                             -- WHERE tenant_uid = \'""" + uid + """\'
                             WHERE quote_business_id = \'""" + uid + """\'
+                            -- WHERE quote_business_id = "600-000033"
                             -- WHERE maintenance_property_id = \'""" + uid + """\'
                             ORDER BY maintenance_request_created_date;
                             """)
 
-                if maintenanceStatus.get('code') == 200:
-                    return mapMaintenanceForMaintenance(maintenanceStatus)
+                # if maintenanceStatus.get('code') == 200:
+                #     return mapMaintenanceForMaintenance(maintenanceStatus)
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
