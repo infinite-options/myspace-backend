@@ -391,7 +391,7 @@ class LeaseApplication(Resource):
 
         if "lease_fees" in data:
             json_object = json.loads(data["lease_fees"])
-            print("lease_fees_json_object",json_object) #rohit
+            # print("json_object",json_object)
             for fees in json_object:
                 # print("fees",fees)
                 if "lease_fees_id" in fees:
@@ -401,10 +401,8 @@ class LeaseApplication(Resource):
                     for field in fees:
                         if field in fields_leaseFees:
                             if field == "due_by_date":
-                                dateString = fees[field]
-                                print("ROHIT - dateString - ", dateString)
-                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')
-                                print("ROHIT - dueByDate - ", dueByDate)
+                                dateString = fees[field]                                
+                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
                                 payload["due_by_date"] = dueByDate
                             else:
                                 payload[field] = fees[field]
@@ -417,10 +415,8 @@ class LeaseApplication(Resource):
                     for field in fees:
                         if field in fields_leaseFees:
                             if field == "due_by_date":
-                                dateString = fees[field]
-                                print("ROHIT - dateString - ", dateString)
-                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')
-                                print("ROHIT - dueByDate - ", dueByDate)
+                                dateString = fees[field]                                
+                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
                                 payload["due_by_date"] = dueByDate
                             else:
                                 payload[field] = fees[field]
