@@ -184,14 +184,40 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
 def sendEmail(recipient, subject, body):
     with app.app_context():
-        print(recipient, subject, body)
+        print("In sendEmail: ", recipient, subject, body)
         msg = Message(
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[recipient],
+            # sender=app.config["MAIL_USERNAME"],
+            sender="support@nityaayurveda.com",
+            recipients=recipient,
             subject=subject,
             body=body
         )
+        print("Email message: ", msg)
         mail.send(msg)
+        print("email sent")
+
+# app.sendEmail = sendEmail
+
+class SendEmailCRON_CLASS(Resource):
+
+    def get(self):
+        print("In Send EMail get")
+        try:
+            conn = connect()
+
+            recipient = ["pmarathay@gmail.com"]
+            subject = "MySpace Email sent"
+            body = (
+                "MySpace Email sent2")
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
+
+            return "Email Sent", 200
+
+        except:
+            raise BadRequest("Request failed, please try again later.")
+        finally:
+            print("exit SendEmail")
 
 def Send_Twilio_SMS(message, phone_number):
     items = {}
@@ -525,8 +551,9 @@ api.add_resource(Password, '/password')
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
 # api.add_resource(ExtendLease, '/ExtendLease')
-api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
+# api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
+api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
