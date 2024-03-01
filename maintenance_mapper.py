@@ -177,6 +177,7 @@ def mapMaintenanceForMaintenance(response):
         'SCHEDULED': '#959A76',
         'FINISHED': '#598A96',
         'PAID': '#497290',
+        'ARCHIVE': '#497290',
     }
 
     mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in status_colors.items()}
@@ -198,6 +199,8 @@ def mapMaintenanceForMaintenance(response):
             mapped_items['FINISHED']['maintenance_items'].append(record)
         elif record['quote_status'] == 'COMPLETED':
             mapped_items['PAID']['maintenance_items'].append(record)
+        elif record['quote_status'] == 'CANCELLED':
+            mapped_items['ARCHIVE']['maintenance_items'].append(record)
 
     response['result'] = mapped_items
     return response

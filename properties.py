@@ -221,7 +221,8 @@ class Properties(Resource):
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
                         GROUP BY maintenance_property_id
-                        ) AS m ON p.property_uid = maintenance_property_id;                      
+                        ) AS m ON p.property_uid = maintenance_property_id
+                        order by lease_status;                      
                         """)
 
             # print("Query: ", propertiesQuery)
@@ -281,7 +282,8 @@ class Properties(Resource):
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
                         GROUP BY maintenance_property_id
-                        ) AS m ON p.property_uid = maintenance_property_id; 
+                        ) AS m ON p.property_uid = maintenance_property_id
+                        order by lease_status; 
                         """)  
 
             # print("Query: ", propertiesQuery)
@@ -358,7 +360,8 @@ class Properties(Resource):
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
                         GROUP BY maintenance_property_id
-                        ) AS m ON p.property_uid = maintenance_property_id; 
+                        ) AS m ON p.property_uid = maintenance_property_id
+                        order by lease_status; 
                         """)  
 
             # print("Query: ", propertiesQuery)

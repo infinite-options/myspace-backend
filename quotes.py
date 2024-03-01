@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from data_pm import connect, uploadImage
+from datetime import date, datetime, timedelta
 import json
 
 class QuotesStatusByBusiness(Resource): 
@@ -78,21 +79,45 @@ class Quotes(Resource):
         response = []
         payload = request.form
         quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
-        quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
+        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
+        # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
         quote_pm_notes = payload["quote_pm_notes"]
+        today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
+                # print("Business ID: ", quote_business_id)
                 quote = {}
                 quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
                 quote["quote_business_id"] = quote_business_id
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
                 quote["quote_pm_notes"] = quote_pm_notes
+                quote["quote_created_date"] = today
+
+                # images = []
+                # i = 0
+                # while True:
+                #     filename = f'img_{i}'
+                #     file = request.files.get(filename)
+                #     if file:
+                #         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                #         image = uploadImage(file, key, '')
+                #         images.append(image)
+                #     else:
+                #         break
+                #     i += 1
+
                 images = []
-                i = 0
+                i = -1
+                # WHILE WHAT IS TRUE?
                 while True:
+                    print("In while loop")
                     filename = f'img_{i}'
+                    # print("Filename: ", filename)
+                    if i == -1:
+                        filename = 'img_cover'
                     file = request.files.get(filename)
+                    # print("File: ", file)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
                         image = uploadImage(file, key, '')
@@ -100,6 +125,8 @@ class Quotes(Resource):
                     else:
                         break
                     i += 1
+                    
+
                 quote["quote_maintenance_images"] = json.dumps(images)
                 query_response = db.insert('maintenanceQuotes', quote)
                 response.append(query_response)

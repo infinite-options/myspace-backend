@@ -25,7 +25,7 @@ from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
-from cashflow import Cashflow, HappinessMatrix
+from cashflow import Cashflow, CashflowSimplified, HappinessMatrix
 from employees import Employee
 from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments
@@ -34,7 +34,7 @@ from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from purchases import Bills, AddExpense, AddRevenue
-# from cron import RentPurchaseTest, ExtendLease
+from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
@@ -184,14 +184,40 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
 def sendEmail(recipient, subject, body):
     with app.app_context():
-        print(recipient, subject, body)
+        print("In sendEmail: ", recipient, subject, body)
         msg = Message(
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[recipient],
+            # sender=app.config["MAIL_USERNAME"],
+            sender="support@nityaayurveda.com",
+            recipients=recipient,
             subject=subject,
             body=body
         )
+        print("Email message: ", msg)
         mail.send(msg)
+        print("email sent")
+
+# app.sendEmail = sendEmail
+
+class SendEmailCRON_CLASS(Resource):
+
+    def get(self):
+        print("In Send EMail get")
+        try:
+            conn = connect()
+
+            recipient = ["pmarathay@gmail.com"]
+            subject = "MySpace Email sent"
+            body = (
+                "MySpace Email sent2")
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
+
+            return "Email Sent", 200
+
+        except:
+            raise BadRequest("Request failed, please try again later.")
+        finally:
+            print("exit SendEmail")
 
 def Send_Twilio_SMS(message, phone_number):
     items = {}
@@ -426,7 +452,11 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
-
+api.add_resource(Quotes, '/quotes')
+# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
+# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
+# api.add_resource(StatusUpdate, '/statusUpdate')
+# api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 
 api.add_resource(Rents, '/rents/<string:uid>')
@@ -440,11 +470,7 @@ api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:ow
 
 
 
-api.add_resource(Quotes, '/quotes')
-# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
-# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
-# api.add_resource(StatusUpdate, '/statusUpdate')
-# api.add_resource(QuotesByRequest, '/quotesByRequest')
+
 
 api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 # api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
@@ -453,6 +479,8 @@ api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
+api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
+
 # api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
 # api.add_resource(TransactionsByOwnerByProperty,
 #                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
@@ -521,10 +549,11 @@ api.add_resource(Password, '/password')
 
 #CRON JOBS
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
-# api.add_resource(RentPurchaseTest, '/RentPurchase')
+api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
 # api.add_resource(ExtendLease, '/ExtendLease')
-api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
+# api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
+api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')

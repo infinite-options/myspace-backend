@@ -381,36 +381,36 @@ class Dashboard(Resource):
                     print("in connect loop")
 
                     vacancy = db.execute(""" 
-        SELECT 
-            property_owner_id as owner_uid,
-            COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
-            COUNT(*) AS total_properties,
-            cast(COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END)*-100/COUNT(*) as decimal) as vacancy_perc
-        FROM (
-            SELECT *,
-                CASE
-                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                    ELSE 'VACANT'
-                END AS rent_status
-            FROM (
-                SELECT *
-                FROM space.property_owner
-                LEFT JOIN space.properties ON property_uid = property_id
-                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
-                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
-                WHERE contract_business_id = \'""" + user_id + """\'
-            ) AS o
-            LEFT JOIN (
-                SELECT *
-                FROM space.pp_status 
-                WHERE (purchase_type = 'RENT' OR ISNULL(purchase_type))
-                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-            ) as r
-            ON pur_property_id = property_id
-        ) AS rs
-        GROUP BY property_owner_id;
+                        SELECT 
+                            property_owner_id as owner_uid,
+                            COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
+                            COUNT(*) AS total_properties,
+                            cast(COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END)*-100/COUNT(*) as decimal) as vacancy_perc
+                        FROM (
+                            SELECT *,
+                                CASE
+                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                    ELSE 'VACANT'
+                                END AS rent_status
+                            FROM (
+                                SELECT *
+                                FROM space.property_owner
+                                LEFT JOIN space.properties ON property_uid = property_id
+                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
+                                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
+                                WHERE contract_business_id = \'""" + user_id + """\'
+                            ) AS o
+                            LEFT JOIN (
+                                SELECT *
+                                FROM space.pp_status 
+                                WHERE (purchase_type = 'RENT' OR ISNULL(purchase_type))
+                                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                            ) as r
+                            ON pur_property_id = property_id
+                        ) AS rs
+                        GROUP BY property_owner_id;
                                 """)
                     response["HappinessMatrix"] = {}
                     response["HappinessMatrix"]["vacancy"] = vacancy
@@ -418,14 +418,14 @@ class Dashboard(Resource):
                         response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"] = float(response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"])
                     delta_cashflow = db.execute("""
         
-        SELECT -- * , 
-        space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
-        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
-        , cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow -- , payment_status
-        FROM space.p_details
-        LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
-        WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
-        GROUP BY space.p_details.owner_uid;
+                        SELECT -- * , 
+                        space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
+                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+                        , cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow -- , payment_status
+                        FROM space.p_details
+                        LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
+                        WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
+                        GROUP BY space.p_details.owner_uid;
         	            """)
 
                     response["HappinessMatrix"]["delta_cashflow"] = delta_cashflow
@@ -654,6 +654,38 @@ class Dashboard(Resource):
                 # print("Query: ", leaseQuery)
                 response["RentStatus"] = rentQuery
 
+
+                cashFlow = db.execute(""" 
+                        -- CASHFLOW FOR A PARTICULAR OWNER
+                        SELECT -- *
+                            pur_cf_type
+                            , SUM(pur_amount_due) AS amount
+                            , cf_month, cf_year
+                            , payment_status
+                        FROM space.pp_details
+                        WHERE -- pur_receiver = '110-000003'
+                            pur_receiver = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                        GROUP BY cf_month, cf_year, payment_status
+                        UNION
+                        SELECT -- *
+                            pur_cf_type
+                            , SUM(pur_amount_due) AS amount
+                            , cf_month, cf_year
+                            , payment_status
+                        FROM space.pp_details
+                        WHERE -- pur_payer = '110-000003'
+                            pur_payer = \'""" + user_id + """\' 
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                        GROUP BY cf_month, cf_year
+                        ORDER BY cf_year, cf_month, payment_status;
+                        """)
+
+                # print("Query: ", leaseQuery)
+                response["CashflowStatus"] = cashFlow
+
                 return response
 
         elif user_id.startswith("350"):
@@ -711,8 +743,9 @@ class Dashboard(Resource):
                         LEFT JOIN space.leases ON lease_uid = lt_lease_id
                         LEFT JOIN space.properties l ON lease_property_id = property_uid
                         LEFT JOIN space.purchases pur ON property_uid = pur_property_id
-                        WHERE lt_tenant_id = \'""" + user_id + """\' AND lease_status!= 'REJECTED' AND property_uid!=""
-                        GROUP BY lease_uid;
+                        WHERE lt_tenant_id = \'""" + user_id + """\' AND property_uid!=""
+                        GROUP BY lease_uid
+                        order by lease_status;
                         """)
                 response["property"] = property
 

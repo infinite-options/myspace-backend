@@ -268,7 +268,7 @@ class LeaseApplication(Resource):
 
             print("Data inserted into space.leases")
 
-            fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+            fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                 "perDay_late_fee", "late_fee"]
             with connect() as db:
                 print("Need to find lease_uid")
@@ -293,7 +293,12 @@ class LeaseApplication(Resource):
                         new_leaseFees["fees_lease_id"] = lease_id
                         for item in fields_leaseFees:
                             if item in fees:
-                                new_leaseFees[item] = fees[item]
+                                if item == "due_by_date":
+                                    dateString = fees[item]
+                                    dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')
+                                    new_leaseFees["due_by_date"] = dueByDate
+                                else:
+                                    new_leaseFees[item] = fees[item]
                         db.insert('leaseFees', new_leaseFees)
 
             tenant_responsibiity = str(1)
@@ -330,11 +335,11 @@ class LeaseApplication(Resource):
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
-                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_effective_date",
+                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
                         "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
                         "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children",
                         "lease_pets", "lease_vehicles", "lease_referred"]
-        fields_leaseFees = ["charge", "due_by", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+        fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
 
         if "lease_uid" in data:
@@ -395,7 +400,13 @@ class LeaseApplication(Resource):
                     payload = {}
                     for field in fees:
                         if field in fields_leaseFees:
-                            payload[field] = fees[field]
+                            if field == "due_by_date":
+                                dateString = fees[field]                                
+                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
+                                payload["due_by_date"] = dueByDate
+                            else:
+                                payload[field] = fees[field]
+                            
                     with connect() as db:
                         key = {'leaseFees_uid': leaseFees_id}
                         response["leaseFees_update"] = db.update('leaseFees', key, payload)
@@ -403,7 +414,12 @@ class LeaseApplication(Resource):
                     payload = {}
                     for field in fees:
                         if field in fields_leaseFees:
-                            payload[field] = fees[field]
+                            if field == "due_by_date":
+                                dateString = fees[field]                                
+                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
+                                payload["due_by_date"] = dueByDate
+                            else:
+                                payload[field] = fees[field]
                     payload["fees_lease_id"] = data['lease_uid']
                     with connect() as db:
                         response["leaseFees_update"] = db.insert('leaseFees', payload)
