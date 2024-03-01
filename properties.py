@@ -142,9 +142,24 @@ class Properties(Resource):
                 -- FIND APPLICATIONS CURRENTLY IN PROGRESS
                 SELECT property_uid
                     , leases.*
+                    , lease_fees
                     , t_details.*
                 FROM space.properties
                 LEFT JOIN space.leases ON property_uid = lease_property_id
+                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                        ('fee_name', fee_name,
+                        'fee_type', fee_type,
+                        'charge', charge,
+                        'due_by', due_by,
+                        'late_by', late_by,
+                        'late_fee',late_fee,
+                        'perDay_late_fee', perDay_late_fee,
+                        'frequency', frequency,
+                        'available_topay', available_topay,
+                        'due_by_date',due_by_date
+                        )) AS lease_fees
+                        FROM space.leaseFees
+                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
                 LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                 WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED");
                  """)
@@ -282,7 +297,7 @@ class Properties(Resource):
                 contractsQuery = db.execute("""
                     -- NEW PROPERTIES FOR MANAGER
                     SELECT *
-                    FROM space.property_owner
+                    FROM space.o_details
                     LEFT JOIN space.properties ON property_id = property_uid
                     LEFT JOIN space.b_details ON contract_property_id = property_uid
                     WHERE contract_business_id = \'""" + uid + """\'
