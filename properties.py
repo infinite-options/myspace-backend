@@ -147,7 +147,8 @@ class Properties(Resource):
                 FROM space.properties
                 LEFT JOIN space.leases ON property_uid = lease_property_id
                 LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('fee_name', fee_name,
+                        ('leaseFees_uid', leaseFees_uid,
+                        'fee_name', fee_name,
                         'fee_type', fee_type,
                         'charge', charge,
                         'due_by', due_by,

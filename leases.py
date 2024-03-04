@@ -394,16 +394,17 @@ class LeaseApplication(Resource):
             # print("json_object",json_object)
             for fees in json_object:
                 # print("fees",fees)
-                if "lease_fees_id" in fees:
-                    leaseFees_id = fees['lease_fees_id']
-                    # del fees['lease_fees_id']
+                if "leaseFees_uid" in fees:
+                    leaseFees_id = fees['leaseFees_uid']
+                    # del fees['leaseFees_uid']
                     payload = {}
                     for field in fees:
                         if field in fields_leaseFees:
                             if field == "due_by_date":
-                                dateString = fees[field]                                
-                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
-                                payload["due_by_date"] = dueByDate
+                                dateString = fees[field]  
+                                if dateString is not None:                              
+                                    dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
+                                    payload["due_by_date"] = dueByDate
                             else:
                                 payload[field] = fees[field]
                             
@@ -415,9 +416,10 @@ class LeaseApplication(Resource):
                     for field in fees:
                         if field in fields_leaseFees:
                             if field == "due_by_date":
-                                dateString = fees[field]                                
-                                dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
-                                payload["due_by_date"] = dueByDate
+                                dateString = fees[field]
+                                if dateString is not None:                                
+                                    dueByDate = datetime.datetime.strptime(dateString, '%m-%d-%Y')                                
+                                    payload["due_by_date"] = dueByDate
                             else:
                                 payload[field] = fees[field]
                     payload["fees_lease_id"] = data['lease_uid']
