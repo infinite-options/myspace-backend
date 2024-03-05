@@ -1,20 +1,187 @@
-from flask import request
-from flask_restful import Resource
-from flask_jwt_extended import jwt_required, get_jwt_identity
-
-# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, s3
-import boto3
-import json
-from datetime import date, datetime, timedelta
-from dateutil.relativedelta import relativedelta
-import calendar
 import pymysql
 import datetime
 import json
 from decimal import Decimal
 import requests
 import pytest
+
+#python -m pytest -v -s Use this in cmd to run the pytest script
+
+
+
+
+def connect():
+    conn = pymysql.connect(
+        host='io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com',
+        port=3306,
+        user='admin',
+        passwd='prashant',
+        db='space',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    return DatabaseConnection(conn)
+
+
+def serializeJSON(unserialized):
+    # print(unserialized, type(unserialized))
+    if type(unserialized) == list:
+        # print("in list")
+        serialized = []
+        for entry in unserialized:
+            serializedEntry = serializeJSON(entry)
+            serialized.append(serializedEntry)
+        return serialized
+    elif type(unserialized) == dict:
+        # print("in dict")
+        serialized = {}
+        for entry in unserialized:
+            serializedEntry = serializeJSON(unserialized[entry])
+            serialized[entry] = serializedEntry
+        return serialized
+    elif type(unserialized) == datetime.datetime:
+        # print("in date")
+        return str(unserialized)
+    elif type(unserialized) == bytes:
+        # print("in bytes")
+        return str(unserialized)
+    elif type(unserialized) == Decimal:
+        # print("in Decimal")
+        return str(unserialized)
+    else:
+        # print("in else")
+        return unserialized
+
+
+class DatabaseConnection:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def disconnect(self):
+        self.conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.disconnect()
+
+    def execute(self, sql, args=[], cmd='get'):
+        # print("In execute.  SQL: ", sql)
+        # print("In execute.  args: ",args)
+        # print("In execute.  cmd: ",cmd)
+        response = {}
+        try:
+            with self.conn.cursor() as cur:
+                # print('IN EXECUTE')
+                if len(args) == 0:
+                    # print('execute', sql)
+                    cur.execute(sql)
+                else:
+                    cur.execute(sql, args)
+                formatted_sql = f"{sql} (args: {args})"
+                # print(formatted_sql)
+
+                if 'get' in cmd:
+                    # print('IN GET')
+                    result = cur.fetchall()
+                    result = serializeJSON(result)
+                    # print('RESULT GET')
+                    response['message'] = 'Successfully executed SQL query'
+                    response['code'] = 200
+                    response['result'] = result
+                    # print('RESPONSE GET')
+                elif 'post' in cmd:
+                    # print('IN POST')
+                    self.conn.commit()
+                    response['message'] = 'Successfully committed SQL query'
+                    response['code'] = 200
+                    # print('RESPONSE POST')
+        except Exception as e:
+            print('ERROR', e)
+            response['message'] = 'Error occurred while executing SQL query'
+            response['code'] = 500
+            response['error'] = e
+            print('RESPONSE ERROR', response)
+        return response
+
+    def select(self, tables, where={}, cols='*'):
+        response = {}
+        try:
+            sql = f'SELECT {cols} FROM {tables}'
+            for i, key in enumerate(where.keys()):
+                if i == 0:
+                    sql += ' WHERE '
+                sql += f'{key} = %({key})s'
+                if i != len(where.keys()) - 1:
+                    sql += ' AND '
+
+            response = self.execute(sql, where, 'get')
+        except Exception as e:
+            print(e)
+        return response
+
+    def insert(self, table, object):
+        response = {}
+        try:
+            sql = f'INSERT INTO {table} SET '
+            for i, key in enumerate(object.keys()):
+                sql += f'{key} = %({key})s'
+                if i != len(object.keys()) - 1:
+                    sql += ', '
+            # print(sql)
+            # print(object)
+            response = self.execute(sql, object, 'post')
+        except Exception as e:
+            print(e)
+        return response
+
+    def update(self, table, primaryKey, object):
+        response = {}
+        try:
+            sql = f'UPDATE {table} SET '
+            print(sql)
+            for i, key in enumerate(object.keys()):
+                sql += f'{key} = %({key})s'
+                if i != len(object.keys()) - 1:
+                    sql += ', '
+            sql += f' WHERE '
+            print(sql)
+            for i, key in enumerate(primaryKey.keys()):
+                sql += f'{key} = %({key})s'
+                object[key] = primaryKey[key]
+                if i != len(primaryKey.keys()) - 1:
+                    sql += ' AND '
+            print(sql, object)
+            response = self.execute(sql, object, 'post')
+            print(response)
+        except Exception as e:
+            print(e)
+        return response
+
+    def delete(self, sql):
+        response = {}
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(sql)
+
+                self.conn.commit()
+                response['message'] = 'Successfully committed SQL query'
+                response['code'] = 200
+                # response = self.execute(sql, 'post')
+        except Exception as e:
+            print(e)
+        return response
+
+    def call(self, procedure, cmd='get'):
+        response = {}
+        try:
+            sql = f'CALL {procedure}()'
+            response = self.execute(sql, cmd=cmd)
+        except Exception as e:
+            print(e)
+        return response
+
 
 ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
 
@@ -24,13 +191,15 @@ def test_get_dashboard():
     response_t = requests.get(ENDPOINT + "/dashboard/350-000068")
     response_mt = requests.get(ENDPOINT + "/dashboard/600-000039")
 
+
     assert response_m.status_code == 200
     assert response_o.status_code == 200
     assert response_t.status_code == 200
     assert response_mt.status_code == 200
 
 def test_get_cashflow():
-    response = requests.get(ENDPOINT + "/cashflowByOwner/110-000099/TTM")
+
+    response = requests.get(ENDPOINT + "/cashflow/110-000099/TTM")
 
     assert response.status_code == 200
 
@@ -40,7 +209,7 @@ def test_get_payment_status():
     assert response.status_code == 200
 
 def test_get_allTransactions():
-    response = requests.get(ENDPOINT + "/allTransactions")
+    response = requests.get(ENDPOINT + "/allTransactions/100-000003")
 
     assert response.status_code == 200
 
@@ -50,7 +219,7 @@ def test_get_properties():
     assert response.status_code == 200
 
 def test_get_listings():
-    response = requests.get(ENDPOINT + "/listings")
+    response = requests.get(ENDPOINT + "/listings/350-000002")
 
     assert response.status_code == 200
 
@@ -130,6 +299,7 @@ def test_get_ownerDocuments():
 
     assert response.status_code == 200
 
+
 def test_put_properties():
     payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2', 'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324', 'property_type': 'Single Family', 'property_num_beds': '0', 'property_num_baths': '2', 'property_area': '0', 'property_listed_rent': '0', 'property_deposit': '0', 'property_pets_allowed': '0', 'property_deposit_for_rent': '0', 'property_taxes': '0', 'property_mortgages': '0', 'property_insurance': '0', 'property_featured': '0', 'property_description': 'test', 'property_notes': '', 'property_available_to_rent': ''}
     response = requests.put(ENDPOINT + "/properties", data=payload)
@@ -138,13 +308,36 @@ def test_put_properties():
     data = response.json()
     print(data)
 
-def test_post_addExpense():
-    payload = {"pur_property_id":"200-000088","purchase_type":"Insurance","pur_cf_type":"expense","purchase_date":"2023-10-16","pur_due_date":"2023-10-16","pur_amount_due":323232,"purchase_status":"COMPLETED","pur_notes":"This is just a note","pur_description":"hi","pur_receiver":"110-000099","pur_initiator":"110-000099","pur_payer": ''}
-    response = requests.post(ENDPOINT + "/addExpense", json = payload)
+def test_post_properties():
+    payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2',
+               'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324',
+               'property_type': 'Single Family', 'property_num_beds': '0', 'property_num_baths': '2',
+               'property_area': '0', 'property_listed_rent': '0', 'property_deposit': '0', 'property_pets_allowed': '0',
+               'property_deposit_for_rent': '0', 'property_taxes': '0', 'property_mortgages': '0',
+               'property_insurance': '0', 'property_featured': '0', 'property_description': 'test',
+               'property_notes': '', 'property_available_to_rent': ''}
 
-    assert response.status_code == 200
-    data = response.json()
-    print(data)
+# def test_post_addExpense():
+#     payload = {"pur_property_id":"200-000088","purchase_type":"Insurance","pur_cf_type":"expense","purchase_date":"10-23-2023","pur_due_date":"10-23-2023","pur_amount_due":323232,"purchase_status":"COMPLETED","pur_notes":"This is just a note","pur_description":"hi","pur_receiver":"110-000099","pur_initiator":"110-000099","pur_payer": ''}
+#     response = requests.post(ENDPOINT + "/addExpense", json = payload)
+#
+#     assert response.status_code == 200
+#     data = response.json()
+#
+#     purchaseQuery = ("""
+#             SELECT * from space.purchases
+#             WHERE pur_property_id = '200-000088';
+#             """)
+#
+#     propertyQuery = ("""
+#             DELETE space.properties
+#             FROM space.properties
+#             WHERE lt_lease_id = \'""" + lease_uid + """\';
+#             """)
+#
+#     response["delete_lease_tenant"] = db.delete(propertyQuery)
+#
+#     print(data)
 
 def test_PM_Tenant_Flow():
 
@@ -157,7 +350,7 @@ def test_PM_Tenant_Flow():
     assert response.status_code == 200
 
 
-    response = requests.get(ENDPOINT + "/listings")
+    response = requests.get(ENDPOINT + "/listings/350-000002")
 
     assert response.status_code == 200
 
@@ -239,7 +432,7 @@ def test_PM_Tenant_Flow():
 
     print(response)
 
-def test_PM_Owner_Flow():
+def test_PM_Owner():
 
     payload = {'property_owner_id': ['110-000099'], 'property_available_to_rent': ['0'], 'property_active_date': ['2023-11-07'], 'property_address': ['253rd Arizona'], 'property_unit': ['2'], 'property_city': ['Tucson'], 'property_state': ['AZ'], 'property_zip': ['80000'], 'property_type': ['Condo'], 'property_num_beds': ['2'], 'property_num_baths': ['3'], 'property_value': ['200000'], 'property_area': ['2323'], 'property_listed': ['0'], 'property_deposit': ['0'], 'property_pets_allowed': ['0'], 'property_deposit_for_rent': ['0'], 'property_taxes': ['0'], 'property_mortgages': ['0'], 'property_insurance': ['0'], 'property_featured': ['0'], 'property_description': [''], 'property_notes': ['test'], 'img_cover': ['']}
 
@@ -269,11 +462,13 @@ def test_PM_Owner_Flow():
 
     assert response.status_code == 200
 
-    payload = {'contract_property_id':property_uid,'contract_business_id': '600-000038','contract_start_date':'2023-11-07',
+    property_uid = f'["{property_uid}"]'
+
+    payload = {'contract_property_ids':property_uid,'contract_business_id':'600-000038','contract_start_date':'2023-11-07',
     'contract_status': 'NEW'}
 
     response = requests.post(ENDPOINT + "/contracts", data=payload)
-
+    property_uid = property_uid.strip('[]"')
     assert response.status_code == 200
 
     with connect() as db:
@@ -330,7 +525,7 @@ def test_PM_Owner_Flow():
 
     print(response, response2, response3)
 
-def test_Maintenance_Flow():
+def test_Maintenance_flow():
 # Request URL:
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
 # Request Method:
@@ -379,7 +574,7 @@ def test_Maintenance_Flow():
 
     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"PROCESSING"}
 
-    response = requests.put(ENDPOINT + "/maintenanceRequests", json = payload)
+    response = requests.put(ENDPOINT + "/maintenanceRequests", data = payload)
     assert response.status_code == 200
 # Request URL:
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
@@ -405,7 +600,7 @@ def test_Maintenance_Flow():
 # PUT
     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"10/30/2023","maintenance_scheduled_time":"10:00:00"}
 
-    response = requests.put(ENDPOINT + "/maintenanceRequests", json = payload)
+    response = requests.put(ENDPOINT + "/maintenanceRequests", data = payload)
 
     assert response.status_code == 200
 # Request URL:
@@ -423,7 +618,7 @@ def test_Maintenance_Flow():
 # PUT
     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"COMPLETED"}
 
-    response = requests.put(ENDPOINT + "/maintenanceRequests", json=payload)
+    response = requests.put(ENDPOINT + "/maintenanceRequests", data=payload)
 
     assert response.status_code == 200
 # Request URL:
@@ -442,7 +637,7 @@ def test_Maintenance_Flow():
 # PUT
     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"PAID"}
 
-    response = requests.put(ENDPOINT + "/maintenanceRequests", json=payload)
+    response = requests.put(ENDPOINT + "/maintenanceRequests", data=payload)
 
     assert response.status_code == 200
 # Request URL:
