@@ -42,22 +42,44 @@ class Contracts(Resource):
             ]
             properties_l = data.get("contract_property_ids")
             print(properties_l)
+
             properties = json.loads(properties_l)
+            business_id = data.get('contract_business_id')
+            index_to_remove = []
             for i in range(len(properties)):
-                newContract = {}
-                newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
-                newContract['contract_uid'] = newRequestID
-                print("In /contracts - POST. new contract UID = ", newRequestID)
-                newContract["contract_property_id"] = properties[i]
-                for field in fields:
-                    if field in data:
-                        newContract[field] = data.get(field)
-                        # print(newContract[field])
+                print('in Contracts')
+                with connect() as db:
+                    response = db.execute("""
+                                SELECT * From space.contracts
+                                WHERE contract_property_id = \'""" + properties[i] + """\' AND contract_business_id = \'""" + business_id + """\'
+                                AND contract_status in ('NEW','ACTIVE','SENT');
+                                """)
+                    if len(response['result']) != 0:
+                        index_to_remove.append(i)
+            print(response)
+            print(properties)
+            print(index_to_remove)
+            for i in sorted(index_to_remove, reverse = True):
+                del properties[i]
+            print(properties)
+            response = {}
+            with connect() as db:
+                for i in range(len(properties)):
+                    print("loop", i)
+                    newContract = {}
+                    print(db.call('new_contract_uid'))
+                    newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
+                    newContract['contract_uid'] = newRequestID
+                    print("In /contracts - POST. new contract UID = ", newRequestID)
+                    newContract["contract_property_id"] = properties[i]
+                    for field in fields:
+                        if field in data:
+                            newContract[field] = data.get(field)
+                            # print(newContract[field])
 
-                response = db.insert('contracts', newContract)
-                response['contract_UID'] = newRequestID
+                    response = db.insert('contracts', newContract)
+                    response['contract_UID'] = newRequestID
         return response
-
 
     def put(self):
         response = {}
