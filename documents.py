@@ -148,7 +148,7 @@ class TenantDocuments(Resource):
             return response
 
 
-class quoteDocuments(Resource):
+class QuoteDocuments(Resource):
     # decorators = [jwt_required()]
 
     def get(self, quote_id):
