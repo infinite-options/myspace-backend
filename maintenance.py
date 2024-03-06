@@ -319,8 +319,11 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 ownerQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip, business_info.business_name AS business_with
-                                        , space.businessProfileInfo.business_name, space.businessProfileInfo.business_email, space.businessProfileInfo.business_phone_number 
+                                        SELECT space.maintenanceQuotes.maintenance_quote_uid,space.maintenanceQuotes.quote_maintenance_request_id,space.maintenanceQuotes.quote_status,space.maintenanceQuotes.quote_pm_notes
+                                        ,space.maintenanceQuotes.quote_business_id as quote_pm_business_id,space.maintenanceQuotes.quote_services_expenses,space.maintenanceQuotes.quote_earliest_availability,space.maintenanceQuotes.quote_event_type, 
+                                        space.maintenanceQuotes.quote_notes,space.maintenanceQuotes.quote_created_date,space.maintenanceQuotes.quote_total_estimate
+                                        ,space.maintenanceQuotes.quote_maintenance_images,space.maintenanceQuotes.quote_adjustment_date,property_uid, property_address, property_unit, property_city, property_state, property_zip, business_info.business_name AS quote_maintenance_business_name
+                                        , space.businessProfileInfo.business_name as quote_pm_business_name, space.businessProfileInfo.business_email as quote_pm_business_email, space.businessProfileInfo.business_phone_number as quote_business_phone_number
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid 
@@ -337,8 +340,11 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 businessQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip , business_info.business_name AS business_with
-                                        , space.businessProfileInfo.business_name, space.businessProfileInfo.business_email, space.businessProfileInfo.business_phone_number 
+                                        SELECT space.maintenanceQuotes.maintenance_quote_uid,space.maintenanceQuotes.quote_maintenance_request_id,space.maintenanceQuotes.quote_status,space.maintenanceQuotes.quote_pm_notes
+                                        ,space.maintenanceQuotes.quote_business_id as quote_pm_business_id,space.maintenanceQuotes.quote_services_expenses,space.maintenanceQuotes.quote_earliest_availability,space.maintenanceQuotes.quote_event_type, 
+                                        space.maintenanceQuotes.quote_notes,space.maintenanceQuotes.quote_created_date,space.maintenanceQuotes.quote_total_estimate
+                                        ,space.maintenanceQuotes.quote_maintenance_images,space.maintenanceQuotes.quote_adjustment_date,property_uid, property_address, property_unit, property_city, property_state, property_zip, business_info.business_name AS quote_maintenance_business_name
+                                        , space.businessProfileInfo.business_name as quote_pm_business_name, space.businessProfileInfo.business_email as quote_pm_business_email, space.businessProfileInfo.business_phone_number as quote_business_phone_number
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid 
@@ -355,8 +361,11 @@ class MaintenanceQuotes(Resource):
             with connect() as db:
                 tenantQuery = db.execute(""" 
                                         -- PROPERTIES
-                                        SELECT space.maintenanceQuotes.*, property_uid, property_address, property_unit, property_city, property_state, property_zip , business_info.business_name AS business_with
-                                        , space.businessProfileInfo.business_name, space.businessProfileInfo.business_email, space.businessProfileInfo.business_phone_number 
+                                        SELECT space.maintenanceQuotes.maintenance_quote_uid,space.maintenanceQuotes.quote_maintenance_request_id,space.maintenanceQuotes.quote_status,space.maintenanceQuotes.quote_pm_notes
+                                        ,space.maintenanceQuotes.quote_business_id as quote_pm_business_id,space.maintenanceQuotes.quote_services_expenses,space.maintenanceQuotes.quote_earliest_availability,space.maintenanceQuotes.quote_event_type, 
+                                        space.maintenanceQuotes.quote_notes,space.maintenanceQuotes.quote_created_date,space.maintenanceQuotes.quote_total_estimate
+                                        ,space.maintenanceQuotes.quote_maintenance_images,space.maintenanceQuotes.quote_adjustment_date,property_uid, property_address, property_unit, property_city, property_state, property_zip, business_info.business_name AS quote_maintenance_business_name
+                                        , space.businessProfileInfo.business_name as quote_pm_business_name, space.businessProfileInfo.business_email as quote_pm_business_email, space.businessProfileInfo.business_phone_number as quote_business_phone_number
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid
