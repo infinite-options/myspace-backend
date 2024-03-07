@@ -221,7 +221,7 @@ class QuoteDocuments(Resource):
 
                 new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
                 newDocument['qd_uid'] = new_doc_id
-                newDocument['qd_link'] = "link"
+               
 
                 # sql = f"""UPDATE space.ownerProfileInfo
                 #             SET owner_documents = JSON_ARRAY_APPEND(
