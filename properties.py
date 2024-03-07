@@ -301,8 +301,18 @@ class Properties(Resource):
                     FROM space.o_details
                     LEFT JOIN space.properties ON property_id = property_uid
                     LEFT JOIN space.b_details ON contract_property_id = property_uid
-                    WHERE contract_business_id = \'""" + uid + """\'
-                        AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
+                    LEFT JOIN (
+                    SELECT announcement_properties, JSON_ARRAYAGG(JSON_OBJECT
+                    ('announcement_uid', announcement_uid,
+                    'announcement_title', announcement_title,
+                    'announcement_msg', announcement_msg,
+                    'announcement_mode', announcement_mode,
+                    'announcement_date', announcement_date,
+                    'announcement_receiver', announcement_receiver
+                    )) AS announcements
+                    FROM space.announcements
+                    GROUP BY announcement_properties) as t ON announcement_properties = property_uid
+                    WHERE contract_business_id = \'""" + uid + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                     """)
 
             # print("Query: ", propertiesQuery)
