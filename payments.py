@@ -45,7 +45,7 @@ class Payments(Resource):
                 , 'payment_client_secret'
             ]
 
-            # PUTS JSON DATA INTO EACH FILE
+            # PUTS JSON DATA INTO EACH FIELD
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
