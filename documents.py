@@ -171,25 +171,26 @@ class QuoteDocuments(Resource):
         response = {}
         data = request.form
 
-        # qd_files = request.files
-        # quote_id = data.get('qd_quote_id')
-        # if qd_files:
-        #     detailsIndex = 0
-        #     for key in qd_files:
-        #         print("key", key)
-        #         file = qd_files[key]
-        #         print("file", file)
-        #         # file_info = files_details[detailsIndex]
-        #         if file and allowed_file(file.filename):
-        #             key = f'quotes/{quote_id}/{file.filename}'
-        #             print("key", key)
-        #             s3_link = uploadImage(file, key, '')
-        #             docObject = {}
-        #             docObject['qd_link'] = s3_link
-        #             docObject["filename"] = file.filename
-        #             # docObject["type"] = file_info["fileType"]
-        #
-        #         detailsIndex += 1
+        qd_files = request.files
+        quote_id = data.get('qd_quote_id')
+        if qd_files:
+            detailsIndex = 0
+            for key in qd_files:
+                print("key", key)
+                file = qd_files[key]
+                print("file", file)
+                # file_info = files_details[detailsIndex]
+                if file and allowed_file(file.filename):
+                    key = f'quotes/{quote_id}/{file.filename}'
+                    print("key", key)
+                    s3_link = uploadImage(file, key, '')
+                    docObject = {}
+                    
+                    newDocument['qd_link'] = s3_link
+                    docObject["filename"] = file.filename
+                    
+        
+                detailsIndex += 1
 
             # upload to s3
             # file = request.files.get(filename)
