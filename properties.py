@@ -157,7 +157,7 @@ class Properties(Resource):
                         'perDay_late_fee', perDay_late_fee,
                         'frequency', frequency,
                         'available_topay', available_topay,
-                        'due_by_date', DATE_FORMAT(due_by_date, '%m-%d-%Y')
+                        'due_by_date', due_by_date
                         )) AS lease_fees
                         FROM space.leaseFees
                         GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
