@@ -15,6 +15,8 @@ class MonthlyRentPurchase_CLASS(Resource):
     def get(self):
         print("In RentPurchaseTest")
 
+        numCronPurchases = 0
+
         # Establish current month and year
         dt = datetime.datetime.today()
         month = dt.month
@@ -88,11 +90,14 @@ class MonthlyRentPurchase_CLASS(Resource):
                     due_by = response['result'][i]['due_by']
                 # print(due_by, type(due_by))
 
-                due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
-                # print(due_date)
-
 
                 # Calculate number of days until rent is due
+                if due_by < dt.day:
+                    due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
+                else:
+                    due_date = datetime.datetime(dt.year, dt.month, due_by)
+                # print(due_date)
+
                 days_for_rent = (due_date - dt).days
                 # print("Rent due in : ", days_for_rent, " days")
 
@@ -110,6 +115,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 # Check if rent is avaiable to pay
                 if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
+                    numCronPurchases = numCronPurchases + 1
 
                     # Establish payer, initiator and receiver
                     contract_uid = response['result'][i]['contract_uid']
@@ -131,7 +137,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_amount_due'] = response['result'][i]['charge']
                     newRequest['purchase_status'] = "UNPAID"
                     newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
-                    newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                    newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                     newRequest['pur_receiver'] = owner
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
@@ -192,7 +198,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_amount_due'] = charge_amt
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
-                            newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                            newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
@@ -203,10 +209,16 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                             # For each fee, post to purchases table
 
-        return 200
+        response = {'message': f'Successfully completed CRON Job for {dt}' ,
+                    'rows affected': f'{numCronPurchases}',
+                'code': 200}
+
+        return response
 
 def MonthlyRentPurchase_CRON(self):
     print("In RentPurchaseTest")
+
+    numCronPurchases = 0
 
     # Establish current month and year
     dt = datetime.datetime.today()
@@ -281,11 +293,14 @@ def MonthlyRentPurchase_CRON(self):
                 due_by = response['result'][i]['due_by']
             # print(due_by, type(due_by))
 
-            due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
-            # print(due_date)
-
 
             # Calculate number of days until rent is due
+            if due_by < dt.day:
+                due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
+            else:
+                due_date = datetime.datetime(dt.year, dt.month, due_by)
+            # print(due_date)
+
             days_for_rent = (due_date - dt).days
             # print("Rent due in : ", days_for_rent, " days")
 
@@ -303,6 +318,7 @@ def MonthlyRentPurchase_CRON(self):
             # Check if rent is avaiable to pay
             if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
                 # print("Rent posted.  Please Pay")
+                numCronPurchases = numCronPurchases + 1
 
                 # Establish payer, initiator and receiver
                 contract_uid = response['result'][i]['contract_uid']
@@ -324,7 +340,7 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_amount_due'] = response['result'][i]['charge']
                 newRequest['purchase_status'] = "UNPAID"
                 newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
-                newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                 newRequest['pur_receiver'] = owner
                 newRequest['pur_payer'] = tenant
                 newRequest['pur_initiator'] = manager
@@ -385,7 +401,7 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['pur_amount_due'] = charge_amt
                         newPMRequest['purchase_status'] = "UNPAID"
                         newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
-                        newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                        newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
                         newPMRequest['pur_payer'] = owner
                         newPMRequest['pur_initiator'] = manager
@@ -396,7 +412,11 @@ def MonthlyRentPurchase_CRON(self):
 
                         # For each fee, post to purchases table
 
-        return 200
+    response = {'message': f'Successfully completed CRON Job for {dt}' ,
+                'rows affected': f'{numCronPurchases}',
+            'code': 200}
+
+    return response
 
 class RentPurchase_CLASS(Resource):
     def get(self):
