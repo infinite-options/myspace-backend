@@ -421,4 +421,16 @@ class LeaseApplication(Resource):
                     with connect() as db:
                         response["leaseFees_update"] = db.insert('leaseFees', payload)
 
+        response["leaseFees_delete"] = []
+        if "deleted_lease_fees" in data:
+            deletedFees = json.loads(data["deleted_lease_fees"])
+
+            for fee in deletedFees:
+                with connect() as db:                    
+                    query = (""" 
+                            DELETE FROM space.leaseFees
+                            WHERE leaseFees_uid = \'""" + fee + """\';         
+                            """)                    
+                    response["leaseFees_delete"].append(db.delete(query))
+
         return response
