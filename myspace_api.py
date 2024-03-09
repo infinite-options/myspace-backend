@@ -21,7 +21,7 @@ from password import Password
 from dashboard import Dashboard, ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, PaymentStatus, PaymentMethod, RequestPayment
+from payments import Payments, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
@@ -436,6 +436,8 @@ api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_i
 # Payment Endpoints
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(Payments, '/makePayment')
+api.add_resource(NewPayments, '/makePayment2')
+
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 

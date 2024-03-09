@@ -22,6 +22,97 @@ from werkzeug.exceptions import BadRequest
 #     return "Could not generate new payment UID", 500
 
 
+class NewPayments(Resource):
+    def post(self):
+        print("In Make Payment")
+        data = request.get_json(force=True)
+        print(data)
+
+        return data 
+    
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+            # print(data)
+
+            fields = [
+                'pay_purchase_id'
+                , 'pay_amount'
+                , 'payment_notes'
+                , 'pay_charge_id'
+                , 'payment_type'
+                , 'payment_date'
+                , 'payment_verify'
+                , 'paid_by'
+                , 'payment_intent'
+                , 'payment_method'
+                , 'payment_date_cleared'
+                , 'payment_client_secret'
+            ]
+
+            # PUTS JSON DATA INTO EACH FIELD
+            newRequest = {}
+            for field in fields:
+                newRequest[field] = data.get(field)
+                # print(field, " = ", newRequest[field])
+
+
+            # GET NEW UID
+            # print("Get New Request UID")
+            newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+            newRequest['payment_uid'] = newRequestID
+            # print(newRequestID)
+
+            # SET TRANSACTION DATE TO NOW
+            newRequest['payment_date'] = date.today()
+            newRequest['payment_verify'] = "Unverified"
+
+            # INSERT DATA INTO PAYMENTS TABLE
+            # print(newRequest)
+            response['Payment_Insert'] = db.insert('payments', newRequest)
+            response['Payments_UID'] = newRequestID
+            # print(response)
+
+            # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
+            amt_due = db.execute("""
+                        -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+                        SELECT -- *,
+                            amt_remaining
+                        FROM space.pp_status
+                        WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+                        """)
+            # print(amt_due)
+            # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
+
+            purchase_status = "UNPAID"
+            print(type(amt_due['result'][0]['amt_remaining']))
+            if float(amt_due['result'][0]['amt_remaining']) <= 0: 
+                purchase_status = "PAID"
+                # print(purchase_status)
+
+                # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
+                payload = {'purchase_status': purchase_status}
+                key = {'purchase_uid': newRequest['pay_purchase_id']}
+                # print(key, payload)
+
+                
+                # response['b'] = db.update('purchases', key, purchase_status)
+                response['purchase_table_update'] = db.update('purchases', key, payload)
+                response['purchase_status'] = purchase_status
+
+            else:
+                response['purchase_status'] = 'UNPAID'
+
+
+            
+
+        return response  
+
+
+
+
+
+
 class Payments(Resource):
     def post(self):
         print("In Make Payment")
@@ -45,7 +136,7 @@ class Payments(Resource):
                 , 'payment_client_secret'
             ]
 
-            # PUTS JSON DATA INTO EACH FILE
+            # PUTS JSON DATA INTO EACH FIELD
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
