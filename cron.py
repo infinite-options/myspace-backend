@@ -110,10 +110,11 @@ class MonthlyRentPurchase_CLASS(Resource):
                     payable = response['result'][i]['available_topay']
                 # print(payable)
 
-                print(i, days_for_rent, payable, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+                print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
                 # Check if rent is avaiable to pay
                 if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
+                # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
 
@@ -138,13 +139,17 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['purchase_status'] = "UNPAID"
                     newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                     newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                    # newRequest['pur_notes'] = f"Rent for MARCH {nextMonth.year}"
+                    # newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
+
                     newRequest['pur_receiver'] = owner
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
                     newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                     newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                    # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                     # print(newRequest)
-                    print("Purchase Parameters: ", i, newRequestID, contract_uid, tenant, owner, manager)
+                    print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                     db.insert('purchases', newRequest)
 
 
@@ -199,11 +204,13 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
                             newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                            # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
                             newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
+                            # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                             # print(newPMRequest)
                             db.insert('purchases', newPMRequest)
 
@@ -313,10 +320,11 @@ def MonthlyRentPurchase_CRON(self):
                 payable = response['result'][i]['available_topay']
             # print(payable)
 
-            print(i, days_for_rent, payable, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+            print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
             # Check if rent is avaiable to pay
             if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
+            # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                 # print("Rent posted.  Please Pay")
                 numCronPurchases = numCronPurchases + 1
 
@@ -341,13 +349,17 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['purchase_status'] = "UNPAID"
                 newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                 newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                # newRequest['pur_notes'] = f"Rent for MARCH {nextMonth.year}"
+                # newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
+
                 newRequest['pur_receiver'] = owner
                 newRequest['pur_payer'] = tenant
                 newRequest['pur_initiator'] = manager
                 newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                 newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                 # print(newRequest)
-                print("Purchase Parameters: ", i, newRequestID, contract_uid, tenant, owner, manager)
+                print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                 db.insert('purchases', newRequest)
 
 
@@ -402,11 +414,13 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['purchase_status'] = "UNPAID"
                         newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
                         newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                        # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
                         newPMRequest['pur_payer'] = owner
                         newPMRequest['pur_initiator'] = manager
                         newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                        newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                        newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
+                        # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                         # print(newPMRequest)
                         db.insert('purchases', newPMRequest)
 
