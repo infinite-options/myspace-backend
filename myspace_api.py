@@ -435,8 +435,9 @@ api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_i
 
 # Payment Endpoints
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
-api.add_resource(Payments, '/makePayment')
-api.add_resource(NewPayments, '/makePayment2')
+api.add_resource(NewPayments, '/makePayment')
+# api.add_resource(Payments, '/makePayment')  # Original endpoint
+# api.add_resource(NewPayments, '/makePayment2')   # Used for endpoint development
 
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
