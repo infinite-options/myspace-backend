@@ -28,9 +28,9 @@ class NewPayments(Resource):
         data = request.get_json(force=True)
         print(data)
         
-
-        # For each purchase id: Change purchase status and record payment
-        # If there is a convenience fee, add covnenience fee purchase and record payment
+        # data contains a list of dictionaries
+        # PART 1: For each purchase id: Change purchase status and record payment
+        # PART 2: If there is a convenience fee, add covnenience fee purchase and record payment
 
         with connect() as db:
 
@@ -41,19 +41,20 @@ class NewPayments(Resource):
             # Iterating over the list
             for item in purchase_ids:
                 print("Current Item: ", item)
-                print("number of items: ", )
 
-                # INSERT INTO PAYMENTS TABLE
+                # PART 1
+                # INSERT ITEM PAYMENT INTO PAYMENTS TABLE
+                print("UPDATE PAYMENTS TABLE")
 
-                # GET NEW UID
+                # GET NEW PAYMENT UID
                 # print("Get New Request UID")
-                newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
-                print(newRequestID)
+                newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                # print(newPaymentRequestID)
 
                 paymentQuery = (""" 
-                        -- PAY PURCHASE UID
+                        -- INSERT ITEM PAYMENT INTO PAYMENTS TABLE
                         INSERT INTO space.payments
-                        SET payment_uid = \'""" + newRequestID + """\'
+                        SET payment_uid = \'""" + newPaymentRequestID + """\'
                             , pay_purchase_id =  \'""" + item['purchase_uid'] + """\'
                             , pay_amount = \'""" + item['pur_amount_due'] + """\'
                             , payment_notes = \'""" + data['payment_notes'] + """\'
@@ -65,7 +66,7 @@ class NewPayments(Resource):
                             , payment_method = \'""" + data['payment_method'] + """\';     
                         """)
 
-                print("Query: ", paymentQuery)
+                # print("Item Payment Query: ", paymentQuery)
                 response = db.execute(paymentQuery, [], 'post')
 
 
@@ -87,42 +88,53 @@ class NewPayments(Resource):
                 print('amt_remaining: ', amt_remaining, type(amt_remaining))
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
                 print('amt_due: ', amt_due, type(amt_due))
-                
+
+                # print(purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
+                # print(datetime.now(), type(datetime.now()))
+
+                # if purchaseInfo['result'][0]['pur_due_date'] == datetime.now():
+                #     print("YES")
+
+                pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
+                print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
                 if amt_remaining <= 0: 
-                    purchase_status = "PAID"
+                    if pur_due_date >= datetime.now():
+                        purchase_status = "PAID"
+                    else: purchase_status = "PAID LATE"
                 elif amt_remaining == amt_due: 
                     purchase_status = "UNPAID"
                 else:
                     purchase_status = "PARTIALLY PAID"
-                print(purchase_status)
+                # print(purchase_status)
 
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}
                 payload = {'purchase_status': purchase_status}
-                print(key, payload)
+                # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
                 response['purchase_table_update'] = db.update('purchases', key, payload)
-                response['purchase_status'] = purchase_status
-                print(response)
+                # print(response)
 
 
-
+                # PART 2
                 # DETERMINE IF CONVENIENCE FEES WERE PAID
-                print(data['pay_fee'], type(data['pay_fee']))
+                print("Convenience fee paid: ", data['pay_fee'], type(data['pay_fee']))
                 if data['pay_fee'] > 0:
 
+                    # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
                     newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    print(newPurchaseRequestID)
+                    # print(newPurchaseRequestID)
 
                     # DETERMINE HOW MUCH OF THE CONVENIENCE FEES WAS DUE TO EACH PURCHASE
-                    print(item['pur_amount_due'], type(item['pur_amount_due']))
-                    print(data['pay_total'], type(data['pay_total']))
-                    print(data['pay_fee'], type(data['pay_fee']))
+                    # print(item['pur_amount_due'], type(item['pur_amount_due']))
+                    # print(data['pay_total'], type(data['pay_total']))
+                    # print(data['pay_fee'], type(data['pay_fee']))
                     itemFee = float(item['pur_amount_due']) / (data['pay_total'] - data['pay_fee']) * data['pay_fee']
+                    itemFee = round(itemFee, 2)
                     print("Item Convenience Fee: ", itemFee)
 
                     feePurchaseQuery = (""" 
@@ -134,7 +146,6 @@ class NewPayments(Resource):
                                 , pur_cf_type = "revenue"
                                 , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                -- , pur_amount_due = """ + str(data['pay_fee']) + """
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
                                 , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
@@ -145,23 +156,22 @@ class NewPayments(Resource):
                                 ;
                             """)
 
-                    print("Query: ", feePurchaseQuery)
+                    # print("Query: ", feePurchaseQuery)
                     queryResponse = db.execute(feePurchaseQuery, [], 'post')
-                    print(queryResponse)
+                    # print(queryResponse)
 
                 
                     # INSERT INTO PAYMENTS TABLE
                     # GET NEW UID
                     # print("Get New Request UID")
                     newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
-                    print(newPaymentRequestID)
+                    # print(newPaymentRequestID)
 
                     feePaymentQuery = (""" 
                             -- PAY PURCHASE UID
                             INSERT INTO space.payments
                             SET payment_uid = \'""" + newPaymentRequestID + """\'
                                 , pay_purchase_id =  \'""" + newPurchaseRequestID + """\'
-                                -- , pay_amount = """ + str(data['pay_fee']) + """
                                 , pay_amount = """ + str(itemFee) + """
                                 , payment_notes = \'""" + data['payment_notes'] + """\'
                                 , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
@@ -172,8 +182,64 @@ class NewPayments(Resource):
                                 , payment_method = \'""" + data['payment_method'] + """\';     
                             """)
 
-                    print("Query: ", feePaymentQuery)
+                    # print("Query: ", feePaymentQuery)
                     response = db.execute(feePaymentQuery, [], 'post')
+
+
+                    # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE
+                    # INSERT INTO PURCHASES TABLE
+                    newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    # print(newPurchaseRequestID)
+
+                    feePurchaseQuery = (""" 
+                            INSERT INTO space.purchases
+                            SET purchase_uid = \'""" + newPurchaseRequestID + """\'
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
+                                , purchase_type = "CREDIT CARD FEE"
+                                , pur_cf_type = "expense"
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_amount_due = """ + str(itemFee) + """
+                                , purchase_status = "PAID"
+                                , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_receiver = "STRIPE"
+                                , pur_payer = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
+                                , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
+                                ;
+                            """)
+
+                    # print("Query: ", feePurchaseQuery)
+                    queryResponse = db.execute(feePurchaseQuery, [], 'post')
+                    # print(queryResponse)
+
+                
+                    # INSERT INTO PAYMENTS TABLE
+                    # GET NEW UID
+                    # print("Get New Request UID")
+                    newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                    # print(newPaymentRequestID)
+
+                    feePaymentQuery = (""" 
+                            -- PAY PURCHASE UID
+                            INSERT INTO space.payments
+                            SET payment_uid = \'""" + newPaymentRequestID + """\'
+                                , pay_purchase_id =  \'""" + newPurchaseRequestID + """\'
+                                , pay_amount = """ + str(itemFee) + """
+                                , payment_notes = \'""" + data['payment_notes'] + """\'
+                                , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
+                                , payment_type = \'""" + data['payment_type'] + """\'
+                                , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , paid_by = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
+                                , payment_intent = \'""" + data['payment_intent'] + """\'
+                                , payment_method = \'""" + data['payment_method'] + """\';     
+                            """)
+
+                    # print("Query: ", feePaymentQuery)
+                    response = db.execute(feePaymentQuery, [], 'post')
+
+
                 else:
                     print("No convenience fee")
 
