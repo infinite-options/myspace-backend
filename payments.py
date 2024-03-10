@@ -27,86 +27,173 @@ class NewPayments(Resource):
         print("In Make Payment")
         data = request.get_json(force=True)
         print(data)
+        
+
+        # For each purchase id: Change purchase status and record payment
+        # If there is a convenience fee, add covnenience fee purchase and record payment
+
+        with connect() as db:
+
+            purchase_ids = data['pay_purchase_id']
+
+            # Iterating over the list
+            for item in purchase_ids:
+                print("Current Item: ", item)
+
+                # INSERT INTO PAYMENTS TABLE
+
+                # GET NEW UID
+                # print("Get New Request UID")
+                newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                print(newRequestID)
+
+                paymentQuery = (""" 
+                        -- PAY PURCHASE UID
+                        INSERT INTO space.payments
+                        SET payment_uid = \'""" + newRequestID + """\'
+                            , pay_purchase_id =  \'""" + item['purchase_uid'] + """\'
+                            , pay_amount = \'""" + item['pur_amount_due'] + """\'
+                            , payment_notes = \'""" + data['payment_notes'] + """\'
+                            , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
+                            , payment_type = \'""" + data['payment_type'] + """\'
+                            , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                            , paid_by = \'""" + data['paid_by'] + """\'
+                            , payment_intent = \'""" + data['payment_intent'] + """\'
+                            , payment_method = \'""" + data['payment_method'] + """\';     
+                        """)
+
+                print("Query: ", paymentQuery)
+                response = db.execute(paymentQuery, [], 'post')
+
+
+                #  UPDATE PURCHASES TABLE
+                print("UPDATE PURCHASES TABLE")
+
+                # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
+                purchaseInfo = db.execute("""
+                            -- QUERY ORIGINAL PURCHASE TO CHECK HOW MUCH IS SUPPOSED TO BE PAID
+                            SELECT *
+                            FROM space.pp_status
+                            -- WHERE purchase_uid = '400-000703';
+                            WHERE purchase_uid = \'""" + item['purchase_uid'] + """\';
+                            """)
+                print(purchaseInfo)
+                amt_remaining = purchaseInfo['result'][0]['amt_remaining']
+                print('amt_remaining: ', amt_remaining, type(amt_remaining))
+                
+                purchase_status = "UNPAID"
+                if float(amt_remaining) < 0: 
+                    purchase_status = "PAID"
+                elif float(amt_remaining) > 0: 
+                    purchase_status = "PARTIALLY PAID" 
+                else:
+                    purchase_status = "UNPAID"
+                print(purchase_status)
+
+                # DEFINE KEY VALUE PAIR
+                key = {'purchase_uid': item['purchase_uid']}
+                payload = {'purchase_status': purchase_status}
+                print(key, payload)
+
+                # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
+                response['purchase_table_update'] = db.update('purchases', key, payload)
+                response['purchase_status'] = purchase_status
+                print(response)
+
+
+
+                # DETERMINE IF CONVENIENCE FEES WERE PAID
+                print(data['pay_fee'])
+                if data['pay_fee'] > 0:
+
+                    # INSERT INTO PURCHASES TABLE
+                    newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    print(newPurchaseRequestID)
+
+                    feePurchaseQuery = (""" 
+                            INSERT INTO space.purchases
+                            SET purchase_uid = \'""" + newPurchaseRequestID + """\'
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
+                                , purchase_type = "CREDIT CARD FEE"
+                                , pur_cf_type = "revenue"
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_amount_due = """ + str(data['pay_fee']) + """
+                                , purchase_status = "PAID"
+                                , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
+                                , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
+                                , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
+                                ;
+                            """)
+
+                    # feePurchaseQuery = (""" 
+                    #                 INSERT INTO space.purchases
+                    #                 SET purchase_uid = \'""" + newRequestID + """\'
+                    #                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                    #                     , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
+                    #                     , purchase_type = "CREDIT CARD FEE"
+                    #                     , pur_cf_type = "revenue"
+                    #                     , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                    #                     , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                    #                     , pur_amount_due = \'""" + data['pay_fee'] + """\'
+                    #                     , purchase_status = "PAID"
+                    #                     , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                    #                     , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                    #                     , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
+                    #                     , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
+                    #                     , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
+                    #                     ;
+                    #                 """)
+
+                    print("Query: ", feePurchaseQuery)
+                    queryResponse = db.execute(feePurchaseQuery, [], 'post')
+                    print(queryResponse)
+
+
+
+                
+                    # INSERT INTO PAYMENTS TABLE
+                    # GET NEW UID
+                    # print("Get New Request UID")
+                    newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                    print(newRequestID)
+
+                    feePaymentQuery = (""" 
+                            -- PAY PURCHASE UID
+                            INSERT INTO space.payments
+                            SET payment_uid = \'""" + newRequestID + """\'
+                                , pay_purchase_id =  \'""" + newPurchaseRequestID + """\'
+                                , pay_amount = """ + str(data['pay_fee']) + """
+                                , payment_notes = \'""" + data['payment_notes'] + """\'
+                                , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
+                                , payment_type = \'""" + data['payment_type'] + """\'
+                                , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , paid_by = \'""" + data['paid_by'] + """\'
+                                , payment_intent = \'""" + data['payment_intent'] + """\'
+                                , payment_method = \'""" + data['payment_method'] + """\';     
+                            """)
+
+                    print("Query: ", feePaymentQuery)
+                    response = db.execute(feePaymentQuery, [], 'post')
+                else:
+                    print("No convenience fee")
+
 
         return data 
     
-        response = {}
-        with connect() as db:
-            data = request.get_json(force=True)
-            # print(data)
-
-            fields = [
-                'pay_purchase_id'
-                , 'pay_amount'
-                , 'payment_notes'
-                , 'pay_charge_id'
-                , 'payment_type'
-                , 'payment_date'
-                , 'payment_verify'
-                , 'paid_by'
-                , 'payment_intent'
-                , 'payment_method'
-                , 'payment_date_cleared'
-                , 'payment_client_secret'
-            ]
-
-            # PUTS JSON DATA INTO EACH FIELD
-            newRequest = {}
-            for field in fields:
-                newRequest[field] = data.get(field)
-                # print(field, " = ", newRequest[field])
+    
 
 
-            # GET NEW UID
-            # print("Get New Request UID")
-            newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
-            newRequest['payment_uid'] = newRequestID
-            # print(newRequestID)
-
-            # SET TRANSACTION DATE TO NOW
-            newRequest['payment_date'] = date.today()
-            newRequest['payment_verify'] = "Unverified"
-
-            # INSERT DATA INTO PAYMENTS TABLE
-            # print(newRequest)
-            response['Payment_Insert'] = db.insert('payments', newRequest)
-            response['Payments_UID'] = newRequestID
-            # print(response)
-
-            # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
-            amt_due = db.execute("""
-                        -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
-                        SELECT -- *,
-                            amt_remaining
-                        FROM space.pp_status
-                        WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
-                        """)
-            # print(amt_due)
-            # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
-
-            purchase_status = "UNPAID"
-            print(type(amt_due['result'][0]['amt_remaining']))
-            if float(amt_due['result'][0]['amt_remaining']) <= 0: 
-                purchase_status = "PAID"
-                # print(purchase_status)
-
-                # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
-                payload = {'purchase_status': purchase_status}
-                key = {'purchase_uid': newRequest['pay_purchase_id']}
-                # print(key, payload)
-
-                
-                # response['b'] = db.update('purchases', key, purchase_status)
-                response['purchase_table_update'] = db.update('purchases', key, payload)
-                response['purchase_status'] = purchase_status
-
-            else:
-                response['purchase_status'] = 'UNPAID'
 
 
-            
 
-        return response  
+
+
+
+
 
 
 
