@@ -464,7 +464,7 @@ api.add_resource(Quotes, '/quotes')
 
 
 api.add_resource(Rents, '/rents/<string:uid>')
-api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
+api.add_resource(RentDetails, '/rentDetails/<string:uid>')
 
 api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
