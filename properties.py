@@ -297,7 +297,7 @@ class Properties(Resource):
             # print("in connect loop")
                 contractsQuery = db.execute("""
                     -- NEW PROPERTIES FOR MANAGER
-                    SELECT *
+                    SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
                     FROM space.o_details
                     LEFT JOIN space.properties ON property_id = property_uid
                     LEFT JOIN space.b_details ON contract_property_id = property_uid

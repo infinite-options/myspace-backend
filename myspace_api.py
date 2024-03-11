@@ -258,6 +258,7 @@ class Announcements(Resource):
                     newRequest['announcement_mode'] = payload["announcement_mode"]
                     newRequest['announcement_properties'] = properties[k]
                     newRequest['announcement_receiver'] = receivers[i]
+                    newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')
                     user_query = db.execute(""" 
                                         -- Find the user details
                                         SELECT * 
