@@ -27,6 +27,7 @@ class MonthlyRentPurchase_CLASS(Resource):
         # Run query to find rents of ACTIVE leases
         with connect() as db:
             response = db.execute("""
+                    -- CALCULATE RECURRING FEES
                     SELECT 
                     leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
                     -- , of_DNU, lease_rent_old_DNU
@@ -67,7 +68,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 """)
 
             for i in range(len(response['result'])):
-                # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+                print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
                 # Check Frequecy of Rent Payment
                 # rentFrequency = response['result'][i]['frequency']
@@ -84,7 +85,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # Check if due_by is NONE
                 # print(response['result'][i]['due_by'])
-                if response['result'][i]['due_by'] is None:
+                if response['result'][i]['due_by'] is None or response['result'][i]['due_by'] == 0:
                     # print("Is NULL!!")
                     due_by = 1
                 else:
@@ -155,6 +156,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_cf_type'] = "revenue"
                     newRequest['pur_amount_due'] = amt_due
                     newRequest['purchase_status'] = "UNPAID"
+                    newRequest['pur_status_value'] = "0"
                     # newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                     # newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                     newRequest['pur_notes'] = fee_name
@@ -221,6 +223,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_cf_type'] = "expense"
                             newPMRequest['pur_amount_due'] = charge_amt
                             newPMRequest['purchase_status'] = "UNPAID"
+                            newPMRequest['pur_status_value'] = "0"
                             newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
                             # newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                             newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"

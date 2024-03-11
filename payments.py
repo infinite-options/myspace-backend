@@ -99,24 +99,33 @@ class NewPayments(Resource):
                 print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
+                pur_status_value = "0"
                 if amt_remaining <= 0: 
                     if pur_due_date >= datetime.now():
                         purchase_status = "PAID"
-                    else: purchase_status = "PAID LATE"
+                        pur_status_value = "5"
+                    else: 
+                        purchase_status = "PAID LATE"
+                        pur_status_value = "4"
                 elif amt_remaining == amt_due: 
                     purchase_status = "UNPAID"
+                    pur_status_value = "0"
                 else:
                     purchase_status = "PARTIALLY PAID"
+                    pur_status_value = "1"
                 # print(purchase_status)
 
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}
                 payload = {'purchase_status': purchase_status}
+                payload2= {'pur_status_value': pur_status_value}
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
                 response['purchase_table_update'] = db.update('purchases', key, payload)
+                response['purchase_status_update'] = db.update('purchases', key, payload2)
                 # print(response)
+                
 
 
                 # PART 2
