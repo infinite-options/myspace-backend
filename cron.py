@@ -62,7 +62,8 @@ class MonthlyRentPurchase_CLASS(Resource):
                 LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                 LEFT JOIN space.o_details ON lease_property_id = property_id
                 LEFT JOIN space.b_details ON contract_property_id = property_id
-                WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
+                -- WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
+                WHERE frequency = "Monthly" and lease_status = "ACTIVE";
                 """)
 
             for i in range(len(response['result'])):
@@ -112,7 +113,9 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
-                # Check if rent is avaiable to pay
+
+
+                # CHECK IF RENT IS AVAILABLE TO PAY
                 if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
                 # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
@@ -149,7 +152,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                     # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                     # print(newRequest)
-                    print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                    # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                     db.insert('purchases', newRequest)
 
 
@@ -180,16 +183,17 @@ class MonthlyRentPurchase_CLASS(Resource):
                     # print(manager_fees)
                     
 
-                    for i in range(len(manager_fees['result'])):
+                    for j in range(len(manager_fees['result'])):
 
                         # Check if fees is monthly 
-                        if manager_fees['result'][i]['frequency_column'] == 'Monthly' or manager_fees['result'][i]['frequency_column'] == 'monthly':
+                        if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                             # Check if charge is a % or Fixed $ Amount
-                            if manager_fees['result'][i]['fee_type_column'] == '%':
-                                charge_amt = Decimal(manager_fees['result'][i]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
+                            if manager_fees['result'][j]['fee_type_column'] == '%':
+                                charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
                             else:
-                                charge_amt = Decimal(manager_fees['result'][i]['charge_column'])
+                                charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
+                            # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
 
                             # Create JSON Object for Fee Purchase
                             newPMRequest = {}
@@ -202,7 +206,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_cf_type'] = "expense"
                             newPMRequest['pur_amount_due'] = charge_amt
                             newPMRequest['purchase_status'] = "UNPAID"
-                            newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
+                            newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
                             newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                             # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
@@ -272,7 +276,8 @@ def MonthlyRentPurchase_CRON(self):
             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
             LEFT JOIN space.o_details ON lease_property_id = property_id
             LEFT JOIN space.b_details ON contract_property_id = property_id
-            WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
+            -- WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
+            WHERE frequency = "Monthly" and lease_status = "ACTIVE";
             """)
 
         for i in range(len(response['result'])):
@@ -322,7 +327,9 @@ def MonthlyRentPurchase_CRON(self):
 
             print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
-            # Check if rent is avaiable to pay
+
+
+            # CHECK IF RENT IS AVAILABLE TO PAY
             if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
             # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                 # print("Rent posted.  Please Pay")
@@ -359,7 +366,7 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                 # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                 # print(newRequest)
-                print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                 db.insert('purchases', newRequest)
 
 
@@ -390,16 +397,17 @@ def MonthlyRentPurchase_CRON(self):
                 # print(manager_fees)
                 
 
-                for i in range(len(manager_fees['result'])):
+                for j in range(len(manager_fees['result'])):
 
                     # Check if fees is monthly 
-                    if manager_fees['result'][i]['frequency_column'] == 'Monthly' or manager_fees['result'][i]['frequency_column'] == 'monthly':
+                    if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                         # Check if charge is a % or Fixed $ Amount
-                        if manager_fees['result'][i]['fee_type_column'] == '%':
-                            charge_amt = Decimal(manager_fees['result'][i]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
+                        if manager_fees['result'][j]['fee_type_column'] == '%':
+                            charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
                         else:
-                            charge_amt = Decimal(manager_fees['result'][i]['charge_column'])
+                            charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
+                        # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
 
                         # Create JSON Object for Fee Purchase
                         newPMRequest = {}
@@ -412,7 +420,7 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['pur_cf_type'] = "expense"
                         newPMRequest['pur_amount_due'] = charge_amt
                         newPMRequest['purchase_status'] = "UNPAID"
-                        newPMRequest['pur_notes'] = manager_fees['result'][i]['fee_name_column']
+                        newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
                         newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
