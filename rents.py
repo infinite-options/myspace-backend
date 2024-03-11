@@ -129,7 +129,7 @@ class Rents(Resource):
 
 
 class RentDetails(Resource):
-    def get(self, owner_id):
+    def get(self, uid):
         print("in Get Rent Status")
 
         response = {}
@@ -138,21 +138,61 @@ class RentDetails(Resource):
 
         with connect() as db:
             print("in connect loop")
-            rentQuery = db.execute(""" 
-                    -- RENT STATUS BY PROPERTY BY MONTH FOR OWNER PAGE
-                    SELECT property_id, property_owner_id, po_owner_percent
+            if uid[:3] == '110':
+                rentQuery = db.execute(""" 
+                        -- RENT STATUS BY PROPERTY BY MONTH FOR OWNER PAGE
+                        SELECT property_id, property_owner_id, po_owner_percent
+                            , property_address, property_unit, property_city, property_state, property_zip
+                            , pp_status.*
+                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                            , IF (payment_status = "UNPAID", DATEDIFF(NOW(),pur_due_date), "") AS overdue
+                        FROM space.property_owner
+                        LEFT JOIN space.properties ON property_uid = property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = property_id
+                        WHERE property_owner_id = \'""" + uid + """\'
+                            AND (purchase_type = "RENT" OR purchase_type = "LATE FEE" OR ISNULL(purchase_type))
+                        ORDER BY property_id, pur_due_date
+                        """)
+
+            elif uid[:3] == '600':
+                rentQuery = db.execute("""
+                        SELECT business_uid, business_user_id, business_type, business_name, 
+                        business_phone_number, business_email, business_address, business_unit, business_city, business_state, 
+                        business_zip, business_photo_url,
+                        property_uid, property_owner_id, po_owner_percent
                         , property_address, property_unit, property_city, property_state, property_zip
                         , pp_status.*
                         , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
                         , IF (payment_status = "UNPAID", DATEDIFF(NOW(),pur_due_date), "") AS overdue
-                    FROM space.property_owner
-                    LEFT JOIN space.properties ON property_uid = property_id
-                    LEFT JOIN space.pp_status ON pur_property_id = property_id
-                    WHERE property_owner_id = \'""" + owner_id + """\'
+                        FROM space.businessProfileInfo
+                        LEFT JOIN space.contracts ON contract_business_id = business_uid
+                        LEFT JOIN space.properties ON property_uid = contract_property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = property_uid
+                        LEFT JOIN space.property_owner ON property_id = property_uid
+                        WHERE business_uid = \'""" + uid + """\'
                         AND (purchase_type = "RENT" OR purchase_type = "LATE FEE" OR ISNULL(purchase_type))
-                    ORDER BY property_id, pur_due_date
-                    """)
+                        ORDER BY property_id, pur_due_date;
+                        """)
 
+            elif uid[:3] == '350':
+                rentQuery = db.execute("""
+                        SELECT tenant_uid, tenant_first_name, tenant_last_name
+                            , tenant_email, tenant_phone_number, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip
+                            , property_uid, property_owner_id, po_owner_percent
+                            , property_address, property_unit, property_city, property_state, property_zip
+                            , pp_status.*
+                            , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
+                            , IF (payment_status = "UNPAID", DATEDIFF(NOW(),pur_due_date), "") AS overdue
+                        FROM space.tenantProfileInfo
+                        LEFT JOIN space.lease_tenant ON lt_tenant_id = tenant_uid
+                        LEFT JOIN space.leases ON lt_lease_id = lease_uid
+                        LEFT JOIN space.properties ON property_uid = lease_property_id
+                        LEFT JOIN space.pp_status ON pur_property_id = property_uid
+                        LEFT JOIN space.property_owner ON property_id = property_uid
+                        WHERE lt_tenant_id = \'""" + uid + """\'
+                            AND (purchase_type = "RENT" OR purchase_type = "LATE FEE" OR ISNULL(purchase_type))
+                        ORDER BY property_id, pur_due_date;
+                        """)
             
             # print("Query: ", maintenanceQuery)
             response["RentStatus"] = rentQuery
