@@ -258,6 +258,7 @@ class Announcements(Resource):
                     newRequest['announcement_mode'] = payload["announcement_mode"]
                     newRequest['announcement_properties'] = properties[k]
                     newRequest['announcement_receiver'] = receivers[i]
+                    newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')
                     user_query = db.execute(""" 
                                         -- Find the user details
                                         SELECT * 
@@ -463,7 +464,7 @@ api.add_resource(Quotes, '/quotes')
 
 
 api.add_resource(Rents, '/rents/<string:uid>')
-api.add_resource(RentDetails, '/rentDetails/<string:owner_id>')
+api.add_resource(RentDetails, '/rentDetails/<string:uid>')
 
 api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 # api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
