@@ -380,6 +380,7 @@ class Dashboard(Resource):
                     print("in Manager dashboard")
                     print("in connect loop")
 
+                    # HAPPINESS MATRIX - VACANCY
                     vacancy = db.execute(""" 
                         SELECT 
                             property_owner_id as owner_uid,
@@ -416,6 +417,8 @@ class Dashboard(Resource):
                     response["HappinessMatrix"]["vacancy"] = vacancy
                     for i in range(0,len(response["HappinessMatrix"]["vacancy"]["result"])):
                         response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"] = float(response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"])
+                    
+                    # HAPPINESS MATRIX - CASHFLOW
                     delta_cashflow = db.execute("""
         
                         SELECT -- * , 
@@ -434,7 +437,8 @@ class Dashboard(Resource):
                         response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
                         response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"])
                         response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"])
-                        
+
+                    # MAINTENANCE     
                     maintenanceQuery = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
                             SELECT contract_business_id
@@ -512,6 +516,7 @@ class Dashboard(Resource):
                     # print("Query: ", maintenanceQuery)
                     response["MaintenanceStatus"] = maintenanceQuery
 
+                    # LEASES
                     leaseQuery = db.execute(""" 
                                 -- LEASE STATUS BY MANAGER - REWRITE
                                 SELECT -- *
@@ -531,42 +536,52 @@ class Dashboard(Resource):
                     # print("lease Query: ", leaseQuery)
                     response["LeaseStatus"] = leaseQuery
 
+                    # RENT STATUS
                     rentQuery = db.execute(""" 
-                            -- RENT STATUS BY PROPERTY FOR MANAGER DASHBOARD - REWRITE
+                            -- FURTHER SIMPLIFIED RENT STATUS
                             SELECT -- *,
-                                contract_business_id
-                                , rent_status
+                                rent_status
                                 , COUNT(rent_status) AS num
                             FROM (
-                                SELECT *,
-                                    CASE
-                                        WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                        WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                        ELSE 'VACANT'
+                                SELECT -- *,
+                                    property_uid, owner_uid, po_start_date, po_end_date, contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date , lease_status , rs.*
+                                    , CASE
+                                        WHEN ISNULL(lease_status) THEN 'VACANT'
+                                        ELSE purchase_status
                                     END AS rent_status
-                                FROM (
-                                    -- MANAGER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
-                                    SELECT *
-                                    FROM space.contracts
-                                    LEFT JOIN space.properties ON property_uid = contract_property_id
-                                    LEFT JOIN (SELECT *	FROM space.leases WHERE lease_status = "ACTIVE") AS l ON property_uid = lease_property_id
-                                    WHERE contract_business_id = \'""" + user_id + """\' AND contract_status = 'ACTIVE'
-                                ) AS pm 
+                                FROM space.p_details
                                 LEFT JOIN (
-                                    SELECT -- *
-                                        purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type
-                                        , pur_bill_id, purchase_date, pur_due_date
-                                        , pur_amount_due, purchase_status, pur_notes, pur_description
-                                        -- , pur_receiver, pur_initiator, pur_payer, pur_amount_paid-DNU, purchase_frequency-DNU, payment_frequency-DNU, linked_tenantpur_id-DNU
-                                        -- , payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, latest_date
-                                        , total_paid, payment_status, amt_remaining, cf_month, cf_year
-                                    FROM space.pp_status
-                                    WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                                    ) as r
-                                    ON pur_property_id = contract_property_id
-                                ) AS rs
+                                        -- PROPERTY RENT STATUS
+                                        -- GROUP BY PROPERTY
+                                        SELECT -- *
+                                            pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_payer, latest_pay_date, cf_month, cf_year
+                                            , SUM(pur_amount_due) AS pur_amount_due
+                                            , SUM(total_paid) AS total_paid
+                                            , MIN(pur_status_value) AS pur_status_value
+                                        FROM (
+                                            -- GET PURCHASES AND AMOUNT REMAINING
+                                            SELECT *
+                                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
+                                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
+                                            FROM space.purchases
+                                            LEFT JOIN (
+                                                -- GET PAYMENTS BY PURCHASE ID
+                                                SELECT pay_purchase_id
+                                                    -- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
+                                                    , MAX(payment_date) AS latest_pay_date
+                                                    , SUM(pay_amount) AS total_paid
+                                                FROM space.payments
+                                                GROUP BY pay_purchase_id
+                                                ) pay  ON pay_purchase_id = purchase_uid
+                                            ) pp 
+                                        WHERE purchase_type LIKE "%Rent%"
+                                        GROUP BY pur_property_id, cf_month, cf_year
+                                    ) AS rs ON property_uid = pur_property_id
+                                    -- WHERE owner_uid = "110-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    -- WHERE owner_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    -- WHERE business_uid = "600-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    WHERE business_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
+                                ) AS r	
                             GROUP BY rent_status;
                             """)
 
@@ -619,36 +634,51 @@ class Dashboard(Resource):
                 response["LeaseStatus"] = leaseQuery
 
                 rentQuery = db.execute(""" 
-                        -- RENT STATUS BY PROPERTY FOR OWNER DASHBOARD - REWRITE
-                        SELECT -- *,
-                            property_owner_id
-                            , rent_status
-                            , COUNT(rent_status) AS num
-                        FROM (
-                            SELECT *,
-                                CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
+                         -- FURTHER SIMPLIFIED RENT STATUS
+                            SELECT -- *,
+                                rent_status
+                                , COUNT(rent_status) AS num
                             FROM (
-                                -- OWNER PROPERTIES WITH PROPERTY DETAILS AND LEASE DETAILS
-                                SELECT * 
-                                FROM space.property_owner
-                                LEFT JOIN space.properties ON property_uid = property_id
-                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON property_uid = lease_property_id
-                                WHERE property_owner_id = \'""" + user_id + """\'
-                                ) AS o
-                            LEFT JOIN (
-                                SELECT *
-                                FROM space.pp_status
-                                WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                                ) as r
-                                ON pur_property_id = property_id
-                            ) AS rs
-                        GROUP BY rent_status;
+                                SELECT -- *,
+                                    property_uid, owner_uid, po_start_date, po_end_date, contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date , lease_status , rs.*
+                                    , CASE
+                                        WHEN ISNULL(lease_status) THEN 'VACANT'
+                                        ELSE purchase_status
+                                    END AS rent_status
+                                FROM space.p_details
+                                LEFT JOIN (
+                                        -- PROPERTY RENT STATUS
+                                        -- GROUP BY PROPERTY
+                                        SELECT -- *
+                                            pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_payer, latest_pay_date, cf_month, cf_year
+                                            , SUM(pur_amount_due) AS pur_amount_due
+                                            , SUM(total_paid) AS total_paid
+                                            , MIN(pur_status_value) AS pur_status_value
+                                        FROM (
+                                            -- GET PURCHASES AND AMOUNT REMAINING
+                                            SELECT *
+                                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
+                                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
+                                            FROM space.purchases
+                                            LEFT JOIN (
+                                                -- GET PAYMENTS BY PURCHASE ID
+                                                SELECT pay_purchase_id
+                                                    -- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
+                                                    , MAX(payment_date) AS latest_pay_date
+                                                    , SUM(pay_amount) AS total_paid
+                                                FROM space.payments
+                                                GROUP BY pay_purchase_id
+                                                ) pay  ON pay_purchase_id = purchase_uid
+                                            ) pp 
+                                        WHERE purchase_type LIKE "%Rent%"
+                                        GROUP BY pur_property_id, cf_month, cf_year
+                                    ) AS rs ON property_uid = pur_property_id
+                                    -- WHERE owner_uid = "110-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    WHERE owner_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    -- WHERE business_uid = "600-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    -- WHERE business_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
+                                ) AS r	
+                            GROUP BY rent_status;
                         """)
 
                 # print("Query: ", leaseQuery)
