@@ -314,8 +314,31 @@ class Announcements(Resource):
         response = {}
         with connect() as db:
             # if user_id.startswith("600-"):
-            response["sent"] = db.select('announcements', {"announcement_sender": user_id})
-            response["received"] = db.select('announcements', {"announcement_receiver": user_id})
+            sentQuery = ("""
+                    SELECT a.*, business_name, business_phone_number,business_email, business_photo_url
+                    , owner_first_name, owner_last_name, owner_email, owner_photo_url
+                    , tenant_first_name, tenant_last_name, tenant_email, tenant_photo_url
+                    FROM space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    WHERE announcement_sender = \'""" + user_id + """\';
+            """)
+
+            response["sent"] = sentQuery
+            
+            receivedQuery = ("""
+                    SELECT a.*, business_name, business_phone_number,business_email, business_photo_url
+                    , owner_first_name, owner_last_name, owner_email, owner_photo_url
+                    , tenant_first_name, tenant_last_name, tenant_email, tenant_photo_url
+                    FROM space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                    WHERE announcement_receiver = \'""" + user_id + """\';
+            """)
+
+            response["received"] = receivedQuery
 
             # else:
             #     response = db.execute("""
