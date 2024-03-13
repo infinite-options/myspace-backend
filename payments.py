@@ -118,7 +118,7 @@ class NewPayments(Resource):
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}
                 payload = {'purchase_status': purchase_status}
-                    
+                payload2= {'pur_status_value': pur_status_value}    
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
