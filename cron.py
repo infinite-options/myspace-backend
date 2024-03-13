@@ -13,7 +13,7 @@ from decimal import Decimal
 
 class MonthlyRentPurchase_CLASS(Resource):
     def get(self):
-        print("In RentPurchaseTest")
+        print("In Monthly Rent CRON JOB")
 
         numCronPurchases = 0
 
@@ -131,7 +131,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                 # CHECK IF RENT IS AVAILABLE TO PAY
-                if days_for_rent == payable + (1):  # Remove/Change number to get query to run and return data
+                if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
                 # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
@@ -225,7 +225,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_status_value'] = "0"
                             newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                            newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                            newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
                             # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
@@ -246,7 +246,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
 def MonthlyRentPurchase_CRON(self):
-    print("In RentPurchaseTest")
+    print("In Monthly Rent CRON JOB")
 
     numCronPurchases = 0
 
@@ -458,13 +458,13 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['purchase_status'] = "UNPAID"
                         newPMRequest['pur_status_value'] = "0"
                         newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                        newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                        newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID 
                         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
                         newPMRequest['pur_payer'] = owner
                         newPMRequest['pur_initiator'] = manager
                         newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                        newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
+                        newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                         # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                         # print(newPMRequest)
                         db.insert('purchases', newPMRequest)
@@ -476,6 +476,32 @@ def MonthlyRentPurchase_CRON(self):
             'code': 200}
 
     return response
+
+
+class LateFees_CLASS(Resource):
+    def get(self):
+        print("In Late Fees")
+
+        numCronPurchases = 0
+
+        # Establish current month and year
+        dt = datetime.datetime.today()
+        month = dt.month
+        year = dt.year
+        nextMonth = (dt + relativedelta(months=1))
+        print(dt, month, type(month), year, type(year))
+
+        response = {'message': f'Successfully completed CRON Job for {dt}' ,
+                    'rows affected': f'{numCronPurchases}',
+                'code': 200}
+
+        return response
+    
+
+
+
+# ORIGINAL CRON JOBS BELOW
+
 
 class RentPurchase_CLASS(Resource):
     def get(self):

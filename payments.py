@@ -118,7 +118,7 @@ class NewPayments(Resource):
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}
                 payload = {'purchase_status': purchase_status}
-                payload2= {'pur_status_value': pur_status_value}
+                    
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
@@ -158,7 +158,7 @@ class NewPayments(Resource):
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
                                 , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
-                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_description =  \'""" + item['purchase_uid'] + """\'
                                 , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
@@ -212,7 +212,7 @@ class NewPayments(Resource):
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
                                 , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
-                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_description =  \'""" + item['purchase_uid'] + """\'
                                 , pur_receiver = "STRIPE"
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
