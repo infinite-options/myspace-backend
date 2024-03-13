@@ -131,7 +131,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                 # CHECK IF RENT IS AVAILABLE TO PAY
-                if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
+                if days_for_rent == payable + (1):  # Remove/Change number to get query to run and return data
                 # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
@@ -231,7 +231,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
                             newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
+                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                             # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                             # print(newPMRequest)
                             db.insert('purchases', newPMRequest)
