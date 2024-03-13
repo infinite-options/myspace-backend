@@ -577,10 +577,10 @@ class Dashboard(Resource):
                                         WHERE purchase_type LIKE "%Rent%"
                                         GROUP BY pur_property_id, cf_month, cf_year
                                     ) AS rs ON property_uid = pur_property_id
-                                    -- WHERE owner_uid = "110-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
-                                    -- WHERE owner_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
-                                    -- WHERE business_uid = "600-000003" AND ( cf_month = 3 OR ISNULL(cf_month))
-                                    WHERE business_uid = \'""" + user_id + """\' AND ( cf_month = 3 OR ISNULL(cf_month))
+                                    -- WHERE owner_uid = "110-000003" AND ( cf_month = MONTH(CURRENT_DATE) OR ISNULL(cf_month))
+                                    -- WHERE owner_uid = \'""" + user_id + """\' AND ( cf_month = MONTH(CURRENT_DATE) OR ISNULL(cf_month))
+                                    -- WHERE business_uid = "600-000003" AND ( cf_month = MONTH(CURRENT_DATE) OR ISNULL(cf_month))
+                                    WHERE business_uid = \'""" + user_id + """\' AND ( cf_month = MONTH(CURRENT_DATE) OR ISNULL(cf_month))
                                 ) AS r	
                             GROUP BY rent_status;
                             """)

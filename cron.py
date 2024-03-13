@@ -68,7 +68,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 """)
 
             for i in range(len(response['result'])):
-                print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+                # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
                 # Check Frequecy of Rent Payment
                 # rentFrequency = response['result'][i]['frequency']
@@ -105,17 +105,17 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                 # Check if tenant responsiblity is NONE
-                print("What is in the db: ", response['result'][i]['lt_responsibility'])
+                # print("What is in the db: ", response['result'][i]['lt_responsibility'])
                 if response['result'][i]['lt_responsibility'] is None:
-                    print("Is NULL!!")
+                    # print("Is NULL!!")
                     responsible_percent = 1.0
                 else:
                     responsible_percent = response['result'][i]['lt_responsibility']
-                print("What we set programmatically: ", responsible_percent, type(responsible_percent))
+                # print("What we set programmatically: ", responsible_percent, type(responsible_percent))
                 charge = response['result'][i]['charge']
-                print("Charge: ", charge, type(charge))
+                # print("Charge: ", charge, type(charge))
                 amt_due = float(charge)  * responsible_percent
-                print("Amount due: ", amt_due)
+                # print("Amount due: ", amt_due)
 
 
                 # Check if available_topay is NONE
@@ -131,8 +131,8 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                 # CHECK IF RENT IS AVAILABLE TO PAY
-                # if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
-                if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
+                if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
+                # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
                     # print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
 
@@ -158,16 +158,16 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['purchase_status'] = "UNPAID"
                     newRequest['pur_status_value'] = "0"
                     # newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
-                    # newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                    newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                     newRequest['pur_notes'] = fee_name
-                    newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
+                    # newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
 
                     newRequest['pur_receiver'] = owner
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
                     newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                    # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                    newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
+                    newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                    # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                     # print(newRequest)
                     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                     db.insert('purchases', newRequest)
@@ -225,14 +225,14 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_status_value'] = "0"
                             newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                            # newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
-                            newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
+                            newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                            # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
                             newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
-                            # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
-                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
+                            newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 'nextMonth.month', due_by).date().strftime("%m-%d-%Y")
+                            # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
                             # print(newPMRequest)
                             db.insert('purchases', newPMRequest)
 
@@ -260,6 +260,7 @@ def MonthlyRentPurchase_CRON(self):
     # Run query to find rents of ACTIVE leases
     with connect() as db:
         response = db.execute("""
+                -- CALCULATE RECURRING FEES
                 SELECT 
                 leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
                 -- , of_DNU, lease_rent_old_DNU
@@ -296,7 +297,7 @@ def MonthlyRentPurchase_CRON(self):
             LEFT JOIN space.o_details ON lease_property_id = property_id
             LEFT JOIN space.b_details ON contract_property_id = property_id
             -- WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
-            WHERE frequency = "Monthly" and lease_status = "ACTIVE";
+            WHERE frequency = "Monthly" and lease_status = "ACTIVE" and contract_status = "ACTIVE";
             """)
 
         for i in range(len(response['result'])):
@@ -317,7 +318,7 @@ def MonthlyRentPurchase_CRON(self):
 
             # Check if due_by is NONE
             # print(response['result'][i]['due_by'])
-            if response['result'][i]['due_by'] is None:
+            if response['result'][i]['due_by'] is None or response['result'][i]['due_by'] == 0:
                 # print("Is NULL!!")
                 due_by = 1
             else:
@@ -337,12 +338,17 @@ def MonthlyRentPurchase_CRON(self):
 
 
             # Check if tenant responsiblity is NONE
+            # print("What is in the db: ", response['result'][i]['lt_responsibility'])
             if response['result'][i]['lt_responsibility'] is None:
                 # print("Is NULL!!")
-                responsible_percent = 1
+                responsible_percent = 1.0
             else:
-                responsible_percent = response['result'][i]['available_topay']
-            print(responsible_percent)
+                responsible_percent = response['result'][i]['lt_responsibility']
+            # print("What we set programmatically: ", responsible_percent, type(responsible_percent))
+            charge = response['result'][i]['charge']
+            # print("Charge: ", charge, type(charge))
+            amt_due = float(charge)  * responsible_percent
+            # print("Amount due: ", amt_due)
 
 
             # Check if available_topay is NONE
@@ -353,7 +359,7 @@ def MonthlyRentPurchase_CRON(self):
                 payable = response['result'][i]['available_topay']
             # print(payable)
 
-            print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+            print(i, days_for_rent, payable, response['result'][i]['lease_property_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['fee_name'])
 
 
 
@@ -369,6 +375,7 @@ def MonthlyRentPurchase_CRON(self):
                 tenant = response['result'][i]['lt_tenant_id']
                 owner = response['result'][i]['property_owner_id']
                 manager = response['result'][i]['contract_business_id']
+                fee_name = response['result'][i]['fee_name']
                 # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
                 # Create JSON Object for Rent Purchase
@@ -380,11 +387,12 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_property_id'] = property
                 newRequest['purchase_type'] = "Rent"
                 newRequest['pur_cf_type'] = "revenue"
-                newRequest['pur_amount_due'] = response['result'][i]['charge']*responsible_percent
+                newRequest['pur_amount_due'] = amt_due
                 newRequest['purchase_status'] = "UNPAID"
-                newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
+                newRequest['pur_status_value'] = "0"
+                # newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
                 newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
-                # newRequest['pur_notes'] = f"Rent for MARCH {nextMonth.year}"
+                newRequest['pur_notes'] = fee_name
                 # newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
 
                 newRequest['pur_receiver'] = owner
@@ -431,8 +439,8 @@ def MonthlyRentPurchase_CRON(self):
                     if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                         # Check if charge is a % or Fixed $ Amount
-                        if manager_fees['result'][j]['fee_type_column'] == '%':
-                            charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(response['result'][i]['charge']) / 100
+                        if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
+                            charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(amt_due) / 100
                         else:
                             charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
                         # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
@@ -448,6 +456,7 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['pur_cf_type'] = "expense"
                         newPMRequest['pur_amount_due'] = charge_amt
                         newPMRequest['purchase_status'] = "UNPAID"
+                        newPMRequest['pur_status_value'] = "0"
                         newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
                         newPMRequest['pur_description'] = f"Fees for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
