@@ -221,7 +221,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_uid'] = newPMRequestID
                             newPMRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                             newPMRequest['pur_property_id'] = property
-                            newPMRequest['purchase_type'] = "Property Management Fee"
+                            newPMRequest['purchase_type'] = "Management"
                             newPMRequest['pur_cf_type'] = "expense"
                             newPMRequest['pur_amount_due'] = charge_amt
                             newPMRequest['purchase_status'] = "UNPAID"
@@ -394,17 +394,19 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_amount_due'] = amt_due
                 newRequest['purchase_status'] = "UNPAID"
                 newRequest['pur_status_value'] = "0"
-                # newRequest['pur_notes'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year}"
-                newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                 newRequest['pur_notes'] = fee_name
+
+                newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                 # newRequest['pur_description'] = f"Rent for MARCH {nextMonth.year} CRON"
 
                 newRequest['pur_receiver'] = owner
                 newRequest['pur_payer'] = tenant
                 newRequest['pur_initiator'] = manager
                 newRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
+
                 newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                 # newRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
+                
                 # print(newRequest)
                 # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                 db.insert('purchases', newRequest)
@@ -456,20 +458,22 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['purchase_uid'] = newPMRequestID
                         newPMRequest['pur_timestamp'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
                         newPMRequest['pur_property_id'] = property
-                        newPMRequest['purchase_type'] = "Property Management Fee"
+                        newPMRequest['purchase_type'] = "Management"
                         newPMRequest['pur_cf_type'] = "expense"
                         newPMRequest['pur_amount_due'] = charge_amt
                         newPMRequest['purchase_status'] = "UNPAID"
                         newPMRequest['pur_status_value'] = "0"
                         newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                        newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID 
+                        newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
                         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
                         newPMRequest['pur_payer'] = owner
                         newPMRequest['pur_initiator'] = manager
                         newPMRequest['purchase_date'] = datetime.datetime.today().date().strftime("%m-%d-%Y")
+
                         newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                         # newPMRequest['pur_due_date'] = datetime.datetime(nextMonth.year, 3, due_by).date().strftime("%m-%d-%Y")
+                        
                         # print(newPMRequest)
                         db.insert('purchases', newPMRequest)
 
