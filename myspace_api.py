@@ -314,7 +314,7 @@ class Announcements(Resource):
         response = {}
         with connect() as db:
             # if user_id.startswith("600-"):
-            sentQuery = ("""
+            sentQuery = db.execute("""
                     SELECT a.*, business_name, business_phone_number,business_email, business_photo_url
                     , owner_first_name, owner_last_name, owner_email, owner_photo_url
                     , tenant_first_name, tenant_last_name, tenant_email, tenant_photo_url
@@ -326,8 +326,8 @@ class Announcements(Resource):
             """)
 
             response["sent"] = sentQuery
-            
-            receivedQuery = ("""
+
+            receivedQuery = db.execute("""
                     SELECT a.*, business_name, business_phone_number,business_email, business_photo_url
                     , owner_first_name, owner_last_name, owner_email, owner_photo_url
                     , tenant_first_name, tenant_last_name, tenant_email, tenant_photo_url

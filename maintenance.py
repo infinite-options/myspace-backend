@@ -599,7 +599,7 @@ class MaintenanceStatus(Resource):
                                         END AS quote_status
                                     FROM 
                                     (
-                                        SELECT -- maintenance_quote_uid, 
+                                        SELECT maintenance_quote_uid, 
                                             quote_maintenance_request_id AS qmr_id
                                             -- , quote_status
                                             , MAX(quote_rank) AS max_quote_rank
@@ -627,7 +627,14 @@ class MaintenanceStatus(Resource):
                                         ) AS qr_quoterank
                                 ) AS quote_summary ON maintenance_request_uid = qmr_id
                             ) AS quotes
-
+                            LEFT JOIN (
+                            SELECT -- *
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                , sum(bill_amount) AS bill_amount
+                            FROM space.bills
+                            GROUP BY bill_maintenance_quote_id
+                            ) as b ON bill_maintenance_quote_id = quotes.maintenance_quote_uid
+                            LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
