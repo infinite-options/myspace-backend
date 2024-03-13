@@ -30,7 +30,8 @@ class NewPayments(Resource):
         
         # data contains a list of dictionaries
         # PART 1: For each purchase id: Change purchase status and record payment
-        # PART 2: If there is a convenience fee, add covnenience fee purchase and record payment
+        # PART 2: If payment was for RENT, pay Management Fees
+        # PART 3: If there is a convenience fee, add covnenience fee purchase and record payment
 
         with connect() as db:
 
@@ -127,8 +128,14 @@ class NewPayments(Resource):
                 # print(response)
                 
 
-
                 # PART 2
+                # DETERMINE IF PAYMENT WAS FOR RENT
+
+
+
+
+
+                # PART 3
                 # DETERMINE IF CONVENIENCE FEES WERE PAID
                 print("Convenience fee paid: ", data['pay_fee'], type(data['pay_fee']))
                 if data['pay_fee'] > 0:
