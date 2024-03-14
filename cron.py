@@ -1,8 +1,8 @@
-import datetime
+# import datetime
 
 from flask_restful import Resource
 from data_pm import connect
-# # from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime
 from dateutil.relativedelta import relativedelta
 # import json
 import calendar
@@ -95,7 +95,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # Calculate number of days until rent is due
                 if due_by < dt.day:
-                    due_date = datetime.datetime(dt.year, dt.month + 1, due_by)
+                    due_date = dt + relativedelta(months=1)
                 else:
                     due_date = datetime.datetime(dt.year, dt.month, due_by)
                 # print(due_date)
@@ -493,11 +493,68 @@ class LateFees_CLASS(Resource):
         numCronPurchases = 0
 
         # Establish current month and year
-        dt = datetime.datetime.today()
+        dt = datetime.today()
         month = dt.month
         year = dt.year
         nextMonth = (dt + relativedelta(months=1))
         print(dt, month, type(month), year, type(year))
+
+        # Run query to find which Rents are UNPAID OR PARTIALLY PAID
+        with connect() as db:
+            response = db.execute("""
+                    -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
+                    SELECT *
+                    FROM space.purchases
+                    WHERE purchase_type = "RENT" AND
+                        (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
+                """)
+
+            for i in range(len(response['result'])):
+
+                # Check if pur_due_date is NONE
+                due_by_str = response['result'][i]['pur_due_date']
+                due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
+                previous_day = dt - timedelta(days=1) 
+                
+                if due_by == previous_day.date():
+                    print("Late Today")
+                elif due_by < previous_day.date():
+                    print("Been Late Already")
+                else:
+                    print(response['result'][i]['purchase_uid'])
+                    print(due_by_str, type(due_by_str))
+                    print(due_by, type(due_by))  # <class 'datetime.date'>
+                    print(previous_day.date(), type(previous_day.date())) # <class 'datetime.date'>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         response = {'message': f'Successfully completed CRON Job for {dt}' ,
                     'rows affected': f'{numCronPurchases}',
