@@ -326,7 +326,7 @@ class Announcements(Resource):
                             WHEN a.announcement_receiver LIKE '350%' THEN 'Tenant'
                             WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
                             ELSE 'Unknown'
-                      END AS sender_role
+                      END AS receiver_role
                     FROM space.announcements a
                     LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
                     LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
