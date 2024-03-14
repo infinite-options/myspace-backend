@@ -82,13 +82,13 @@ class NewPayments(Resource):
                             -- WHERE purchase_uid = '400-000703';
                             WHERE purchase_uid = \'""" + item['purchase_uid'] + """\';
                             """)
-                print(purchaseInfo)
+                # print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
-                print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
+                # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
                 amt_remaining = float(amt_remaining_str)
-                print('amt_remaining: ', amt_remaining, type(amt_remaining))
+                # print('amt_remaining: ', amt_remaining, type(amt_remaining))
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
-                print('amt_due: ', amt_due, type(amt_due))
+                # print('amt_due: ', amt_due, type(amt_due))
 
                 # print(purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
                 # print(datetime.now(), type(datetime.now()))
@@ -97,7 +97,7 @@ class NewPayments(Resource):
                 #     print("YES")
 
                 pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
-                print('pur_due_date: ', pur_due_date, type(pur_due_date))
+                # print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
                 pur_status_value = "0"
@@ -128,8 +128,43 @@ class NewPayments(Resource):
                 # print(response)
                 
 
+
+
                 # PART 2
                 # DETERMINE IF PAYMENT WAS FOR RENT
+                print("Purchase Type: ", purchaseInfo['result'][0]['purchase_type'])
+                purchaseType = purchaseInfo['result'][0]['purchase_type']
+                if purchaseType == "Rent":
+                    #Pay Management Fees associated with purchase_uid
+
+                    managementInfo = db.execute("""
+                            -- DETERMINE WHICH PURCHASES ARE MONTHLY MANAGEMENT FEES
+                            SELECT *
+                            FROM space.purchases
+                            WHERE purchase_type = "Management" AND
+                                -- pur_description = '400-000023';
+                                pur_description = \'""" + item['purchase_uid'] + """\';
+                            """)
+                    # print(managementInfo)
+
+                    for managementFee in managementInfo['result']:
+                        # print("Current Item: ", managementFee)
+                        # print(managementFee['purchase_uid'])
+
+                        # SET STATUS AS MAIN PURCHASE UID
+                        payload = {'purchase_status': purchase_status}
+                        payload2= {'pur_status_value': pur_status_value}  
+
+                        # DEFINE KEY VALUE PAIR
+                        key = {'purchase_uid': managementFee['purchase_uid']}
+                        payload = {'purchase_status': purchase_status}
+                        payload2= {'pur_status_value': pur_status_value}    
+                        # print(key, payload)
+
+                        # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
+                        response['purchase_table_update'] = db.update('purchases', key, payload)
+                        response['purchase_status_update'] = db.update('purchases', key, payload2)
+                        # print(response)
 
 
 
