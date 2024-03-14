@@ -507,7 +507,7 @@ class PaymentStatus(Resource):
                     SELECT pp_details.*, bill_maintenance_quote_id
                     FROM space.pp_details
                     LEFT JOIN space.bills ON bill_uid = pur_bill_id
-                    WHERE pur_payer = \'""" + user_id + """\' AND latest_date >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
+                    WHERE pur_payer = \'""" + user_id + """\' AND STR_TO_DATE(latest_date, '%m-%d-%Y') >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
                     """)
 
             
