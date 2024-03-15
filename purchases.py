@@ -439,7 +439,7 @@ class AddRevenue(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.date.today()
+            newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
 
             # print(newRequest)
 
