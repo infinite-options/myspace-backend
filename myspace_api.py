@@ -34,7 +34,7 @@ from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from purchases import Bills, AddExpense, AddRevenue
-from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON
+from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
@@ -381,8 +381,55 @@ class Announcements(Resource):
         response = {}
         with connect() as db:
             # if user_id.startswith("600-"):
-            response["sent"] = db.select('announcements', {"announcement_sender": user_id})
-            response["received"] = db.select('announcements', {"announcement_receiver": user_id})
+            sentQuery = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS receiver_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS receiver_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS receiver_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS receiver_photo_url
+                    , CASE
+                            WHEN a.announcement_receiver LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_receiver LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                      END AS receiver_role
+                    FROM space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    WHERE announcement_sender = \'""" + user_id + """\';
+            """)
+
+            response["sent"] = sentQuery
+
+            receivedQuery = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS sender_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS sender_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS sender_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS sender_photo_url
+                        , CASE
+                            WHEN a.announcement_sender LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_sender LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_sender LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                        END AS sender_role
+                    FROM 
+                        space.announcements a
+                    LEFT JOIN 
+                        space.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                    LEFT JOIN 
+                        space.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                    LEFT JOIN 
+                        space.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                    WHERE 
+                        announcement_receiver = \'""" + user_id + """\';
+
+            """)
+
+            response["received"] = receivedQuery
 
             # else:
             #     response = db.execute("""
@@ -649,6 +696,8 @@ api.add_resource(Password, '/password')
 #CRON JOBS
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
+api.add_resource(LateFees_CLASS, '/LateFees')
+
 # api.add_resource(ExtendLease, '/ExtendLease')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 

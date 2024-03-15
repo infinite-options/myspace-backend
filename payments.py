@@ -30,7 +30,8 @@ class NewPayments(Resource):
         
         # data contains a list of dictionaries
         # PART 1: For each purchase id: Change purchase status and record payment
-        # PART 2: If there is a convenience fee, add covnenience fee purchase and record payment
+        # PART 2: If payment was for RENT, pay Management Fees
+        # PART 3: If there is a convenience fee, add covnenience fee purchase and record payment
 
         with connect() as db:
 
@@ -81,13 +82,13 @@ class NewPayments(Resource):
                             -- WHERE purchase_uid = '400-000703';
                             WHERE purchase_uid = \'""" + item['purchase_uid'] + """\';
                             """)
-                print(purchaseInfo)
+                # print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
-                print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
+                # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
                 amt_remaining = float(amt_remaining_str)
-                print('amt_remaining: ', amt_remaining, type(amt_remaining))
+                # print('amt_remaining: ', amt_remaining, type(amt_remaining))
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
-                print('amt_due: ', amt_due, type(amt_due))
+                # print('amt_due: ', amt_due, type(amt_due))
 
                 # print(purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
                 # print(datetime.now(), type(datetime.now()))
@@ -96,7 +97,7 @@ class NewPayments(Resource):
                 #     print("YES")
 
                 pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
-                print('pur_due_date: ', pur_due_date, type(pur_due_date))
+                # print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
                 pur_status_value = "0"
@@ -118,7 +119,7 @@ class NewPayments(Resource):
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}
                 payload = {'purchase_status': purchase_status}
-                payload2= {'pur_status_value': pur_status_value}
+                payload2= {'pur_status_value': pur_status_value}    
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
@@ -128,7 +129,48 @@ class NewPayments(Resource):
                 
 
 
+
                 # PART 2
+                # DETERMINE IF PAYMENT WAS FOR RENT
+                print("Purchase Type: ", purchaseInfo['result'][0]['purchase_type'])
+                purchaseType = purchaseInfo['result'][0]['purchase_type']
+                if purchaseType == "Rent":
+                    #Pay Management Fees associated with purchase_uid
+
+                    managementInfo = db.execute("""
+                            -- DETERMINE WHICH PURCHASES ARE MONTHLY MANAGEMENT FEES
+                            SELECT *
+                            FROM space.purchases
+                            WHERE purchase_type = "Management" AND
+                                -- pur_description = '400-000023';
+                                pur_description = \'""" + item['purchase_uid'] + """\';
+                            """)
+                    # print(managementInfo)
+
+                    for managementFee in managementInfo['result']:
+                        # print("Current Item: ", managementFee)
+                        # print(managementFee['purchase_uid'])
+
+                        # SET STATUS AS MAIN PURCHASE UID
+                        payload = {'purchase_status': purchase_status}
+                        payload2= {'pur_status_value': pur_status_value}  
+
+                        # DEFINE KEY VALUE PAIR
+                        key = {'purchase_uid': managementFee['purchase_uid']}
+                        payload = {'purchase_status': purchase_status}
+                        payload2= {'pur_status_value': pur_status_value}    
+                        # print(key, payload)
+
+                        # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
+                        response['purchase_table_update'] = db.update('purchases', key, payload)
+                        response['purchase_status_update'] = db.update('purchases', key, payload2)
+                        # print(response)
+
+
+
+
+
+                # PART 3
                 # DETERMINE IF CONVENIENCE FEES WERE PAID
                 print("Convenience fee paid: ", data['pay_fee'], type(data['pay_fee']))
                 if data['pay_fee'] > 0:
@@ -151,14 +193,14 @@ class NewPayments(Resource):
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
-                                , purchase_type = "CREDIT CARD FEE"
+                                , purchase_type = "Extra Charges"
                                 , pur_cf_type = "revenue"
                                 , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
-                                , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
-                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_notes = "Credit Card Fee - Auto Posted"
+                                , pur_description =  \'""" + item['purchase_uid'] + """\'
                                 , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
@@ -205,14 +247,14 @@ class NewPayments(Resource):
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
-                                , purchase_type = "CREDIT CARD FEE"
+                                , purchase_type = "Bill Posting"
                                 , pur_cf_type = "expense"
                                 , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
-                                , pur_notes = "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
-                                , pur_description =  "AUTO CREATED WHEN PURCHASE MADE WITH CREDIT CARD"
+                                , pur_notes = "Credit Card Fee - Auto Posted"
+                                , pur_description =  \'""" + item['purchase_uid'] + """\'
                                 , pur_receiver = "STRIPE"
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
@@ -465,7 +507,7 @@ class PaymentStatus(Resource):
                     SELECT pp_details.*, bill_maintenance_quote_id
                     FROM space.pp_details
                     LEFT JOIN space.bills ON bill_uid = pur_bill_id
-                    WHERE pur_payer = \'""" + user_id + """\' AND latest_date >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
+                    WHERE pur_payer = \'""" + user_id + """\' AND STR_TO_DATE(latest_date, '%m-%d-%Y') >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
                     """)
 
             
