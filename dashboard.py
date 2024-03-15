@@ -438,6 +438,8 @@ class Dashboard(Resource):
                         response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["cashflow"])
                         response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["expected_cashflow"])
 
+                    print("Complete Happiness Matrix")
+
                     # MAINTENANCE     
                     maintenanceQuery = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
@@ -513,6 +515,8 @@ class Dashboard(Resource):
                             GROUP BY maintenance_status;
                             """)
 
+                    print("Complete Maintenance Status")
+
                     # print("Query: ", maintenanceQuery)
                     response["MaintenanceStatus"] = maintenanceQuery
 
@@ -532,6 +536,8 @@ class Dashboard(Resource):
                                 GROUP BY MONTH(STR_TO_DATE(lease_end, '%m-%d-%Y')),
                                         YEAR(STR_TO_DATE(lease_end, '%m-%d-%Y'));
                             """)
+
+                    print("Complete Lease Status")
 
                     # print("lease Query: ", leaseQuery)
                     response["LeaseStatus"] = leaseQuery
@@ -584,6 +590,8 @@ class Dashboard(Resource):
                                 ) AS r	
                             GROUP BY rent_status;
                             """)
+
+                    print("Complete Rent Status")
 
                     # print("rent Query: ", rentQuery)
                     response["RentStatus"] = rentQuery
