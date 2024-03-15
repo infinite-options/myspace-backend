@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, timedelta, datetime
 
 from flask import request
 from flask_restful import Resource
@@ -256,7 +256,7 @@ class Bills(Resource):
                     purchaseQuery = (""" 
                         INSERT INTO space.purchases
                         SET purchase_uid = \'""" + new_purchase_uid + """\'
-                            , pur_timestamp = CURRENT_TIMESTAMP()
+                            , pur_timestamp = datetime.today().date().strftime("%m-%d-%Y")
                             , pur_property_id = \'""" + pur_property_id  + """\'
                             , purchase_type = "MAINTENANCE"
                             , pur_cf_type = \'""" + pur_cf_type  + """\'
@@ -376,7 +376,7 @@ class AddExpense(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.date.today()
+            newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
 
             print(datetime.date.today())
 
