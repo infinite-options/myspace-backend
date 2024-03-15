@@ -261,7 +261,7 @@ class Bills(Resource):
                             , purchase_type = "MAINTENANCE"
                             , pur_cf_type = \'""" + pur_cf_type  + """\'
                             , pur_bill_id = \'""" + new_bill_uid + """\'
-                            , purchase_date = CURRENT_DATE()
+                            , purchase_date = datetime.today().date().strftime("%m-%d-%Y")
                             , pur_due_date = DATE_ADD(LAST_DAY(CURRENT_DATE()), INTERVAL 1 DAY)
                             , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                             , purchase_status = "UNPAID"
@@ -376,7 +376,7 @@ class AddExpense(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.date.today()
+            newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
 
             print(datetime.date.today())
 
