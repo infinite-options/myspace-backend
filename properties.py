@@ -202,9 +202,9 @@ class Properties(Resource):
                         FROM space.p_details
                         -- WHERE business_uid = "600-000032"
                         -- WHERE owner_uid = "110-000003"
-                        -- WHERE owner_uid = \'""" + uid + """\'
+                        WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
-                        WHERE tenant_uid = \'""" + uid + """\'  
+                        -- WHERE tenant_uid = \'""" + uid + """\'  
                         ) AS p
                     -- Link to rent status
                     LEFT JOIN (
