@@ -250,9 +250,9 @@ class Properties(Resource):
                 print("in connect loop")
                 propertiesQuery = db.execute(""" 
                     -- PROPERTY RENT STATUS FOR PROPERTIES
-                    SELECT -- *,
-                        property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
-                        , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                    SELECT *
+                        -- property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                        -- , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                         , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                         , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
                         , pur_description, cf_month, cf_year
@@ -276,9 +276,9 @@ class Properties(Resource):
                                 , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         FROM space.p_details
                         -- WHERE business_uid = "600-000032"
-                        WHERE owner_uid = "110-000003"
+                        -- WHERE owner_uid = "110-000003"
                         -- WHERE owner_uid = \'""" + uid + """\'
-                        -- WHERE business_uid = \'""" + uid + """\'
+                        WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'  
                         ) AS p
                     -- Link to rent status
