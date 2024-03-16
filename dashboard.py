@@ -544,7 +544,7 @@ class Dashboard(Resource):
 
                     # RENT STATUS
                     rentQuery = db.execute(""" 
-                            -- NEW RENT STATUS AGAIN
+                            -- PROPERTY RENT STATUS FOR DASHBOARD
                             SELECT 
                                 rent_status
                                 , COUNT(rent_status) AS num
@@ -556,10 +556,11 @@ class Dashboard(Resource):
                                     , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
                                     , pur_description, cf_month, cf_year
                                     , CASE
-                                                WHEN ISNULL(lease_status) THEN "VACANT"
-                                                WHEN ISNULL(purchase_status) THEN "UNPAID"
-                                                ELSE purchase_status
-                                                END AS rent_status 
+                                        WHEN ISNULL(contract_uid) THEN "NO MANAGER"
+                                        WHEN ISNULL(lease_status) THEN "VACANT"
+                                        WHEN ISNULL(purchase_status) THEN "UNPAID"
+                                        ELSE purchase_status
+                                        END AS rent_status 
                                 FROM (
                                     -- Find number of properties
                                     SELECT -- *,
