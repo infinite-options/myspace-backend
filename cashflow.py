@@ -677,7 +677,7 @@ class Cashflow(Resource):
                 response_revenue = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -763,7 +763,7 @@ class Cashflow(Resource):
                 response_expense = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
@@ -786,7 +786,7 @@ class Cashflow(Resource):
                 response_other = db.execute("""
                     -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
+                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
                         , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
