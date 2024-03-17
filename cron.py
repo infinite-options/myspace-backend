@@ -677,6 +677,7 @@ class LateFees_CLASS(Resource):
                             newRequest['pur_status_value'] = "0"
                             newRequest['pur_amount_due'] = amount_due
                             newRequest['pur_description'] = response['result'][i]['purchase_uid']
+                            
                         
                             newRequest['pur_receiver'] = response['result'][i]['pur_receiver']
                             newRequest['pur_payer'] = response['result'][i]['pur_payer']
@@ -694,6 +695,7 @@ class LateFees_CLASS(Resource):
                                 newRequest['pur_notes'] = "One Time Late Fee Applied"
                             else:
                                 newRequest['pur_notes'] = "One Time Late Fee and Per Day Late Fee Applied"
+                                # newRequest['pur_notes'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             db.insert('purchases', newRequest)
                             # print("Inserted into db: ", newRequest)

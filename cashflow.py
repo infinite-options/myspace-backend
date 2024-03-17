@@ -679,7 +679,7 @@ class Cashflow(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
+                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
 			, space.bills.*
                     FROM space.pp_details
@@ -765,7 +765,7 @@ class Cashflow(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
+                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
 			, space.bills.*
                     FROM space.pp_details
@@ -788,7 +788,7 @@ class Cashflow(Resource):
                     SELECT -- * , 
                         cf_year, cf_month, pur_due_date
                         , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
+                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
                     WHERE receiver_profile_uid = \'""" + user_id + """\'
