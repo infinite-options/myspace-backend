@@ -140,108 +140,252 @@ class RentDetails(Resource):
             print("in connect loop")
             if uid[:3] == '110':
                 rentQuery = db.execute(""" 
-                            SELECT
-                            property_uid, owner_uid, po_start_date, po_end_date, contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date , lease_status , rs.*
-                            FROM space.p_details
-                            LEFT JOIN (
+                                SELECT
+                                    property_uid,
+                                    owner_uid,
+                                    po_start_date,
+                                    po_end_date,
+                                    contract_business_id,
+                                    contract_status,
+                                    contract_start_date,
+                                    contract_end_date,
+                                    contract_early_end_date,
+                                    lease_status,
+                                    rs.*,
+                                    late_fees.total_late_fees AS total_late_fees,
+                                    late_fees.total_late_fees_paid AS total_late_fees_paid
+                                FROM
+                                    space.p_details
+                                LEFT JOIN (
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_payer, latest_pay_date, cf_month, cf_year
-                                        , SUM(pur_amount_due) AS pur_amount_due
-                                        , SUM(total_paid) AS total_paid
-                                        , MIN(pur_status_value) AS pur_status_value
+                                        purchase_uid,
+                                        pur_property_id,
+                                        purchase_type,
+                                        pur_cf_type,
+                                        purchase_status,
+                                        pur_receiver,
+                                        pur_initiator,
+                                        pur_payer,
+                                        latest_pay_date,
+                                        cf_month,
+                                        cf_year,
+                                        SUM(pur_amount_due) AS pur_amount_due,
+                                        SUM(total_paid) AS total_paid,
+                                        MIN(pur_status_value) AS pur_status_value
                                     FROM (
                                         -- GET PURCHASES AND AMOUNT REMAINING
-                                        SELECT *
-                                            , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
-                                            , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
+                                        SELECT *,
+                                               MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month,
+                                               YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                         FROM space.purchases
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
-                                            SELECT pay_purchase_id
-                                                -- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
-                                                , payment_date AS latest_pay_date
-                                                , pay_amount AS total_paid
-                                            FROM space.payments
-                                            GROUP BY pay_purchase_id
-                                            ) pay  ON pay_purchase_id = purchase_uid
-                                        ) pp 
-                                    WHERE purchase_type LIKE "%Rent%" OR purchase_type LIKE "%CREDIT CARD FEE%" OR purchase_type LIKE "%LATE FEE%"
-                                    GROUP BY purchase_uid
+                                            SELECT
+                                                pay_purchase_id,
+                                                payment_date AS latest_pay_date,
+                                                pay_amount AS total_paid
+                                            FROM
+                                                space.payments
+                                            GROUP BY
+                                                pay_purchase_id
+                                        ) pay ON pay.pay_purchase_id = purchase_uid
+                                    ) pp
+                                    WHERE
+                                        purchase_type LIKE "%Rent%" 
+                                    GROUP BY
+                                        purchase_uid
                                 ) AS rs ON property_uid = pur_property_id
-                                WHERE owner_uid = \'""" + uid + """\'
+                                LEFT JOIN (
+                                    SELECT
+                                        pur_description,
+                                        SUM(pur_amount_due) AS total_late_fees,
+                                        SUM(total_paid) AS total_late_fees_paid
+                                    FROM
+                                        space.pp_details
+                                    WHERE
+                                        purchase_type = 'Late Fee'
+                                --         AND pur_description IN (
+                                --             SELECT
+                                --                 purchase_uid
+                                --             FROM
+                                --                 space.purchases
+                                --             WHERE
+                                --                 purchase_type = 'Rent'
+                                --         )
+                                    GROUP BY
+                                        pur_description
+                                ) AS late_fees ON rs.purchase_uid = late_fees.pur_description
+                                WHERE
+                                    owner_uid = \'""" + uid + """\';
                         """)
 
             elif uid[:3] == '600':
                 rentQuery = db.execute("""
-                            SELECT
-                            property_uid, owner_uid, po_start_date, po_end_date, contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date , lease_status , rs.*
-                            FROM space.p_details
-                            LEFT JOIN (
+                                SELECT
+                                    property_uid,
+                                    owner_uid,
+                                    po_start_date,
+                                    po_end_date,
+                                    contract_business_id,
+                                    contract_status,
+                                    contract_start_date,
+                                    contract_end_date,
+                                    contract_early_end_date,
+                                    lease_status,
+                                    rs.*,
+                                    late_fees.total_late_fees AS total_late_fees,
+                                    late_fees.total_late_fees_paid AS total_late_fees_paid
+                                FROM
+                                    space.p_details
+                                LEFT JOIN (
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_payer, latest_pay_date, cf_month, cf_year
-                                        , SUM(pur_amount_due) AS pur_amount_due
-                                        , SUM(total_paid) AS total_paid
-                                        , MIN(pur_status_value) AS pur_status_value
+                                        purchase_uid,
+                                        pur_property_id,
+                                        purchase_type,
+                                        pur_cf_type,
+                                        purchase_status,
+                                        pur_receiver,
+                                        pur_initiator,
+                                        pur_payer,
+                                        latest_pay_date,
+                                        cf_month,
+                                        cf_year,
+                                        SUM(pur_amount_due) AS pur_amount_due,
+                                        SUM(total_paid) AS total_paid,
+                                        MIN(pur_status_value) AS pur_status_value
                                     FROM (
                                         -- GET PURCHASES AND AMOUNT REMAINING
-                                        SELECT *
-                                            , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
-                                            , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
+                                        SELECT *,
+                                               MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month,
+                                               YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                         FROM space.purchases
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
-                                            SELECT pay_purchase_id
-                                                -- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
-                                                , payment_date AS latest_pay_date
-                                                , pay_amount AS total_paid
-                                            FROM space.payments
-                                            GROUP BY pay_purchase_id
-                                            ) pay  ON pay_purchase_id = purchase_uid
-                                        ) pp 
-                                    WHERE purchase_type LIKE "%Rent%" OR purchase_type LIKE "%CREDIT CARD FEE%" OR purchase_type LIKE "%LATE FEE%"
-                                    GROUP BY purchase_uid
+                                            SELECT
+                                                pay_purchase_id,
+                                                payment_date AS latest_pay_date,
+                                                pay_amount AS total_paid
+                                            FROM
+                                                space.payments
+                                            GROUP BY
+                                                pay_purchase_id
+                                        ) pay ON pay.pay_purchase_id = purchase_uid
+                                    ) pp
+                                    WHERE
+                                        purchase_type LIKE "%Rent%" 
+                                    GROUP BY
+                                        purchase_uid
                                 ) AS rs ON property_uid = pur_property_id
-                                WHERE business_uid = \'""" + uid + """\'
+                                LEFT JOIN (
+                                    SELECT
+                                        pur_description,
+                                        SUM(pur_amount_due) AS total_late_fees,
+                                        SUM(total_paid) AS total_late_fees_paid
+                                    FROM
+                                        space.pp_details
+                                    WHERE
+                                        purchase_type = 'Late Fee'
+                                --         AND pur_description IN (
+                                --             SELECT
+                                --                 purchase_uid
+                                --             FROM
+                                --                 space.purchases
+                                --             WHERE
+                                --                 purchase_type = 'Rent'
+                                --         )
+                                    GROUP BY
+                                        pur_description
+                                ) AS late_fees ON rs.purchase_uid = late_fees.pur_description
+                                WHERE
+                                    business_uid = \'""" + uid + """\';
                         """)
 
             elif uid[:3] == '350':
                 rentQuery = db.execute("""
-                            SELECT
-                            property_uid, owner_uid, po_start_date, po_end_date, contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date , lease_status , rs.*
-                            FROM space.p_details
-                            LEFT JOIN (
+                                SELECT
+                                    property_uid,
+                                    owner_uid,
+                                    po_start_date,
+                                    po_end_date,
+                                    contract_business_id,
+                                    contract_status,
+                                    contract_start_date,
+                                    contract_end_date,
+                                    contract_early_end_date,
+                                    lease_status,
+                                    rs.*,
+                                    late_fees.total_late_fees AS total_late_fees,
+                                    late_fees.total_late_fees_paid AS total_late_fees_paid
+                                FROM
+                                    space.p_details
+                                LEFT JOIN (
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_payer, latest_pay_date, cf_month, cf_year
-                                        , SUM(pur_amount_due) AS pur_amount_due
-                                        , SUM(total_paid) AS total_paid
-                                        , MIN(pur_status_value) AS pur_status_value
+                                        purchase_uid,
+                                        pur_property_id,
+                                        purchase_type,
+                                        pur_cf_type,
+                                        purchase_status,
+                                        pur_receiver,
+                                        pur_initiator,
+                                        pur_payer,
+                                        latest_pay_date,
+                                        cf_month,
+                                        cf_year,
+                                        SUM(pur_amount_due) AS pur_amount_due,
+                                        SUM(total_paid) AS total_paid,
+                                        MIN(pur_status_value) AS pur_status_value
                                     FROM (
                                         -- GET PURCHASES AND AMOUNT REMAINING
-                                        SELECT *
-                                            , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
-                                            , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
+                                        SELECT *,
+                                               MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month,
+                                               YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                         FROM space.purchases
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
-                                            SELECT pay_purchase_id
-                                                -- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
-                                                , payment_date AS latest_pay_date
-                                                , pay_amount AS total_paid
-                                            FROM space.payments
-                                            GROUP BY pay_purchase_id
-                                            ) pay  ON pay_purchase_id = purchase_uid
-                                        ) pp 
-                                    WHERE purchase_type LIKE "%Rent%" OR purchase_type LIKE "%CREDIT CARD FEE%" OR purchase_type LIKE "%LATE FEE%"
-                                    GROUP BY purchase_uid
+                                            SELECT
+                                                pay_purchase_id,
+                                                payment_date AS latest_pay_date,
+                                                pay_amount AS total_paid
+                                            FROM
+                                                space.payments
+                                            GROUP BY
+                                                pay_purchase_id
+                                        ) pay ON pay.pay_purchase_id = purchase_uid
+                                    ) pp
+                                    WHERE
+                                        purchase_type LIKE "%Rent%" 
+                                    GROUP BY
+                                        purchase_uid
                                 ) AS rs ON property_uid = pur_property_id
-                                WHERE tenant_uid = \'""" + uid + """\'
-                        """)
+                                LEFT JOIN (
+                                    SELECT
+                                        pur_description,
+                                        SUM(pur_amount_due) AS total_late_fees,
+                                        SUM(total_paid) AS total_late_fees_paid
+                                    FROM
+                                        space.pp_details
+                                    WHERE
+                                        purchase_type = 'Late Fee'
+                                --         AND pur_description IN (
+                                --             SELECT
+                                --                 purchase_uid
+                                --             FROM
+                                --                 space.purchases
+                                --             WHERE
+                                --                 purchase_type = 'Rent'
+                                --         )
+                                    GROUP BY
+                                        pur_description
+                                ) AS late_fees ON rs.purchase_uid = late_fees.pur_description
+                                WHERE
+                                    tenant_uid = \'""" + uid + """\';                  
+                         """)
             
             # print("Query: ", maintenanceQuery)
             response["RentStatus"] = rentQuery
