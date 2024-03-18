@@ -633,7 +633,6 @@ class Properties(Resource):
                         """)  
 
             # print("Query: ", propertiesQuery)
-            response["Applications"] = applicationQuery
             response["Property"] = propertiesQuery
             # return response
         
