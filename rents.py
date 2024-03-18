@@ -141,18 +141,10 @@ class RentDetails(Resource):
             if uid[:3] == '110':
                 rentQuery = db.execute(""" 
                                 SELECT
-                                    property_uid,
-                                    owner_uid,
-                                    po_start_date,
-                                    po_end_date,
-                                    contract_business_id,
-                                    contract_status,
-                                    contract_start_date,
-                                    contract_end_date,
-                                    contract_early_end_date,
-                                    lease_status,
-                                    rs.*,
-                                    late_fees.total_late_fees AS total_late_fees,
+                                    property_uid, owner_uid, po_start_date, po_end_date,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    rs.*, 
+                                    late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
                                     space.p_details
@@ -160,17 +152,8 @@ class RentDetails(Resource):
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid,
-                                        pur_property_id,
-                                        purchase_type,
-                                        pur_cf_type,
-                                        purchase_status,
-                                        pur_receiver,
-                                        pur_initiator,
-                                        pur_payer,
-                                        latest_pay_date,
-                                        cf_month,
-                                        cf_year,
+                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_due_date, pur_payer, latest_pay_date,
+                                        payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, paid_by, payment_method, payment_date_cleared, cf_month, cf_year,
                                         SUM(pur_amount_due) AS pur_amount_due,
                                         SUM(total_paid) AS total_paid,
                                         MIN(pur_status_value) AS pur_status_value
@@ -183,7 +166,9 @@ class RentDetails(Resource):
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
                                             SELECT
-                                                pay_purchase_id,
+                                                payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, 
+                                                payment_type, payment_date, paid_by, 
+                                                payment_method, payment_date_cleared,
                                                 payment_date AS latest_pay_date,
                                                 pay_amount AS total_paid
                                             FROM
@@ -224,18 +209,10 @@ class RentDetails(Resource):
             elif uid[:3] == '600':
                 rentQuery = db.execute("""
                                 SELECT
-                                    property_uid,
-                                    owner_uid,
-                                    po_start_date,
-                                    po_end_date,
-                                    contract_business_id,
-                                    contract_status,
-                                    contract_start_date,
-                                    contract_end_date,
-                                    contract_early_end_date,
-                                    lease_status,
-                                    rs.*,
-                                    late_fees.total_late_fees AS total_late_fees,
+                                    property_uid, owner_uid, po_start_date, po_end_date,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    rs.*, 
+                                    late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
                                     space.p_details
@@ -243,17 +220,8 @@ class RentDetails(Resource):
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid,
-                                        pur_property_id,
-                                        purchase_type,
-                                        pur_cf_type,
-                                        purchase_status,
-                                        pur_receiver,
-                                        pur_initiator,
-                                        pur_payer,
-                                        latest_pay_date,
-                                        cf_month,
-                                        cf_year,
+                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_due_date, pur_payer, latest_pay_date,
+                                        payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, paid_by, payment_method, payment_date_cleared, cf_month, cf_year,
                                         SUM(pur_amount_due) AS pur_amount_due,
                                         SUM(total_paid) AS total_paid,
                                         MIN(pur_status_value) AS pur_status_value
@@ -266,7 +234,9 @@ class RentDetails(Resource):
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
                                             SELECT
-                                                pay_purchase_id,
+                                                payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, 
+                                                payment_type, payment_date, paid_by, 
+                                                payment_method, payment_date_cleared,
                                                 payment_date AS latest_pay_date,
                                                 pay_amount AS total_paid
                                             FROM
@@ -307,18 +277,10 @@ class RentDetails(Resource):
             elif uid[:3] == '350':
                 rentQuery = db.execute("""
                                 SELECT
-                                    property_uid,
-                                    owner_uid,
-                                    po_start_date,
-                                    po_end_date,
-                                    contract_business_id,
-                                    contract_status,
-                                    contract_start_date,
-                                    contract_end_date,
-                                    contract_early_end_date,
-                                    lease_status,
-                                    rs.*,
-                                    late_fees.total_late_fees AS total_late_fees,
+                                    property_uid, owner_uid, po_start_date, po_end_date,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    rs.*, 
+                                    late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
                                     space.p_details
@@ -326,17 +288,8 @@ class RentDetails(Resource):
                                     -- PROPERTY RENT STATUS
                                     -- GROUP BY PROPERTY
                                     SELECT -- *
-                                        purchase_uid,
-                                        pur_property_id,
-                                        purchase_type,
-                                        pur_cf_type,
-                                        purchase_status,
-                                        pur_receiver,
-                                        pur_initiator,
-                                        pur_payer,
-                                        latest_pay_date,
-                                        cf_month,
-                                        cf_year,
+                                        purchase_uid, pur_property_id, purchase_type, pur_cf_type, purchase_status, pur_receiver, pur_initiator, pur_due_date, pur_payer, latest_pay_date,
+                                        payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, paid_by, payment_method, payment_date_cleared, cf_month, cf_year,
                                         SUM(pur_amount_due) AS pur_amount_due,
                                         SUM(total_paid) AS total_paid,
                                         MIN(pur_status_value) AS pur_status_value
@@ -349,7 +302,9 @@ class RentDetails(Resource):
                                         LEFT JOIN (
                                             -- GET PAYMENTS BY PURCHASE ID
                                             SELECT
-                                                pay_purchase_id,
+                                                payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, 
+                                                payment_type, payment_date, paid_by, 
+                                                payment_method, payment_date_cleared,
                                                 payment_date AS latest_pay_date,
                                                 pay_amount AS total_paid
                                             FROM
@@ -384,7 +339,7 @@ class RentDetails(Resource):
                                         pur_description
                                 ) AS late_fees ON rs.purchase_uid = late_fees.pur_description
                                 WHERE
-                                    tenant_uid = \'""" + uid + """\';                  
+                                    tenant_uid = \'""" + uid + """\';              
                          """)
             
             # print("Query: ", maintenanceQuery)
