@@ -142,8 +142,9 @@ class RentDetails(Resource):
                 rentQuery = db.execute(""" 
                                 SELECT
                                     property_uid, owner_uid, po_start_date, po_end_date,
-                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date,
                                     rs.*, 
+                                    IFNULL(lease_status,"VACANT") AS lease_status,
                                     late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
@@ -210,8 +211,9 @@ class RentDetails(Resource):
                 rentQuery = db.execute("""
                                 SELECT
                                     property_uid, owner_uid, po_start_date, po_end_date,
-                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date,
                                     rs.*, 
+                                    IFNULL(lease_status,"VACANT") AS lease_status,
                                     late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
@@ -278,8 +280,9 @@ class RentDetails(Resource):
                 rentQuery = db.execute("""
                                 SELECT
                                     property_uid, owner_uid, po_start_date, po_end_date,
-                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date, lease_status,
+                                    contract_business_id, contract_status, contract_start_date, contract_end_date, contract_early_end_date,
                                     rs.*, 
+                                    IFNULL(lease_status,"VACANT") AS lease_status,
                                     late_fees.total_late_fees AS total_late_fees, 
                                     late_fees.total_late_fees_paid AS total_late_fees_paid
                                 FROM
@@ -339,7 +342,7 @@ class RentDetails(Resource):
                                         pur_description
                                 ) AS late_fees ON rs.purchase_uid = late_fees.pur_description
                                 WHERE
-                                    tenant_uid = \'""" + uid + """\';              
+                                    tenant_uid = \'""" + uid + """\';            
                          """)
             
             # print("Query: ", maintenanceQuery)
