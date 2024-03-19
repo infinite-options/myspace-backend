@@ -46,11 +46,10 @@ class Listings (Resource):
         with connect() as db:
             print("in tenant loop")
             tenantsQuery = db.execute(""" 
-
                     -- SHOW TENANT LEASES
                     SELECT * FROM space.lease_tenant
                     LEFT JOIN space.leases ON lease_uid = lt_lease_id
-                    -- WHERE lt_tenant_id = "350-000084"
+                    LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
                     WHERE lt_tenant_id = \'""" + tenant_id + """\'
                     """)
             # print("Query: ", tenantsQuery)
