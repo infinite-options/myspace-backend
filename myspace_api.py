@@ -242,8 +242,7 @@ class Announcements(Resource):
         if isinstance(payload["announcement_receiver"], list):
             receivers = payload["announcement_receiver"]
         else:
-            receivers = [payload["announcement_receiver"]]
-        print("ROHIT - receivers - ", receivers)
+            receivers = [payload["announcement_receiver"]]        
 
         if isinstance(payload["announcement_properties"], list):
             properties = payload["announcement_properties"]
@@ -263,35 +262,20 @@ class Announcements(Resource):
 
                     user_query = None                    
                     if(receivers[i][:3] == '350'):
-                        print("ROHIT - receiver - ", )
-                        print("ROHIT - actual query - ", """ 
-                                            -- Find the user details
-                                            SELECT tenant_email as email, tenant_phone_number as phone_number 
-                                            FROM space.tenantProfileInfo AS t
-                                            WHERE t.tenant_uid = \'""" + receivers[i] + """\';
-                                            """)
+                        
                         user_query = db.execute(""" 
                                             -- Find the user details
                                             SELECT tenant_email as email, tenant_phone_number as phone_number 
                                             FROM space.tenantProfileInfo AS t
                                             WHERE t.tenant_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        print("ROHIT - user_query result - ", user_query['result'])
-                    elif(receivers[i][:3] == '110'):
-                        print("ROHIT - receiver - ", )
-                        print("ROHIT - actual query - ", """ 
-                                            -- Find the user details
-                                            SELECT owner_email as email, owner_phone_number as phone_number 
-                                            FROM space.ownerProfileInfo AS o
-                                            WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                            """)
+                                            """)                        
+                    elif(receivers[i][:3] == '110'):                        
                         user_query = db.execute(""" 
                                             -- Find the user details
                                             SELECT owner_email as email, owner_phone_number as phone_number 
                                             FROM space.ownerProfileInfo AS o
                                             WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        print("ROHIT - user_query result - ", user_query['result'])
+                                            """)                        
                     for j in range(len(payload["announcement_type"])):
                         if payload["announcement_type"][j] == "Email":
                             newRequest['Email'] = "1"
@@ -303,8 +287,7 @@ class Announcements(Resource):
                             msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
                             Send_Twilio_SMS(msg, user_phone)
                         if payload["announcement_type"][j] == "App":
-                            newRequest['App'] = "1"
-                    print("ROHIT - newRequest - ", newRequest)
+                            newRequest['App'] = "1"                    
                     response = db.insert('announcements', newRequest)
 
 
