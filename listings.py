@@ -49,8 +49,23 @@ class Listings (Resource):
                     -- SHOW TENANT LEASES
                     SELECT * FROM space.lease_tenant
                     LEFT JOIN space.leases ON lease_uid = lt_lease_id
-                    LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
-                    WHERE lt_tenant_id = \'""" + tenant_id + """\'
+                    LEFT JOIN (
+                        SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee', late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS leaseFees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) as t ON lt_lease_id = fees_lease_id
+                            WHERE lt_tenant_id = \'""" + tenant_id + """\';
                     """)
             # print("Query: ", tenantsQuery)
             # items = execute(istingsQuery, "get", conn)
