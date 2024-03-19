@@ -26,7 +26,7 @@ class Contracts(Resource):
     #     return response
 
     def post(self):
-        print("In Contracts")
+        print("In Contracts Start")
         with connect() as db:
             data = request.form
             fields = [
@@ -43,11 +43,18 @@ class Contracts(Resource):
             properties_l = data.get("contract_property_ids")
             print(properties_l)
 
+            # properties_l is a list since you may create contracts for multiple properties at once
+            # If contracts is called as part of AddProperty.jsx then it is a list of one property
             properties = json.loads(properties_l)
+            print(properties)
             business_id = data.get('contract_business_id')
+            print(business_id)
+
+            # Check if there are active contracts for any properties in the given list
             index_to_remove = []
+            properties_removed = []
             for i in range(len(properties)):
-                print('in Contracts')
+                print('in Contracts Loop', len(properties), i, properties[i])
                 with connect() as db:
                     response = db.execute("""
                                 SELECT * From space.contracts
@@ -56,13 +63,21 @@ class Contracts(Resource):
                                 """)
                     if len(response['result']) != 0:
                         index_to_remove.append(i)
-            print(response)
-            print(properties)
-            print(index_to_remove)
+                        properties_removed.append(properties[i])
+            print("Response: ", response)
+            print("Properties ", properties)
+            print("Index to Remove: ", index_to_remove)
+            # response = {}
+            print("Properties to be removed: ", properties_removed)
+
+            # removes any properties from the List that already have contracts
             for i in sorted(index_to_remove, reverse = True):
                 del properties[i]
-            print(properties)
-            response = {}
+            print("Actual list of properties to be added:" , properties)
+            # response['properties with contracts'] = properties_removed
+
+            # Start actual query to add new contracts
+            
             with connect() as db:
                 for i in range(len(properties)):
                     print("loop", i)
@@ -79,6 +94,7 @@ class Contracts(Resource):
 
                     response = db.insert('contracts', newContract)
                     response['contract_UID'] = newRequestID
+            response['properties with contracts 2'] = properties_removed
         return response
 
     def put(self):
