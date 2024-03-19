@@ -76,7 +76,7 @@ class Bills(Resource):
 
             #  Get New Bill UID
             new_bill_uid = db.call('space.new_bill_uid')['result'][0]['new_id']
-            print(new_bill_uid)
+            # print(new_bill_uid)
 
 
             # Set Variables from JSON OBJECT
@@ -116,18 +116,18 @@ class Bills(Resource):
                         bill_documents.append(docObject)
                     detailsIndex += 1
                 bill_docs = json.dumps(bill_documents)
-                print("bill_docs",bill_docs)
+                # print("bill_docs",bill_docs)
                 # updated_contract['contract_documents'] = json.dumps(contract_docs)
                 # print(updated_contract['contract_documents'])
             else:
                 bill_docs = json.dumps('[]')
-                print("bill_docs", bill_docs)
+                # print("bill_docs", bill_docs)
 
             billQuery = (""" 
                     -- CREATE NEW BILL
                     INSERT INTO space.bills
                     SET bill_uid = \'""" + new_bill_uid + """\'
-                    , bill_timestamp = CURRENT_TIMESTAMP()
+                    , bill_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                     , bill_description = \'""" + bill_description + """\'
                     , bill_amount = \'""" + str(bill_amount) + """\'
                     , bill_created_by = \'""" + bill_created_by + """\'
@@ -256,13 +256,13 @@ class Bills(Resource):
                     purchaseQuery = (""" 
                         INSERT INTO space.purchases
                         SET purchase_uid = \'""" + new_purchase_uid + """\'
-                            , pur_timestamp = datetime.today().date().strftime("%m-%d-%Y")
+                            , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                             , pur_property_id = \'""" + pur_property_id  + """\'
                             , purchase_type = "MAINTENANCE"
                             , pur_cf_type = \'""" + pur_cf_type  + """\'
                             , pur_bill_id = \'""" + new_bill_uid + """\'
                             , purchase_date = CURRENT_DATE()
-                            , pur_due_date = DATE_ADD(LAST_DAY(CURRENT_DATE()), INTERVAL 1 DAY)
+                            , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
                             , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                             , purchase_status = "UNPAID"
                             , pur_notes = \'""" + bill_notes + """\'
