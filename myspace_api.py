@@ -39,7 +39,7 @@ from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRO
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
 from contacts import Contacts, ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
-from contracts import Contracts, ContractsByBusiness
+from contracts import Contracts
 from settings import Account
 from lists import List
 from listings import Listings
@@ -145,6 +145,8 @@ app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 
+# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
@@ -618,7 +620,6 @@ api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:ow
 
 
 api.add_resource(Bills, '/bills','/bills/<string:user_id>')
-# api.add_resource(ContractsByBusiness, '/contracts/<string:business_id>')
 api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
