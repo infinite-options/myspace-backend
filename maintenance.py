@@ -420,11 +420,18 @@ class MaintenanceQuotes(Resource):
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
                 quote["quote_pm_notes"] = quote_pm_notes
+
                 images = []
-                i = 0
+                i = -1
+                # WHILE WHAT IS TRUE?
                 while True:
+                    print("In while loop")
                     filename = f'img_{i}'
+                    # print("Filename: ", filename)
+                    if i == -1:
+                        filename = 'img_cover'
                     file = request.files.get(filename)
+                    # print("File: ", file)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
                         image = uploadImage(file, key, '')
@@ -432,6 +439,7 @@ class MaintenanceQuotes(Resource):
                     else:
                         break
                     i += 1
+
                 quote["quote_maintenance_images"] = json.dumps(images)
                 query_response = db.insert('maintenanceQuotes', quote)
                 response.append(query_response)
@@ -459,11 +467,14 @@ class MaintenanceQuotes(Resource):
             print(e)
             raise BadRequest("Request failed, no such Maintenance Quote in the database.")
 
-        i = 0
+        i = -1
         s3_i = len(images) if len(images) else 0
         while True:
             filename = f'img_{i}'
             s3_filename = f'img_{s3_i}'
+            if i == -1:
+                filename = 'img_cover'
+                s3_filename = f'img_cover'
             print("Filename: ", filename)
             file = request.files.get(filename)
             print("File: ", file)
