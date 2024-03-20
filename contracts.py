@@ -26,7 +26,7 @@ class Contracts(Resource):
     #     return response
 
     def post(self):
-        print("In Contracts")
+        print("In Contracts Start")
         with connect() as db:
             data = request.form
             fields = [
@@ -43,11 +43,18 @@ class Contracts(Resource):
             properties_l = data.get("contract_property_ids")
             print(properties_l)
 
+            # properties_l is a list since you may create contracts for multiple properties at once
+            # If contracts is called as part of AddProperty.jsx then it is a list of one property
             properties = json.loads(properties_l)
+            print(properties)
             business_id = data.get('contract_business_id')
+            print(business_id)
+
+            # Check if there are active contracts for any properties in the given list
             index_to_remove = []
+            properties_removed = []
             for i in range(len(properties)):
-                print('in Contracts')
+                print('in Contracts Loop', len(properties), i, properties[i])
                 with connect() as db:
                     response = db.execute("""
                                 SELECT * From space.contracts
@@ -56,13 +63,21 @@ class Contracts(Resource):
                                 """)
                     if len(response['result']) != 0:
                         index_to_remove.append(i)
-            print(response)
-            print(properties)
-            print(index_to_remove)
+                        properties_removed.append(properties[i])
+            print("Response: ", response)
+            print("Properties ", properties)
+            print("Index to Remove: ", index_to_remove)
+            # response = {}
+            print("Properties to be removed: ", properties_removed)
+
+            # removes any properties from the List that already have contracts
             for i in sorted(index_to_remove, reverse = True):
                 del properties[i]
-            print(properties)
-            response = {}
+            print("Actual list of properties to be added:" , properties)
+            # response['properties with contracts'] = properties_removed
+
+            # Start actual query to add new contracts
+            
             with connect() as db:
                 for i in range(len(properties)):
                     print("loop", i)
@@ -79,6 +94,7 @@ class Contracts(Resource):
 
                     response = db.insert('contracts', newContract)
                     response['contract_UID'] = newRequestID
+            response['properties with contracts 2'] = properties_removed
         return response
 
     def put(self):
@@ -107,20 +123,6 @@ class Contracts(Resource):
                 if field in data:
                     updated_contract[field] = data.get(field)
 
-
-            # # get previously uploaded documents from DB
-            # contract_uid = {'contract_uid': contract_id}
-            # query = db.select('contracts', contract_uid)
-            # print(f"QUERY: {query}")
-            # try:
-            #     contract_from_db = query.get('result')[0]
-            #     contract_docs = contract_from_db.get("contract_documents")
-            #     contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
-            #     print('type: ', type(contract_docs))
-            #     print(f'previously saved documents: {contract_docs}')
-            # except IndexError as e:
-            #     print(e)
-            #     raise BadRequest("Request failed, no such CONTRACT in the database.")
             
             contract_docs = data.get('contract_documents')
             contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
@@ -175,15 +177,6 @@ class Contracts(Resource):
 
         return response
 
-    # def put(self):
-    #     print('in Contracts')
-    #     payload = request.get_json()
-    #     if payload.get('contract_uid') is None:
-    #         raise BadRequest("Request failed, no UID in payload.")
-    #     key = {'contract_uid': payload.pop('contract_uid')}
-    #     with connect() as db:
-    #         response = db.update('contracts', key, payload)
-    #     return response
 
     def get(self, user_id):
         if user_id.startswith("600"):
@@ -228,9 +221,9 @@ class Contracts(Resource):
 
 
 
-class ContractsByBusiness(Resource):
-    def get(self, business_id):
-        print('in ContractsByBusiness')
-        with connect() as db:
-            response = db.select('contracts', {"contract_business_id": business_id})
-        return response
+# class ContractsByBusiness(Resource):
+#     def get(self, business_id):
+#         print('in ContractsByBusiness')
+#         with connect() as db:
+#             response = db.select('contracts', {"contract_business_id": business_id})
+#         return response
