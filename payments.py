@@ -504,10 +504,10 @@ class PaymentStatus(Resource):
             
             paidStatus = db.execute("""
                     -- FIND TENANT PAYMENT HISTORY
-                    SELECT pp_details.*, bill_maintenance_quote_id
-                    FROM space.pp_details
-                    LEFT JOIN space.bills ON bill_uid = pur_bill_id
-                    WHERE pur_payer = \'""" + user_id + """\' AND STR_TO_DATE(latest_date, '%m-%d-%Y') >= DATE_SUB(NOW(), INTERVAL 365 DAY) and purchase_status IN ('PAID','COMPLETED');
+                    SELECT * FROM space.payments
+                    LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
+                    -- WHERE paid_by = '350-000002'
+                    WHERE paid_by = \'""" + user_id + """\'
                     """)
 
             
