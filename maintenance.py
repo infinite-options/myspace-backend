@@ -468,7 +468,7 @@ class MaintenanceQuotes(Resource):
             raise BadRequest("Request failed, no such Maintenance Quote in the database.")
 
         i = -1
-        s3_i = len(images) if len(images) else 0
+        s3_i = len(images) if len(images) else -1
         # WHILE WHAT IS TRUE?
         while True:
             print("In while loop")
