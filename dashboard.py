@@ -857,7 +857,7 @@ class Dashboard(Resource):
                             SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
                             	p.business_name, p.business_phone_number, p.business_email,mr.maintenance_request_uid, mr.maintenance_images, mr.maintenance_title,
                             	mr.maintenance_request_status, mr.maintenance_priority,
-                            	mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                            	mr.maintenance_request_created_date, mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
                             FROM space.maintenanceRequests mr
                             	LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
                             	LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
