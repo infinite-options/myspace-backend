@@ -123,20 +123,6 @@ class Contracts(Resource):
                 if field in data:
                     updated_contract[field] = data.get(field)
 
-
-            # # get previously uploaded documents from DB
-            # contract_uid = {'contract_uid': contract_id}
-            # query = db.select('contracts', contract_uid)
-            # print(f"QUERY: {query}")
-            # try:
-            #     contract_from_db = query.get('result')[0]
-            #     contract_docs = contract_from_db.get("contract_documents")
-            #     contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
-            #     print('type: ', type(contract_docs))
-            #     print(f'previously saved documents: {contract_docs}')
-            # except IndexError as e:
-            #     print(e)
-            #     raise BadRequest("Request failed, no such CONTRACT in the database.")
             
             contract_docs = data.get('contract_documents')
             contract_docs = ast.literal_eval(contract_docs) if contract_docs else []  # convert to list of documents
@@ -191,15 +177,6 @@ class Contracts(Resource):
 
         return response
 
-    # def put(self):
-    #     print('in Contracts')
-    #     payload = request.get_json()
-    #     if payload.get('contract_uid') is None:
-    #         raise BadRequest("Request failed, no UID in payload.")
-    #     key = {'contract_uid': payload.pop('contract_uid')}
-    #     with connect() as db:
-    #         response = db.update('contracts', key, payload)
-    #     return response
 
     def get(self, user_id):
         if user_id.startswith("600"):
@@ -244,9 +221,9 @@ class Contracts(Resource):
 
 
 
-class ContractsByBusiness(Resource):
-    def get(self, business_id):
-        print('in ContractsByBusiness')
-        with connect() as db:
-            response = db.select('contracts', {"contract_business_id": business_id})
-        return response
+# class ContractsByBusiness(Resource):
+#     def get(self, business_id):
+#         print('in ContractsByBusiness')
+#         with connect() as db:
+#             response = db.select('contracts', {"contract_business_id": business_id})
+#         return response

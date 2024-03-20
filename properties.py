@@ -718,30 +718,7 @@ class Properties(Resource):
             newProperty['property_uid'] = newRequestID
             print(newRequestID)
 
-            # image upload - old
-            # images = []
-            # i = -1
-            # # WHILE WHAT IS TRUE?
-            # while True:
-            #     # print("In while loop")
-            #     filename = f'img_{i}'
-            #     # print("Filename: ", filename)
-            #     if i == -1:
-            #         filename = 'img_cover'
-            #     file = request.files.get(filename)
-            #     # print("File: ", file)
-            #     if file:
-            #         key = f'properties/{newRequestID}/{filename}'
-            #         image = uploadImage(file, key, '')
-            #         images.append(image)
-            #         # print("Images: ", images)
-            #     else:
-            #         break
-            #     i += 1
-            # newProperty['property_images'] = json.dumps(images)
-            # # print("Images to be uploaded: ", newProperty['property_images'])
-
-            # image upload - new
+            # Image Upload 
             images = []
             i = 0
             imageFiles = {}
