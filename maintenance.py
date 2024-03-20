@@ -251,7 +251,7 @@ class MaintenanceRequests(Resource):
 
             newRequest = {}
             for field in fields:
-                newRequest[field] = data.get(field)
+                newRequest[field] = data.get(field, None)
                 # print(field, " = ", newRequest[field])
 
 

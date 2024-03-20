@@ -108,16 +108,14 @@ class Quotes(Resource):
                 #     i += 1
 
                 images = []
-                i = -1
-                # WHILE WHAT IS TRUE?
+                i = 0  # Start index from 0 for img_0
                 while True:
                     print("In while loop")
-                    filename = f'img_{i}'
-                    # print("Filename: ", filename)
-                    if i == -1:
+                    if i == 0:
                         filename = 'img_cover'
+                    else:
+                        filename = f'img_{i - 1}'  # Adjust the filename for img_0, img_1, ...
                     file = request.files.get(filename)
-                    # print("File: ", file)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
                         image = uploadImage(file, key, '')
@@ -125,9 +123,9 @@ class Quotes(Resource):
                     else:
                         break
                     i += 1
-                    
 
                 quote["quote_maintenance_images"] = json.dumps(images)
                 query_response = db.insert('maintenanceQuotes', quote)
                 response.append(query_response)
+
         return response

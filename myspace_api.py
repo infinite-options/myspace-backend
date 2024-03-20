@@ -237,6 +237,83 @@ def Send_Twilio_SMS(message, phone_number):
     items['Message'] = 'SMS sent successfully to the recipient'
     return items
 
+# class AnnouncementsOld(Resource):
+#     def post(self, user_id):
+#         payload = request.get_json()
+#         manager_id = user_id
+#         if isinstance(payload["announcement_receiver"], list):
+#             receivers = payload["announcement_receiver"]
+#         else:
+#             receivers = [payload["announcement_receiver"]]        
+
+#         if isinstance(payload["announcement_properties"], list):
+#             properties = payload["announcement_properties"]
+#         else:
+#             properties = [payload["announcement_properties"]]
+#         with connect() as db:
+#             for k in range(len(properties)):
+#                 for i in range(len(receivers)):
+#                     newRequest = {}
+#                     newRequest['announcement_title'] = payload["announcement_title"]
+#                     newRequest['announcement_msg'] = payload["announcement_msg"]
+#                     newRequest['announcement_sender'] = manager_id
+#                     newRequest['announcement_mode'] = payload["announcement_mode"]
+#                     newRequest['announcement_properties'] = properties[k]
+#                     newRequest['announcement_receiver'] = receivers[i]
+#                     newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')                    
+
+#                     user_query = None                    
+#                     if(receivers[i][:3] == '350'):                        
+#                         user_query = db.execute(""" 
+#                                             -- Find the user details
+#                                             SELECT tenant_email as email, tenant_phone_number as phone_number 
+#                                             FROM space.tenantProfileInfo AS t
+#                                             WHERE t.tenant_uid = \'""" + receivers[i] + """\';
+#                                             """)                        
+#                     elif(receivers[i][:3] == '110'):                        
+#                         user_query = db.execute(""" 
+#                                             -- Find the user details
+#                                             SELECT owner_email as email, owner_phone_number as phone_number 
+#                                             FROM space.ownerProfileInfo AS o
+#                                             WHERE o.owner_uid = \'""" + receivers[i] + """\';
+#                                             """)                        
+#                     for j in range(len(payload["announcement_type"])):
+#                         if payload["announcement_type"][j] == "Email":
+#                             newRequest['Email'] = "1"
+#                             user_email = user_query['result'][0]['email']
+#                             sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+#                         if payload["announcement_type"][j] == "Text":
+#                             newRequest['Text'] = "1"
+#                             user_phone = user_query['result'][0]['phone_number']
+#                             msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+#                             Send_Twilio_SMS(msg, user_phone)
+#                         # if payload["announcement_type"][j] == "App":
+#                         #     newRequest['App'] = "1"
+#                     newRequest['App'] = "1"                    
+#                     response = db.insert('announcements', newRequest)
+
+
+#         return response
+
+#     def get(self, user_id):
+#         response = {}
+#         with connect() as db:
+#             # if user_id.startswith("600-"):
+#             response["sent"] = db.select('announcements', {"announcement_sender": user_id})
+#             response["received"] = db.select('announcements', {"announcement_receiver": user_id})
+
+#             # else:
+#             #     response = db.execute("""
+#             #                             -- Find the user details
+#             #                             SELECT *
+#             #                             FROM space.announcements AS a
+#             #                             WHERE a.announcement_receiver = \'""" + user_id + """\'
+#             #                             AND a.App = '1'
+#             #                             ORDER BY a.announcement_date DESC;
+#             #                             """)
+#         return response
+
+
 class Announcements(Resource):
     def post(self, user_id):
         payload = request.get_json()
@@ -244,73 +321,63 @@ class Announcements(Resource):
         if isinstance(payload["announcement_receiver"], list):
             receivers = payload["announcement_receiver"]
         else:
-            receivers = [payload["announcement_receiver"]]
-        print("ROHIT - receivers - ", receivers)
+            receivers = [payload["announcement_receiver"]]        
 
         if isinstance(payload["announcement_properties"], list):
             properties = payload["announcement_properties"]
         else:
-            properties = [payload["announcement_properties"]]
+            properties = [payload["announcement_properties"]]        
+
+        receiverPropertiesMap = {}
+
+        for propertyString in properties:
+            propertyObj = json.loads(propertyString)
+
+            for key, value in propertyObj.items():
+                receiverPropertiesMap[key] = value        
+
         with connect() as db:
-            for k in range(len(properties)):
-                for i in range(len(receivers)):
-                    newRequest = {}
-                    newRequest['announcement_title'] = payload["announcement_title"]
-                    newRequest['announcement_msg'] = payload["announcement_msg"]
-                    newRequest['announcement_sender'] = manager_id
-                    newRequest['announcement_mode'] = payload["announcement_mode"]
-                    newRequest['announcement_properties'] = properties[k]
-                    newRequest['announcement_receiver'] = receivers[i]
-                    newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')                    
+            for i in range(len(receivers)):
+                newRequest = {}
+                newRequest['announcement_title'] = payload["announcement_title"]
+                newRequest['announcement_msg'] = payload["announcement_msg"]
+                newRequest['announcement_sender'] = manager_id
+                newRequest['announcement_mode'] = payload["announcement_mode"]
+                newRequest['announcement_properties'] = json.dumps(receiverPropertiesMap.get(receivers[i], []))
+                newRequest['announcement_receiver'] = receivers[i]
+                newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')   
 
-                    user_query = None                    
-                    if(receivers[i][:3] == '350'):
-                        print("ROHIT - receiver - ", )
-                        print("ROHIT - actual query - ", """ 
-                                            -- Find the user details
-                                            SELECT tenant_email as email, tenant_phone_number as phone_number 
-                                            FROM space.tenantProfileInfo AS t
-                                            WHERE t.tenant_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        user_query = db.execute(""" 
-                                            -- Find the user details
-                                            SELECT tenant_email as email, tenant_phone_number as phone_number 
-                                            FROM space.tenantProfileInfo AS t
-                                            WHERE t.tenant_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        print("ROHIT - user_query result - ", user_query['result'])
-                    elif(receivers[i][:3] == '110'):
-                        print("ROHIT - receiver - ", )
-                        print("ROHIT - actual query - ", """ 
-                                            -- Find the user details
-                                            SELECT owner_email as email, owner_phone_number as phone_number 
-                                            FROM space.ownerProfileInfo AS o
-                                            WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        user_query = db.execute(""" 
-                                            -- Find the user details
-                                            SELECT owner_email as email, owner_phone_number as phone_number 
-                                            FROM space.ownerProfileInfo AS o
-                                            WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                            """)
-                        print("ROHIT - user_query result - ", user_query['result'])
-                    for j in range(len(payload["announcement_type"])):
-                        if payload["announcement_type"][j] == "Email":
-                            newRequest['Email'] = "1"
-                            user_email = user_query['result'][0]['email']
-                            sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
-                        if payload["announcement_type"][j] == "Text":
-                            newRequest['Text'] = "1"
-                            user_phone = user_query['result'][0]['phone_number']
-                            msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
-                            Send_Twilio_SMS(msg, user_phone)
-                        if payload["announcement_type"][j] == "App":
-                            newRequest['App'] = "1"
-                    print("ROHIT - newRequest - ", newRequest)
-                    response = db.insert('announcements', newRequest)
+                user_query = None                    
+                if(receivers[i][:3] == '350'):                    
+                    user_query = db.execute(""" 
+                                        -- Find the user details
+                                        SELECT tenant_email as email, tenant_phone_number as phone_number 
+                                        FROM space.tenantProfileInfo AS t
+                                        WHERE t.tenant_uid = \'""" + receivers[i] + """\';
+                                        """)                    
+                elif(receivers[i][:3] == '110'):                                        
+                    user_query = db.execute(""" 
+                                        -- Find the user details
+                                        SELECT owner_email as email, owner_phone_number as phone_number 
+                                        FROM space.ownerProfileInfo AS o
+                                        WHERE o.owner_uid = \'""" + receivers[i] + """\';
+                                        """)                    
+                for j in range(len(payload["announcement_type"])):
+                    if payload["announcement_type"][j] == "Email":
+                        newRequest['Email'] = "1"
+                        user_email = user_query['result'][0]['email']
+                        sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+                    if payload["announcement_type"][j] == "Text":
+                        newRequest['Text'] = "1"
+                        user_phone = user_query['result'][0]['phone_number']
+                        msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+                        Send_Twilio_SMS(msg, user_phone)
+                    # if payload["announcement_type"][j] == "App":
+                    #     newRequest['App'] = "1"
+                newRequest['App'] = "1"                
+                response = db.insert('announcements', newRequest)
 
-
-        return response
+        return response                
 
     def get(self, user_id):
         response = {}
@@ -376,7 +443,6 @@ class Announcements(Resource):
             #                             ORDER BY a.announcement_date DESC;
             #                             """)
         return response
-
 
 class LeaseExpiringNotify(Resource):
     def get(self):
@@ -526,7 +592,7 @@ api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
 # Mainentance Requests GET for Owner and Tenant and POST and PUT for new and modified maintenance requests
 api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
-api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
+#api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
 
@@ -557,7 +623,7 @@ api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
-api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
+#api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
 
