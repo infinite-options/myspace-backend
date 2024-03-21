@@ -490,12 +490,66 @@ class MaintenanceQuotes(Resource):
             i += 1
             s3_i += 1
 
-        print("Images: ",images)    
+        print("Images: ",images)
         quote["quote_maintenance_images"] = json.dumps(images)
+
+        qd_files = request.files
+        quote_id = payload.get('maintenance_quote_uid')
 
         with connect() as db:
             print("In actual PUT")
-            response = db.update('maintenanceQuotes', key, quote)
+            response['image_put'] = db.update('maintenanceQuotes', key, quote)
+
+        if qd_files:
+            detailsIndex = 0
+            for key in qd_files:
+                print("key", key)
+                file = qd_files[key]
+                print("file", file)
+                # file_info = files_details[detailsIndex]
+                if file and allowed_file(file.filename):
+                    key = f'quotes/{quote_id}/{file.filename}'
+                    print("key", key)
+                    s3_link = uploadImage(file, key, '')
+                    docObject = {}
+
+                    newDocument['qd_link'] = s3_link
+                    docObject["filename"] = file.filename
+
+                detailsIndex += 1
+
+            with connect() as db:
+                fields = [
+                    'qd_type',
+                    'qd_created_date',
+                    'qd_name',
+                    'qd_shared',
+                    'qd_description'
+                ]
+                # print("Document Type: ", data.get("document_type"))
+
+                # newDocument['owner_uid']
+                for field in fields:
+                    if payload.get(field) is not None:
+                        newDocument[field] = payload.get(field)
+                if newDocument['qd_quote_id'].startswith('900-'):
+
+                    new_doc_id = payload.get('maintenance_quote_uid')
+                    newDocument['qd_uid'] = new_doc_id
+
+                    # sql = f"""UPDATE space.ownerProfileInfo
+                    #             SET owner_documents = JSON_ARRAY_APPEND(
+                    #                 IFNULL(owner_documents, JSON_ARRAY()),
+                    #                 '$',
+                    #                 "{newDocument}"
+                    #             )
+                    #             WHERE owner_uid = \'""" + owner_id + """\';"""
+                    # print(sql)
+                    # response = db.execute(sql, cmd='post')
+                    response = db.insert('quoteDocuments', newDocument)
+                else:
+                    response['error'] = "Please enter the quote id in the correct format"
+
         return response
 
 

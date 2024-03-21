@@ -34,36 +34,52 @@ class LeaseDetails(Resource):
 
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-			SELECT * 
-			FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-			lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-			move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-			lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED") 
-			AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-			) AS l
-			LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
-			LEFT JOIN space.properties ON property_uid = lease_property_id
-			LEFT JOIN space.o_details ON property_id = lease_property_id
-			LEFT JOIN (
-				SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-					('tenant_uid', tenant_uid,
-					'lt_responsibility', lt_responsibility,
-					'tenant_first_name', tenant_first_name,
-					'tenant_last_name', tenant_last_name,
-					'tenant_phone_number', tenant_phone_number,
-					'tenant_email', tenant_email
-					)) AS tenants
-					FROM space.t_details 
-					GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-			LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-			WHERE owner_uid = \'""" + filter_id + """\'
-			GROUP BY lease_uid
-			-- WHERE owner_uid = "110-000003"
-			-- WHERE contract_business_id = \'""" + filter_id + """\'
-			-- WHERE contract_business_id = "600-000003"
-			-- WHERE tenants LIKE '%""" + filter_id + """%'
-			-- WHERE tenants LIKE "%350-000040%"
-			;
+                        SELECT * 
+                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
+                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+                        lease_docuSign, lease_move_in_date 
+                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED") 
+                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+                        ) AS l
+                        LEFT JOIN (
+                            SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee', late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS leaseFees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
+                        LEFT JOIN space.properties ON property_uid = lease_property_id
+                        LEFT JOIN space.o_details ON property_id = lease_property_id
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        WHERE owner_uid = \'""" + filter_id + """\'
+                        GROUP BY lease_uid
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        -- WHERE tenants LIKE '%""" + filter_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        ;
                         """)
                 
             elif filter_id[:3] == "600":
@@ -73,12 +89,28 @@ class LeaseDetails(Resource):
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
                         FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
-AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-) AS l
-						LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
+                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+                        lease_docuSign, lease_move_in_date 
+                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+                        ) AS l
+						LEFT JOIN (
+                            SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee', late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS leaseFees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN (
@@ -110,36 +142,52 @@ AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE
 
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-			SELECT * 
-			FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-			lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-			move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-			lease_docuSign FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
-			AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-			) AS l
-			LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
-			LEFT JOIN space.properties ON property_uid = lease_property_id
-			LEFT JOIN space.o_details ON property_id = lease_property_id
-			LEFT JOIN (
-				SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-					('tenant_uid', tenant_uid,
-					'lt_responsibility', lt_responsibility,
-					'tenant_first_name', tenant_first_name,
-					'tenant_last_name', tenant_last_name,
-					'tenant_phone_number', tenant_phone_number,
-					'tenant_email', tenant_email
-					)) AS tenants
-					FROM space.t_details 
-					GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-			LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-			-- WHERE owner_uid = \'""" + filter_id + """\'
-			-- WHERE owner_uid = "110-000003"
-			-- WHERE contract_business_id = \'""" + filter_id + """\'
-			-- WHERE contract_business_id = "600-000003"
-			WHERE tenants LIKE '%""" + filter_id + """%'
-			-- WHERE tenants LIKE "%350-000040%"
-			GROUP BY lease_uid
-			;
+                        SELECT * 
+                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
+                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
+                        lease_docuSign, lease_move_in_date 
+                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+                        ) AS l
+                        LEFT JOIN (
+                            SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee', late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS leaseFees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
+                        LEFT JOIN space.properties ON property_uid = lease_property_id
+                        LEFT JOIN space.o_details ON property_id = lease_property_id
+                        LEFT JOIN (
+                            SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('tenant_uid', tenant_uid,
+                                'lt_responsibility', lt_responsibility,
+                                'tenant_first_name', tenant_first_name,
+                                'tenant_last_name', tenant_last_name,
+                                'tenant_phone_number', tenant_phone_number,
+                                'tenant_email', tenant_email
+                                )) AS tenants
+                                FROM space.t_details 
+                                GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        -- WHERE owner_uid = \'""" + filter_id + """\'
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = "600-000003"
+                        WHERE tenants LIKE '%""" + filter_id + """%'
+                        -- WHERE tenants LIKE "%350-000040%"
+                        GROUP BY lease_uid
+                        ;
                         """)
             else:
                 leaseQuery = "UID Not Found"
