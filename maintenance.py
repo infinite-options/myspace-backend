@@ -520,6 +520,8 @@ class MaintenanceQuotes(Resource):
             print(e)
             raise BadRequest("Request failed, no such Maintenance Quote in the database.")
 
+        s3_i = len(images) if len(images) else 0
+
         img_cover_file = request.files.get('img_cover')
         if img_cover_file:
             S3key_cover = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/img_cover'
@@ -528,7 +530,7 @@ class MaintenanceQuotes(Resource):
             images.append(image_cover)
 
         i = 0
-        s3_i = len(images) if len(images) else 0
+
         # WHILE WHAT IS TRUE?
         while True:
             print("In while loop")
@@ -555,7 +557,7 @@ class MaintenanceQuotes(Resource):
 
         with connect() as db:
             print("In actual PUT")
-            response['image_put'] = db.update('maintenanceQuotes', key, quote)
+            response = db.update('maintenanceQuotes', key, quote)
 
         if qd_files:
             detailsIndex = 0
@@ -589,9 +591,10 @@ class MaintenanceQuotes(Resource):
                 for field in fields:
                     if payload.get(field) is not None:
                         newDocument[field] = payload.get(field)
+                newDocument['qd_quote_id'] = quote["maintenance_quote_uid"]
                 if newDocument['qd_quote_id'].startswith('900-'):
 
-                    new_doc_id = payload.get('maintenance_quote_uid')
+                    new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
                     newDocument['qd_uid'] = new_doc_id
 
                     # sql = f"""UPDATE space.ownerProfileInfo
