@@ -320,7 +320,7 @@ class MaintenanceQuotes(Resource):
                 ownerQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *, 
-                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                         , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                         , property_uid
                                         -- , property_available_to_rent, property_active_date, property_listed_date
@@ -332,6 +332,18 @@ class MaintenanceQuotes(Resource):
                                         , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                        LEFT JOIN (
+                                            SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                ('qd_uid', qd_uid,
+                                                'qd_type', qd_type,
+                                                'qd_name', qd_name,
+                                                'qd_description', qd_description,
+                                                'qd_created_date', qd_created_date,
+                                                'qd_shared', qd_shared,
+                                                'qd_link', qd_link
+                                                )) AS quote_docs
+                                                FROM space.quoteDocuments
+                                                GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid 
                                         LEFT JOIN space.property_owner ON property_id = property_uid
                                         LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
@@ -349,7 +361,7 @@ class MaintenanceQuotes(Resource):
                 businessQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *, 
-                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                         , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                         , property_uid
                                         -- , property_available_to_rent, property_active_date, property_listed_date
@@ -361,6 +373,18 @@ class MaintenanceQuotes(Resource):
                                         , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                        LEFT JOIN (
+                                            SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                ('qd_uid', qd_uid,
+                                                'qd_type', qd_type,
+                                                'qd_name', qd_name,
+                                                'qd_description', qd_description,
+                                                'qd_created_date', qd_created_date,
+                                                'qd_shared', qd_shared,
+                                                'qd_link', qd_link
+                                                )) AS quote_docs
+                                                FROM space.quoteDocuments
+                                                GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid 
                                         LEFT JOIN space.property_owner ON property_id = property_uid
                                         LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
@@ -378,7 +402,7 @@ class MaintenanceQuotes(Resource):
                 tenantQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *,
-											maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+											maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                             , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                             , property_uid
                                             -- , property_available_to_rent, property_active_date, property_listed_date
@@ -392,6 +416,18 @@ class MaintenanceQuotes(Resource):
                                             , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
                                         FROM space.maintenanceQuotes
                                         LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                        LEFT JOIN (
+                                            SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                ('qd_uid', qd_uid,
+                                                'qd_type', qd_type,
+                                                'qd_name', qd_name,
+                                                'qd_description', qd_description,
+                                                'qd_created_date', qd_created_date,
+                                                'qd_shared', qd_shared,
+                                                'qd_link', qd_link
+                                                )) AS quote_docs
+                                                FROM space.quoteDocuments
+                                                GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
                                         LEFT JOIN space.properties ON maintenance_property_id = property_uid
                                         LEFT JOIN space.leases ON lease_property_id = property_uid
                                         LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
@@ -410,28 +446,43 @@ class MaintenanceQuotes(Resource):
         response = []
         payload = request.form
         quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
-        quote_maintenance_contacts = payload.getlist("quote_maintenance_contacts")
+        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
+        # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
         quote_pm_notes = payload["quote_pm_notes"]
+        today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
+                # print("Business ID: ", quote_business_id)
                 quote = {}
                 quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
                 quote["quote_business_id"] = quote_business_id
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
                 quote["quote_pm_notes"] = quote_pm_notes
+                quote["quote_created_date"] = today
+
+                # images = []
+                # i = 0
+                # while True:
+                #     filename = f'img_{i}'
+                #     file = request.files.get(filename)
+                #     if file:
+                #         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+                #         image = uploadImage(file, key, '')
+                #         images.append(image)
+                #     else:
+                #         break
+                #     i += 1
 
                 images = []
-                i = -1
-                # WHILE WHAT IS TRUE?
+                i = 0  # Start index from 0 for img_0
                 while True:
                     print("In while loop")
-                    filename = f'img_{i}'
-                    # print("Filename: ", filename)
-                    if i == -1:
+                    if i == 0:
                         filename = 'img_cover'
+                    else:
+                        filename = f'img_{i - 1}'  # Adjust the filename for img_0, img_1, ...
                     file = request.files.get(filename)
-                    # print("File: ", file)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
                         image = uploadImage(file, key, '')
@@ -443,6 +494,7 @@ class MaintenanceQuotes(Resource):
                 quote["quote_maintenance_images"] = json.dumps(images)
                 query_response = db.insert('maintenanceQuotes', quote)
                 response.append(query_response)
+
         return response
 
     def put(self):
@@ -467,17 +519,21 @@ class MaintenanceQuotes(Resource):
             print(e)
             raise BadRequest("Request failed, no such Maintenance Quote in the database.")
 
-        i = -1
-        s3_i = len(images) if len(images) else -1
+        img_cover_file = request.files.get('img_cover')
+        if img_cover_file:
+            S3key_cover = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/img_cover'
+            print("S3 Key for img_cover: ", S3key_cover)
+            image_cover = uploadImage(img_cover_file, S3key_cover, '')
+            images.append(image_cover)
+
+        i = 0
+        s3_i = len(images) if len(images) else 0
         # WHILE WHAT IS TRUE?
         while True:
             print("In while loop")
             filename = f'img_{i}'
             s3_filename = f'img_{s3_i}'
             # print("Filename: ", filename)
-            if i == -1:
-                filename = 'img_cover'
-                s3_filename = f'img_cover'
             file = request.files.get(filename)
             # print("File: ", file)
             if file:
