@@ -819,7 +819,7 @@ class Dashboard(Resource):
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
                         SELECT -- *,
                         SUM(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_amount_due ELSE 0 END) as balance,
-                        CAST(MIN(STR_TO_DATE(pur_due_date, '%Y-%m-%d')) AS CHAR) as earliest_due_date,
+                        CAST(MIN(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS CHAR) as earliest_due_date,
                          lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                         , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
                         -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign
