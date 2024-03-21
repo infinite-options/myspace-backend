@@ -549,7 +549,7 @@ class MaintenanceQuotes(Resource):
         print("Images: ",images)
         quote["quote_maintenance_images"] = json.dumps(images)
 
-        qd_files = request.files
+        qd_files = request.files.getlist('qd_files')
         quote_id = payload.get('maintenance_quote_uid')
 
         with connect() as db:
