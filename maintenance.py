@@ -499,6 +499,7 @@ class MaintenanceQuotes(Resource):
 
     def put(self):
         print('in MaintenanceQuotes')
+        response = {}
         payload = request.form
         if payload.get('maintenance_quote_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
@@ -602,7 +603,7 @@ class MaintenanceQuotes(Resource):
                     #             WHERE owner_uid = \'""" + owner_id + """\';"""
                     # print(sql)
                     # response = db.execute(sql, cmd='post')
-                    response = db.insert('quoteDocuments', newDocument)
+                    response['documents'] = db.insert('quoteDocuments', newDocument)
                 else:
                     response['error'] = "Please enter the quote id in the correct format"
 
