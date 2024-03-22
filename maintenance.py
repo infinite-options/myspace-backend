@@ -295,17 +295,36 @@ class MaintenanceRequests(Resource):
         return response
     
     def put(self):
+        print('in maintenanceRequests PUT')
         response = {}
         payload = request.form
         print(payload)
         if payload.get('maintenance_request_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'maintenance_request_uid': payload['maintenance_request_uid']}
+        print("Key: ", key)
         maintenanceRequests = {k: v for k, v in payload.items()}
+        print(maintenanceRequests)
         with connect() as db:
             print(key, payload)
             response = db.update('maintenanceRequests', key, maintenanceRequests)
         return response
+    
+    # def put(self):
+    #     print('in bills')
+
+    #     payload = request.form
+        
+    #     if payload.get('maintenance_request_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'maintenance_request_uid': payload['maintenance_request_uid']}
+    #     print("Key: ", key)
+    #     bills = {k: v for k, v in payload.items()}
+    #     print("KV Pairs: ", bills)
+    #     with connect() as db:
+    #         print("In actual PUT")
+    #         response = db.update('maintenanceRequests', key, bills)
+    #     return response
 
 
 class MaintenanceQuotes(Resource):

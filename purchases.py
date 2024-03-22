@@ -299,7 +299,9 @@ class Bills(Resource):
 
     def put(self):
         print('in bills')
+
         payload = request.form
+        
         if payload.get('bill_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'bill_uid': payload['bill_uid']}

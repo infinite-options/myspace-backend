@@ -147,7 +147,7 @@ class LeaseDetails(Resource):
                         lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
                         move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
                         lease_docuSign, lease_move_in_date 
-                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED" OR lease_status = "PROCESSING")
                         AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
                         ) AS l
                         LEFT JOIN (
