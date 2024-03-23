@@ -361,7 +361,14 @@ class Announcements(Resource):
                                         SELECT owner_email as email, owner_phone_number as phone_number 
                                         FROM space.ownerProfileInfo AS o
                                         WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                        """)                    
+                                        """)
+                elif(receivers[i][:3] == '600'):                                        
+                    user_query = db.execute(""" 
+                                        -- Find the user details
+                                        SELECT business_email as email, business_phone_number as phone_number
+                                        FROM space.businessProfileInfo AS b
+                                        WHERE b.business_uid = \'""" + receivers[i] + """\';
+                                        """)                                        
                 for j in range(len(payload["announcement_type"])):
                     if payload["announcement_type"][j] == "Email":
                         newRequest['Email'] = "1"
