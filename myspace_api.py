@@ -141,6 +141,8 @@ app.config['MAIL_USERNAME'] = 'support@manifestmy.space'
 app.config['MAIL_PASSWORD'] = 'Support4MySpace'
 app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
 
+sender = os.getenv["SUPPORT_EMAIL"]
+
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
@@ -188,12 +190,13 @@ def sendEmail(recipient, subject, body):
     with app.app_context():
         print("In sendEmail: ", recipient, subject, body)
         msg = Message(
-            # sender=app.config["MAIL_USERNAME"],
-            sender="support@nityaayurveda.com",
+            sender=sender,
+            # sender="support@manifestmy.space",
             recipients=[recipient],
             subject=subject,
             body=body
         )
+        print("sender: ", sender)
         print("Email message: ", msg)
         mail.send(msg)
         print("email sent")
