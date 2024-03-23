@@ -141,7 +141,7 @@ app.config['MAIL_USERNAME'] = 'support@manifestmy.space'
 app.config['MAIL_PASSWORD'] = 'Support4MySpace'
 app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
 
-sender = os.getenv["SUPPORT_EMAIL"]
+sender = os.getenv('SUPPORT_EMAIL')
 
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
