@@ -91,7 +91,7 @@ from hashlib import sha512
 #  NEED TO SOLVE THIS
 # from env_keys import BING_API_KEY, RDS_PW
 
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 import sys
 import pytz
