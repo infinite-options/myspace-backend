@@ -32,6 +32,11 @@ from maintenance_mapper import mapMaintenanceForOwner, mapMaintenanceForTenant, 
 #             return newMaintenanceQuery["result"][0]["new_id"]
 #     return "Could not generate new property UID", 500
 
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def updateImages(imageFiles, maintenance_request_uid):
     content = []
@@ -503,6 +508,7 @@ class MaintenanceQuotes(Resource):
     def put(self):
         print('in MaintenanceQuotes')
         response = {}
+        newDocument = {}
         payload = request.form
         if payload.get('maintenance_quote_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
@@ -563,10 +569,9 @@ class MaintenanceQuotes(Resource):
             response = db.update('maintenanceQuotes', key, quote)
 
         if qd_files:
-            detailsIndex = 0
             for key in qd_files:
                 print("key", key)
-                file = qd_files[key]
+                file = key
                 print("file", file)
                 # file_info = files_details[detailsIndex]
                 if file and allowed_file(file.filename):
@@ -574,12 +579,15 @@ class MaintenanceQuotes(Resource):
                     print("key", key)
                     s3_link = uploadImage(file, key, '')
                     docObject = {}
+                    # Ensure qd_link is initialized as a list if it's not already
+                    if 'qd_link' not in newDocument:
+                        newDocument['qd_link'] = []
 
-                    newDocument['qd_link'] = s3_link
+                    # Append the new s3_link to the list
+                    newDocument['qd_link'].append(s3_link)
                     docObject["filename"] = file.filename
 
-                detailsIndex += 1
-
+            newDocument['qd_link'] = json.dumps(newDocument['qd_link'])
             with connect() as db:
                 fields = [
                     'qd_type',

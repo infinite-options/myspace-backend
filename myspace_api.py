@@ -90,7 +90,8 @@ from hashlib import sha512
 
 #  NEED TO SOLVE THIS
 # from env_keys import BING_API_KEY, RDS_PW
-# from dotenv import load_dotenv
+
+from dotenv import load_dotenv
 
 import sys
 import pytz
@@ -122,6 +123,7 @@ import re
 
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 s3 = boto3.client('s3')
+
 
 
 app = Flask(__name__)
