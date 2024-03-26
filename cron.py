@@ -162,8 +162,9 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                 # CHECK IF RENT IS AVAILABLE TO PAY
-                if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
+                # if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
                 # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
+                if days_for_rent >= 0:
                     # print("Rent posted.  Please Pay")
                     # print(i, response['result'][i])
                     numCronPurchases = numCronPurchases + 1
@@ -192,8 +193,9 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_notes'] = fee_name
 
                     # *********
-                    newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
+                    # newRequest['pur_description'] = f"Rent for { calendar.month_name[nextMonth.month]} {nextMonth.year} CRON"
                     # newRequest['pur_description'] = f"Rent for JANUARY {nextMonth.year} CRON"
+                    newRequest['pur_description'] = f"Rent for December 2023"
 
                     newRequest['pur_receiver'] = owner
                     newRequest['pur_payer'] = tenant

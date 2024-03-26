@@ -21,7 +21,7 @@ from password import Password
 from dashboard import Dashboard, ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
+from payments import NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
