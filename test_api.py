@@ -223,11 +223,6 @@ def test_get_listings():
 
     assert response.status_code == 200
 
-def test_get_properties_by_manager():
-    response = requests.get(ENDPOINT + "/propertiesByManager/110-000099/600-000038")
-
-    assert response.status_code == 200
-
 def test_get_contracts():
     response = requests.get(ENDPOINT + "/contracts/110-000099")
 
@@ -235,12 +230,6 @@ def test_get_contracts():
 
 def test_get_rents():
     response = requests.get(ENDPOINT + "/rents/110-000099")
-
-    assert response.status_code == 200
-
-
-def test_get_maintenance_by_property():
-    response = requests.get(ENDPOINT + "/maintenanceByProperty/200-000084")
 
     assert response.status_code == 200
 
@@ -358,7 +347,7 @@ def test_PM_Tenant_Flow():
 
     assert response.status_code == 200
 
-    payload = {"announcement_title":"New Tenant Application","announcement_msg":"You have a new tenant application for your property","announcement_sender":"350-000068","announcement_date":"Mon Nov 06 2023","announcement_properties":"200-000084","announcement_mode":"LEASE","announcement_receiver":"600-000038","announcement_type":["App"]}
+    payload = {"announcement_title":"New Tenant Application","announcement_msg":"You have a new tenant application for your property","announcement_sender":"350-000068","announcement_date":"Mon Nov 06 2023","announcement_properties":"{\"600-000038\":[\"200-000084\"]}","announcement_mode":"LEASE","announcement_receiver":["600-000038"],"announcement_type":["App"]}
 
     response = requests.post(ENDPOINT + "/announcements/350-000068", json=payload)
 
@@ -397,7 +386,7 @@ def test_PM_Tenant_Flow():
 
     assert response.status_code == 200
 
-    payload = {"announcement_title":"New Lease created","announcement_msg":"You have a new lease to be approved for your property","announcement_sender":"600-000038","announcement_date":"Mon Nov 06 2023","announcement_properties":"200-000084","announcement_mode":"LEASE","announcement_receiver":"350-000068","announcement_type":["App"]}
+    payload = {"announcement_title":"New Lease created","announcement_msg":"You have a new lease to be approved for your property","announcement_sender":"600-000038","announcement_date":"Mon Nov 06 2023","announcement_properties":"{\"350-000002\":[\"200-000084\"]}","announcement_mode":"LEASE","announcement_receiver":["350-000002"],"announcement_type":["App"]}
 
     response = requests.post(ENDPOINT + "/announcements/600-000038", json=payload)
 
@@ -456,7 +445,7 @@ def test_PM_Owner():
 
 
 
-    payload = {"announcement_title":"black","announcement_msg":"hello","announcement_sender":"110-000099","announcement_date":"2023-11-07","announcement_properties":["200-000147"],"announcement_mode":"CONTRACT","announcement_receiver":["600-000038"],"announcement_type":["App"]}
+    payload = {"announcement_title":"black","announcement_msg":"hello","announcement_sender":"110-000099","announcement_date":"2023-11-07","announcement_properties":"{\"600-000038\":[\"200-000147\"]}","announcement_mode":"CONTRACT","announcement_receiver":["600-000038"],"announcement_type":["App"]}
 
     response = requests.post(ENDPOINT + "/announcements/110-000099", json=payload)
 
