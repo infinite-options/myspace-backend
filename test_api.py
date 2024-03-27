@@ -569,7 +569,7 @@ def test_Maintenance_flow():
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
 # Request Method:
 # PUT
-    payload = {'maintenance_quote_uid': maintenance_quote_uid, 'quote_maintenance_request_id': '800-000180', 'quote_business_id': '600-000039', 'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}', 'quote_notes': 'vents', 'quote_status': 'SENT', 'quote_event_type': '5 Hour Job', 'quote_total_estimate': '300', 'quote_created_date': '2000-04-23 00:00:00', 'quote_earliest_availability': '2023-12-12 12:12:12'}
+    payload = {'maintenance_quote_uid': maintenance_quote_uid, 'quote_maintenance_request_id': '800-000180', 'quote_business_id': '600-000039', 'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}', 'quote_notes': 'vents', 'quote_status': 'SENT', 'quote_event_type': '5 Hour Job', 'quote_total_estimate': '300', 'quote_created_date': '2000-04-23 00:00:00', 'quote_earliest_available_date': '12-12-2023', 'quote_earliest_available_date': '00:00:00'}
 
     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
 
