@@ -328,7 +328,7 @@ class MaintenanceQuotes(Resource):
                 ownerQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *, 
-                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
+                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                         , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                         , property_uid
                                         -- , property_available_to_rent, property_active_date, property_listed_date
@@ -369,7 +369,7 @@ class MaintenanceQuotes(Resource):
                 businessQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *, 
-                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
+                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                         , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                         , property_uid
                                         -- , property_available_to_rent, property_active_date, property_listed_date
@@ -410,7 +410,7 @@ class MaintenanceQuotes(Resource):
                 tenantQuery = db.execute(""" 
                                         -- MAINTENANCE QUOTES
                                         SELECT -- *,
-											maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
+											maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
                                             , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
                                             , property_uid
                                             -- , property_available_to_rent, property_active_date, property_listed_date
@@ -745,7 +745,7 @@ class MaintenanceStatus(Resource):
                                         FROM (
                                             SELECT -- *,
                                                 maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                                -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                                -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                             CASE
                                                 WHEN quote_status = "REQUESTED" THEN "10"
                                                 WHEN quote_status = "REFUSED" THEN "11"
