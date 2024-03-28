@@ -40,7 +40,7 @@ class QuotesByBusiness(Resource):
             query = """ 
                 SELECT maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_images,
                     maintenance_request_type, maintenance_priority, maintenance_request_created_date, maintenance_quote_uid,
-                    quote_business_id, quote_earliest_availability,quote_earliest_available_date, quote_earliest_available_time, quote_event_duration, quote_notes, quote_status,
+                    quote_business_id,quote_earliest_available_date, quote_earliest_available_time, quote_event_duration, quote_notes, quote_status,
                     quote_total_estimate, property_uid, property_address, CONCAT(first_name, ' ', last_name) AS manager_name
                 FROM space.m_details
                     LEFT JOIN space.properties ON property_uid = maintenance_property_id

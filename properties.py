@@ -286,7 +286,7 @@ class Properties(Resource):
                                     FROM (
                                         SELECT -- *,
                                             maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                         CASE
                                             WHEN quote_status = "REQUESTED" THEN "10"
                                             WHEN quote_status = "REFUSED" THEN "11"
@@ -511,7 +511,7 @@ class Properties(Resource):
                                     FROM (
                                         SELECT -- *,
                                             maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
                                         CASE
                                             WHEN quote_status = "REQUESTED" THEN "10"
                                             WHEN quote_status = "REFUSED" THEN "11"
