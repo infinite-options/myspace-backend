@@ -163,6 +163,7 @@ class BusinessProfile(Resource):
         if payload.get('business_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'business_uid': payload.pop('business_uid')}
+        print(payload)
         with connect() as db:
             response = db.update('businessProfileInfo', key, payload)
         return response
