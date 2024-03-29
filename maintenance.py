@@ -714,7 +714,8 @@ class MaintenanceStatus(Resource):
                                         WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
                                         OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
                                         WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
-                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
+                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID"
+                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IS NULL				THEN "COMPLETED"     
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM (
@@ -785,7 +786,26 @@ class MaintenanceStatus(Resource):
                             """)
 
                 if maintenanceStatus.get('code') == 200:
-                    return mapMaintenanceForPropertyManager(maintenanceStatus)
+                    status_colors = {
+                        'NEW REQUEST': '#A52A2A',
+                        'QUOTES REQUESTED': '#C06A6A',
+                        'QUOTES ACCEPTED': '#D29494',
+                        'SCHEDULED': '#9EAED6',
+                        'COMPLETED': '#778DC5',
+                        'PAID': '#3D5CAC',
+                    }
+
+                    mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                    status_colors.items()}
+
+                    response = maintenanceStatus
+
+                    for record in response['result']:
+                        status = record.get('maintenance_status')
+                        mapped_items[status]['maintenance_items'].append(record)
+
+                    response['result'] = mapped_items
+                    return response
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
@@ -799,7 +819,7 @@ class MaintenanceStatus(Resource):
                             SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
                                         WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
-                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"  	THEN "SUBMITTED"
+                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN" OR quote_status = "WITHDRAW" 	THEN "SUBMITTED"
                                         WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          								THEN "ACCEPTED"
                                         WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"                       								THEN "SCHEDULED"
                                         WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
@@ -831,7 +851,27 @@ class MaintenanceStatus(Resource):
                             """)
 
                 if maintenanceStatus.get('code') == 200:
-                    return mapMaintenanceForMaintenance(maintenanceStatus)
+                    status_colors = {
+                        'REQUESTED': '#DB9687',
+                        'SUBMITTED': '#D4A387',
+                        'ACCEPTED': '#BAAC7A',
+                        'SCHEDULED': '#959A76',
+                        'FINISHED': '#598A96',
+                        'PAID': '#497290',
+                        'ARCHIVE': '#497290',
+                    }
+
+                    mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                    status_colors.items()}
+
+                    response = maintenanceStatus
+
+                    for record in response['result']:
+                        status = record.get('maintenance_status')
+                        mapped_items[status]['maintenance_items'].append(record)
+
+                    response['result'] = mapped_items
+                    return response
 
                 response["MaintenanceStatus"] = maintenanceStatus
                 return response
