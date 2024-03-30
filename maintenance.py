@@ -115,7 +115,12 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT   * -- bill_property_id,  maintenance_property_id,
+                        SELECT   *, -- bill_property_id,  maintenance_property_id,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
                             -- Properties
@@ -141,7 +146,26 @@ class MaintenanceRequests(Resource):
                         """)
 
             if maintenanceRequests.get('code') == 200:
-                return mapMaintenanceForOwner(maintenanceRequests)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceRequests
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["maintenanceRequests"] = maintenanceRequests
             return response
@@ -154,7 +178,12 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT   * -- bill_property_id,  maintenance_property_id,
+                        SELECT   *, -- bill_property_id,  maintenance_property_id,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
                             -- Properties
@@ -180,7 +209,26 @@ class MaintenanceRequests(Resource):
                         """)
 
             if maintenanceRequests.get('code') == 200:
-                return mapMaintenanceForTenant(maintenanceRequests)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceRequests
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["maintenanceRequests"] = maintenanceRequests
             return response
@@ -192,7 +240,12 @@ class MaintenanceRequests(Resource):
                 print("in connect loop")
                 maintenanceRequests = db.execute(""" 
                         -- MAINTENANCE REQUEST BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT   * -- bill_property_id,  maintenance_property_id,
+                        SELECT   *, -- bill_property_id,  maintenance_property_id,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
                             -- Properties
@@ -218,7 +271,26 @@ class MaintenanceRequests(Resource):
                         """)
 
             if maintenanceRequests.get('code') == 200:
-                return mapMaintenanceForProperty(maintenanceRequests)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceRequests
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["maintenanceRequests"] = maintenanceRequests
             return response
@@ -646,7 +718,13 @@ class MaintenanceStatus(Resource):
                 # print("in connect loop")
                 maintenanceStatus = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT * -- bill_property_id,  maintenance_property_id,
+                        SELECT *,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
+                        -- bill_property_id,  maintenance_property_id,
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
@@ -670,7 +748,26 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceForOwner(maintenanceStatus)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceStatus
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
@@ -888,7 +985,12 @@ class MaintenanceStatus(Resource):
                 print("in connect loop")
                 maintenanceStatus = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT * -- bill_property_id,  maintenance_property_id,
+                        SELECT *, -- bill_property_id,  maintenance_property_id,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
@@ -912,7 +1014,26 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceForTenant(maintenanceStatus)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceStatus
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
@@ -924,7 +1045,12 @@ class MaintenanceStatus(Resource):
                 print("in connect loop")
                 maintenanceStatus = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
-                        SELECT * -- bill_property_id,  maintenance_property_id,
+                        SELECT *, -- bill_property_id,  maintenance_property_id,
+                        CASE 
+							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
+                            WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+						END AS maintenance_status
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
@@ -948,7 +1074,26 @@ class MaintenanceStatus(Resource):
                         """)
 
             if maintenanceStatus.get('code') == 200:
-                return mapMaintenanceForProperty(maintenanceStatus)
+                status_colors = {
+                    'NEW REQUEST': '#A52A2A',
+                    'INFO REQUESTED': '#C06A6A',
+                    # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
+                    'PROCESSING': '#3D5CAC',
+                    'SCHEDULED': '#3D5CAC',
+                    'CANCELLED': '#TBD',
+                    'COMPLETED': '#3D5CAC',
+                }
+                mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
+                                status_colors.items()}
+
+                response = maintenanceStatus
+
+                for record in response['result']:
+                    status = record.get('maintenance_status')
+                    mapped_items[status]['maintenance_items'].append(record)
+
+                response['result'] = mapped_items
+                return response
 
             response["MaintenanceStatus"] = maintenanceStatus
             return response
