@@ -811,8 +811,8 @@ class MaintenanceStatus(Resource):
                                         WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
                                         OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
                                         WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
-                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID"
-                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IS NULL				THEN "COMPLETED"     
+                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID"   
+                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IS NULL				THEN "COMPLETED"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM (
@@ -877,6 +877,25 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            LEFT JOIN (
+                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('maintenance_quote_uid', maintenance_quote_uid,
+                                'quote_status', quote_status,
+                                'quote_pm_notes', quote_pm_notes,
+                                'quote_business_id', quote_business_id,
+                                'quote_services_expenses', quote_services_expenses,
+                                'quote_event_type', quote_event_type,
+                                'quote_event_duration', quote_event_duration,
+                                'quote_notes', quote_notes,
+                                'quote_created_date', quote_created_date,
+                                'quote_total_estimate', quote_total_estimate,
+                                'quote_maintenance_images', quote_maintenance_images,
+                                'quote_adjustment_date', quote_adjustment_date,
+                                'quote_earliest_available_date', quote_earliest_available_date,
+                                'quote_earliest_available_time', quote_earliest_available_time
+                                )) AS quote_info
+                                FROM space.maintenanceQuotes
+                                GROUP BY quote_maintenance_request_id) as qi ON quote_maintenance_request_id = maintenance_request_uid
                             WHERE business_uid = \'""" + uid + """\'
                             -- WHERE business_uid = '600-000032'
                             ORDER BY maintenance_request_created_date;
@@ -938,6 +957,25 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            LEFT JOIN (
+                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('maintenance_quote_uid', maintenance_quote_uid,
+                                'quote_status', quote_status,
+                                'quote_pm_notes', quote_pm_notes,
+                                'quote_business_id', quote_business_id,
+                                'quote_services_expenses', quote_services_expenses,
+                                'quote_event_type', quote_event_type,
+                                'quote_event_duration', quote_event_duration,
+                                'quote_notes', quote_notes,
+                                'quote_created_date', quote_created_date,
+                                'quote_total_estimate', quote_total_estimate,
+                                'quote_maintenance_images', quote_maintenance_images,
+                                'quote_adjustment_date', quote_adjustment_date,
+                                'quote_earliest_available_date', quote_earliest_available_date,
+                                'quote_earliest_available_time', quote_earliest_available_time
+                                )) AS quote_info
+                                FROM space.maintenanceQuotes
+                                GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
                             -- WHERE owner_uid = \'""" + uid + """\'
                             -- WHERE business_uid = \'""" + uid + """\'
                             -- WHERE tenant_uid = \'""" + uid + """\'
@@ -1005,6 +1043,25 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            LEFT JOIN (
+                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('maintenance_quote_uid', maintenance_quote_uid,
+                                'quote_status', quote_status,
+                                'quote_pm_notes', quote_pm_notes,
+                                'quote_business_id', quote_business_id,
+                                'quote_services_expenses', quote_services_expenses,
+                                'quote_event_type', quote_event_type,
+                                'quote_event_duration', quote_event_duration,
+                                'quote_notes', quote_notes,
+                                'quote_created_date', quote_created_date,
+                                'quote_total_estimate', quote_total_estimate,
+                                'quote_maintenance_images', quote_maintenance_images,
+                                'quote_adjustment_date', quote_adjustment_date,
+                                'quote_earliest_available_date', quote_earliest_available_date,
+                                'quote_earliest_available_time', quote_earliest_available_time
+                                )) AS quote_info
+                                FROM space.maintenanceQuotes
+                                GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
                         WHERE tenant_uid = \'""" + uid + """\'
@@ -1065,6 +1122,25 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            LEFT JOIN (
+                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('maintenance_quote_uid', maintenance_quote_uid,
+                                'quote_status', quote_status,
+                                'quote_pm_notes', quote_pm_notes,
+                                'quote_business_id', quote_business_id,
+                                'quote_services_expenses', quote_services_expenses,
+                                'quote_event_type', quote_event_type,
+                                'quote_event_duration', quote_event_duration,
+                                'quote_notes', quote_notes,
+                                'quote_created_date', quote_created_date,
+                                'quote_total_estimate', quote_total_estimate,
+                                'quote_maintenance_images', quote_maintenance_images,
+                                'quote_adjustment_date', quote_adjustment_date,
+                                'quote_earliest_available_date', quote_earliest_available_date,
+                                'quote_earliest_available_time', quote_earliest_available_time
+                                )) AS quote_info
+                                FROM space.maintenanceQuotes
+                                GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
                         -- WHERE tenant_uid = \'""" + uid + """\'
