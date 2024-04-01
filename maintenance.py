@@ -979,7 +979,7 @@ class MaintenanceStatus(Resource):
                             -- WHERE owner_uid = \'""" + uid + """\'
                             -- WHERE business_uid = \'""" + uid + """\'
                             -- WHERE tenant_uid = \'""" + uid + """\'
-                            WHERE quote_business_id = '600-000033'
+                            WHERE quote_business_id = \'""" + uid + """\'
                             -- WHERE quote_business_id = "600-000033"
                             -- WHERE maintenance_property_id = \'""" + uid + """\'
                             ORDER BY maintenance_request_created_date;
