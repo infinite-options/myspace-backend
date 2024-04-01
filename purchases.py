@@ -380,7 +380,7 @@ class AddExpense(Resource):
             # SET TRANSACTION DATE TO NOW
             newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
 
-            print(datetime.date.today())
+            # print(datetime.date.today())
 
             response = db.insert('purchases', newRequest)
             response['Purchases_UID'] = newRequestID
