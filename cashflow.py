@@ -424,384 +424,553 @@ class Cashflow(Resource):
 
         today = date.today()
         if year != "TTM":
+            if user_id[:3] == '600':
+                with connect() as db:
+                    businessType = db.execute(""" 
+                                -- CHECK BUSINESS TYPE
+                                SELECT -- *
+                                    business_uid, business_type
+                                FROM space.businessProfileInfo
+                                WHERE business_uid = \'""" + user_id + """\';
+                                """)
 
-            print("In Cashflow year")
-            with connect() as db:
-                print("in connect loop")
-                # REVENUE
-                response_revenue_by_year = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
-                    SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit
-                        ORDER BY property_address ASC, property_unit ASC;
-                    """)
+                        # print(businessType)
+                    print(businessType["result"])
+                    # print(businessType["result"][0]["business_type"])
 
-                # print("Query: ", response_revenue_by_year)
-                response["response_revenue_by_year"] = response_revenue_by_year
+                    # if businessType["result"] == "()":
+                    if len(businessType["result"]) == 0:
+                        print("BUSINESS UID Not found")
+                        response["MaintenanceStatus"] = "BUSINESS UID Not Found"
+                        return response
 
-                response_revenue_by_month = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit, cf_month
+                    elif businessType["result"][0]["business_type"] == "MAINTENANCE":
+                        response["MaintenanceStatus"] = "YOU ENTERED A MAINTENANCE ID, PLEASE ENTER A VALID PM ID"
+                        return response
+
+                    elif businessType["result"][0]["business_type"] == "MANAGEMENT":
+                        ownerl = []
+                        selectQuery = db.execute("""
+                                                SELECT property_owner_id FROM
+                                                space.contracts
+                                                LEFT JOIN space.properties ON contract_property_id = property_uid
+                                                LEFT JOIN space.property_owner ON property_uid = property_id
+                                                WHERE contract_business_id = '600-000003'
+                                                GROUP BY property_owner_id;
+                                                """)
+
+                        # print("Query: ", response_revenue_by_year)
+                        response["owners"] = selectQuery
+                        if len(response["owners"]["result"]) != 0:
+                            for i in range(len(response["owners"]['result'])):
+                                ownerl.append(response["owners"]["result"][i]["property_owner_id"])
+                            print(response)
+                            response = {"response_revenue_by_year": {}, "response_expense_by_year": {}}
+                            print(ownerl)
+                            for j in range(len(ownerl)):
+                                response_revenue_by_year = db.execute("""
+                                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                                    SELECT -- * , 
+                                        cf_year -- , cf_month, pur_due_date
+                                        , pur_cf_type -- , purchase_type
+                                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                                        , property_address, property_unit
+                                    FROM space.pp_details
+                                    WHERE receiver_profile_uid = \'""" + ownerl[j] + """\'
+                                        AND cf_year = \'""" + year + """\'
+                                        AND purchase_status != 'DELETED'
+                                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                                        GROUP BY property_address, property_unit
+                                        ORDER BY property_address ASC, property_unit ASC;
+                                    """)
+
+                                response["response_revenue_by_year"][ownerl[j]] = response_revenue_by_year
+
+                                response_expense_by_year = db.execute("""
+                                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                                    SELECT -- * , 
+                                        cf_year -- , cf_month, pur_due_date
+                                        , pur_cf_type -- , purchase_type
+                                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                                        , property_address, property_unit
+                                    FROM space.pp_details
+                                    WHERE pur_payer = \'""" + ownerl[j] + """\'
+                                        AND cf_year = \'""" + year + """\'
+                                        AND purchase_status != 'DELETED'
+                                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                                        GROUP BY property_address, property_unit
+                                        ORDER BY property_address ASC, property_unit ASC;
+                                    """)
+
+                                # print("Query: ", response_expense_by_year)
+                                response["response_expense_by_year"][ownerl[j]] = response_expense_by_year
+
+                            return response
+                        else:
+                            response["Owners"] = "This PM ID HAS NO CONTRACTED OWNERS"
+
+            else:
+                print("In Cashflow year")
+                with connect() as db:
+                    print("in connect loop")
+                    # REVENUE
+                    response_revenue_by_year = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                        SELECT -- * , 
+                            cf_year -- , cf_month, pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit
+                            ORDER BY property_address ASC, property_unit ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_year)
+                    response["response_revenue_by_year"] = response_revenue_by_year
+
+                    response_revenue_by_month = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit, cf_month
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_month)
+                    response["response_revenue_by_month"] = response_revenue_by_month
+
+                    response_revenue_by_month_by_type = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type, purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit, cf_month,  purchase_type
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_month_by_type)
+                    response["response_revenue_by_month_by_type"] = response_revenue_by_month_by_type
+
+                    response_revenue = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                , space.bills.*
+                        FROM space.pp_details
+                LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_revenue_by_month)
-                response["response_revenue_by_month"] = response_revenue_by_month
+                    # print("Query: ", response_revenue)
+                    response["response_revenue"] = response_revenue
 
-                response_revenue_by_month_by_type = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit, cf_month,  purchase_type
+                    # # EXPENSES
+                    response_expense_by_year = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                        SELECT -- * , 
+                            cf_year -- , cf_month, pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit
+                            ORDER BY property_address ASC, property_unit ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_year)
+                    response["response_expense_by_year"] = response_expense_by_year
+
+                    response_expense_by_month = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit, cf_month
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_month)
+                    response["response_expense_by_month"] = response_expense_by_month
+
+                    response_expense_by_month_by_type = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type, purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit, cf_month,  purchase_type
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_month_by_type)
+                    response["response_expense_by_month_by_type"] = response_expense_by_month_by_type
+
+                    response_expense = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                , space.bills.*
+                        FROM space.pp_details
+                LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_revenue_by_month_by_type)
-                response["response_revenue_by_month_by_type"] = response_revenue_by_month_by_type
+                    # print("Query: ", response_expense)
+                    response["response_expense"] = response_expense
 
-                response_revenue = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-			, space.bills.*
-                    FROM space.pp_details
-		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_revenue)
-                response["response_revenue"] = response_revenue
-
-                # # EXPENSES
-                response_expense_by_year = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
-                    SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit
-                        ORDER BY property_address ASC, property_unit ASC;
-                    """)
-
-                # print("Query: ", response_expense_by_year)
-                response["response_expense_by_year"] = response_expense_by_year
-
-                response_expense_by_month = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit, cf_month
+                    # OTHER
+                    response_other = db.execute("""
+                        -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND cf_year = \'""" + year + """\'
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_expense_by_month)
-                response["response_expense_by_month"] = response_expense_by_month
+                    # print("Query: ", response_other)
+                    response["response_other"] = response_other
 
-                response_expense_by_month_by_type = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit, cf_month,  purchase_type
-                        ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_expense_by_month_by_type)
-                response["response_expense_by_month_by_type"] = response_expense_by_month_by_type
-
-                response_expense = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-			, space.bills.*
-                    FROM space.pp_details
-		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_expense)
-                response["response_expense"] = response_expense
-
-                # OTHER
-                response_other = db.execute("""
-                    -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND cf_year = \'""" + year + """\'
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_other)
-                response["response_other"] = response_other
-
-                # print(response)
-                return response
+                    # print(response)
+                    return response
 
         else:
-            print("In Cashflow TTM")
-            with connect() as db:
-                print("in connect loop")
-                # REVENUE
-                response_revenue_by_year = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
-                    SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit
-                        ORDER BY property_address ASC, property_unit ASC;
-                    """)
+            if user_id[:3] == '600':
+                with connect() as db:
+                    businessType = db.execute(""" 
+                                -- CHECK BUSINESS TYPE
+                                SELECT -- *
+                                    business_uid, business_type
+                                FROM space.businessProfileInfo
+                                WHERE business_uid = \'""" + user_id + """\';
+                                """)
 
-                # print("Query: ", response_revenue_by_year)
-                response["response_revenue_by_year"] = response_revenue_by_year
+                    # print(businessType)
+                    print(businessType["result"])
+                    # print(businessType["result"][0]["business_type"])
 
-                # print("In Cashflow TTM 1")
+                    # if businessType["result"] == "()":
+                    if len(businessType["result"]) == 0:
+                        print("BUSINESS UID Not found")
+                        response["MaintenanceStatus"] = "BUSINESS UID Not Found"
+                        return response
 
-                response_revenue_by_month = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit, cf_month, cf_year
+                    elif businessType["result"][0]["business_type"] == "MAINTENANCE":
+                        response["MaintenanceStatus"] = "YOU ENTERED A MAINTENANCE ID, PLEASE ENTER A VALID PM ID"
+                        return response
+
+                    elif businessType["result"][0]["business_type"] == "MANAGEMENT":
+                        ownerl = []
+                        selectQuery = db.execute("""
+                                                SELECT property_owner_id FROM
+                                                space.contracts
+                                                LEFT JOIN space.properties ON contract_property_id = property_uid
+                                                LEFT JOIN space.property_owner ON property_uid = property_id
+                                                WHERE contract_business_id = '600-000003'
+                                                GROUP BY property_owner_id;
+                                                """)
+
+                        # print("Query: ", response_revenue_by_year)
+                        response["owners"] = selectQuery
+                        if len(response["owners"]["result"]) != 0:
+                            for i in range(len(response["owners"]['result'])):
+                                ownerl.append(response["owners"]["result"][i]["property_owner_id"])
+                            print(response)
+                            response = {"response_revenue_by_year": {}, "response_expense_by_year": {}}
+                            print(ownerl)
+                            for j in range(len(ownerl)):
+                                response_revenue_by_year = db.execute("""                        
+                                SELECT -- * , 
+                                    cf_year -- , cf_month, pur_due_date
+                                    , pur_cf_type -- , purchase_type
+                                    , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                                    , property_address, property_unit
+                                FROM space.pp_details
+                                WHERE receiver_profile_uid = \'""" + ownerl[j] + """\'
+                                    AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                                    AND purchase_status != 'DELETED'
+                                    AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                                    GROUP BY property_address, property_unit
+                                    ORDER BY property_address ASC, property_unit ASC;
+                                    """)
+
+                                response["response_revenue_by_year"][ownerl[j]] = response_revenue_by_year
+
+                                response_expense_by_year = db.execute("""
+                                SELECT -- * , 
+                                    cf_year -- , cf_month, pur_due_date
+                                    , pur_cf_type -- , purchase_type
+                                    , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                                    , property_address, property_unit
+                                FROM space.pp_details
+                                WHERE pur_payer = \'""" + ownerl[j] + """\'
+                                    AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                                    AND purchase_status != 'DELETED'
+                                    AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                                    GROUP BY property_address, property_unit
+                                    ORDER BY property_address ASC, property_unit ASC;
+                                    """)
+
+                                # print("Query: ", response_expense_by_year)
+                                response["response_expense_by_year"][ownerl[j]] = response_expense_by_year
+
+                            return response
+                        else:
+                            response["Owners"] = "This PM ID HAS NO CONTRACTED OWNERS"
+            else:
+                print("In Cashflow TTM")
+                with connect() as db:
+                    print("in connect loop")
+                    # REVENUE
+                    response_revenue_by_year = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                        SELECT -- * , 
+                            cf_year -- , cf_month, pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit
+                            ORDER BY property_address ASC, property_unit ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_year)
+                    response["response_revenue_by_year"] = response_revenue_by_year
+
+                    # print("In Cashflow TTM 1")
+
+                    response_revenue_by_month = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit, cf_month, cf_year
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_month)
+                    response["response_revenue_by_month"] = response_revenue_by_month
+
+                    # print("In Cashflow TTM 2")
+
+                    response_revenue_by_month_by_type = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type, purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            GROUP BY property_address, property_unit, cf_month, cf_year, purchase_type
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_revenue_by_month_by_type)
+                    response["response_revenue_by_month_by_type"] = response_revenue_by_month_by_type
+
+                    # print("In Cashflow TTM 3")
+
+                    response_revenue = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                , space.bills.*
+                        FROM space.pp_details
+                LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_revenue_by_month)
-                response["response_revenue_by_month"] = response_revenue_by_month
+                    # print("Query: ", response_revenue)
+                    response["response_revenue"] = response_revenue
 
-                # print("In Cashflow TTM 2")
+                    # print("In Cashflow TTM 4")
 
-                response_revenue_by_month_by_type = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                        GROUP BY property_address, property_unit, cf_month, cf_year, purchase_type
+                    # # EXPENSES
+                    response_expense_by_year = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
+                        SELECT -- * , 
+                            cf_year -- , cf_month, pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit
+                            ORDER BY property_address ASC, property_unit ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_year)
+                    response["response_expense_by_year"] = response_expense_by_year
+
+                    # print("In Cashflow TTM 5")
+
+                    response_expense_by_month = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type -- , purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit, cf_month
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_month)
+                    response["response_expense_by_month"] = response_expense_by_month
+
+                    # print("In Cashflow TTM 6")
+
+                    response_expense_by_month_by_type = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
+                        SELECT -- * , 
+                            cf_year, cf_month -- , pur_due_date
+                            , pur_cf_type, purchase_type
+                            , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                            GROUP BY property_address, property_unit, cf_month,  purchase_type
+                            ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
+                        """)
+
+                    # print("Query: ", response_expense_by_month_by_type)
+                    response["response_expense_by_month_by_type"] = response_expense_by_month_by_type
+
+                    # print("In Cashflow TTM 7")
+
+                    response_expense = db.execute("""
+                        -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                , space.bills.*
+                        FROM space.pp_details
+                LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+                        WHERE pur_payer = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_revenue_by_month_by_type)
-                response["response_revenue_by_month_by_type"] = response_revenue_by_month_by_type
+                    # print("Query: ", response_expense)
+                    response["response_expense"] = response_expense
 
-                # print("In Cashflow TTM 3")
+                    # print("In Cashflow TTM 8")
 
-                response_revenue = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-			, space.bills.*
-                    FROM space.pp_details
-		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_revenue)
-                response["response_revenue"] = response_revenue
-
-                # print("In Cashflow TTM 4")
-
-                # # EXPENSES
-                response_expense_by_year = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
-                    SELECT -- * , 
-                        cf_year -- , cf_month, pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit
-                        ORDER BY property_address ASC, property_unit ASC;
-                    """)
-
-                # print("Query: ", response_expense_by_year)
-                response["response_expense_by_year"] = response_expense_by_year
-
-                # print("In Cashflow TTM 5")
-
-                response_expense_by_month = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type -- , purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit, cf_month
+                    # OTHER
+                    response_other = db.execute("""
+                        -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
+                        SELECT -- * , 
+                            purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
+                            , pur_cf_type, purchase_type
+                            , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
+                            , property_address, property_unit
+                        FROM space.pp_details
+                        WHERE receiver_profile_uid = \'""" + user_id + """\'
+                            AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                            AND purchase_status != 'DELETED'
+                            AND (pur_cf_type != 'expense' AND pur_cf_type != 'revenue' AND  pur_cf_type != 'EXPENSE' AND pur_cf_type != 'REVENUE')
                         ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
+                        """)
 
-                # print("Query: ", response_expense_by_month)
-                response["response_expense_by_month"] = response_expense_by_month
+                    # print("Query: ", response_other)
+                    response["response_other"] = response_other
 
-                # print("In Cashflow TTM 6")
+                    return response
 
-                response_expense_by_month_by_type = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
-                    SELECT -- * , 
-                        cf_year, cf_month -- , pur_due_date
-                        , pur_cf_type, purchase_type
-                        , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                        GROUP BY property_address, property_unit, cf_month,  purchase_type
-                        ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_expense_by_month_by_type)
-                response["response_expense_by_month_by_type"] = response_expense_by_month_by_type
-
-                # print("In Cashflow TTM 7")
-
-                response_expense = db.execute("""
-                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-			, space.bills.*
-                    FROM space.pp_details
-		    LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
-                    WHERE pur_payer = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_expense)
-                response["response_expense"] = response_expense
-
-                # print("In Cashflow TTM 8")
-
-                # OTHER
-                response_other = db.execute("""
-                    -- ALL OTHER TRANSACTIONS AFFECTING A PARTICULAR OWNER
-                    SELECT -- * , 
-                        purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
-                        , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
-                        , property_address, property_unit
-                    FROM space.pp_details
-                    WHERE receiver_profile_uid = \'""" + user_id + """\'
-                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                        AND purchase_status != 'DELETED'
-                        AND (pur_cf_type != 'expense' AND pur_cf_type != 'revenue' AND  pur_cf_type != 'EXPENSE' AND pur_cf_type != 'REVENUE')
-                    ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
-                    """)
-
-                # print("Query: ", response_other)
-                response["response_other"] = response_other
-
-                return response
 
 class HappinessMatrix(Resource):
     def get(self, user_id):
