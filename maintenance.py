@@ -734,7 +734,7 @@ class MaintenanceStatus(Resource):
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                        LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
+                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
@@ -871,7 +871,7 @@ class MaintenanceStatus(Resource):
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = quotes.maintenance_quote_uid
-                            LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
+                            LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
@@ -952,7 +952,7 @@ class MaintenanceStatus(Resource):
                                 FROM space.bills
                                 GROUP BY bill_maintenance_quote_id
                                 ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                            LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
+                            LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
@@ -1038,7 +1038,7 @@ class MaintenanceStatus(Resource):
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                        LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
+                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
@@ -1117,7 +1117,7 @@ class MaintenanceStatus(Resource):
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                        LEFT JOIN space.pp_status ON pur_bill_id = bill_uid AND pur_property_id = maintenance_property_id
+                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                         LEFT JOIN space.o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                         LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id

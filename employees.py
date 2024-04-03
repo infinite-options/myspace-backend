@@ -15,3 +15,28 @@ class Employee(Resource):
             response = db.insert('employees', employee)
             response["employee_uid"] = employee["employee_uid"]
         return response
+
+    def get(self, user_id):
+        response = {}
+        with connect() as db:
+            empQuery = db.execute("""
+                                    SELECT * FROM space.employees WHERE 
+                                    employee_uid = \'""" + user_id + """\'
+            """)
+
+            response["employee"] = empQuery
+
+            return response
+
+class EmployeeVerification(Resource):
+    def post(self):
+        response = {}
+
+        payload = request.get_json()
+        if payload.get('employee_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'employee_uid': payload.pop('employee_uid')}
+        with connect() as db:
+            response["employee_update"] = db.update('employees',key,payload)
+
+        return response
