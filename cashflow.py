@@ -455,55 +455,89 @@ class Cashflow(Resource):
                                                 space.contracts
                                                 LEFT JOIN space.properties ON contract_property_id = property_uid
                                                 LEFT JOIN space.property_owner ON property_uid = property_id
-                                                WHERE contract_business_id = '600-000003'
+                                                WHERE contract_business_id = \'""" + user_id + """\'
                                                 GROUP BY property_owner_id;
                                                 """)
 
                         # print("Query: ", response_revenue_by_year)
                         response["owners"] = selectQuery
+                        print(response)
                         if len(response["owners"]["result"]) != 0:
                             for i in range(len(response["owners"]['result'])):
                                 ownerl.append(response["owners"]["result"][i]["property_owner_id"])
                             print(response)
-                            response = {"response_revenue_by_year": {}, "response_expense_by_year": {}}
-                            print(ownerl)
-                            for j in range(len(ownerl)):
+                            response = {}
+                            ownerl = [value for value in ownerl if value is not None]
+                            for owner in ownerl:
+                                response[owner] = {}  # Initialize response dictionary for each owner
+
+                                # Query for revenue by year
                                 response_revenue_by_year = db.execute("""
-                                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                                     SELECT -- * , 
                                         cf_year -- , cf_month, pur_due_date
                                         , pur_cf_type -- , purchase_type
                                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                        , property_address, property_unit
+                                        , property_address, property_unit, pur_property_id
                                     FROM space.pp_details
-                                    WHERE receiver_profile_uid = \'""" + ownerl[j] + """\'
+                                    WHERE receiver_profile_uid = \'""" + owner + """\'
                                         AND cf_year = \'""" + year + """\'
                                         AND purchase_status != 'DELETED'
                                         AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                                         GROUP BY property_address, property_unit
                                         ORDER BY property_address ASC, property_unit ASC;
-                                    """)
+                                """)
 
-                                response["response_revenue_by_year"][ownerl[j]] = response_revenue_by_year
+                                for row in response_revenue_by_year["result"]:
+                                    property_id = row["pur_property_id"]
+                                    response[owner][property_id] = {
+                                        "revenue_by_year": {
+                                            "cf_year": row["cf_year"],
+                                            "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                            "sum(total_paid)": row["sum(total_paid)"],
+                                            "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                            "property_address": row["property_address"],
+                                            "property_unit": row["property_unit"]
+                                        }
+                                    }
 
+                                # Query for expense by year
                                 response_expense_by_year = db.execute("""
-                                    -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY YEAR
                                     SELECT -- * , 
                                         cf_year -- , cf_month, pur_due_date
                                         , pur_cf_type -- , purchase_type
                                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                        , property_address, property_unit
+                                        , property_address, property_unit, pur_property_id
                                     FROM space.pp_details
-                                    WHERE pur_payer = \'""" + ownerl[j] + """\'
+                                    WHERE pur_payer = \'""" + owner + """\'
                                         AND cf_year = \'""" + year + """\'
                                         AND purchase_status != 'DELETED'
                                         AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                                         GROUP BY property_address, property_unit
                                         ORDER BY property_address ASC, property_unit ASC;
-                                    """)
+                                """)
 
-                                # print("Query: ", response_expense_by_year)
-                                response["response_expense_by_year"][ownerl[j]] = response_expense_by_year
+                                for row in response_expense_by_year["result"]:
+                                    property_id = row["pur_property_id"]
+                                    if property_id in response[owner]:
+                                        response[owner][property_id]["expense_by_year"] = {
+                                            "cf_year": row["cf_year"],
+                                            "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                            "sum(total_paid)": row["sum(total_paid)"],
+                                            "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                            "property_address": row["property_address"],
+                                            "property_unit": row["property_unit"]
+                                        }
+                                    else:
+                                        response[owner][property_id] = {
+                                            "expense_by_year": {
+                                                "cf_year": row["cf_year"],
+                                                "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                                "sum(total_paid)": row["sum(total_paid)"],
+                                                "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                                "property_address": row["property_address"],
+                                                "property_unit": row["property_unit"]
+                                            }
+                                        }
 
                             return response
                         else:
@@ -723,7 +757,7 @@ class Cashflow(Resource):
                                                 space.contracts
                                                 LEFT JOIN space.properties ON contract_property_id = property_uid
                                                 LEFT JOIN space.property_owner ON property_uid = property_id
-                                                WHERE contract_business_id = '600-000003'
+                                                WHERE contract_business_id = \'""" + user_id + """\'
                                                 GROUP BY property_owner_id;
                                                 """)
 
@@ -733,43 +767,84 @@ class Cashflow(Resource):
                             for i in range(len(response["owners"]['result'])):
                                 ownerl.append(response["owners"]["result"][i]["property_owner_id"])
                             print(response)
-                            response = {"response_revenue_by_year": {}, "response_expense_by_year": {}}
-                            print(ownerl)
-                            for j in range(len(ownerl)):
-                                response_revenue_by_year = db.execute("""                        
-                                SELECT -- * , 
-                                    cf_year -- , cf_month, pur_due_date
-                                    , pur_cf_type -- , purchase_type
-                                    , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                    , property_address, property_unit
-                                FROM space.pp_details
-                                WHERE receiver_profile_uid = \'""" + ownerl[j] + """\'
-                                    AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                                    AND purchase_status != 'DELETED'
-                                    AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
+                            response = {}
+                            ownerl = [value for value in ownerl if value is not None]
+                            for owner in ownerl:
+                                response[owner] = {}  # Initialize response dictionary for each owner
+
+                                # Query for revenue by year
+                                response_revenue_by_year = db.execute("""
+                                    SELECT 
+                                        cf_year,
+                                        sum(pur_amount_due),
+                                        sum(total_paid),
+                                        sum(amt_remaining),
+                                        property_address,
+                                        property_unit,
+                                        pur_property_id
+                                    FROM space.pp_details
+                                    WHERE receiver_profile_uid = '""" + owner + """'
+                                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                                        AND purchase_status != 'DELETED'
+                                        AND (pur_cf_type = 'REVENUE' OR pur_cf_type = 'revenue')
                                     GROUP BY property_address, property_unit
-                                    ORDER BY property_address ASC, property_unit ASC;
-                                    """)
+                                    ORDER BY property_address ASC, property_unit ASC
+                                """)
 
-                                response["response_revenue_by_year"][ownerl[j]] = response_revenue_by_year
+                                for row in response_revenue_by_year["result"]:
+                                    property_id = row["pur_property_id"]
+                                    response[owner][property_id] = {
+                                        "revenue_by_year": {
+                                            "cf_year": row["cf_year"],
+                                            "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                            "sum(total_paid)": row["sum(total_paid)"],
+                                            "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                            "property_address": row["property_address"],
+                                            "property_unit": row["property_unit"]
+                                        }
+                                    }
 
+                                # Query for expense by year
                                 response_expense_by_year = db.execute("""
-                                SELECT -- * , 
-                                    cf_year -- , cf_month, pur_due_date
-                                    , pur_cf_type -- , purchase_type
-                                    , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                    , property_address, property_unit
-                                FROM space.pp_details
-                                WHERE pur_payer = \'""" + ownerl[j] + """\'
-                                    AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
-                                    AND purchase_status != 'DELETED'
-                                    AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
+                                    SELECT 
+                                        cf_year,
+                                        sum(pur_amount_due),
+                                        sum(total_paid),
+                                        sum(amt_remaining),
+                                        property_address,
+                                        property_unit,
+                                        pur_property_id
+                                    FROM space.pp_details
+                                    WHERE pur_payer = '""" + owner + """'
+                                        AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
+                                        AND purchase_status != 'DELETED'
+                                        AND (pur_cf_type = 'EXPENSE' OR pur_cf_type = 'expense')
                                     GROUP BY property_address, property_unit
-                                    ORDER BY property_address ASC, property_unit ASC;
-                                    """)
+                                    ORDER BY property_address ASC, property_unit ASC
+                                """)
 
-                                # print("Query: ", response_expense_by_year)
-                                response["response_expense_by_year"][ownerl[j]] = response_expense_by_year
+                                for row in response_expense_by_year["result"]:
+                                    property_id = row["pur_property_id"]
+                                    if property_id in response[owner]:
+                                        response[owner][property_id]["expense_by_year"] = {
+                                            "cf_year": row["cf_year"],
+                                            "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                            "sum(total_paid)": row["sum(total_paid)"],
+                                            "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                            "property_address": row["property_address"],
+                                            "property_unit": row["property_unit"]
+                                        }
+                                    else:
+                                        response[owner][property_id] = {
+                                            "expense_by_year": {
+                                                "cf_year": row["cf_year"],
+                                                "sum(pur_amount_due)": row["sum(pur_amount_due)"],
+                                                "sum(total_paid)": row["sum(total_paid)"],
+                                                "sum(amt_remaining)": row["sum(amt_remaining)"],
+                                                "property_address": row["property_address"],
+                                                "property_unit": row["property_unit"]
+                                            }
+                                        }
 
                             return response
                         else:
