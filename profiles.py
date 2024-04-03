@@ -195,6 +195,9 @@ class Profile(Resource):
 
             elif user_id.startswith("350"):
                     response = db.select('tenantProfileInfo', {"tenant_uid": user_id})
+
+            elif user_id.startswith("120"):
+                    response = db.select('employees', {"employee_uid": user_id})
             else:
                 raise BadRequest("Request failed, no UID in payload.")
 
