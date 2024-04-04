@@ -144,10 +144,10 @@ class LeaseDetails(Resource):
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
                         FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
+                        lease_end, lease_end_notice_period, lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
                         move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
                         lease_docuSign, lease_move_in_date 
-                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED" OR lease_status = "PROCESSING")
+                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE-M2M" OR lease_status = "ENDED" OR lease_status = "PROCESSING")
                         AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
                         ) AS l
                         LEFT JOIN (
@@ -304,7 +304,7 @@ class LeaseApplication(Resource):
                     ApplicationStatus = "New"
 
                     response = {}
-                    fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
+                    fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period" "lease_status", "lease_assigned_contacts",
                               "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
                               "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                               "lease_rent_late_by",
@@ -389,7 +389,7 @@ class LeaseApplication(Resource):
         # print("data",data)
         # if data.get('lease_uid') is None:
         #     raise BadRequest("Request failed, no UID in payload.")
-        lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_status", "lease_assigned_contacts",
+        lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
                         "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
                         "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
                         "lease_rent_perDay_late_fee", "lease_actual_rent", "lease_adults", "lease_children",
@@ -411,8 +411,8 @@ class LeaseApplication(Resource):
                     lease_from_db = query.get('result')[0]
                     lease_docs = lease_from_db.get("lease_documents")
                     lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
-                    print('type: ', type(lease_docs))
-                    print(f'previously saved documents: {lease_docs}')
+                    # print('type: ', type(lease_docs))
+                    # print(f'previously saved documents: {lease_docs}')
                 except IndexError as e:
                     print(e)
                     raise BadRequest("Request failed, no such CONTRACT in the database.")
