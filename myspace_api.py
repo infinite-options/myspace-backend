@@ -26,7 +26,7 @@ from properties import Properties, PropertiesByOwner, PropertiesByManager, Prope
 from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
 from cashflow import CashflowByOwner
 from cashflow import Cashflow, CashflowSimplified, HappinessMatrix
-from employees import Employee
+from employees import Employee, EmployeeVerification
 from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
 from documents import OwnerDocuments, TenantDocuments, QuoteDocuments
 from documents import Documents
@@ -656,8 +656,8 @@ api.add_resource(BusinessProfileByUid,
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
 api.add_resource(BusinessProfile, '/businessProfile')
-api.add_resource(Employee, '/employee')
-
+api.add_resource(Employee, '/employee','/employee/<string:user_id>')
+api.add_resource(EmployeeVerification, '/employeeVerification')
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
