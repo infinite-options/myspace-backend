@@ -374,17 +374,39 @@ class MaintenanceRequests(Resource):
     def put(self):
         print('in maintenanceRequests PUT')
         response = {}
+        response1 = {}
         payload = request.form
         # print(payload)
         if payload.get('maintenance_request_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_request_uid': payload['maintenance_request_uid']}
+        keyr = {'maintenance_request_uid': payload['maintenance_request_uid']}
         # print("Key: ", key)
         maintenanceRequests = {k: v for k, v in payload.items()}
         # print(maintenanceRequests)
-        with connect() as db:
-            print(key, payload)
-            response = db.update('maintenanceRequests', key, maintenanceRequests)
+        if payload.get('maintenance_request_status') == "COMPLETED":
+            id = payload.get('maintenance_request_uid')
+            with connect() as db:
+                quoteQuery = db.execute("""
+                                        SELECT maintenance_quote_uid, quote_status FROM space.maintenanceQuotes
+                                        WHERE quote_maintenance_request_id = \'""" + id + """\'
+                """)
+                response1 = quoteQuery
+                for quote in response1["result"]:
+                    if quote["quote_status"] == "SENT":
+                        quote["quote_status"] = "NOT ACCEPTED"
+                    elif quote["quote_status"] == "REQUESTED":
+                        quote["quote_status"] = "WITHDRAWN"
+                    keyq = {'maintenance_quote_uid': quote['maintenance_quote_uid']}
+                    maintenanceQuotes = {k: v for k, v in quote.items()}
+
+                    with connect() as db:
+                        response["quotes_update"] = db.update('maintenanceQuotes', keyq, maintenanceQuotes)
+                with connect() as db:
+                    response["request_update"] = db.update('maintenanceRequests', keyr, maintenanceRequests)
+        else:
+            with connect() as db:
+                print(keyr, payload)
+                response = db.update('maintenanceRequests', keyr, maintenanceRequests)
         return response
 
 
@@ -804,15 +826,14 @@ class MaintenanceStatus(Resource):
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
                                 -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                                , CASE
-                                        WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
+                                , CASE  
+                                        WHEN maintenance_request_status = 'COMPLETED' AND (quote_status IN("NOT ACCEPTED","WITHDRAWN") OR quote_status IS NULL)				THEN "COMPLETED"
+                                        WHEN maintenance_request_status IN ("NEW" ,"INFO")       THEN "NEW REQUEST"
                                         WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                        WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
-                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                        OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
-                                        WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
+                                        WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"           THEN "COMPLETED"
+                                        WHEN quote_status IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")                         THEN "QUOTES REQUESTED"
+                                        WHEN quote_status IN ("ACCEPTED" , "SCHEDULE")                          THEN "QUOTES ACCEPTED"
                                         WHEN quote_status = "COMPLETED"                                                      THEN "PAID"   
-                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IS NULL				THEN "COMPLETED"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM (
@@ -935,12 +956,12 @@ class MaintenanceStatus(Resource):
                             SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
                                         WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
-                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN" OR quote_status = "WITHDRAW" 	THEN "SUBMITTED"
-                                        WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          								THEN "ACCEPTED"
-                                        WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"                       								THEN "SCHEDULED"
+                                        WHEN quote_status IN ("SENT", "REFUSED" ,"REJECTED" ,"WITHDRAWN" ,"WITHDRAW") 	                                    THEN "SUBMITTED"
+                                        WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
+                                        WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
                                         WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
                                         WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN quote_status = "CANCELLED" OR quote_status = "ARCHIVE"                       									THEN "ARCHIVE"
+                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED")                       									THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM space.m_details
