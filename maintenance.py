@@ -374,17 +374,39 @@ class MaintenanceRequests(Resource):
     def put(self):
         print('in maintenanceRequests PUT')
         response = {}
+        response1 = {}
         payload = request.form
         # print(payload)
         if payload.get('maintenance_request_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_request_uid': payload['maintenance_request_uid']}
+        keyr = {'maintenance_request_uid': payload['maintenance_request_uid']}
         # print("Key: ", key)
         maintenanceRequests = {k: v for k, v in payload.items()}
         # print(maintenanceRequests)
-        with connect() as db:
-            print(key, payload)
-            response = db.update('maintenanceRequests', key, maintenanceRequests)
+        if payload.get('maintenance_request_status') == "COMPLETED":
+            id = payload.get('maintenance_request_uid')
+            with connect() as db:
+                quoteQuery = db.execute("""
+                                        SELECT maintenance_quote_uid, quote_status FROM space.maintenanceQuotes
+                                        WHERE quote_maintenance_request_id = \'""" + id + """\'
+                """)
+                response1 = quoteQuery
+                for quote in response1["result"]:
+                    if quote["quote_status"] == "SENT":
+                        quote["quote_status"] = "NOT ACCEPTED"
+                    elif quote["quote_status"] == "REQUESTED":
+                        quote["quote_status"] = "WITHDRAWN"
+                    keyq = {'maintenance_quote_uid': quote['maintenance_quote_uid']}
+                    maintenanceQuotes = {k: v for k, v in quote.items()}
+
+                    with connect() as db:
+                        response["quotes_update"] = db.update('maintenanceQuotes', keyq, maintenanceQuotes)
+                with connect() as db:
+                    response["request_update"] = db.update('maintenanceRequests', keyr, maintenanceRequests)
+        else:
+            with connect() as db:
+                print(keyr, payload)
+                response = db.update('maintenanceRequests', keyr, maintenanceRequests)
         return response
 
 
@@ -805,7 +827,7 @@ class MaintenanceStatus(Resource):
                             SELECT *
                                 -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
                                 , CASE  
-                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IN("NOT ACCEPTED","WITHDRAWN",NULL)				THEN "COMPLETED"
+                                        WHEN maintenance_request_status = 'COMPLETED' AND (quote_status IN("NOT ACCEPTED","WITHDRAWN") OR quote_status IS NULL)				THEN "COMPLETED"
                                         WHEN maintenance_request_status IN ("NEW" ,"INFO")       THEN "NEW REQUEST"
                                         WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
                                         WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"           THEN "COMPLETED"
@@ -939,7 +961,7 @@ class MaintenanceStatus(Resource):
                                         WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
                                         WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
                                         WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE")                       									THEN "ARCHIVE"
+                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED")                       									THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM space.m_details
