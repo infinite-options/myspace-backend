@@ -119,7 +119,7 @@ class MaintenanceRequests(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
@@ -182,7 +182,7 @@ class MaintenanceRequests(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
@@ -244,7 +244,7 @@ class MaintenanceRequests(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                             -- maintenance_request_status, quote_status
                             -- maintenanceRequests.*
@@ -722,7 +722,7 @@ class MaintenanceStatus(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                         -- bill_property_id,  maintenance_property_id,
                         FROM space.m_details
@@ -1027,7 +1027,7 @@ class MaintenanceStatus(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
@@ -1106,7 +1106,7 @@ class MaintenanceStatus(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
-                            WHEN maintenance_request_status = "PROCESSING" or "SCHEDULED" or "CANCELLED" or "COMPLETED"	THEN maintenance_request_status
+                            WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                         FROM space.m_details
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id

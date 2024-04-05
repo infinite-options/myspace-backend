@@ -477,7 +477,9 @@ class Cashflow(Resource):
                                         cf_year -- , cf_month, pur_due_date
                                         , pur_cf_type -- , purchase_type
                                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                        , property_address, property_unit, pur_property_id
+                                        , property_address, property_unit, pur_property_id,
+                                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+, cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow
                                     FROM space.pp_details
                                     WHERE receiver_profile_uid = \'""" + owner + """\'
                                         AND cf_year = \'""" + year + """\'
@@ -496,7 +498,10 @@ class Cashflow(Resource):
                                             "sum(total_paid)": row["sum(total_paid)"],
                                             "sum(amt_remaining)": row["sum(amt_remaining)"],
                                             "property_address": row["property_address"],
-                                            "property_unit": row["property_unit"]
+                                            "property_unit": row["property_unit"],
+                                            "cashflow": row["cashflow"],
+                                            "expected_cashflow": row["expected_cashflow"],
+                                            "delta_cashflow_perc": row["delta_cashflow_perc"]
                                         }
                                     }
 
@@ -506,7 +511,9 @@ class Cashflow(Resource):
                                         cf_year -- , cf_month, pur_due_date
                                         , pur_cf_type -- , purchase_type
                                         , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
-                                        , property_address, property_unit, pur_property_id
+                                        , property_address, property_unit, pur_property_id,
+                                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+, cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow
                                     FROM space.pp_details
                                     WHERE pur_payer = \'""" + owner + """\'
                                         AND cf_year = \'""" + year + """\'
@@ -525,7 +532,10 @@ class Cashflow(Resource):
                                             "sum(total_paid)": row["sum(total_paid)"],
                                             "sum(amt_remaining)": row["sum(amt_remaining)"],
                                             "property_address": row["property_address"],
-                                            "property_unit": row["property_unit"]
+                                            "property_unit": row["property_unit"],
+                                            "cashflow": row["cashflow"],
+                                            "expected_cashflow": row["expected_cashflow"],
+                                            "delta_cashflow_perc": row["delta_cashflow_perc"]
                                         }
                                     else:
                                         response[owner][property_id] = {
@@ -535,7 +545,10 @@ class Cashflow(Resource):
                                                 "sum(total_paid)": row["sum(total_paid)"],
                                                 "sum(amt_remaining)": row["sum(amt_remaining)"],
                                                 "property_address": row["property_address"],
-                                                "property_unit": row["property_unit"]
+                                                "property_unit": row["property_unit"],
+                                                "cashflow": row["cashflow"],
+                                                "expected_cashflow": row["expected_cashflow"],
+                                                "delta_cashflow_perc": row["delta_cashflow_perc"]
                                             }
                                         }
 
@@ -781,7 +794,9 @@ class Cashflow(Resource):
                                         sum(amt_remaining),
                                         property_address,
                                         property_unit,
-                                        pur_property_id
+                                        pur_property_id,
+                                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+, cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow
                                     FROM space.pp_details
                                     WHERE receiver_profile_uid = '""" + owner + """'
                                         AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -800,7 +815,10 @@ class Cashflow(Resource):
                                             "sum(total_paid)": row["sum(total_paid)"],
                                             "sum(amt_remaining)": row["sum(amt_remaining)"],
                                             "property_address": row["property_address"],
-                                            "property_unit": row["property_unit"]
+                                            "property_unit": row["property_unit"],
+                                            "cashflow": row["cashflow"],
+                                            "expected_cashflow": row["expected_cashflow"],
+                                            "delta_cashflow_perc": row["delta_cashflow_perc"]
                                         }
                                     }
 
@@ -813,7 +831,9 @@ class Cashflow(Resource):
                                         sum(amt_remaining),
                                         property_address,
                                         property_unit,
-                                        pur_property_id
+                                        pur_property_id,
+                                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
+, cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow
                                     FROM space.pp_details
                                     WHERE pur_payer = '""" + owner + """'
                                         AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -832,7 +852,11 @@ class Cashflow(Resource):
                                             "sum(total_paid)": row["sum(total_paid)"],
                                             "sum(amt_remaining)": row["sum(amt_remaining)"],
                                             "property_address": row["property_address"],
-                                            "property_unit": row["property_unit"]
+                                            "property_unit": row["property_unit"],
+                                            "cashflow": row["cashflow"],
+                                            "expected_cashflow": row["expected_cashflow"],
+                                            "delta_cashflow_perc": row["delta_cashflow_perc"]
+
                                         }
                                     else:
                                         response[owner][property_id] = {
@@ -842,7 +866,10 @@ class Cashflow(Resource):
                                                 "sum(total_paid)": row["sum(total_paid)"],
                                                 "sum(amt_remaining)": row["sum(amt_remaining)"],
                                                 "property_address": row["property_address"],
-                                                "property_unit": row["property_unit"]
+                                                "property_unit": row["property_unit"],
+                                                "cashflow": row["cashflow"],
+                                                "expected_cashflow": row["expected_cashflow"],
+                                                "delta_cashflow_perc": row["delta_cashflow_perc"]
                                             }
                                         }
 

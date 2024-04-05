@@ -297,6 +297,29 @@ def test_put_properties():
     data = response.json()
     print(data)
 
+def test_post_makepayments():
+    payload = {
+    "pay_purchase_id": [
+        {
+            "purchase_uid": "400-000001",
+            "pur_amount_due": "30.00"
+        }
+    ],
+    "pay_fee": 4,
+    "pay_total": 34,
+    "payment_notes": "PMTEST",
+    "pay_charge_id": "stripe transaction key",
+    "payment_type": "Credit Card",
+    "payment_verify": "Unverified",
+    "paid_by": "350-000039",
+    "payment_intent": "pi_3OtBBYAdqquNNobL0H1HlLHO",
+    "payment_method": "pm_1OtBBZAdqquNNobLecgTA3Se"
+    }
+
+    response = requests.post(ENDPOINT + "/makePayment", json = payload)
+
+    assert response.status_code == 200
+
 def test_post_properties():
     payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2',
                'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324',
