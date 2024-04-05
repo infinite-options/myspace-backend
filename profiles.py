@@ -188,7 +188,10 @@ class Profile(Resource):
     def get(self, user_id):
         with connect() as db:
             if user_id.startswith("110"):
-                    response = db.select('ownerProfileInfo', {"owner_uid": user_id})
+                    response = db.execute("""
+                                            SELECT * FROM space.ownerProfileInfo 
+                                            WHERE owner_uid = \'""" + user_id + """\' 
+                    """)
 
             elif user_id.startswith("600"):
                     response = db.select('businessProfileInfo', {"business_uid": user_id})
