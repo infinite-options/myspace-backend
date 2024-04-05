@@ -298,27 +298,61 @@ def test_put_properties():
     print(data)
 
 def test_post_makepayments():
+    data = {"pur_property_id":"200-000088","purchase_type":"Insurance","pur_cf_type":"expense","purchase_date":"04-04-2024","pur_due_date":"04-04-2024","pur_amount_due":323232,"purchase_status":"COMPLETED","pur_notes":"This is just a note","pur_description":"hi","pur_receiver":"110-000099","pur_initiator":"110-000099","pur_payer":"350-000068"}
+    response = requests.post(ENDPOINT + "/addExpense", json=data)
+    assert response.status_code == 200
+    with connect() as db:
+        purQuery = db.execute("""
+                        SELECT purchase_uid, pur_payer from space.purchases
+                        WHERE pur_notes = "This is just a note" and pur_description = "hi" and pur_property_id = "200-000088"
+                                        """)
+
+        # print("Query: ", propertiesQuery)
+        response = purQuery
+        purchase_uid = response["result"][0]["purchase_uid"]
+        pur_payer = response["result"][0]["pur_payer"]
+        print(purchase_uid)
     payload = {
     "pay_purchase_id": [
         {
-            "purchase_uid": "400-000001",
+            "purchase_uid":purchase_uid,
             "pur_amount_due": "30.00"
         }
     ],
-    "pay_fee": 4,
+    "pay_fee": 0,
     "pay_total": 34,
     "payment_notes": "PMTEST",
     "pay_charge_id": "stripe transaction key",
     "payment_type": "Credit Card",
     "payment_verify": "Unverified",
-    "paid_by": "350-000039",
+    "paid_by":pur_payer,
     "payment_intent": "pi_3OtBBYAdqquNNobL0H1HlLHO",
     "payment_method": "pm_1OtBBZAdqquNNobLecgTA3Se"
     }
 
     response = requests.post(ENDPOINT + "/makePayment", json = payload)
-
     assert response.status_code == 200
+
+    with connect() as db:
+
+        delQuery = ("""
+                DELETE space.purchases
+                FROM space.purchases
+                WHERE purchase_uid = \'""" + purchase_uid + """\';
+                """)
+
+        response = db.delete(delQuery)
+
+
+        delQuery1 = ("""
+                DELETE space.payments
+                FROM space.payments
+                WHERE pay_purchase_id = \'""" + purchase_uid + """\';
+                """)
+
+        response = db.delete(delQuery1)
+
+
 
 def test_post_properties():
     payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2',

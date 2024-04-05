@@ -804,15 +804,14 @@ class MaintenanceStatus(Resource):
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
                                 -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                                , CASE
-                                        WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
+                                , CASE  
+                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IN("NOT ACCEPTED","WITHDRAWN",NULL)				THEN "COMPLETED"
+                                        WHEN maintenance_request_status IN ("NEW" ,"INFO")       THEN "NEW REQUEST"
                                         WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                        WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
-                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                        OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
-                                        WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
+                                        WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"           THEN "COMPLETED"
+                                        WHEN quote_status IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")                         THEN "QUOTES REQUESTED"
+                                        WHEN quote_status IN ("ACCEPTED" , "SCHEDULE")                          THEN "QUOTES ACCEPTED"
                                         WHEN quote_status = "COMPLETED"                                                      THEN "PAID"   
-                                        WHEN maintenance_request_status = 'COMPLETED' AND quote_status IS NULL				THEN "COMPLETED"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM (
@@ -935,12 +934,12 @@ class MaintenanceStatus(Resource):
                             SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
                                         WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
-                                        WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN" OR quote_status = "WITHDRAW" 	THEN "SUBMITTED"
-                                        WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          								THEN "ACCEPTED"
-                                        WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"                       								THEN "SCHEDULED"
+                                        WHEN quote_status IN ("SENT", "REFUSED" ,"REJECTED" ,"WITHDRAWN" ,"WITHDRAW") 	                                    THEN "SUBMITTED"
+                                        WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
+                                        WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
                                         WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
                                         WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN quote_status = "CANCELLED" OR quote_status = "ARCHIVE"                       									THEN "ARCHIVE"
+                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE")                       									THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM space.m_details
