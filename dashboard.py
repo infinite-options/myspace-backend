@@ -410,6 +410,7 @@ class Dashboard(Resource):
                                     AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
                             ) as r
                             ON pur_property_id = property_id
+                            GROUP BY property_id
                         ) AS rs
                         GROUP BY property_owner_id;
                                 """)
@@ -420,15 +421,34 @@ class Dashboard(Resource):
                     
                     # HAPPINESS MATRIX - CASHFLOW
                     delta_cashflow = db.execute("""
-        
-                        SELECT -- * , 
-                        space.p_details.owner_uid AS owner_id,space.p_details.owner_first_name,space.p_details.owner_last_name,space.p_details.owner_photo_url,
-                        cast(ifnull(-100*ABS((ifnull(sum(pur_amount_due),0)-ifnull(sum(total_paid),0))/ifnull(sum(pur_amount_due),0)), 0) as decimal(10,2)) as delta_cashflow_perc 
-                        , cast(ifnull(sum(total_paid),0) as decimal(10.2)) as cashflow , cast(ifnull(sum(pur_amount_due),0) as decimal(10,2)) as expected_cashflow -- , payment_status
-                        FROM space.p_details
-                        LEFT JOIN space.pp_details ON space.p_details.owner_uid = space.pp_details.pur_payer
-                        WHERE space.p_details.contract_business_id = \'""" + user_id + """\'
-                        GROUP BY space.p_details.owner_uid;
+                                SELECT 
+                                    space.p_details.owner_uid AS owner_id,
+                                    space.p_details.owner_first_name,
+                                    space.p_details.owner_last_name,
+                                    space.p_details.owner_photo_url,
+                                    IFNULL(
+                                        -100 * ABS((
+                                            IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END), 0) -
+                                            IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0)
+                                        ) / IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0)),
+                                        0
+                                    ) AS delta_cashflow_perc,
+                                    IFNULL(
+                                        SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END),
+                                        0
+                                    ) AS cashflow,
+                                    IFNULL(
+                                        SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END),
+                                        0
+                                    ) AS expected_cashflow
+                                FROM 
+                                    space.p_details
+                                LEFT JOIN 
+                                    space.pp_details ON (space.p_details.owner_uid = space.pp_details.pur_payer OR space.p_details.owner_uid = space.pp_details.pur_receiver)
+                                WHERE 
+                                    space.p_details.contract_business_id = \'""" + user_id + """\'
+                                GROUP BY 
+                                    space.p_details.owner_uid;
         	            """)
 
                     response["HappinessMatrix"]["delta_cashflow"] = delta_cashflow
