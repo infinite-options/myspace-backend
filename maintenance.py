@@ -827,13 +827,13 @@ class MaintenanceStatus(Resource):
                             SELECT *
                                 -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
                                 , CASE  
-                                        WHEN maintenance_request_status = 'COMPLETED' AND (quote_status IN("NOT ACCEPTED","WITHDRAWN") OR quote_status IS NULL)				THEN "COMPLETED"
+                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID" 
+                                        WHEN maintenance_request_status = 'COMPLETED'                           			THEN "COMPLETED"
                                         WHEN maintenance_request_status IN ("NEW" ,"INFO")       THEN "NEW REQUEST"
                                         WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
                                         WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"           THEN "COMPLETED"
                                         WHEN quote_status IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")                         THEN "QUOTES REQUESTED"
                                         WHEN quote_status IN ("ACCEPTED" , "SCHEDULE")                          THEN "QUOTES ACCEPTED"
-                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID"   
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM (
@@ -956,12 +956,12 @@ class MaintenanceStatus(Resource):
                             SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
                                         WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
-                                        WHEN quote_status IN ("SENT", "REFUSED" ,"REJECTED" ,"WITHDRAWN" ,"WITHDRAW") 	                                    THEN "SUBMITTED"
+                                        WHEN quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
                                         WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
                                         WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
                                         WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
                                         WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED")                       									THEN "ARCHIVE"
+                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")                       		THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status
                             FROM space.m_details
