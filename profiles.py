@@ -175,6 +175,17 @@ class BusinessProfile(Resource):
             response = db.select('businessProfileInfo', where)
         return response
 
+class BusinessProfileList(Resource):
+    def get(self):
+        response = {}
+        with connect() as db:
+            business = db.execute("""
+                            SELECT business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, 
+                             business_locations, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                             FROM space.businessProfileInfo
+            """)
+        response = business
+        return response
 
 class BusinessProfileByUid(Resource):
     def get(self, business_uid):

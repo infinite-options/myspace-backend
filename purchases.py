@@ -261,7 +261,7 @@ class Bills(Resource):
                             , purchase_type = "MAINTENANCE"
                             , pur_cf_type = \'""" + pur_cf_type  + """\'
                             , pur_bill_id = \'""" + new_bill_uid + """\'
-                            , purchase_date = CURRENT_DATE()
+                            , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
                             , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
                             , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                             , purchase_status = "UNPAID"
