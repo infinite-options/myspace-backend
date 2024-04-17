@@ -106,8 +106,6 @@ class MonthlyRentPurchase_CLASS(Resource):
                     due_date = datetime(dt.year, dt.month, due_by) + relativedelta(months=1)
                 else:
                     due_date = datetime(dt.year, dt.month, due_by)
-                # IF Changing the dates manually
-                # due_date = datetime(2024, 12, due_by)
                 # print("due date: ", due_date,  type(due_date))
                 pm_due_date = due_date + relativedelta(days=15)
                 # print("PM due date: ", pm_due_date,  type(pm_due_date))
@@ -125,7 +123,12 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
                 if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
-                # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
+
+                # IF Changing the dates manually
+                # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
+                #     due_date = datetime(2024, 3, due_by)  # Comment this out since due_date is set above
+
+
                     # print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
                     # print(i, response['result'][i])           
@@ -312,7 +315,6 @@ class MonthlyRentPurchase_CLASS(Resource):
                 'code': 200}
 
         return response
-
 
 def MonthlyRentPurchase_CRON(self):
     print("In Monthly Rent CRON JOB")
@@ -765,7 +767,6 @@ class LateFees_CLASS(Resource):
 
         return response
 
-
 def LateFees_CRON(self):
     print("In Late Fees")
 
@@ -912,6 +913,10 @@ def LateFees_CRON(self):
             'code': 200}
 
     return response
+
+
+
+
 
 
 # ORIGINAL CRON JOBS BELOW

@@ -913,8 +913,8 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                             
-                            WHERE business_uid = \'""" + uid + """\'
-                            -- WHERE business_uid = '600-000032'
+                            WHERE business_uid = \'""" + uid + """\' AND (pur_receiver = \'""" + uid + """\' OR ISNULL(pur_receiver))
+                            -- WHERE business_uid = '600-000032' AND (pur_receiver = '600-000032' OR ISNULL(pur_receiver))
                             ORDER BY maintenance_request_created_date;
                             """)
 
