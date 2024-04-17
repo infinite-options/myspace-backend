@@ -662,6 +662,23 @@ class MaintenanceQuotes(Resource):
             print("In actual PUT")
             response = db.update('maintenanceQuotes', key, quote)
 
+        if payload.get("quote_maintenance_request_id") is not None and payload.get("quote_status") == "COMPLETED":
+            with connect() as db:
+                qmr_id = payload.get("quote_maintenance_request_id")
+                quoteQuery = db.execute("""
+                                SELECT maintenance_quote_uid FROM space.maintenanceQuotes WHERE quote_maintenance_request_id = \'""" + qmr_id + """\'
+                """)
+                quotelist = []
+                for i in range(len(quoteQuery["result"])):
+                    quotelist.append(quoteQuery["result"][i]["maintenance_quote_uid"])
+                quotelist.remove(quote["maintenance_quote_uid"])
+                for x in quotelist:
+                    key = {'maintenance_quote_uid': x}
+                    payload = {'quote_status': "NOT ACCEPTED"}
+                    quoteUpdate = db.update("maintenanceQuotes",key,payload)
+                    print(quoteUpdate)
+                    response["quoteUpdate"] = quoteUpdate
+
         if qd_files:
             for key in qd_files:
                 print("key", key)
