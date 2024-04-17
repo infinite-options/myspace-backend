@@ -842,98 +842,77 @@ class MaintenanceStatus(Resource):
                     maintenanceStatus = db.execute(""" 
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
-                                -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                                , CASE  
-                                        WHEN quote_status = "COMPLETED"                                                      THEN "PAID" 
-                                        WHEN maintenance_request_status = 'COMPLETED'                           			THEN "COMPLETED"
-                                        WHEN maintenance_request_status IN ("NEW" ,"INFO")       THEN "NEW REQUEST"
-                                        WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                        WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"           THEN "COMPLETED"
-                                        WHEN quote_status IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")                         THEN "QUOTES REQUESTED"
-                                        WHEN quote_status IN ("ACCEPTED" , "SCHEDULE")                          THEN "QUOTES ACCEPTED"
-                                        ELSE quote_status
-                                    END AS maintenance_status
+                            , CASE  
+                                    WHEN purchase_status IN ("PAID", "PAID LATE")                                          THEN "PAID" 
+                                    WHEN maintenance_request_status = 'COMPLETED'                           			   THEN "COMPLETED"
+                                    WHEN maintenance_request_status IN ("NEW" ,"INFO")                                     THEN "NEW REQUEST"
+                                    WHEN maintenance_request_status = "SCHEDULED"                                          THEN "SCHEDULED"
+                                    WHEN maintenance_request_status = "CANCELLED" or quote_status = "FINISHED"             THEN "COMPLETED"
+                                    WHEN quote_status_ranked IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN") THEN "QUOTES REQUESTED"
+                                    WHEN quote_status_ranked IN ("ACCEPTED" , "SCHEDULE")                                  THEN "QUOTES ACCEPTED"
+                                    ELSE quote_status_ranked
+                                END AS maintenance_status
                             FROM (
-                                SELECT * 
-                                FROM space.maintenanceRequests
-                                LEFT JOIN (
-                                    SELECT *,
-                                        CASE
-                                            WHEN max_quote_rank = "10" THEN "REQUESTED"
-                                            WHEN max_quote_rank = "11" THEN "REFUSED"
-                                            WHEN max_quote_rank = "20" THEN "SENT"
-                                            WHEN max_quote_rank = "21" THEN "REJECTED"
-                                            WHEN max_quote_rank = "22" THEN "WITHDRAWN"
-                                            WHEN max_quote_rank = "30" THEN "ACCEPTED"
-                                            WHEN max_quote_rank = "40" THEN "SCHEDULE"
-                                            WHEN max_quote_rank = "50" THEN "SCHEDULED"
-                                            WHEN max_quote_rank = "60" THEN "RESCHEDULED"
-                                            WHEN max_quote_rank = "70" THEN "FINISHED"
-                                            WHEN max_quote_rank = "80" THEN "COMPLETED"
-                                            ELSE "0"
-                                        END AS quote_status
-                                    FROM 
-                                    (
-                                        SELECT maintenance_quote_uid, 
-                                            quote_maintenance_request_id AS qmr_id
-                                            -- , quote_status
-                                            , MAX(quote_rank) AS max_quote_rank
-                                        FROM (
-                                            SELECT -- *,
-                                                maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                                -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                    SELECT * 
+                                    FROM space.maintenanceRequests
+                                    LEFT JOIN (
+                                        SELECT *,
                                             CASE
-                                                WHEN quote_status = "REQUESTED" THEN "10"
-                                                WHEN quote_status = "REFUSED" THEN "11"
-                                                WHEN quote_status = "SENT" THEN "20"
-                                                WHEN quote_status = "REJECTED" THEN "21"
-                                                WHEN quote_status = "WITHDRAWN"  THEN "22"
-                                                WHEN quote_status = "ACCEPTED" THEN "30"
-                                                WHEN quote_status = "SCHEDULE" THEN "40"
-                                                WHEN quote_status = "SCHEDULED" THEN "50"
-                                                WHEN quote_status = "RESCHEDULED" THEN "60"
-                                                WHEN quote_status = "FINISHED" THEN "70"
-                                                WHEN quote_status = "COMPLETED" THEN "80"     
-                                                ELSE 0
-                                            END AS quote_rank
-                                            FROM space.maintenanceQuotes
-                                            ) AS qr
-                                        GROUP BY quote_maintenance_request_id
+                                                WHEN max_quote_rank = "10" THEN "REQUESTED"
+                                                WHEN max_quote_rank = "11" THEN "REFUSED"
+                                                WHEN max_quote_rank = "20" THEN "SENT"
+                                                WHEN max_quote_rank = "21" THEN "REJECTED"
+                                                WHEN max_quote_rank = "22" THEN "WITHDRAWN"
+                                                WHEN max_quote_rank = "30" THEN "ACCEPTED"
+                                                WHEN max_quote_rank = "40" THEN "SCHEDULE"
+                                                WHEN max_quote_rank = "50" THEN "SCHEDULED"
+                                                WHEN max_quote_rank = "60" THEN "RESCHEDULED"
+                                                WHEN max_quote_rank = "70" THEN "FINISHED"
+                                                WHEN max_quote_rank = "80" THEN "COMPLETED"
+                                                WHEN max_quote_rank = "90" THEN "CANCELLED"
+                                                ELSE "0"
+                                            END AS quote_status_ranked
+                                        FROM 
+                                        (
+                                            SELECT -- maintenance_quote_uid, 
+                                                quote_maintenance_request_id AS qmr_id
+                                                -- , quote_status
+                                                , MAX(quote_rank) AS max_quote_rank
+                                            FROM (
+                                                SELECT -- *,
+                                                    -- maintenance_quote_uid, 
+                                                    quote_maintenance_request_id, quote_status,
+                                                    -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
+                                                CASE
+                                                    WHEN quote_status = "REQUESTED" THEN "10"
+                                                    WHEN quote_status = "REFUSED" THEN "11"
+                                                    WHEN quote_status = "SENT" THEN "20"
+                                                    WHEN quote_status = "REJECTED" THEN "21"
+                                                    WHEN quote_status = "WITHDRAWN"  THEN "22"
+                                                    WHEN quote_status = "ACCEPTED" THEN "30"
+                                                    WHEN quote_status = "SCHEDULE" THEN "40"
+                                                    WHEN quote_status = "SCHEDULED" THEN "50"
+                                                    WHEN quote_status = "RESCHEDULED" THEN "60"
+                                                    WHEN quote_status = "FINISHED" THEN "70"
+                                                    WHEN quote_status = "COMPLETED" THEN "80"
+                                                    WHEN quote_status = "CANCELLED" THEN "90"
+                                                    ELSE 0
+                                                END AS quote_rank
+                                                FROM space.maintenanceQuotes
+                                                ) AS qr
+                                            GROUP BY quote_maintenance_request_id
                                         ) AS qr_quoterank
-                                ) AS quote_summary ON maintenance_request_uid = qmr_id
-                            ) AS quotes
-                            LEFT JOIN (
-                            SELECT -- *
-                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
-                                , sum(bill_amount) AS bill_amount
-                            FROM space.bills
-                            GROUP BY bill_maintenance_quote_id
-                            ) as b ON bill_maintenance_quote_id = quotes.maintenance_quote_uid
-                            LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
+                                    ) AS quote_summary ON maintenance_request_uid = qmr_id
+                                ) AS quotes
+                            LEFT JOIN space.bills ON maintenance_request_uid = bill_maintenance_request_id
+                            LEFT JOIN space.maintenanceQuotes ON bill_maintenance_quote_id = maintenance_quote_uid
+                            LEFT JOIN space.purchases ON bill_uid = pur_bill_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                            LEFT JOIN (
-                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
-                                ('maintenance_quote_uid', maintenance_quote_uid,
-                                'quote_status', quote_status,
-                                'quote_pm_notes', quote_pm_notes,
-                                'quote_business_id', quote_business_id,
-                                'quote_services_expenses', quote_services_expenses,
-                                'quote_event_type', quote_event_type,
-                                'quote_event_duration', quote_event_duration,
-                                'quote_notes', quote_notes,
-                                'quote_created_date', quote_created_date,
-                                'quote_total_estimate', quote_total_estimate,
-                                'quote_maintenance_images', quote_maintenance_images,
-                                'quote_adjustment_date', quote_adjustment_date,
-                                'quote_earliest_available_date', quote_earliest_available_date,
-                                'quote_earliest_available_time', quote_earliest_available_time
-                                )) AS quote_info
-                                FROM space.maintenanceQuotes
-                                GROUP BY quote_maintenance_request_id) as qi ON quote_maintenance_request_id = maintenance_request_uid
+                            
                             WHERE business_uid = \'""" + uid + """\'
                             -- WHERE business_uid = '600-000032'
                             ORDER BY maintenance_request_created_date;
