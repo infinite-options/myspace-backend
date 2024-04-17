@@ -93,6 +93,7 @@ class Bills(Resource):
             print("property_id is ", bill_property_id)
             #bill_docs = json.loads(data["bill_docs"])
             bill_maintenance_quote_id  = data["bill_maintenance_quote_id"]
+            bill_maintenance_request_id  = data["bill_maintenance_request_id"]
             bill_notes = data["bill_notes"]
             # print("bill_notes: ", bill_notes, type(bill_notes))
             #, bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
@@ -138,7 +139,8 @@ class Bills(Resource):
                     , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
                     , bill_docs = \'""" + bill_docs + """\'
                     , bill_notes = \'""" + bill_notes + """\'
-                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
+                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\'  
+                    , bill_maintenance_request_id = \'""" + bill_maintenance_request_id + """\';        
                     """)
 
             # print("Query: ", billQuery)
