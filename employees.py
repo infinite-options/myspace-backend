@@ -18,15 +18,25 @@ class Employee(Resource):
 
     def get(self, user_id):
         response = {}
-        with connect() as db:
-            empQuery = db.execute("""
-                                    SELECT * FROM space.employees WHERE 
-                                    employee_uid = \'""" + user_id + """\'
-            """)
+        if user_id[:3] == '120':
+            with connect() as db:
+                empQuery = db.execute("""
+                                        SELECT * FROM space.employees WHERE 
+                                        employee_uid = \'""" + user_id + """\'
+                """)
 
-            response["employee"] = empQuery
+                response["employee"] = empQuery
 
-            return response
+        elif user_id[:3] == '600':
+            with connect() as db:
+                empQuery = db.execute("""
+                                        SELECT * FROM space.employees WHERE 
+                                        employee_business_id = \'""" + user_id + """\'
+                """)
+
+                response["employee"] = empQuery
+
+        return response
 
 class EmployeeVerification(Resource):
     def post(self):
