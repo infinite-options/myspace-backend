@@ -949,56 +949,29 @@ class MaintenanceStatus(Resource):
                     print("in MAINTENANCE")
                     maintenanceStatus = db.execute(""" 
                              -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
-                            SELECT * -- bill_property_id,  maintenance_property_id,
+                    SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
-                                        WHEN quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
-                                        WHEN quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
-                                        WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
-                                        WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
-                                        WHEN quote_status = "FINISHED"                                                       								THEN "FINISHED"
-                                        WHEN quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")                       		THEN "ARCHIVE"
-                                        ELSE quote_status
+                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
+                                        WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
+                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
+                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
+                                        WHEN space.m_details.quote_status = "FINISHED"                                                       								THEN "FINISHED"
+                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      								THEN "PAID"   
+                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")                       		THEN "ARCHIVE"
+                                        ELSE space.m_details.quote_status
                                     END AS maintenance_status
                             FROM space.m_details
+                            LEFT JOIN space.bills ON space.m_details.maintenance_request_uid = bill_maintenance_request_id
+                            -- LEFT JOIN space.maintenanceQuotes ON bill_maintenance_quote_id = space.maintenanceQuotes.maintenance_quote_uid
+                            LEFT JOIN space.purchases ON bill_uid = pur_bill_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN (
-                                SELECT -- *
-                                    bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
-                                    , sum(bill_amount) AS bill_amount
-                                FROM space.bills
-                                GROUP BY bill_maintenance_quote_id
-                                ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                            LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                            LEFT JOIN (
-                            SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
-                                ('maintenance_quote_uid', maintenance_quote_uid,
-                                'quote_status', quote_status,
-                                'quote_pm_notes', quote_pm_notes,
-                                'quote_business_id', quote_business_id,
-                                'quote_services_expenses', quote_services_expenses,
-                                'quote_event_type', quote_event_type,
-                                'quote_event_duration', quote_event_duration,
-                                'quote_notes', quote_notes,
-                                'quote_created_date', quote_created_date,
-                                'quote_total_estimate', quote_total_estimate,
-                                'quote_maintenance_images', quote_maintenance_images,
-                                'quote_adjustment_date', quote_adjustment_date,
-                                'quote_earliest_available_date', quote_earliest_available_date,
-                                'quote_earliest_available_time', quote_earliest_available_time
-                                )) AS quote_info
-                                FROM space.maintenanceQuotes
-                                GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
-                            -- WHERE owner_uid = \'""" + uid + """\'
-                            -- WHERE business_uid = \'""" + uid + """\'
-                            -- WHERE tenant_uid = \'""" + uid + """\'
-                            WHERE quote_business_id = \'""" + uid + """\'
-                            -- WHERE quote_business_id = "600-000033"
-                            -- WHERE maintenance_property_id = \'""" + uid + """\'
+                            
+                            WHERE space.m_details.quote_business_id = '600-000033' AND (pur_receiver = '600-000033' OR ISNULL(pur_receiver))
+                            -- WHERE business_uid = '600-000032' AND (pur_receiver = '600-000032' OR ISNULL(pur_receiver))
                             ORDER BY maintenance_request_created_date;
                             """)
 
