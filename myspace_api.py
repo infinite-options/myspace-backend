@@ -45,7 +45,7 @@ from lists import List
 from listings import Listings
 from managers import SearchManager
 from status_update import StatusUpdate
-from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
+# from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 from utilities import Utilities
 from cron import MonthlyRent_CLASS
 
@@ -611,7 +611,7 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
-api.add_resource(Quotes, '/quotes')
+# api.add_resource(Quotes, '/quotes')
 # api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 # api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 # api.add_resource(StatusUpdate, '/statusUpdate')

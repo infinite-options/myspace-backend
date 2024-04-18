@@ -94,19 +94,6 @@ class Quotes(Resource):
                 quote["quote_pm_notes"] = quote_pm_notes
                 quote["quote_created_date"] = today
 
-                # images = []
-                # i = 0
-                # while True:
-                #     filename = f'img_{i}'
-                #     file = request.files.get(filename)
-                #     if file:
-                #         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
-                #         image = uploadImage(file, key, '')
-                #         images.append(image)
-                #     else:
-                #         break
-                #     i += 1
-
                 images = []
                 i = 0  # Start index from 0 for img_0
                 while True:
