@@ -12,9 +12,6 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
 
-from maintenance_mapper import mapMaintenanceForOwner, mapMaintenanceForTenant, mapMaintenanceForProperty, \
-    mapMaintenanceForMaintenance, mapMaintenanceForPropertyManager
-
 
 # MAINTENANCE BY STATUS
 #                           TENANT      OWNER     PROPERTY MANAGER     
