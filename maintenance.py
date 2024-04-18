@@ -951,13 +951,13 @@ class MaintenanceStatus(Resource):
                              -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                     SELECT * -- bill_property_id,  maintenance_property_id,
                             , CASE
-                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      								THEN "REQUESTED"
+                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      		THEN "REQUESTED"
                                         WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
-                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          								THEN "ACCEPTED"
-                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       								THEN "SCHEDULED"
-                                        WHEN space.m_details.quote_status = "FINISHED"                                                       								THEN "FINISHED"
-                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")                       		THEN "ARCHIVE"
+                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
+                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
+                                        WHEN space.m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
+                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
+                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
                                         ELSE space.m_details.quote_status
                                     END AS maintenance_status
                             FROM space.m_details
