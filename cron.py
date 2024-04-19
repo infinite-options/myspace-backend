@@ -107,7 +107,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 else:
                     due_date = datetime(dt.year, dt.month, due_by)
                 # print("due date: ", due_date,  type(due_date))
-                pm_due_date = due_date + relativedelta(days=15)
+                pm_due_date = due_date + relativedelta(days=10)
                 # print("PM due date: ", pm_due_date,  type(pm_due_date))
 
                 
@@ -126,7 +126,8 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # IF Changing the dates manually
                 # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
-                #     due_date = datetime(2024, 3, due_by)  # Comment this out since due_date is set above
+                #     due_date = datetime(2024, 1, due_by)            # Comment this out since due_date is set above
+                #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
                     # print("Rent posted.  Please Pay")
