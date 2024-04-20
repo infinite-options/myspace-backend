@@ -470,7 +470,6 @@ class Payments(Resource):
 
 
 
-class PaymentStatus(Resource):
     # decorators = [jwt_required()]
 
     def get(self, user_id):
@@ -488,10 +487,9 @@ class PaymentStatus(Resource):
                     LEFT JOIN space.bills ON bill_uid = pur_bill_id
                     WHERE pur_payer = \'""" + user_id + """\' and purchase_status IN ('UNPAID','PARTIALLY PAID');
                     """)
-
-            
             # print("Query: ", paymentStatus)
             response["PaymentStatus"] = paymentStatus
+
 
             rentStatus = db.execute("""
                     -- GET RENT DETAILS
@@ -499,21 +497,31 @@ class PaymentStatus(Resource):
                     LEFT JOIN space.leases ON lease_uid = fees_lease_id
                     LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
                     WHERE lease_status = "ACTIVE" AND lt_tenant_id = \'""" + user_id + """\' """)
-
+            # print("Query: ", rentStatus)
             response["RentStatus"] = rentStatus
             
-            paidStatus = db.execute("""
-                    -- FIND TENANT PAYMENT HISTORY
-                    SELECT * FROM space.payments
-                    LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-                    -- WHERE paid_by = '350-000002'
-                    WHERE paid_by = \'""" + user_id + """\'
-                    """)
 
-            
+
+            paidStatus = db.execute("""
+                    -- FIND PAYMENT HISTORY
+                    SELECT * FROM space.pp_status
+                    WHERE payment_status != 'UNPAID' 
+                      -- AND pur_payer = '600-000003'
+                      AND pur_payer = \'""" + user_id + """\'
+                    """)
             # print("Query: ", paidStatus)
             response["PaidStatus"] = paidStatus
 
+
+            receivedStatus = db.execute("""
+                    -- FIND RECEIVED HISTORY
+                    SELECT * FROM space.pp_status
+                    WHERE payment_status != 'UNPAID' 
+                      -- AND pur_receiver = '600-000003' 
+                      AND pur_receiver = \'""" + user_id + """\'
+                    """)
+            # print("Query: ", paidStatus)
+            response["ReceivedStatus"] = receivedStatus
 
             return response
 
