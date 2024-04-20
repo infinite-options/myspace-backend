@@ -469,7 +469,7 @@ class Payments(Resource):
         return response
 
 
-
+class PaymentStatus(Resource):
     # decorators = [jwt_required()]
 
     def get(self, user_id):
@@ -480,6 +480,8 @@ class Payments(Resource):
 
         with connect() as db:
             # print("in connect loop")
+
+            # WHAT IS TO BE PAID
             paymentStatus = db.execute(""" 
                     -- FIND TENANT PAYABLES
                     SELECT pp_details.*, bill_maintenance_quote_id
@@ -491,17 +493,50 @@ class Payments(Resource):
             response["PaymentStatus"] = paymentStatus
 
 
-            rentStatus = db.execute("""
+            # RENT PAYMENT STATUS
+            if user_id[0:3] == '600':
+                print("Manager Rent Status")
+                rentStatus = db.execute("""
                     -- GET RENT DETAILS
-                    SELECT * from space.leaseFees
-                    LEFT JOIN space.leases ON lease_uid = fees_lease_id
-                    LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
-                    WHERE lease_status = "ACTIVE" AND lt_tenant_id = \'""" + user_id + """\' """)
-            # print("Query: ", rentStatus)
-            response["RentStatus"] = rentStatus
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE business_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            elif user_id[0:3] == '110':
+                print("Owner Rent Status")
+                rentStatus = db.execute("""
+                    -- GET RENT DETAILS
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE owner_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            elif user_id[0:3] == '350':
+                print("Tenant Rent Status")
+                rentStatus = db.execute("""
+                    -- GET RENT DETAILS
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE tenant_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            else:
+                print("user_id not found")
+                response["RentStatus"] = "UID Not Found"
+
             
 
-
+            # PAYMENT HISTORY
             paidStatus = db.execute("""
                     -- FIND PAYMENT HISTORY
                     SELECT * FROM space.pp_status
@@ -513,6 +548,7 @@ class Payments(Resource):
             response["PaidStatus"] = paidStatus
 
 
+            # RECEIVED PAYMENT HISTORY
             receivedStatus = db.execute("""
                     -- FIND RECEIVED HISTORY
                     SELECT * FROM space.pp_status
