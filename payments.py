@@ -539,7 +539,7 @@ class PaymentStatus(Resource):
             # PAYMENT HISTORY
             paidStatus = db.execute("""
                     -- FIND PAYMENT HISTORY
-                    SELECT * FROM space.pp_status
+                    SELECT * FROM space.pp_details
                     WHERE payment_status != 'UNPAID' 
                       -- AND pur_payer = '600-000003'
                       AND pur_payer = \'""" + user_id + """\'
