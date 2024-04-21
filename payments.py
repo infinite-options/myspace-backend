@@ -551,7 +551,7 @@ class PaymentStatus(Resource):
             # RECEIVED PAYMENT HISTORY
             receivedStatus = db.execute("""
                     -- FIND RECEIVED HISTORY
-                    SELECT * FROM space.pp_status
+                    SELECT * FROM space.pp_details
                     WHERE payment_status != 'UNPAID' 
                       -- AND pur_receiver = '600-000003' 
                       AND pur_receiver = \'""" + user_id + """\'
@@ -559,7 +559,68 @@ class PaymentStatus(Resource):
             # print("Query: ", paidStatus)
             response["ReceivedStatus"] = receivedStatus
 
+            
+
+
+
+            # MONIES RECECEIVED
+            moneyReceived = db.execute("""
+                -- MONEY RECEIVED
+                SELECT * FROM space.pp_details
+                WHERE payment_status != 'UNPAID' 
+                    -- AND pur_receiver = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyReceived"] = moneyReceived
+
+
+            # MONIES PAID
+            moneyPaid = db.execute("""
+                -- MONEY PAID
+                SELECT * FROM space.pp_details
+                WHERE payment_status != 'UNPAID' 
+                    -- AND pur_payer = '600-000003' 
+                    AND pur_payer = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyPaid"] = moneyPaid
+
+
+            # ACCOUNTS RECEIVABLE
+            moneyToBeReceived = db.execute("""
+                -- MONEY TO BE RECEIVED
+                SELECT * FROM space.pp_details
+                WHERE (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY PAID')
+                    -- AND pur_receiver = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyToBeReceived"] = moneyToBeReceived
+
+
+            # ACCOUNTS PAYABLE
+            moneyToBePaid = db.execute("""
+                -- MONEY TO BE PAID
+                SELECT * FROM space.pp_details
+                WHERE (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY PAID')
+                    -- AND pur_payer = '600-000003' 
+                    AND pur_payer = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyToBePaid"] = moneyToBePaid
+
+
             return response
+
+
+
+
+
+
+
+
+
 
 class PaymentMethod(Resource):
     def post(self):
