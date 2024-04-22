@@ -126,7 +126,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # IF Changing the dates manually
                 # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
-                #     due_date = datetime(2024, 3, due_by)            # Comment this out since due_date is set above
+                #     due_date = datetime(2024, 1, due_by)            # Comment this out since due_date is set above
                 #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
@@ -296,7 +296,8 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['purchase_status'] = "UNPAID"
                             newPMRequest['pur_status_value'] = "0"
                             newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                            newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
+                            newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for {due_date.strftime('%B')} {due_date.year} "
+                            # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
                             # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                             newPMRequest['pur_receiver'] = manager
                             newPMRequest['pur_payer'] = owner
@@ -434,7 +435,7 @@ def MonthlyRentPurchase_CRON(self):
 
             # IF Changing the dates manually
             # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
-            #     due_date = datetime(2024, 3, due_by)            # Comment this out since due_date is set above
+            #     due_date = datetime(2024, 1, due_by)            # Comment this out since due_date is set above
             #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
@@ -604,7 +605,8 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['purchase_status'] = "UNPAID"
                         newPMRequest['pur_status_value'] = "0"
                         newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                        newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
+                        newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for {due_date.strftime('%B')} {due_date.year} "
+                        # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
                         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
                         newPMRequest['pur_receiver'] = manager
                         newPMRequest['pur_payer'] = owner
