@@ -597,7 +597,7 @@ class PaymentStatus(Resource):
                         payment_status AS ps
                         , pur_group AS pg
                         , pur_payer AS pp
-                        , CONCAT(pur_group, " ", pur_payer) AS pgpp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps
                     FROM space.pp_status 
                     WHERE LEFT(pur_payer, 3) = '350'
                 ) AS pps ON ppd.pur_group = pps.pg
@@ -613,7 +613,7 @@ class PaymentStatus(Resource):
                         payment_status AS ps
                         , pur_group AS pg
                         , pur_payer AS pp
-                        , CONCAT(pur_group, " ", pur_payer) AS pgpp                        
+                        , CONCAT(pur_group, " ", payment_status) AS pgps                       
                     FROM space.pp_status 
                     WHERE LEFT(pur_payer, 3) = '350'
                 ) AS pps ON ppd.pur_group = pps.pg
@@ -633,7 +633,7 @@ class PaymentStatus(Resource):
                         payment_status AS ps
                         , pur_group AS pg
                         , pur_payer AS pp
-                        , CONCAT(pur_group, " ", pur_payer) AS pgpp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps
                     FROM space.pp_status 
                     WHERE LEFT(pur_payer, 3) = '350'
                 ) AS pps ON ppd.pur_group = pps.pg
