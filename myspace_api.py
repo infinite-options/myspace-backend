@@ -711,7 +711,7 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
 api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
-api.add_resource(BusinessProfileList, "/businessProfileList")
+api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 # refresh
 # api.add_resource(Refresh, '/refresh')
 
