@@ -584,8 +584,45 @@ class PaymentStatus(Resource):
             response["MoneyToBeReceived"] = moneyToBeReceived
 
 
+
             # ACCOUNTS PAYABLE
-            moneyToBePaid = db.execute("""
+            if user_id[0:3] == '600':
+                print("Manager Rent Status")
+                moneyToBePaid = db.execute("""
+                -- MONEY TO BE PAID
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    -- AND ppd.pur_payer = '600-000003'
+                    AND pur_payer = \'""" + user_id + """\'
+                UNION    
+                -- MONEY TO BE PAID
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    -- AND ppd.pur_receiver = '600-000003'
+                    AND LEFT(ppd.pur_payer, 3) != '350' 
+                    AND ppd.pur_receiver = \'""" + user_id + """\'
+                """)
+            else:
+                print("Non-Manager User")
+                moneyToBePaid = db.execute("""
                 -- MONEY TO BE PAID
                 SELECT *
                 FROM space.pp_details AS ppd
@@ -604,13 +641,7 @@ class PaymentStatus(Resource):
             # print("Query: ", paidStatus)
             response["MoneyToBePaid"] = moneyToBePaid
 
-
             return response
-
-
-
-
-
 
 
 
