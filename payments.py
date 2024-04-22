@@ -297,21 +297,6 @@ class NewPayments(Resource):
 
         return data 
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class Payments(Resource):
     def post(self):
@@ -429,7 +414,6 @@ class Payments(Resource):
         return response  
 
 
-
     def put(self):
         print('in Update Payment Status')
         with connect() as db:
@@ -481,6 +465,7 @@ class PaymentStatus(Resource):
         with connect() as db:
             # print("in connect loop")
 
+            
             # WHAT IS TO BE PAID
             paymentStatus = db.execute(""" 
                     -- FIND TENANT PAYABLES
@@ -602,9 +587,18 @@ class PaymentStatus(Resource):
             # ACCOUNTS PAYABLE
             moneyToBePaid = db.execute("""
                 -- MONEY TO BE PAID
-                SELECT * FROM space.pp_details
-                WHERE payment_status IN ('UNPAID','PARTIALLY PAID')
-                    -- AND pur_payer = '600-000003' 
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    -- AND ppd.pur_payer = '600-000003'                     
                     AND pur_payer = \'""" + user_id + """\'
                 """)
             # print("Query: ", paidStatus)
