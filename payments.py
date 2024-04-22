@@ -591,7 +591,7 @@ class PaymentStatus(Resource):
             moneyToBeReceived = db.execute("""
                 -- MONEY TO BE RECEIVED
                 SELECT * FROM space.pp_details
-                WHERE (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY PAID')
+                WHERE payment_status IN ('UNPAID','PARTIALLY PAID')
                     -- AND pur_receiver = '600-000003' 
                     AND pur_receiver = \'""" + user_id + """\'
                 """)
@@ -603,7 +603,7 @@ class PaymentStatus(Resource):
             moneyToBePaid = db.execute("""
                 -- MONEY TO BE PAID
                 SELECT * FROM space.pp_details
-                WHERE (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY PAID')
+                WHERE payment_status IN ('UNPAID','PARTIALLY PAID')
                     -- AND pur_payer = '600-000003' 
                     AND pur_payer = \'""" + user_id + """\'
                 """)

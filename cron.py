@@ -126,7 +126,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # IF Changing the dates manually
                 # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
-                #     due_date = datetime(2024, 1, due_by)            # Comment this out since due_date is set above
+                #     due_date = datetime(2024, 3, due_by)            # Comment this out since due_date is set above
                 #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
@@ -210,15 +210,16 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_description'] = f"Rent for {due_date.strftime('%B')} {due_date.year} CRON"
 
                     
-
                     # Create JSON Object for Rent Purchase for Tenant-PM Payment
                     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    grouping = newRequestID
                     newRequest['purchase_uid'] = newRequestID
                     # print(newRequestID)
                     newRequest['pur_receiver'] = manager
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
                     newRequest['pur_due_date'] = due_date.date().strftime("%m-%d-%Y")
+                    newRequest['pur_group'] = grouping
                     
                     # print(newRequest)
                     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -234,6 +235,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_payer'] = manager
                     newRequest['pur_initiator'] = manager
                     newRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                    newRequest['pur_group'] = grouping
                  
                     # print(newRequest)
                     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -300,6 +302,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             newPMRequest['pur_payer'] = owner
                             newPMRequest['pur_initiator'] = manager
                             newPMRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                            newPMRequest['pur_group'] = grouping
 
                             # *********
                             newPMRequest['pur_due_date'] = due_date.date().strftime("%m-%d-%Y")
@@ -411,10 +414,8 @@ def MonthlyRentPurchase_CRON(self):
                 due_date = datetime(dt.year, dt.month, due_by) + relativedelta(months=1)
             else:
                 due_date = datetime(dt.year, dt.month, due_by)
-            # IF Changing the dates manually
-            # due_date = datetime(2024, 12, due_by)
             # print("due date: ", due_date,  type(due_date))
-            pm_due_date = due_date + relativedelta(days=15)
+            pm_due_date = due_date + relativedelta(days=10)
             # print("PM due date: ", pm_due_date,  type(pm_due_date))
 
             
@@ -430,7 +431,13 @@ def MonthlyRentPurchase_CRON(self):
 
             # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
             if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
-            # if days_for_rent > payable + (0):  # Remove/Change number to get query to run and return data
+
+            # IF Changing the dates manually
+            # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
+            #     due_date = datetime(2024, 3, due_by)            # Comment this out since due_date is set above
+            #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
+
+
                 # print("Rent posted.  Please Pay")
                 numCronPurchases = numCronPurchases + 1
                 # print(i, response['result'][i])           
@@ -511,15 +518,16 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_description'] = f"Rent for {due_date.strftime('%B')} {due_date.year} CRON"
 
                 
-
                 # Create JSON Object for Rent Purchase for Tenant-PM Payment
                 newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                grouping = newRequestID
                 newRequest['purchase_uid'] = newRequestID
                 # print(newRequestID)
                 newRequest['pur_receiver'] = manager
                 newRequest['pur_payer'] = tenant
                 newRequest['pur_initiator'] = manager
                 newRequest['pur_due_date'] = due_date.date().strftime("%m-%d-%Y")
+                newRequest['pur_group'] = grouping
                 
                 # print(newRequest)
                 # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -535,6 +543,7 @@ def MonthlyRentPurchase_CRON(self):
                 newRequest['pur_payer'] = manager
                 newRequest['pur_initiator'] = manager
                 newRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                newRequest['pur_group'] = grouping
                 
                 # print(newRequest)
                 # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -601,6 +610,7 @@ def MonthlyRentPurchase_CRON(self):
                         newPMRequest['pur_payer'] = owner
                         newPMRequest['pur_initiator'] = manager
                         newPMRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                        newPMRequest['pur_group'] = grouping
 
                         # *********
                         newPMRequest['pur_due_date'] = due_date.date().strftime("%m-%d-%Y")
