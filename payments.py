@@ -297,21 +297,6 @@ class NewPayments(Resource):
 
         return data 
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 class Payments(Resource):
     def post(self):
@@ -429,7 +414,6 @@ class Payments(Resource):
         return response  
 
 
-
     def put(self):
         print('in Update Payment Status')
         with connect() as db:
@@ -469,7 +453,6 @@ class Payments(Resource):
         return response
 
 
-
 class PaymentStatus(Resource):
     # decorators = [jwt_required()]
 
@@ -481,6 +464,9 @@ class PaymentStatus(Resource):
 
         with connect() as db:
             # print("in connect loop")
+
+            
+            # WHAT IS TO BE PAID
             paymentStatus = db.execute(""" 
                     -- FIND TENANT PAYABLES
                     SELECT pp_details.*, bill_maintenance_quote_id
@@ -488,34 +474,147 @@ class PaymentStatus(Resource):
                     LEFT JOIN space.bills ON bill_uid = pur_bill_id
                     WHERE pur_payer = \'""" + user_id + """\' and purchase_status IN ('UNPAID','PARTIALLY PAID');
                     """)
-
-            
             # print("Query: ", paymentStatus)
             response["PaymentStatus"] = paymentStatus
 
-            rentStatus = db.execute("""
+
+            # RENT PAYMENT STATUS
+            if user_id[0:3] == '600':
+                print("Manager Rent Status")
+                rentStatus = db.execute("""
                     -- GET RENT DETAILS
-                    SELECT * from space.leaseFees
-                    LEFT JOIN space.leases ON lease_uid = fees_lease_id
-                    LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
-                    WHERE lease_status = "ACTIVE" AND lt_tenant_id = \'""" + user_id + """\' """)
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE business_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            elif user_id[0:3] == '110':
+                print("Owner Rent Status")
+                rentStatus = db.execute("""
+                    -- GET RENT DETAILS
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE owner_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            elif user_id[0:3] == '350':
+                print("Tenant Rent Status")
+                rentStatus = db.execute("""
+                    -- GET RENT DETAILS
+                    SELECT *
+                    FROM space.pp_details
+                    -- WHERE business_uid = '600-000003'
+                    -- WHERE owner_uid = '110-000003'
+                    -- WHERE tenant_uid = '350-000002'
+                    WHERE tenant_uid = \'""" + user_id + """\' """)
+                # print("Query: ", rentStatus)
+                response["RentStatus"] = rentStatus
+            else:
+                print("user_id not found")
+                response["RentStatus"] = "UID Not Found"
 
-            response["RentStatus"] = rentStatus
             
+
+            # PAYMENT HISTORY
             paidStatus = db.execute("""
-                    -- FIND TENANT PAYMENT HISTORY
-                    SELECT * FROM space.payments
-                    LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-                    -- WHERE paid_by = '350-000002'
-                    WHERE paid_by = \'""" + user_id + """\'
+                    -- FIND PAYMENT HISTORY
+                    SELECT * FROM space.pp_details
+                    WHERE payment_status != 'UNPAID' 
+                      -- AND pur_payer = '600-000003'
+                      AND pur_payer = \'""" + user_id + """\'
                     """)
-
-            
             # print("Query: ", paidStatus)
             response["PaidStatus"] = paidStatus
 
 
+            # RECEIVED PAYMENT HISTORY
+            receivedStatus = db.execute("""
+                    -- FIND RECEIVED HISTORY
+                    SELECT * FROM space.pp_details
+                    WHERE payment_status != 'UNPAID' 
+                      -- AND pur_receiver = '600-000003' 
+                      AND pur_receiver = \'""" + user_id + """\'
+                    """)
+            # print("Query: ", paidStatus)
+            response["ReceivedStatus"] = receivedStatus
+
+            
+
+
+
+            # MONIES RECECEIVED
+            moneyReceived = db.execute("""
+                -- MONEY RECEIVED
+                SELECT * FROM space.pp_details
+                WHERE payment_status != 'UNPAID' 
+                    -- AND pur_receiver = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyReceived"] = moneyReceived
+
+
+            # MONIES PAID
+            moneyPaid = db.execute("""
+                -- MONEY PAID
+                SELECT * FROM space.pp_details
+                WHERE payment_status != 'UNPAID' 
+                    -- AND pur_payer = '600-000003' 
+                    AND pur_payer = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyPaid"] = moneyPaid
+
+
+            # ACCOUNTS RECEIVABLE
+            moneyToBeReceived = db.execute("""
+                -- MONEY TO BE RECEIVED
+                SELECT * FROM space.pp_details
+                WHERE payment_status IN ('UNPAID','PARTIALLY PAID')
+                    -- AND pur_receiver = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyToBeReceived"] = moneyToBeReceived
+
+
+            # ACCOUNTS PAYABLE
+            moneyToBePaid = db.execute("""
+                -- MONEY TO BE PAID
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    -- AND ppd.pur_payer = '600-000003'                     
+                    AND pur_payer = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyToBePaid"] = moneyToBePaid
+
+
             return response
+
+
+
+
+
+
+
+
+
 
 class PaymentMethod(Resource):
     def post(self):
