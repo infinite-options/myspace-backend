@@ -350,7 +350,7 @@ class Announcements(Resource):
                 newRequest['announcement_mode'] = payload["announcement_mode"]
                 newRequest['announcement_properties'] = json.dumps(receiverPropertiesMap.get(receivers[i], []))
                 newRequest['announcement_receiver'] = receivers[i]
-                newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')   
+                newRequest['announcement_date'] = time.strftime('%m-%d-%Y %H:%M:%S')
 
                 user_query = None                    
                 if(receivers[i][:3] == '350'):                    
