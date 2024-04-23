@@ -600,7 +600,7 @@ def test_Maintenance_flow():
 # POST
     payload = {'quote_maintenance_request_id': maintenance_request_uid, 'quote_pm_notes': 'Vents', 'quote_maintenance_contacts': '600-000039'}
 
-    response = requests.post(ENDPOINT + "/quotes", data = payload)
+    response = requests.post(ENDPOINT + "/maintenanceQuotes", data = payload)
 
     assert response.status_code == 200
 # Request URL:
