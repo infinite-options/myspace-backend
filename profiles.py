@@ -219,7 +219,7 @@ class Profile(Resource):
                         WHERE owner_uid = \'""" + user_id + """\'
                         """)
                 response = {}
-                response["ownerProfile"] = ownerQuery
+                response["profile"] = ownerQuery
 
             elif user_id.startswith("600"):
                 businessQuery = db.execute("""
@@ -242,7 +242,7 @@ class Profile(Resource):
                     WHERE business_uid = \'""" + user_id + """\'
                     """)
                 response = {}
-                response["businessProfile"] = businessQuery
+                response["profile"] = businessQuery
 
             elif user_id.startswith("350"):
                 tenantQuery = db.execute("""
@@ -265,7 +265,7 @@ class Profile(Resource):
                             WHERE tenant_uid = \'""" + user_id + """\'
                             """)
                 response = {}
-                response["tenantProfile"] = tenantQuery
+                response["profile"] = tenantQuery
 
             elif user_id.startswith("120"):
                     response = db.select('employees', {"employee_uid": user_id})
