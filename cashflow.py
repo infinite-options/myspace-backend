@@ -9,6 +9,7 @@ import json
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
+from werkzeug.exceptions import BadRequest
 
 
 # OVERVIEW
@@ -1162,3 +1163,188 @@ class CashflowSimplified(Resource):
                     ORDER BY pur_timestamp DESC;
                     """)
             return cashflow
+        
+class CashflowSummary(Resource):
+    def get(self, user_id):
+        print("In Cashflow Summary for ", user_id)
+        response = {}
+        with connect() as db:
+
+            if user_id.startswith("110"):
+                ownerCashFlow = db.execute("""
+                        -- OWNER CASHFLOW
+                                           
+                        -- EXPECTED REVENUE
+                        SELECT pur_cf_type, pur_receiver, pur_payer
+                            , SUM(pur_amount_due) AS cf
+                            , "EXPECTED REVENUE" AS cf_type
+                        FROM space.pp_details
+                        -- WHERE pur_receiver = '110-000003'
+                        WHERE pur_receiver = \'""" + user_id + """\'
+                        AND pur_cf_type = 'revenue'
+
+                        UNION  
+                                           
+                        -- ACTUAL REVENUE
+                        SELECT pur_cf_type, pur_receiver, pur_payer
+                            , SUM(pur_amount_due) AS cf
+                            , "ACTUAL REVENUE" AS cf_type
+                        FROM space.pp_details
+                        -- WHERE pur_receiver = '110-000003'
+                        WHERE pur_receiver = \'""" + user_id + """\'
+                        AND pur_cf_type = 'revenue'
+                        AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                        
+                        UNION  
+                                           
+                        -- EXPECTED EXPENSE
+                        SELECT pur_cf_type, pur_receiver, pur_payer
+                            , SUM(pur_amount_due) AS cf
+                            , "EXPECTED EXPENSE" AS cf_type
+                        FROM space.pp_details
+                        -- WHERE pur_payer = '110-000003'
+                        WHERE pur_payer = \'""" + user_id + """\'
+                        AND pur_cf_type = 'expense'
+                        
+                        UNION  
+                                           
+                        -- ACTUAL EXPENSE 
+                        SELECT pur_cf_type, pur_receiver, pur_payer
+                            , SUM(pur_amount_due) AS cf
+                            , "ACTUAL EXPENSE" AS cf_type
+                        FROM space.pp_details
+                        -- WHERE pur_payer = '110-000003'
+                        WHERE pur_payer = \'""" + user_id + """\'
+                        AND pur_cf_type = 'expense'
+                        AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                        ; 
+                        """)
+                response["profile"] = ownerCashFlow
+
+            elif user_id.startswith("600"):
+                businessCashFlow = db.execute("""
+                    -- MANAGER CASHFLOW
+
+                    -- EXPECTED REVENUE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "EXPECTED REVENUE" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+
+                    UNION  
+                    -- ACTUAL REVENUE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "ACTUAL REVENUE" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+                    AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "MAINTENANCE EXPECTED EXPENSE PAID" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_payer = '600-000003'
+                    WHERE pur_payer = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+                    AND purchase_type = 'MAINTENANCE'
+                    
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "RENT EXPECTED EXPENSE PAID" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_payer = '600-000003'
+                    WHERE pur_payer = \'""" + user_id + """\'
+                    AND pur_cf_type = 'revenue'
+                    AND purchase_type = 'RENT'  
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "MAINTENANCE EXPECTED REVENUE RECEIVED" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+                    AND purchase_type = 'MAINTENANCE'
+                    
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "RENT EXPECTED REVENUE RECEIVED" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'revenue'
+                    AND purchase_type = 'RENT'  
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "MAINTENANCE ACTUAL EXPENSE PAID" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_payer = '600-000003'
+                    WHERE pur_payer = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+                    AND purchase_type = 'MAINTENANCE'
+                    AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                    
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "RENT ACTUAL EXPENSE PAID" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_payer = '600-000003'
+                    WHERE pur_payer = \'""" + user_id + """\'
+                    AND pur_cf_type = 'revenue'
+                    AND purchase_type = 'RENT'  
+                    AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "MAINTENANCE ACTUAL REVENUE RECEIVED" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'expense'
+                    AND purchase_type = 'MAINTENANCE'
+                    AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                    
+                    
+                    UNION  
+                    -- PASSTHROUGH EXPENSE MAINTENANCE
+                    SELECT pur_cf_type, pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS cf
+                        , "RENT ACTUAL REVENUE RECEIVED" AS cf_type
+                    FROM space.pp_details
+                    -- WHERE pur_receiver = '600-000003'
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    AND pur_cf_type = 'revenue'
+                    AND purchase_type = 'RENT'
+                    AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
+                    ;
+                    """)
+                response["profile"] = businessCashFlow
+
+            else:
+                raise BadRequest("Request failed, no UID in payload.")
+
+        return response
