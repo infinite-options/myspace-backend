@@ -304,7 +304,7 @@ class LeaseApplication(Resource):
                     ApplicationStatus = "New"
 
                     response = {}
-                    fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period" "lease_status", "lease_assigned_contacts",
+                    fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
                               "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
                               "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
                               "lease_rent_late_by",
@@ -317,13 +317,16 @@ class LeaseApplication(Resource):
                         # print("data", data["lease_fees"])
                         newLease = {}
                         for field in fields:
+                            # print("field", field)
                             if field in data:
                                 newLease[field] = data[field]
+                                # print("new_lease field", newLease[field])
                         for field in fields_with_lists:
+                            # print("field list", field)
                             if data.get(field) is None:
                                 # print(field,"None")
                                 newLease[field] = '[]'
-                        print("new_lease", newLease)
+                        # print("new_lease", newLease)
                         db.insert('leases', newLease)
 
                     print("Data inserted into space.leases")
@@ -344,11 +347,11 @@ class LeaseApplication(Resource):
                         print("Lease ID", lease_id)
 
                         if "lease_fees" in data:
-                            print("lease_fees in data")
+                            # print("lease_fees in data")
                             json_object = json.loads(data["lease_fees"])
-                            print("lease fees json_object", json_object)
+                            # print("lease fees json_object", json_object)
                             for fees in json_object:
-                                print("fees",fees)
+                                # print("fees",fees)
                                 new_leaseFees = {}
                                 new_leaseFees["fees_lease_id"] = lease_id
                                 for item in fields_leaseFees:
