@@ -18,7 +18,7 @@ from password import Password
 # from bills import Bills, DeleteUtilities
 # from dashboard import ownerDashboard
 
-from dashboard import Dashboard, ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
+from dashboard import Dashboard # , ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
 
 from rents import Rents, RentDetails
 from payments import Payments, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
@@ -577,13 +577,13 @@ class stripe_key(Resource):
 
 api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 # Owner Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
-api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
-# Manager Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
-api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
-# Tenant Dashboard: Property Maintenance, Announcements
-api.add_resource(tenantDashboard, '/tenantDashboard/<string:tenant_id>')
-# Maintenance Dashboard: Current Activities, Work Orders
-api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
+# api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
+# # Manager Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
+# api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
+# # Tenant Dashboard: Property Maintenance, Announcements
+# api.add_resource(tenantDashboard, '/tenantDashboard/<string:tenant_id>')
+# # Maintenance Dashboard: Current Activities, Work Orders
+# api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
 
 
 # Owner Queries

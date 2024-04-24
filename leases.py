@@ -38,7 +38,12 @@ class LeaseDetails(Resource):
                         FROM (
                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
                             SELECT *,
-                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
+                            CASE
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
+                            END AS lease_end_month
                             FROM space.leases 
                             WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                             ) AS l
@@ -72,13 +77,12 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                        WHERE owner_uid = \'""" + filter_id + """\'
-                        GROUP BY lease_uid
                         -- WHERE owner_uid = "110-000003"
-                        -- WHERE contract_business_id = \'""" + filter_id + """\'
                         -- WHERE contract_business_id = "600-000003"
-                        -- WHERE tenants LIKE '%""" + filter_id + """%'
                         -- WHERE tenants LIKE "%350-000040%"
+                        WHERE owner_uid = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE tenants LIKE '%""" + filter_id + """%'
                         ;
                         """)
                 
@@ -91,11 +95,16 @@ class LeaseDetails(Resource):
                         FROM (
                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
                             SELECT *,
-                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
+                            CASE
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
+                            END AS lease_end_month
                             FROM space.leases 
                             WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                             ) AS l
-						LEFT JOIN (
+                        LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
                                 'fee_name', fee_name,
@@ -125,13 +134,12 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                        -- WHERE owner_uid = \'""" + filter_id + """\'
                         -- WHERE owner_uid = "110-000003"
-                        WHERE contract_business_id = \'""" + filter_id + """\'
                         -- WHERE contract_business_id = "600-000003"
-                        -- WHERE tenants LIKE '%""" + filter_id + """%'
                         -- WHERE tenants LIKE "%350-000040%"
-                        GROUP BY lease_uid
+                        -- WHERE owner_uid = \'""" + filter_id + """\'
+                        WHERE contract_business_id = \'""" + filter_id + """\'
+                        -- WHERE tenants LIKE '%""" + filter_id + """%'
                         ;
                         """)
                 
@@ -146,7 +154,12 @@ class LeaseDetails(Resource):
                         FROM (
                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
                             SELECT *,
-                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
+                            CASE
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
+                            END AS lease_end_month
                             FROM space.leases 
                             WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                             ) AS l
@@ -180,13 +193,12 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                        -- WHERE owner_uid = \'""" + filter_id + """\'
                         -- WHERE owner_uid = "110-000003"
-                        -- WHERE contract_business_id = \'""" + filter_id + """\'
                         -- WHERE contract_business_id = "600-000003"
-                        WHERE tenants LIKE '%""" + filter_id + """%'
                         -- WHERE tenants LIKE "%350-000040%"
-                        GROUP BY lease_uid
+                        -- WHERE owner_uid = \'""" + filter_id + """\'
+                        -- WHERE contract_business_id = \'""" + filter_id + """\'
+                        WHERE tenants LIKE '%""" + filter_id + """%'
                         ;
                         """)
             else:
