@@ -11,6 +11,7 @@ import json
 # from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
+from werkzeug.exceptions import BadRequest
 
 
 # OVERVIEW
@@ -65,8 +66,9 @@ class Bills(Resource):
                                             """)
                 response = db.execute(queryResponse)
             return response
+    
     def post(self):
-        print("In add Bill")
+        print("In Add Bill")
         response = {}
 
         with connect() as db:
@@ -91,6 +93,7 @@ class Bills(Resource):
             print("property_id is ", bill_property_id)
             #bill_docs = json.loads(data["bill_docs"])
             bill_maintenance_quote_id  = data["bill_maintenance_quote_id"]
+            bill_maintenance_request_id  = data["bill_maintenance_request_id"]
             bill_notes = data["bill_notes"]
             # print("bill_notes: ", bill_notes, type(bill_notes))
             #, bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
@@ -136,7 +139,8 @@ class Bills(Resource):
                     , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
                     , bill_docs = \'""" + bill_docs + """\'
                     , bill_notes = \'""" + bill_notes + """\'
-                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
+                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\'  
+                    , bill_maintenance_request_id = \'""" + bill_maintenance_request_id + """\';        
                     """)
 
             # print("Query: ", billQuery)
@@ -157,11 +161,9 @@ class Bills(Resource):
                     # print(f"{key}: {value}")
                     # print(value)
                     pur_property_id = value
-                    # print("Input to Find Responsible Party Query:  ", pur_property_id, bill_utility_type)
+                    print("Input to Find Responsible Party Query:  ", pur_property_id, bill_utility_type)
 
-                    # For each property ID and utility, identify the responsible party
-                    # NEED TO ADD: if utility_type is maintenance then it should be owner and no need to check
-
+                    # Find Responsible Party:  For each property ID and utility, identify the responsible party
                     if bill_utility_type == "maintenance": 
                         queryResponse = (""" 
                             -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
@@ -177,16 +179,10 @@ class Bills(Resource):
                             WHERE property_id = \'""" + pur_property_id + """\';
                             """)
 
-                        # print("queryResponse is: ", queryResponse)
-                        responsibleArray = db.execute(queryResponse)
-                        # print("Responsible Party is: ", responsibleArray)
-                        responsibleParty = responsibleArray['result'][0]['responsible_party']
-                        # print("Responsible Party is: ", responsibleParty)
-
                     else:
                         queryResponse = (""" 
                             -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
-                            SELECT responsible_party
+                            SELECT *
                             FROM (
                                 SELECT u.*
                                     , list_item AS utility_type
@@ -223,11 +219,15 @@ class Bills(Resource):
             
                             """)
 
-                        # print("queryResponse is: ", queryResponse)
-                        responsibleArray = db.execute(queryResponse)
-                        # print("Responsible Party is: ", responsibleArray)
-                        responsibleParty = responsibleArray['result'][0]['responsible_party']
-                        # print("Responsible Party is: ", responsibleParty)
+                    # print("queryResponse is: ", queryResponse)
+                    responsibleArray = db.execute(queryResponse)
+                    # print("Responsible Party is: ", responsibleArray)
+                    responsibleParty = responsibleArray['result'][0]['responsible_party']
+                    responsibleOwner = responsibleArray['result'][0]['property_owner_id']
+                    responsibleManager = responsibleArray['result'][0]['contract_business_id']
+                    # print("Responsible Party is: ", responsibleParty)
+                    # print("Responsible Owner is: ", responsibleOwner)
+                    # print("Responsible Manager is: ", responsibleManager)
                 
 
                     # STILL NEED TO ADD A LOOP FOR EACH RESPONSIBLE PARTY   
@@ -239,42 +239,129 @@ class Bills(Resource):
             
                     # post a Purchase for each property
 
-                    #  Get New Bill UID
-                    # newRequestID = db.call('new_property_uid')['result'][0]['new_id']
-                    new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']
-                    # print(new_purchase_uid)
+                    # FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
+                    # FOR PM MAINTENANCE ITEM, POST PM-OWNER
+                    # FOR UTILITY THAT TENANT PAYS TO PM PAYS POST, TENANT-PM AND PM-OWNER
+                    # FOR UTILITY THAT PM PAYS POST, TENANT-PM AND PM-OWNER
 
-                    # Determine if this is a revenue or expense
-                    if responsibleParty[:3] == "350": 
-                        pur_cf_type = "revenue"
-                        pur_receiver = ""
+                    if bill_utility_type == "maintenance":
+                        print("In Maitenance Bill")
+                        pur_cf_type = "expense"
+                        if bill_maintenance_quote_id[:3] == "900": 
+                            print("In Maintenance Item performed by Maintenance Role")
+                            #FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
+                            #POST MAINTENANCE-PM PURCHASE
+                            #  Get New PURCHASE UID
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']  
+                            print("New Purchase ID: ", new_purchase_uid)                        
 
-                    else: pur_cf_type = "expense"
-                    # print(pur_cf_type)
+                            purchaseQuery = (""" 
+                                INSERT INTO space.purchases
+                                SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_property_id = \'""" + pur_property_id  + """\'
+                                    , purchase_type = "MAINTENANCE"
+                                    , pur_cf_type = \'""" + pur_cf_type  + """\'
+                                    , pur_bill_id = \'""" + new_bill_uid + """\'
+                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                    , pur_amount_due = \'""" + str(split_bill_amount) + """\'
+                                    , purchase_status = "UNPAID"
+                                    , pur_notes = \'""" + bill_notes + """\'
+                                    , pur_description = \'""" + bill_description + """\'
+                                    , pur_receiver = \'""" + bill_created_by + """\'
+                                    , pur_payer = \'""" + responsibleManager + """\'
+                                    , pur_initiator = \'""" + bill_created_by + """\';
+                                """)
+
+                            # print("Query: ", purchaseQuery)
+                            queryResponse = db.execute(purchaseQuery, [], 'post')
+                            # print("queryResponse is: ", queryResponse)
 
 
-                    purchaseQuery = (""" 
-                        INSERT INTO space.purchases
-                        SET purchase_uid = \'""" + new_purchase_uid + """\'
-                            , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                            , pur_property_id = \'""" + pur_property_id  + """\'
-                            , purchase_type = "MAINTENANCE"
-                            , pur_cf_type = \'""" + pur_cf_type  + """\'
-                            , pur_bill_id = \'""" + new_bill_uid + """\'
-                            , purchase_date = CURRENT_DATE()
-                            , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
-                            , pur_amount_due = \'""" + str(split_bill_amount) + """\'
-                            , purchase_status = "UNPAID"
-                            , pur_notes = \'""" + bill_notes + """\'
-                            , pur_description = \'""" + bill_description + """\'
-                            , pur_receiver = \'""" + bill_created_by + """\'
-                            , pur_payer = \'""" + responsibleParty + """\'
-                            , pur_initiator = \'""" + bill_created_by + """\';
-                        """)
+                        #POST PM-OWNER OR FOR PM MAINTENANCE ITEM, POST PM-OWNER
+                        new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                        print("New PM-OWNER Purchase ID: ", new_purchase_uid)                
+                        purchaseQuery = (""" 
+                            INSERT INTO space.purchases
+                            SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_property_id = \'""" + pur_property_id  + """\'
+                                , purchase_type = "MAINTENANCE"
+                                , pur_cf_type = \'""" + pur_cf_type  + """\'
+                                , pur_bill_id = \'""" + new_bill_uid + """\'
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                , pur_amount_due = \'""" + str(split_bill_amount) + """\'
+                                , purchase_status = "UNPAID"
+                                , pur_notes = \'""" + bill_notes + """\'
+                                , pur_description = \'""" + bill_description + """\'
+                                , pur_receiver = \'""" + responsibleManager + """\'
+                                , pur_payer = \'""" + responsibleOwner + """\'
+                                , pur_initiator = \'""" + bill_created_by + """\';
+                            """)
 
-                    # print("Query: ", purchaseQuery)
-                    queryResponse = db.execute(purchaseQuery, [], 'post')
-                    # print("queryResponse is: ", queryResponse)
+                        print("Query: ", purchaseQuery)
+                        queryResponse = db.execute(purchaseQuery, [], 'post')
+                        print("queryResponse is: ", queryResponse)
+
+
+
+
+                    if bill_utility_type != "maintenance":
+                        print("In Utility Bill")
+                        if responsibleParty[:3] == '350':
+                            print("Tenant Responsible")
+                            pur_cf_type = "revenue"
+
+                            purchaseQuery = (""" 
+                                INSERT INTO space.purchases
+                                SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_property_id = \'""" + pur_property_id  + """\'
+                                    , purchase_type = "MAINTENANCE"
+                                    , pur_cf_type = \'""" + pur_cf_type  + """\'
+                                    , pur_bill_id = \'""" + new_bill_uid + """\'
+                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                    , pur_amount_due = \'""" + str(split_bill_amount) + """\'
+                                    , purchase_status = "UNPAID"
+                                    , pur_notes = \'""" + bill_notes + """\'
+                                    , pur_description = \'""" + bill_description + """\'
+                                    , pur_receiver = \'""" + bill_created_by + """\'
+                                    , pur_payer = \'""" + responsibleParty + """\'
+                                    , pur_initiator = \'""" + bill_created_by + """\';
+                                """)
+
+                            # print("Query: ", purchaseQuery)
+                            queryResponse = db.execute(purchaseQuery, [], 'post')
+                            # print("queryResponse is: ", queryResponse)
+
+                        #POST OWNER-PM REIMBURSEMENT
+                        pur_cf_type = "expense"
+
+                        purchaseQuery = (""" 
+                            INSERT INTO space.purchases
+                            SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_property_id = \'""" + pur_property_id  + """\'
+                                , purchase_type = "MAINTENANCE"
+                                , pur_cf_type = \'""" + pur_cf_type  + """\'
+                                , pur_bill_id = \'""" + new_bill_uid + """\'
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                , pur_amount_due = \'""" + str(split_bill_amount) + """\'
+                                , purchase_status = "UNPAID"
+                                , pur_notes = \'""" + bill_notes + """\'
+                                , pur_description = \'""" + bill_description + """\'
+                                , pur_receiver = \'""" + bill_created_by + """\'
+                                , pur_payer = \'""" + responsibleOwner + """\'
+                                , pur_initiator = \'""" + bill_created_by + """\';
+                            """)
+
+                        # print("Query: ", purchaseQuery)
+                        queryResponse = db.execute(purchaseQuery, [], 'post')
+                        # print("queryResponse is: ", queryResponse)
 
 
                     # # THESE STATEMENTS DO THE SAME THING

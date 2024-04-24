@@ -175,6 +175,17 @@ class BusinessProfile(Resource):
             response = db.select('businessProfileInfo', where)
         return response
 
+class BusinessProfileList(Resource):
+    def get(self, business_type):
+        response = {}
+        with connect() as db:
+            business = db.execute("""
+                            SELECT business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, 
+                             business_locations, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                             FROM space.businessProfileInfo WHERE business_type = \'""" + business_type + """\' 
+            """)
+        response["Businesses"] = business
+        return response
 
 class BusinessProfileByUid(Resource):
     def get(self, business_uid):
@@ -188,13 +199,73 @@ class Profile(Resource):
     def get(self, user_id):
         with connect() as db:
             if user_id.startswith("110"):
-                    response = db.select('ownerProfileInfo', {"owner_uid": user_id})
+                ownerQuery = db.execute("""
+                        SELECT * FROM space.ownerProfileInfo 
+                        LEFT JOIN (
+                                        SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                                            ('paymentMethod_uid', paymentMethod_uid,
+                                            'paymentMethod_type', paymentMethod_type,
+                                            'paymentMethod_name', paymentMethod_name,
+                                            'paymentMethod_acct', paymentMethod_acct,
+                                            'paymentMethod_routing_number', paymentMethod_routing_number,
+                                            'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                            'paymentMethod_exp_date', paymentMethod_exp_date,
+                                            'paymentMethod_cvv', paymentMethod_cvv,
+                                            'paymentMethod_billingzip', paymentMethod_billingzip,
+                                            'paymentMethod_status', paymentMethod_status
+                                            )) AS paymentMethods
+                                            FROM space.paymentMethods
+                                            GROUP BY paymentMethod_profile_id) as p ON owner_uid = paymentMethod_profile_id
+                        WHERE owner_uid = \'""" + user_id + """\'
+                        """)
+                response = {}
+                response["ownerProfile"] = ownerQuery
 
             elif user_id.startswith("600"):
-                    response = db.select('businessProfileInfo', {"business_uid": user_id})
+                businessQuery = db.execute("""
+                    SELECT * FROM space.businessProfileInfo 
+                    LEFT JOIN (
+                                    SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                                        ('paymentMethod_uid', paymentMethod_uid,
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_name', paymentMethod_name,
+                                        'paymentMethod_acct', paymentMethod_acct,
+                                        'paymentMethod_routing_number', paymentMethod_routing_number,
+                                        'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                        'paymentMethod_exp_date', paymentMethod_exp_date,
+                                        'paymentMethod_cvv', paymentMethod_cvv,
+                                        'paymentMethod_billingzip', paymentMethod_billingzip,
+                                        'paymentMethod_status', paymentMethod_status
+                                        )) AS paymentMethods
+                                        FROM space.paymentMethods
+                                        GROUP BY paymentMethod_profile_id) as p ON business_uid = paymentMethod_profile_id
+                    WHERE business_uid = \'""" + user_id + """\'
+                    """)
+                response = {}
+                response["businessProfile"] = businessQuery
 
             elif user_id.startswith("350"):
-                    response = db.select('tenantProfileInfo', {"tenant_uid": user_id})
+                tenantQuery = db.execute("""
+                            SELECT * FROM space.tenantProfileInfo 
+                            LEFT JOIN (
+                                            SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                ('paymentMethod_uid', paymentMethod_uid,
+                                                'paymentMethod_type', paymentMethod_type,
+                                                'paymentMethod_name', paymentMethod_name,
+                                                'paymentMethod_acct', paymentMethod_acct,
+                                                'paymentMethod_routing_number', paymentMethod_routing_number,
+                                                'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                                'paymentMethod_exp_date', paymentMethod_exp_date,
+                                                'paymentMethod_cvv', paymentMethod_cvv,
+                                                'paymentMethod_billingzip', paymentMethod_billingzip,
+                                                'paymentMethod_status', paymentMethod_status
+                                                )) AS paymentMethods
+                                                FROM space.paymentMethods
+                                                GROUP BY paymentMethod_profile_id) as p ON tenant_uid = paymentMethod_profile_id
+                            WHERE tenant_uid = \'""" + user_id + """\'
+                            """)
+                response = {}
+                response["tenantProfile"] = tenantQuery
 
             elif user_id.startswith("120"):
                     response = db.select('employees', {"employee_uid": user_id})

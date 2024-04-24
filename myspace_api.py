@@ -23,11 +23,11 @@ from dashboard import Dashboard, ownerDashboard, managerDashboard, tenantDashboa
 from rents import Rents, RentDetails
 from payments import Payments, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties, PropertiesByOwner, PropertiesByManager, PropertyDashboardByOwner
-from transactions import AllTransactions, TransactionsByOwner, TransactionsByOwnerByProperty
+from transactions import AllTransactions
 from cashflow import CashflowByOwner
 from cashflow import Cashflow, CashflowSimplified, HappinessMatrix
 from employees import Employee, EmployeeVerification
-from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid
+from profiles import Profile, OwnerProfile, OwnerProfileByOwnerUid, TenantProfile, TenantProfileByTenantUid, BusinessProfile, BusinessProfileByUid,BusinessProfileList
 from documents import OwnerDocuments, TenantDocuments, QuoteDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
@@ -45,7 +45,7 @@ from lists import List
 from listings import Listings
 from managers import SearchManager
 from status_update import StatusUpdate
-from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
+# from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 from utilities import Utilities
 from cron import MonthlyRent_CLASS
 
@@ -350,7 +350,7 @@ class Announcements(Resource):
                 newRequest['announcement_mode'] = payload["announcement_mode"]
                 newRequest['announcement_properties'] = json.dumps(receiverPropertiesMap.get(receivers[i], []))
                 newRequest['announcement_receiver'] = receivers[i]
-                newRequest['announcement_date'] = time.strftime('%Y-%m-%d %H:%M:%S')   
+                newRequest['announcement_date'] = time.strftime('%m-%d-%Y %H:%M:%S')
 
                 user_query = None                    
                 if(receivers[i][:3] == '350'):                    
@@ -611,7 +611,7 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 # api.add_resource(ownerDashboardProperties,
 #                  '/ownerDashboardProperties/<string:owner_id>')
 
-api.add_resource(Quotes, '/quotes')
+# api.add_resource(Quotes, '/quotes')
 # api.add_resource(QuotesByBusiness, '/quotesByBusiness')
 # api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
 # api.add_resource(StatusUpdate, '/statusUpdate')
@@ -639,9 +639,6 @@ api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
 
-# api.add_resource(TransactionsByOwner, '/transactionsByOwner/<string:owner_id>')
-# api.add_resource(TransactionsByOwnerByProperty,
-#                  '/transactionsByOwnerByProperty/<string:owner_id>/<string:property_id>')
 api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
 
 
@@ -714,7 +711,7 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
 api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
-
+api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 # refresh
 # api.add_resource(Refresh, '/refresh')
 

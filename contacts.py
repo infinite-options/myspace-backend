@@ -367,10 +367,6 @@ class Contacts(Resource):
                                 owner_state AS contact_state,
                                 owner_zip AS contact_zip,
                                 owner_photo_url as contact_photo_url,
-                                owner_paypal AS contact_paypal,
-                                owner_venmo AS contact_venmo,
-                                owner_apple_pay AS contact_apple_pay,
-                                owner_zelle AS contact_zelle,
                                 owner_ein_number AS contact_ein_number,
                                 COUNT(property_id) AS property_count,
                                 JSON_ARRAYAGG(
@@ -440,10 +436,6 @@ class Contacts(Resource):
                                 m.business_state AS contact_state,
                                 m.business_zip AS contact_zip,
                                 m.business_photo_url as contact_photo_url,
-                                m.business_paypal AS contact_paypal,
-                                m.business_venmo AS contact_venmo,
-                                m.business_apple_pay AS contact_apple_pay,
-                                m.business_zelle AS contact_zelle,
                                 m.business_locations AS contact_business_locations                                             
                             FROM space.b_details AS b
                             LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
@@ -514,10 +506,6 @@ class Contacts(Resource):
                             business_city as contact_city,
                             business_state as contact_state,
                             business_zip as contact_zip,
-                            b.business_paypal AS contact_paypal,
-                            b.business_venmo AS contact_venmo,
-                            b.business_apple_pay AS contact_apple_pay,
-                            b.business_zelle AS contact_zelle,
                             b.business_photo_url AS contact_photo_url,
                             b.business_ein_number as contact_ein_number                         
                         FROM 
@@ -555,10 +543,6 @@ class Contacts(Resource):
                         b.business_city AS contact_city,
                         b.business_state AS contact_state,
                         b.business_zip AS contact_zip,
-                        b.business_paypal AS contact_paypal,
-                        b.business_venmo AS contact_venmo,
-                        b.business_apple_pay AS contact_apple_pay,
-                        b.business_zelle AS contact_zelle,
                         b.business_photo_url AS contact_photo_url,
                         b.business_ein_number as contact_ein_number,
                         COUNT(p.property_uid) AS property_count,
