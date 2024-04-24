@@ -367,10 +367,6 @@ class Contacts(Resource):
                                 owner_state AS contact_state,
                                 owner_zip AS contact_zip,
                                 owner_photo_url as contact_photo_url,
-                                owner_paypal AS contact_paypal,
-                                owner_venmo AS contact_venmo,
-                                owner_apple_pay AS contact_apple_pay,
-                                owner_zelle AS contact_zelle,
                                 owner_ein_number AS contact_ein_number,
                                 COUNT(property_id) AS property_count,
                                 JSON_ARRAYAGG(
