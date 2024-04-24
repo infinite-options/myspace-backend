@@ -402,20 +402,23 @@ class LeaseApplication(Resource):
 
         if "lease_uid" in data:
             lease_id = data['lease_uid']
+            print("lease_uid: ", lease_id)
             payload = {}
             for field in data:
+                print("field", field)
                 if field in lease_fields:
                     payload[field] = data[field]
+                    print("lease field", payload[field])
             with connect() as db:
                 lease_uid = {'lease_uid': lease_id}
                 query = db.select('leases', lease_uid)
-                # print(f"QUERY: {query}")
+                print(f"QUERY: {query}")
                 try:
                     lease_from_db = query.get('result')[0]
                     lease_docs = lease_from_db.get("lease_documents")
                     lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
-                    # print('type: ', type(lease_docs))
-                    # print(f'previously saved documents: {lease_docs}')
+                    print('type: ', type(lease_docs))
+                    print(f'previously saved documents: {lease_docs}')
                 except IndexError as e:
                     print(e)
                     raise BadRequest("Request failed, no such CONTRACT in the database.")
@@ -445,6 +448,7 @@ class LeaseApplication(Resource):
                 print(payload['lease_documents'])
             with connect() as db:
                 key = {'lease_uid': lease_id}
+                print("Payload: ", payload)
                 response["lease_update"] = db.update('leases', key, payload)
 
         if "lease_fees" in data:
