@@ -245,7 +245,27 @@ class Profile(Resource):
                 response["businessProfile"] = businessQuery
 
             elif user_id.startswith("350"):
-                    response = db.select('tenantProfileInfo', {"tenant_uid": user_id})
+                tenantQuery = db.execute("""
+                            SELECT * FROM space.tenantProfileInfo 
+                            LEFT JOIN (
+                                            SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                ('paymentMethod_uid', paymentMethod_uid,
+                                                'paymentMethod_type', paymentMethod_type,
+                                                'paymentMethod_name', paymentMethod_name,
+                                                'paymentMethod_acct', paymentMethod_acct,
+                                                'paymentMethod_routing_number', paymentMethod_routing_number,
+                                                'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                                'paymentMethod_exp_date', paymentMethod_exp_date,
+                                                'paymentMethod_cvv', paymentMethod_cvv,
+                                                'paymentMethod_billingzip', paymentMethod_billingzip,
+                                                'paymentMethod_status', paymentMethod_status
+                                                )) AS paymentMethods
+                                                FROM space.paymentMethods
+                                                GROUP BY paymentMethod_profile_id) as p ON tenant_uid = paymentMethod_profile_id
+                            WHERE tenant_uid = \'""" + user_id + """\'
+                            """)
+                response = {}
+                response["tenantProfile"] = tenantQuery
 
             elif user_id.startswith("120"):
                     response = db.select('employees', {"employee_uid": user_id})
