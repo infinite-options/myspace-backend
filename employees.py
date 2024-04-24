@@ -39,14 +39,15 @@ class Employee(Resource):
         return response
 
 class EmployeeVerification(Resource):
-    def post(self):
+    def put(self):
         response = {}
 
         payload = request.get_json()
-        if payload.get('employee_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'employee_uid': payload.pop('employee_uid')}
-        with connect() as db:
-            response["employee_update"] = db.update('employees',key,payload)
+        for i in range(len(payload)):
+            if payload[i].get('employee_uid') is None:
+                raise BadRequest("Request failed, no UID in payload.")
+            key = {'employee_uid': payload[i].pop('employee_uid')}
+            with connect() as db:
+                response["employee_update"] = db.update('employees',key,payload[i])
 
         return response
