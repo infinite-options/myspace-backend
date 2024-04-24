@@ -35,13 +35,13 @@ class LeaseDetails(Resource):
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-                        lease_docuSign, lease_move_in_date 
-                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED") 
-                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-                        ) AS l
+                        FROM (
+                            -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
+                            SELECT *,
+                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            FROM space.leases 
+                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
@@ -88,13 +88,13 @@ class LeaseDetails(Resource):
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-                        lease_end,lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-                        lease_docuSign, lease_move_in_date 
-                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
-                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-                        ) AS l
+                        FROM (
+                            -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
+                            SELECT *,
+                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            FROM space.leases 
+                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            ) AS l
 						LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
@@ -143,13 +143,13 @@ class LeaseDetails(Resource):
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM (SELECT lease_uid,lease_property_id,lease_application_date,lease_start,
-                        lease_end, lease_end_notice_period, lease_status,lease_assigned_contacts,lease_documents,lease_early_end_date,lease_renew_status,
-                        move_out_date,lease_adults,lease_children,lease_pets,lease_referred,lease_effective_date,lease_vehicles,
-                        lease_docuSign, lease_move_in_date 
-                        FROM space.leases WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE-M2M" OR lease_status = "ENDED" OR lease_status = "PROCESSING")
-                        AND move_out_date IS NULL OR (move_out_date IS NOT NULL AND move_out_date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
-                        ) AS l
+                        FROM (
+                            -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
+                            SELECT *,
+                                IF(DATEDIFF(NOW(), STR_TO_DATE(lease_end, '%m-%d-%Y')) < 365, MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m')), 'FUTURE') AS lease_end_month
+                            FROM space.leases 
+                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
@@ -197,23 +197,6 @@ class LeaseDetails(Resource):
             # print(items)
 
             response["Lease_Details"] = leaseQuery
-
-            # for i in range(len(leaseQuery['result'])):
-            #     lease_id = leaseQuery['result'][i]["lease_uid"]
-            #     leaseFeesQuery = db.execute("""
-            #                             SELECT *
-            #                             FROM space.leaseFees
-            #                             WHERE fees_lease_id = \'""" + lease_id + """\';
-            #                             """)
-            #     if len(leaseFeesQuery['result']) >= 1:
-            #         fees_dic = {}
-            #         for j in range(len(leaseFeesQuery['result'])):
-            #             fee_name = leaseFeesQuery['result'][j]["fee_name"]
-            #             fees_dic[fee_name] = leaseFeesQuery['result'][j]
-            #         leaseQuery['result'][i]["fees"] = fees_dic
-            #     else:
-            #         leaseQuery['result'][i]["fees"] = '[]'
-            #     response["Lease_Details"] = leaseQuery
 
             return response
 
