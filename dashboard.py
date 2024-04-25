@@ -544,7 +544,9 @@ class Dashboard(Resource):
                     leaseQuery = db.execute("""
                             -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
                             SELECT lease_end_month
+                                , lease_end_num
                                 , COUNT(lease_end_month) AS leases_expiring
+                                , COUNT(move_out_date) AS move_out
                             FROM (
                                 SELECT -- *
                                     l.*
@@ -554,13 +556,16 @@ class Dashboard(Resource):
                                     -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
                                     SELECT -- *,
                                     lease_uid, lease_property_id , lease_application_date, lease_start, lease_end, lease_status 
-                                    -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_rent_available_topay-DNU, lease_consent, lease_actual_rent, lease_move_in_date, lease_end_notice_period, lease_days_remaining, lease_end_month
+                                    -- , lease_assigned_contacts, lease_documents, lease_early_end_date
+                                    , lease_renew_status, move_out_date 
+                                    -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_rent_available_topay-DNU, lease_consent, lease_actual_rent, lease_move_in_date, lease_end_notice_period, lease_days_remaining, lease_end_month
                                     , DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining
                                     , CASE
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
+                                    , LEFT(lease_end, 2) AS lease_end_num
                                     FROM space.leases 
                                     WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                                     ) AS l
@@ -572,6 +577,7 @@ class Dashboard(Resource):
                                 WHERE contract_business_id = \'""" + user_id + """\'
                                 ) AS le
                             GROUP BY lease_end_month
+                            ORDER BY lease_end_num ASC
                             """)
 
                     print("Complete Lease Status")
@@ -702,36 +708,42 @@ class Dashboard(Resource):
                 response["MaintenanceStatus"] = maintenanceQuery
 
                 leaseQuery = db.execute(""" 
-                        -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
-                        SELECT lease_end_month
-                            , COUNT(lease_end_month) AS leases_expiring
-                        FROM (
-                            SELECT -- *
-                                l.*
-                                , property_owner_id
-                                , contract_business_id
+                            -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
+                            SELECT lease_end_month
+                                , lease_end_num
+                                , COUNT(lease_end_month) AS leases_expiring
+                                , COUNT(move_out_date) AS move_out
                             FROM (
-                                -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
-                                SELECT -- *,
-                                lease_uid, lease_property_id , lease_application_date, lease_start, lease_end, lease_status 
-                                -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_rent_available_topay-DNU, lease_consent, lease_actual_rent, lease_move_in_date, lease_end_notice_period, lease_days_remaining, lease_end_month
-                                , DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining
-                                , CASE
-                                        WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                        WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
-                                        ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
-                                END AS lease_end_month
-                                FROM space.leases 
-                                WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
-                                ) AS l
-                            LEFT JOIN space.property_owner ON property_id = lease_property_id
-                            LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-                            -- WHERE property_owner_id = "110-000003"
-                            -- WHERE contract_business_id = "600-000003"
-                            WHERE property_owner_id = \'""" + user_id + """\'
-                            -- WHERE contract_business_id = \'""" + user_id + """\'
-                            ) AS le
-                        GROUP BY lease_end_month
+                                SELECT -- *
+                                    l.*
+                                    , property_owner_id
+                                    , contract_business_id
+                                FROM (
+                                    -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
+                                    SELECT -- *,
+                                    lease_uid, lease_property_id , lease_application_date, lease_start, lease_end, lease_status 
+                                    -- , lease_assigned_contacts, lease_documents, lease_early_end_date
+                                    , lease_renew_status, move_out_date 
+                                    -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_rent_available_topay-DNU, lease_consent, lease_actual_rent, lease_move_in_date, lease_end_notice_period, lease_days_remaining, lease_end_month
+                                    , DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining
+                                    , CASE
+                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
+                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                            ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
+                                    END AS lease_end_month
+                                    , LEFT(lease_end, 2) AS lease_end_num
+                                    FROM space.leases 
+                                    WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                                    ) AS l
+                                LEFT JOIN space.property_owner ON property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                                -- WHERE property_owner_id = "110-000003"
+                                -- WHERE contract_business_id = "600-000003"
+                                WHERE property_owner_id = \'""" + user_id + """\'
+                                -- WHERE contract_business_id = \'""" + user_id + """\'
+                                ) AS le
+                            GROUP BY lease_end_month
+                            ORDER BY lease_end_num ASC
                         """)
 
                 # print("Query: ", leaseQuery)
