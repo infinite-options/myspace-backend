@@ -206,16 +206,6 @@ def sendEmail(recipient, subject, body):
 
 # app.sendEmail = sendEmail
 
-# rohit - delete
-# class SendEmail(Resource):
-#     def post(self):
-#         payload = request.get_json()
-#         # manager_id = user_id
-                
-
-#         sendEmail(payload["receiver"], payload["email_subject"], payload["email_body"])
-
-#         return "Email Sent"
     
 class SendEmail(Resource):
     def post(self):
