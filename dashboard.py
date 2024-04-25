@@ -565,7 +565,7 @@ class Dashboard(Resource):
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
-                                    , LEFT(lease_end, 2) AS lease_end_num
+                                    , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
                                     WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                                     ) AS l
@@ -731,7 +731,7 @@ class Dashboard(Resource):
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
-                                    , LEFT(lease_end, 2) AS lease_end_num
+                                    , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
                                     WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                                     ) AS l
