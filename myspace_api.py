@@ -48,6 +48,7 @@ from status_update import StatusUpdate
 # from quotes import QuotesByBusiness, QuotesStatusByBusiness, QuotesByRequest, Quotes
 from utilities import Utilities
 from cron import MonthlyRent_CLASS
+from users import UserInfo
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
@@ -204,6 +205,19 @@ def sendEmail(recipient, subject, body):
         print("email sent")
 
 # app.sendEmail = sendEmail
+
+    
+class SendEmail(Resource):
+    def post(self):
+        payload = request.get_json()
+
+        # Check if each field in the payload is not null
+        if all(field is not None for field in payload.values()):
+            sendEmail(payload["receiver"], payload["email_subject"], payload["email_body"])
+            return "Email Sent"
+        else:
+            return "Some fields are missing in the payload", 400
+
 
 class SendEmailCRON_CLASS(Resource):
 
@@ -713,6 +727,10 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 
 api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
 api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
+api.add_resource(SendEmail, "/sendEmail")
+
+api.add_resource(UserInfo, "/userInfo/<string:user_id>")
+
 # refresh
 # api.add_resource(Refresh, '/refresh')
 

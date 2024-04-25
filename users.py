@@ -24,8 +24,7 @@ class UserInfo(Resource):
             # print("in get lease applications")
             userQuery = db.execute("""                     
                     SELECT *
-                    FROM space.users
-                    
+                    FROM space.users                    
                     WHERE user_uid = \'""" + user_id + """\';
                     """)
             print(userQuery)                                    
