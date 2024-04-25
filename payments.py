@@ -586,7 +586,7 @@ class PaymentStatus(Resource):
 
 
 
-            # ACCOUNTS PAYABLE
+            # ACCOUNTS PAYABLE (ALL MONEY TO BE PAID REGARDLESS OF RENT COLLECTION)
             if user_id[0:3] == '600':
                 print("Manager Rent Status")
                 moneyToBePaid = db.execute("""
@@ -644,6 +644,69 @@ class PaymentStatus(Resource):
                 """)
             # print("Query: ", paidStatus)
             response["MoneyToBePaid"] = moneyToBePaid
+
+
+             # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
+            if user_id[0:3] == '600':
+                print("Manager Rent Status")
+                moneyPayable = db.execute("""
+                -- MONEY PAYABLE
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+                    AND ppd.pur_payer = '600-000003'
+                    -- AND pur_payer = \'""" + user_id + """\'
+                UNION    
+                -- MONEY TO BE PAID
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps                       
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+                    AND LEFT(ppd.pur_payer, 3) != '350' 
+                    AND ppd.pur_receiver = '600-000003'
+                    -- AND ppd.pur_receiver = \'""" + user_id + """\'
+                """)
+            else:
+                print("Non-Manager User")
+                moneyPayable = db.execute("""
+                -- MONEY PAYABLE
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+                    AND ppd.pur_payer = '600-000003'
+                    -- AND pur_payer = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["MoneyPayable"] = moneyPayable
 
             return response
 
