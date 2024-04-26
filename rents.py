@@ -38,7 +38,8 @@ class Rents(Resource):
                 rentsQuery = db.execute("""  
                     -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip
+                        , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                         , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                         , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                         , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
@@ -52,7 +53,7 @@ class Rents(Resource):
                     FROM (
                         -- Find number of properties
                         SELECT -- *,
-                                property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
                                 -- , po_owner_percent, po_start_date, po_end_date
                                 , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
@@ -102,7 +103,8 @@ class Rents(Resource):
                 rentsQuery = db.execute(""" 
                     -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip
+                        , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                         , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                         , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                         , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
@@ -116,7 +118,7 @@ class Rents(Resource):
                     FROM (
                         -- Find number of properties
                         SELECT -- *,
-                                property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
                                 -- , po_owner_percent, po_start_date, po_end_date
                                 , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
