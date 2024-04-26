@@ -198,7 +198,8 @@ class RentDetails(Resource):
                 rentQuery = db.execute(""" 
                             -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
                             SELECT -- *,
-                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
+                                IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
+                                , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -257,7 +258,8 @@ class RentDetails(Resource):
                 rentQuery = db.execute("""
                                 -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
                             SELECT -- *,
-                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
+                                IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
+                                , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -316,7 +318,8 @@ class RentDetails(Resource):
                 rentQuery = db.execute("""
                                 -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
                             SELECT -- *,
-                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
+                                IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
+                                , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
