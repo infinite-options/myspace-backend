@@ -192,9 +192,10 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 def sendEmail(recipient, subject, body):
     with app.app_context():
         print("In sendEmail: ", recipient, subject, body)
+        sender="support@manifestmy.space"
+        print("sender: ", sender)
         msg = Message(
             sender=sender,
-            # sender="support@manifestmy.space",
             recipients=[recipient],
             subject=subject,
             body=body
@@ -210,6 +211,7 @@ def sendEmail(recipient, subject, body):
 class SendEmail(Resource):
     def post(self):
         payload = request.get_json()
+        print(payload)
 
         # Check if each field in the payload is not null
         if all(field is not None for field in payload.values()):

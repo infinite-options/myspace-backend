@@ -38,7 +38,8 @@ class Rents(Resource):
                 rentsQuery = db.execute("""  
                     -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip
+                        IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
+                        , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                         , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                         , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                         , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -53,7 +54,8 @@ class Rents(Resource):
                     FROM (
                         -- Find number of properties
                         SELECT -- *,
-                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby
+                                , property_favorite_image
                                 -- , po_owner_percent, po_start_date, po_end_date
                                 , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
@@ -64,6 +66,7 @@ class Rents(Resource):
                                 , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                                 -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
                         FROM space.p_details
+                        -- WHERE tenant_uid = '350-000002'
                         -- WHERE business_uid = "600-000003"
                         -- WHERE owner_uid = "110-000003"
                         WHERE owner_uid = \'""" + uid + """\'
@@ -103,7 +106,8 @@ class Rents(Resource):
                 rentsQuery = db.execute(""" 
                     -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip
+                        IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
+                        , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                         , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                         , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                         , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -118,7 +122,8 @@ class Rents(Resource):
                     FROM (
                         -- Find number of properties
                         SELECT -- *,
-                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby
+                                , property_favorite_image
                                 -- , po_owner_percent, po_start_date, po_end_date
                                 , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
@@ -129,6 +134,7 @@ class Rents(Resource):
                                 , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                                 -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
                         FROM space.p_details
+                        -- WHERE tenant_uid = '350-000002'
                         -- WHERE business_uid = "600-000003"
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE owner_uid = \'""" + uid + """\'
