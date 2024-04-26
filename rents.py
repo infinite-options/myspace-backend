@@ -36,32 +36,59 @@ class Rents(Resource):
             with connect() as db:
                 # print("in connect loop")
                 rentsQuery = db.execute("""  
-                    -- RENT STATUS BY PROPERTY FOR OWNER PAGE
+                    -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                        , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.leaseFees, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status
-                        , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
-                        , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                        , p.contract_documents
-                        , p.business_uid, p.business_name, p.business_email, p.business_phone_number
-                        , r.latest_date, r.total_paid, r.payment_status, r.amt_remaining, r.cf_month, r.cf_year
+                        property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                        , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                        , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
+                        , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
+                        , pur_description, cf_month, cf_year
                         , CASE
-                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NOT NULL) THEN payment_status
-                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NULL) THEN 'UNPAID'
-                                ELSE 'VACANT'
-                            END AS rent_status
+                            WHEN ISNULL(contract_uid) THEN "NO MANAGER"
+                            WHEN ISNULL(lease_status) THEN "VACANT"
+                            WHEN ISNULL(purchase_status) THEN "UNPAID"
+                            ELSE purchase_status
+                            END AS rent_status 
                     FROM (
-                        SELECT * FROM space.p_details
+                        -- Find number of properties
+                        SELECT -- *,
+                                property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                -- , po_owner_percent, po_start_date, po_end_date
+                                , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
+                                , contract_status -- , contract_early_end_date
+                                , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                , lease_uid, lease_start, lease_end
+                                , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
+                                , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
+                        FROM space.p_details
+                        -- WHERE business_uid = "600-000003"
+                        -- WHERE owner_uid = "110-000003"
                         WHERE owner_uid = \'""" + uid + """\'
-                        ) as p
+                        -- WHERE business_uid = \'""" + uid + """\'
+                        -- WHERE tenant_uid = \'""" + uid + """\'  
+                        ) AS p
+                    -- Link to rent status
                     LEFT JOIN (
-                        SELECT * 
-                        FROM space.pp_details 
-                        WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        ) AS r ON p.property_uid = r.pur_property_id
+                        SELECT  -- *,
+                            pur_property_id
+                            , purchase_type
+                            , pur_due_date
+                            , SUM(pur_amount_due) AS pur_amount_due
+                            , MIN(pur_status_value) AS pur_status_value
+                            , purchase_status
+                            , pur_description
+                            , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
+                            , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                        FROM space.purchases
+                        WHERE purchase_type = "Rent"
+                            AND LEFT(pur_payer, 3) = '350'
+                            AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
+                            AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                        GROUP BY pur_due_date, pur_property_id, purchase_type
+                        ) AS pp
+                        ON property_uid = pur_property_id;
                     """)
 
             # print("Query: ", propertiesQuery)
@@ -73,32 +100,59 @@ class Rents(Resource):
             with connect() as db:
                 # print("in connect loop")
                 rentsQuery = db.execute(""" 
-                    -- RENT STATUS BY MANAGER FOR MANAGER PAGE
+                    -- PROPERTY RENT STATUS FOR RENTS PAGE
                     SELECT -- *,
-                        p.property_uid, p.property_address, p.property_unit, p.property_city, p.property_state, p.property_zip, p.property_type
-                        , p.property_num_beds, p.property_num_baths, p.property_area, p.property_listed_rent, p.property_deposit, p.property_pets_allowed, p.property_deposit_for_rent, p.property_images, p.property_description, p.property_notes
-                        , p.lease_uid, p.lease_start, p.lease_end, p.lease_status, p.leaseFees, p.lease_assigned_contacts, p.lease_documents, p.lease_early_end_date, p.lease_renew_status
-                        , p.tenant_uid, p.tenant_first_name, p.tenant_last_name, p.tenant_email, p.tenant_phone_number
-                        , p.owner_uid, p.owner_first_name, p.owner_last_name, p.owner_email, p.owner_phone_number
-                        , p.contract_documents
-                        , p.business_uid, p.business_name, p.business_email, p.business_phone_number
-                        , r.latest_date, r.total_paid, r.payment_status, r.amt_remaining, r.cf_month, r.cf_year
+                        property_uid, owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                        , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                        , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
+                        , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
+                        , pur_description, cf_month, cf_year
                         , CASE
-                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NOT NULL) THEN payment_status
-                                WHEN (p.lease_status = 'ACTIVE' AND r.payment_status IS NULL) THEN 'UNPAID'
-                                ELSE 'VACANT'
-                            END AS rent_status
+                            WHEN ISNULL(contract_uid) THEN "NO MANAGER"
+                            WHEN ISNULL(lease_status) THEN "VACANT"
+                            WHEN ISNULL(purchase_status) THEN "UNPAID"
+                            ELSE purchase_status
+                            END AS rent_status 
                     FROM (
-                        SELECT * FROM space.p_details
+                        -- Find number of properties
+                        SELECT -- *,
+                                property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities
+                                -- , po_owner_percent, po_start_date, po_end_date
+                                , owner_uid -- , owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name
+                                , contract_status -- , contract_early_end_date
+                                , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                , lease_uid, lease_start, lease_end
+                                , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
+                                , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
+                        FROM space.p_details
+                        -- WHERE business_uid = "600-000003"
+                        -- WHERE owner_uid = "110-000003"
+                        -- WHERE owner_uid = \'""" + uid + """\'
                         WHERE business_uid = \'""" + uid + """\'
-                        ) as p
+                        -- WHERE tenant_uid = \'""" + uid + """\'  
+                        ) AS p
+                    -- Link to rent status
                     LEFT JOIN (
-                        SELECT * 
-                        FROM space.pp_details 
-                        WHERE (purchase_type = "RENT" OR ISNULL(purchase_type))
-                        AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                        AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                        ) AS r ON p.property_uid = r.pur_property_id;
+                        SELECT  -- *,
+                            pur_property_id
+                            , purchase_type
+                            , pur_due_date
+                            , SUM(pur_amount_due) AS pur_amount_due
+                            , MIN(pur_status_value) AS pur_status_value
+                            , purchase_status
+                            , pur_description
+                            , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
+                            , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                        FROM space.purchases
+                        WHERE purchase_type = "Rent"
+                            AND LEFT(pur_payer, 3) = '350'
+                            AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
+                            AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                        GROUP BY pur_due_date, pur_property_id, purchase_type
+                        ) AS pp
+                        ON property_uid = pur_property_id;
                     """) 
 
             # print("Query: ", propertiesQuery)
