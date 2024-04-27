@@ -356,7 +356,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             SELECT -- *,
                                 contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
-                                , SUM(property_count)
+                                , SUM(property_count) AS property_count
                                 , JSON_ARRAYAGG(
                                         JSON_OBJECT(
                                             'agreement_status', agreement_status,
@@ -408,7 +408,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             SELECT -- *,
                                 contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_adult_occupants, contact_children_occupants, contact_pet_occupants, contact_vehicle_info, contact_drivers_license_number, contact_drivers_license_state
-                                , SUM(property_count)
+                                , SUM(property_count) AS property_count
                                 , JSON_ARRAYAGG(
                                         JSON_OBJECT(
                                             'agreement_status', agreement_status,
@@ -578,7 +578,7 @@ class Contacts(Resource):
                 profileQuery = db.execute(f"""
                     SELECT -- *,
                         contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
-                        , SUM(property_count)
+                        , SUM(property_count) AS property_count
                         , JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'agreement_status', agreement_status,
@@ -632,7 +632,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(f"""
                         SELECT -- *,
                             contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_adult_occupants, contact_children_occupants, contact_pet_occupants, contact_vehicle_info, contact_drivers_license_number, contact_drivers_license_state
-                            , SUM(property_count)
+                            , SUM(property_count) AS property_count
                             , JSON_ARRAYAGG(
                                     JSON_OBJECT(
                                         'agreement_status', agreement_status,
