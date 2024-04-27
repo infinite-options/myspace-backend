@@ -356,6 +356,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             SELECT -- *,
                                 contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
+                                , payment_method
                                 , SUM(property_count) AS property_count
                                 , JSON_ARRAYAGG(
                                         JSON_OBJECT(
@@ -380,10 +381,12 @@ class Contacts(Resource):
                                     owner_zip AS contact_zip,
                                     owner_photo_url as contact_photo_url,
                                     owner_ein_number AS contact_ein_number,
+                                    payment_method AS payment_method,
                                     COUNT(property_id) AS property_count,
                                     JSON_ARRAYAGG(
                                         JSON_OBJECT(
                                             'property_address', p.property_address,
+                                            'property_unit', p.property_unit,
                                             'property_city', p.property_city,
                                             'property_state', p.property_state,
                                             'property_zip', p.property_zip,
@@ -393,6 +396,18 @@ class Contacts(Resource):
                                 FROM space.b_details AS b
                                 LEFT JOIN space.o_details AS o ON b.contract_property_id = o.property_id
                                 LEFT JOIN space.properties AS p ON o.property_id = p.property_uid
+                                LEFT JOIN (
+                                    SELECT -- *,
+                                        paymentMethod_profile_id
+                                        , JSON_ARRAYAGG(
+                                        JSON_OBJECT(
+                                            'paymentMethod_type', paymentMethod_type,
+                                            'paymentMethod_status', paymentMethod_status
+                                        )
+                                    ) AS payment_method
+                                    FROM space.paymentMethods
+                                    GROUP BY paymentMethod_profile_id
+                                    ) AS pm ON pm.paymentMethod_profile_id = o.owner_uid
                                 -- WHERE b.business_uid = '600-000003'
                                 WHERE b.business_uid = \'""" + uid + """\'
                                 GROUP BY owner_uid , contract_status
@@ -408,6 +423,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             SELECT -- *,
                                 contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_adult_occupants, contact_children_occupants, contact_pet_occupants, contact_vehicle_info, contact_drivers_license_number, contact_drivers_license_state
+                                , payment_method
                                 , SUM(property_count) AS property_count
                                 , JSON_ARRAYAGG(
                                         JSON_OBJECT(
@@ -436,7 +452,8 @@ class Contacts(Resource):
                                 tenant_pet_occupants as contact_pet_occupants,
                                 tenant_vehicle_info as contact_vehicle_info,
                                 tenant_drivers_license_number as contact_drivers_license_number,
-                                tenant_drivers_license_state as contact_drivers_license_state
+                                tenant_drivers_license_state as contact_drivers_license_state,
+                                payment_method AS payment_method
                                 , COUNT(property_uid) AS property_count
                                 , JSON_ARRAYAGG(
                                     JSON_OBJECT(
@@ -452,6 +469,18 @@ class Contacts(Resource):
                                 LEFT JOIN space.leases ON b.contract_property_id = lease_property_id
                                 LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                                 LEFT JOIN space.properties AS p ON b.contract_property_id = p.property_uid
+                                LEFT JOIN (
+                                    SELECT -- *,
+                                        paymentMethod_profile_id
+                                        , JSON_ARRAYAGG(
+                                        JSON_OBJECT(
+                                            'paymentMethod_type', paymentMethod_type,
+                                            'paymentMethod_status', paymentMethod_status
+                                        )
+                                    ) AS payment_method
+                                    FROM space.paymentMethods
+                                    GROUP BY paymentMethod_profile_id
+                                    ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                                 -- WHERE b.business_uid = '600-000003'
                                 WHERE b.business_uid = \'""" + uid + """\' 
                                     AND lease_uid IS NOT NULL
@@ -480,11 +509,26 @@ class Contacts(Resource):
                                 m.business_state AS contact_state,
                                 m.business_zip AS contact_zip,
                                 m.business_photo_url as contact_photo_url,
-                                m.business_locations AS contact_business_locations                                             
+                                m.business_locations AS contact_business_locations,
+                                payment_method AS payment_method
                             FROM space.b_details AS b
                             LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
                             LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
-                            WHERE b.business_uid = \'""" + uid + """\' AND m.business_uid IS NOT NULL AND m.business_type = 'MAINTENANCE'
+                            LEFT JOIN (
+                                    SELECT -- *,
+                                        paymentMethod_profile_id
+                                        , JSON_ARRAYAGG(
+                                        JSON_OBJECT(
+                                            'paymentMethod_type', paymentMethod_type,
+                                            'paymentMethod_status', paymentMethod_status
+                                        )
+                                    ) AS payment_method
+                                    FROM space.paymentMethods
+                                    GROUP BY paymentMethod_profile_id
+                                    ) AS pm ON pm.paymentMethod_profile_id = m.business_uid
+                            -- WHERE b.business_uid = '600-000003'
+                            WHERE b.business_uid = \'""" + uid + """\' 
+                                AND m.business_uid IS NOT NULL AND m.business_type = 'MAINTENANCE'
                             GROUP BY b.business_uid, m.business_uid;
                     """)
                     
@@ -514,21 +558,31 @@ class Contacts(Resource):
                             tenant_zip as contact_zip,
                             tenant_photo_url as contact_photo_url,
                             tenant_adult_occupants as contact_adult_occupants,
-                            tenant_children_occupants as contact_children_occupants,
+                            -- tenant_children_occupants as contact_children_occupants,
                             tenant_pet_occupants as contact_pet_occupants,
-                            tenant_vehicle_info as contact_vehicle_info,
+                            -- tenant_vehicle_info as contact_vehicle_info,
                             tenant_drivers_license_number as contact_drivers_license_number,
-                            tenant_drivers_license_state as contact_drivers_license_state 
-                        FROM 
-                            space.t_details as t 
-                        INNER JOIN 
-                            space.leases as l ON t.lt_lease_id = l.lease_uid
-                        INNER JOIN
-                            space.m_details as m ON l.lease_property_id = m.maintenance_property_id
-                        WHERE 
-                            lease_status = 'ACTIVE' AND quote_business_id = '{uid}'
-                        GROUP BY 
-                            tenant_uid;       
+                            tenant_drivers_license_state as contact_drivers_license_state,
+                            payment_method AS payment_method
+                        FROM space.t_details as t 
+                        LEFT JOIN space.leases as l ON t.lt_lease_id = l.lease_uid
+                        LEFT JOIN space.m_details as m ON l.lease_property_id = m.maintenance_property_id
+                        LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
+                        -- WHERE quote_business_id = '600-000012'
+                        WHERE quote_business_id = '{uid}'
+                            AND lease_status = 'ACTIVE' 
+                        GROUP BY tenant_uid;       
                     """)
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["tenants"] = profileQuery["result"]
@@ -547,20 +601,30 @@ class Contacts(Resource):
                             business_phone_number as contact_phone_number,
                             business_email as contact_email,
                             business_address as contact_address,
+                            business_unit as contact_unit,
                             business_city as contact_city,
                             business_state as contact_state,
                             business_zip as contact_zip,
                             b.business_photo_url AS contact_photo_url,
-                            b.business_ein_number as contact_ein_number                         
-                        FROM 
-                            space.m_details as m
-                        INNER JOIN 
-                            space.b_details as b ON m.maintenance_property_id = b.contract_property_id
-                        WHERE 
-                            quote_business_id = '{uid}'
-                        GROUP BY 
-                            business_uid;
-                        
+                            b.business_ein_number as contact_ein_number,
+                            payment_method AS payment_method
+                        FROM space.m_details as m
+                        LEFT JOIN space.b_details as b ON m.maintenance_property_id = b.contract_property_id
+                        LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = business_uid
+                        -- WHERE quote_business_id = '600-000012'
+                        WHERE quote_business_id = '{uid}'
+                        GROUP BY business_uid;
                     """)
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["managers"] = profileQuery["result"]
@@ -578,6 +642,7 @@ class Contacts(Resource):
                 profileQuery = db.execute(f"""
                     SELECT -- *,
                         contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
+                        , payment_method
                         , SUM(property_count) AS property_count
                         , JSON_ARRAYAGG(
                                 JSON_OBJECT(
@@ -602,18 +667,33 @@ class Contacts(Resource):
                             b.business_zip AS contact_zip,
                             b.business_photo_url AS contact_photo_url,
                             b.business_ein_number as contact_ein_number,
+                            payment_method AS payment_method,
                             COUNT(p.property_uid) AS property_count,
                             JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'property_address', p.property_address,
+                                    'property_unit', p.property_unit,
                                     'property_city', p.property_city,
                                     'property_state', p.property_state,
-                                    'property_zip', p.property_zip
+                                    'property_zip', p.property_zip,
+                                    'property_type', p.property_type
                                 )
                             ) AS properties
                         FROM space.b_details AS b
                         LEFT JOIN space.o_details AS o ON b.contract_property_id = o.property_id
                         LEFT JOIN space.properties AS p ON o.property_id = p.property_uid
+                        LEFT JOIN (
+                            SELECT -- *,
+                                paymentMethod_profile_id
+                                , JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'paymentMethod_type', paymentMethod_type,
+                                    'paymentMethod_status', paymentMethod_status
+                                )
+                            ) AS payment_method
+                            FROM space.paymentMethods
+                            GROUP BY paymentMethod_profile_id
+                            ) AS pm ON pm.paymentMethod_profile_id = b.business_uid
                         -- WHERE o.property_owner_id = '110-000003'
                         WHERE o.property_owner_id = '{uid}' 
                         GROUP BY b.business_uid, contract_status
@@ -632,6 +712,7 @@ class Contacts(Resource):
                     profileQuery = db.execute(f"""
                         SELECT -- *,
                             contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_adult_occupants, contact_children_occupants, contact_pet_occupants, contact_vehicle_info, contact_drivers_license_number, contact_drivers_license_state
+                            , payment_method
                             , SUM(property_count) AS property_count
                             , JSON_ARRAYAGG(
                                     JSON_OBJECT(
@@ -661,6 +742,7 @@ class Contacts(Resource):
                                 tenant_vehicle_info as contact_vehicle_info,
                                 tenant_drivers_license_number as contact_drivers_license_number,
                                 tenant_drivers_license_state as contact_drivers_license_state
+                                , payment_method AS payment_method
                                 , COUNT(property_uid) AS property_count
                                 , JSON_ARRAYAGG(
                                     JSON_OBJECT(
@@ -676,6 +758,18 @@ class Contacts(Resource):
                             LEFT JOIN space.leases as l on t.lt_lease_id = l.lease_uid
                             LEFT JOIN space.properties as p on l.lease_property_id = p.property_uid
                             LEFT JOIN space.o_details as o on p.property_uid = o.property_id
+                            LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                             -- WHERE o.property_owner_id = '110-000003'
                             WHERE o.property_owner_id = '{uid}'
                             GROUP BY t.tenant_uid, lease_status
