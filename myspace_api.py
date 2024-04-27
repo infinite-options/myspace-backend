@@ -38,7 +38,7 @@ from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRO
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
-from contacts import Contacts, ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
+from contacts import Contacts  #, ContactsMaintenance, ContactsOwnerContactsDetails, ContactsBusinessContacts, ContactsBusinessContactsOwnerDetails, ContactsBusinessContactsTenantDetails, ContactsBusinessContactsMaintenanceDetails, ContactsOwnerManagerDetails, ContactsMaintenanceManagerDetails, ContactsMaintenanceTenantDetails
 from contracts import Contracts
 from settings import Account
 from lists import List
@@ -681,17 +681,17 @@ api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<stri
 
 
 api.add_resource(Contacts, '/contacts/<string:uid>')
-api.add_resource(ContactsMaintenance, '/contactsMaintenance')
-# api.add_resource(ContactsOwnerContactsDetails,
-#                  '/contactsOwnerContactsDetails/<string:owner_uid>')
-api.add_resource(ContactsBusinessContacts,
-                 '/contactsBusinessContacts/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsOwnerDetails,
-                 '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsTenantDetails,
-                 '/contactsBusinessContactsTenantDetails/<string:business_uid>')
-api.add_resource(ContactsBusinessContactsMaintenanceDetails,
-                 '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
+# api.add_resource(ContactsMaintenance, '/contactsMaintenance')
+# # api.add_resource(ContactsOwnerContactsDetails,
+# #                  '/contactsOwnerContactsDetails/<string:owner_uid>')
+# api.add_resource(ContactsBusinessContacts,
+#                  '/contactsBusinessContacts/<string:business_uid>')
+# api.add_resource(ContactsBusinessContactsOwnerDetails,
+#                  '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
+# api.add_resource(ContactsBusinessContactsTenantDetails,
+#                  '/contactsBusinessContactsTenantDetails/<string:business_uid>')
+# api.add_resource(ContactsBusinessContactsMaintenanceDetails,
+#                  '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
 # api.add_resource(ContactsOwnerManagerDetails,
 #                  '/contactsOwnerManagerDetails/<string:owner_uid>')
 # api.add_resource(ContactsMaintenanceManagerDetails,
