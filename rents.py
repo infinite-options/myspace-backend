@@ -208,6 +208,7 @@ class RentDetails(Resource):
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
                                 , pur_description, cf_month, cf_year
@@ -248,9 +249,10 @@ class RentDetails(Resource):
                                     , MIN(pur_status_value) AS pur_status_value
                                     , purchase_status
                                     , pur_description
+                                    , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
-                                FROM space.purchases
+                                FROM space.pp_status -- space.purchases
                                 WHERE purchase_type = "Rent"
                                     AND LEFT(pur_payer, 3) = '350'
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
@@ -262,12 +264,13 @@ class RentDetails(Resource):
 
             elif uid[:3] == '600':
                 rentQuery = db.execute("""
-                                -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
+                            -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
                             SELECT -- *,
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
                                 , pur_description, cf_month, cf_year
@@ -308,9 +311,10 @@ class RentDetails(Resource):
                                     , MIN(pur_status_value) AS pur_status_value
                                     , purchase_status
                                     , pur_description
+                                    , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
-                                FROM space.purchases
+                                FROM space.pp_status -- space.purchases
                                 WHERE purchase_type = "Rent"
                                     AND LEFT(pur_payer, 3) = '350'
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
@@ -318,16 +322,17 @@ class RentDetails(Resource):
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                                 ) AS pp
                                 ON property_uid = pur_property_id;
-                        """)
+                            """)
 
             elif uid[:3] == '350':
                 rentQuery = db.execute("""
-                                -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
+                            -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
                             SELECT -- *,
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
                                 , pur_description, cf_month, cf_year
@@ -368,16 +373,17 @@ class RentDetails(Resource):
                                     , MIN(pur_status_value) AS pur_status_value
                                     , purchase_status
                                     , pur_description
+                                    , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
-                                FROM space.purchases
+                                FROM space.pp_status -- space.purchases
                                 WHERE purchase_type = "Rent"
                                     AND LEFT(pur_payer, 3) = '350'
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                                 ) AS pp
-                                ON property_uid = pur_property_id;            
+                                ON property_uid = pur_property_id;           
                          """)
             
             # print("Query: ", maintenanceQuery)
