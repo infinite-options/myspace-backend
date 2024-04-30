@@ -664,8 +664,8 @@ class PaymentStatus(Resource):
                 ) AS pps ON ppd.pur_group = pps.pg
                 WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
                     AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
-                    AND ppd.pur_payer = '600-000003'
-                    -- AND pur_payer = \'""" + user_id + """\'
+                    -- AND ppd.pur_payer = '600-000003'
+                    AND pur_payer = \'""" + user_id + """\'
                 UNION    
                 -- MONEY TO BE PAID
                 SELECT *
@@ -682,8 +682,8 @@ class PaymentStatus(Resource):
                 WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
                     AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
                     AND LEFT(ppd.pur_payer, 3) != '350' 
-                    AND ppd.pur_receiver = '600-000003'
-                    -- AND ppd.pur_receiver = \'""" + user_id + """\'
+                    -- AND ppd.pur_receiver = '600-000003'
+                    AND ppd.pur_receiver = \'""" + user_id + """\'
                 """)
             else:
                 print("Non-Manager User")
@@ -702,8 +702,8 @@ class PaymentStatus(Resource):
                 ) AS pps ON ppd.pur_group = pps.pg
                 WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
                     AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
-                    AND ppd.pur_payer = '600-000003'
-                    -- AND pur_payer = \'""" + user_id + """\'
+                    -- AND ppd.pur_payer = '600-000003'
+                    AND pur_payer = \'""" + user_id + """\'
                 """)
             # print("Query: ", paidStatus)
             response["MoneyPayable"] = moneyPayable
