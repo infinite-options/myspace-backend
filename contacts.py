@@ -782,6 +782,30 @@ class Contacts(Resource):
 
                 
                 return response
+            
+            #all maintenance contacts
+        elif uid.startswith("ALL"):
+            print('in Get All Maintenace Contacts')
+            response = {}
+            # conn = connect()
+
+
+            with connect() as db:
+                print("in connect loop")
+                profileQuery = db.execute(""" 
+                        --  FIND ALL MAINTENANCE COMPANIES
+                        SELECT * FROM space.businessProfileInfo
+                        WHERE business_type = 'MAINTENANCE';
+                        """)
+                
+
+                # print("Query: ", profileQuery)
+                # items = execute(profileQuery, "get", conn)
+                # print(items)
+                # response["Profile"] = items["result"]
+
+                response["Maintenance_Contacts"] = profileQuery
+                return response
 
         else:
             response = {'Error': 'Invalid UID'}
