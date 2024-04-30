@@ -794,7 +794,34 @@ class Contacts(Resource):
                 print("in connect loop")
                 profileQuery = db.execute(""" 
                         --  FIND ALL MAINTENANCE COMPANIES
-                        SELECT * FROM space.businessProfileInfo
+                        SELECT -- *,
+                            business_uid as contact_uid,
+                            business_type as contact_type,
+                            business_name as contact_first_name,
+                            "MAINTENANCE" as contact_last_name,
+                            business_phone_number as contact_phone_number,
+                            business_email as contact_email,
+                            business_address as contact_address,
+                            business_unit as contact_unit,
+                            business_city as contact_city,
+                            business_state as contact_state,
+                            business_zip as contact_zip,
+                            business_photo_url AS contact_photo_url,
+                            business_ein_number as contact_ein_number,
+                            payment_method AS payment_method                             
+                        FROM space.businessProfileInfo
+                        LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = business_uid
                         WHERE business_type = 'MAINTENANCE';
                         """)
                 
