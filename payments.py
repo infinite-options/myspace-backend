@@ -708,6 +708,34 @@ class PaymentStatus(Resource):
             # print("Query: ", paidStatus)
             response["MoneyPayable"] = moneyPayable
 
+
+            # CURRENT CF MONTH REVENUE
+            cfMonthRevenue = db.execute("""
+                -- MONEY TO BE RECEIVED
+                SELECT * FROM space.pp_details
+                WHERE cf_month = DATE_FORMAT(NOW(), '%M')
+                    AND cf_year = DATE_FORMAT(NOW(), '%Y')
+                    -- AND pur_receiver = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["cfMonthRevenue"] = cfMonthRevenue
+
+
+            # CURRENT CF MONTH EXPENSE
+            cfMonthExpense = db.execute("""
+                -- MONEY TO BE PAID
+                SELECT * FROM space.pp_details
+                WHERE cf_month = DATE_FORMAT(NOW(), '%M')
+                    AND cf_year = DATE_FORMAT(NOW(), '%Y')
+                    -- AND pur_payer = '600-000003' 
+                    AND pur_receiver = \'""" + user_id + """\'
+                """)
+            # print("Query: ", paidStatus)
+            response["cfMonthExpense"] = cfMonthExpense
+
+
+
             return response
 
 
