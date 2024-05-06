@@ -84,7 +84,35 @@ class Dashboard(Resource):
                 with connect() as db:
                     print("in Manager dashboard")
                     print("in connect loop")
-
+                    response["HappinessMatrix"] = {}
+                    profitability = db.execute("""
+                                                        SELECT 
+                                    space.p_details.business_uid AS business_uid,
+                                    space.p_details.business_name AS business_name,
+                                    space.p_details.business_photo_url AS business_photo_url,
+                                    IFNULL(
+                                        -100 * ABS((
+                                            IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END), 0) -
+                                            IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0)
+                                        ) / IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0)),
+                                        0
+                                    ) AS delta_cashflow_perc,
+                                    IFNULL(
+                                        SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END),
+                                        0
+                                    ) AS cashflow,
+                                    IFNULL(
+                                        SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END),
+                                        0
+                                    ) AS expected_cashflow
+                                FROM 
+                                    space.p_details
+                                LEFT JOIN 
+                                    space.pp_details ON (space.p_details.business_uid = space.pp_details.pur_payer OR space.p_details.business_uid = space.pp_details.pur_receiver)
+                                WHERE 
+                                    space.p_details.contract_business_id = \'""" + user_id + """\';
+                    """)
+                    response["HappinessMatrix"]["profitability"] = profitability
                     # HAPPINESS MATRIX - VACANCY
                     vacancy = db.execute(""" 
                         SELECT 
@@ -119,7 +147,7 @@ class Dashboard(Resource):
                         ) AS rs
                         GROUP BY property_owner_id;
                                 """)
-                    response["HappinessMatrix"] = {}
+
                     response["HappinessMatrix"]["vacancy"] = vacancy
                     for i in range(0,len(response["HappinessMatrix"]["vacancy"]["result"])):
                         response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"] = float(response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"])
