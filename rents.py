@@ -206,7 +206,7 @@ class RentDetails(Resource):
                             SELECT -- *,
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
-                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -217,7 +217,7 @@ class RentDetails(Resource):
                                     WHEN ISNULL(lease_status) THEN "VACANT"
                                     WHEN ISNULL(purchase_status) THEN "UNPAID"
                                     ELSE purchase_status
-                                    END AS rent_status 
+                                    END AS rent_status
                             FROM (
                                 -- Find number of properties
                                 SELECT -- *,
@@ -230,7 +230,7 @@ class RentDetails(Resource):
                                         , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                                         , lease_uid, lease_start, lease_end
                                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
-                                        , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                        , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
                                 FROM space.p_details
                                 -- WHERE business_uid = "600-000003"
@@ -268,7 +268,7 @@ class RentDetails(Resource):
                             SELECT -- *,
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
-                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -279,7 +279,7 @@ class RentDetails(Resource):
                                     WHEN ISNULL(lease_status) THEN "VACANT"
                                     WHEN ISNULL(purchase_status) THEN "UNPAID"
                                     ELSE purchase_status
-                                    END AS rent_status 
+                                    END AS rent_status
                             FROM (
                                 -- Find number of properties
                                 SELECT -- *,
@@ -292,7 +292,7 @@ class RentDetails(Resource):
                                         , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                                         , lease_uid, lease_start, lease_end
                                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
-                                        , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                        , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
                                 FROM space.p_details
                                 -- WHERE business_uid = "600-000003"
@@ -330,7 +330,7 @@ class RentDetails(Resource):
                             SELECT -- *,
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
-                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid -- , rent_status
+                                , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
                                 , pur_property_id, purchase_type, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
@@ -341,7 +341,7 @@ class RentDetails(Resource):
                                     WHEN ISNULL(lease_status) THEN "VACANT"
                                     WHEN ISNULL(purchase_status) THEN "UNPAID"
                                     ELSE purchase_status
-                                    END AS rent_status 
+                                    END AS rent_status
                             FROM (
                                 -- Find number of properties
                                 SELECT -- *,
@@ -354,7 +354,7 @@ class RentDetails(Resource):
                                         , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                                         , lease_uid, lease_start, lease_end
                                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
-                                        , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                        , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
                                 FROM space.p_details
                                 -- WHERE business_uid = "600-000003"
