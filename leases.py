@@ -60,7 +60,7 @@ class LeaseDetails(Resource):
                                 'frequency', frequency,
                                 'available_topay', available_topay,
                                 'due_by_date', due_by_date
-                                )) AS leaseFees
+                                )) AS lease_fees
                                 FROM space.leaseFees
                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
@@ -77,6 +77,7 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        LEFT JOIN space.u_details ON utility_property_id = lease_property_id
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE contract_business_id = "600-000003"
                         -- WHERE tenants LIKE "%350-000040%"
@@ -117,7 +118,7 @@ class LeaseDetails(Resource):
                                 'frequency', frequency,
                                 'available_topay', available_topay,
                                 'due_by_date', due_by_date
-                                )) AS leaseFees
+                                )) AS lease_fees
                                 FROM space.leaseFees
                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
@@ -134,6 +135,7 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        LEFT JOIN space.u_details ON utility_property_id = lease_property_id
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE contract_business_id = "600-000003"
                         -- WHERE tenants LIKE "%350-000040%"
@@ -176,7 +178,7 @@ class LeaseDetails(Resource):
                                 'frequency', frequency,
                                 'available_topay', available_topay,
                                 'due_by_date', due_by_date
-                                )) AS leaseFees
+                                )) AS lease_fees
                                 FROM space.leaseFees
                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
                         LEFT JOIN space.properties ON property_uid = lease_property_id
@@ -193,6 +195,7 @@ class LeaseDetails(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        LEFT JOIN space.u_details ON utility_property_id = lease_property_id
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE contract_business_id = "600-000003"
                         -- WHERE tenants LIKE "%350-000040%"
