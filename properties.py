@@ -689,6 +689,8 @@ class Properties(Resource):
                 , "property_amenities_unit"
                 , "property_amenities_community"
                 , "property_amenities_nearby"
+                , "property_latitude"
+                , "property_longitude"
             ]
 
             newRequest = {}
@@ -808,6 +810,8 @@ class Properties(Resource):
             , "property_amenities_unit"
             , "property_amenities_community"
             , "property_amenities_nearby"
+            , "property_latitude"
+            , "property_longitude"
         ]
 
         newProperty = {}
