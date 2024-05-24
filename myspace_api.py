@@ -191,19 +191,19 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
 def sendEmail(recipient, subject, body):
     with app.app_context():
-        print("In sendEmail: ", recipient, subject, body)
+        # print("In sendEmail: ", recipient, subject, body)
         sender="support@manifestmy.space"
-        print("sender: ", sender)
+        # print("sender: ", sender)
         msg = Message(
             sender=sender,
             recipients=[recipient],
             subject=subject,
             body=body
         )
-        print("sender: ", sender)
-        print("Email message: ", msg)
+        # print("sender: ", sender)
+        # print("Email message: ", msg)
         mail.send(msg)
-        print("email sent")
+        # print("email sent")
 
 # app.sendEmail = sendEmail
 
@@ -261,7 +261,9 @@ def Send_Twilio_SMS(message, phone_number):
 
 class Announcements(Resource):
     def post(self, user_id):
+        print("In Announcements POST")
         payload = request.get_json()
+        # print("Post Announcement Payload: ", payload)
         manager_id = user_id
         if isinstance(payload["announcement_receiver"], list):
             receivers = payload["announcement_receiver"]
@@ -277,6 +279,7 @@ class Announcements(Resource):
 
         for propertyString in properties:
             propertyObj = json.loads(propertyString)
+            # print("Property: ", propertyObj)
 
             for key, value in propertyObj.items():
                 receiverPropertiesMap[key] = value        
@@ -290,7 +293,13 @@ class Announcements(Resource):
                 newRequest['announcement_mode'] = payload["announcement_mode"]
                 newRequest['announcement_properties'] = json.dumps(receiverPropertiesMap.get(receivers[i], []))
                 newRequest['announcement_receiver'] = receivers[i]
-                newRequest['announcement_date'] = time.strftime('%m-%d-%Y %H:%M:%S')
+
+                # Get the current date and time
+                current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
+    
+                # Insert or update the "announcement_read" key with the current date and time
+                newRequest['announcement_date'] = current_datetime
+                # print("Announcement Date: ", newRequest['announcement_date'])
 
                 user_query = None                    
                 if(receivers[i][:3] == '350'):                    
@@ -332,6 +341,7 @@ class Announcements(Resource):
         return response                
 
     def get(self, user_id):
+        print("In Announcements GET")
         response = {}
         with connect() as db:
             # if user_id.startswith("600-"):
@@ -396,6 +406,26 @@ class Announcements(Resource):
             #                             """)
         return response
 
+    def put(self):
+        print("In Announcements PUT")
+        response = {}
+        payload = request.get_json()
+        if payload.get('announcement_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        # print("Announcement Payload: ", payload)
+        # Get the current date and time
+        current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
+    
+        # Insert or update the "announcement_read" key with the current date and time
+        payload['announcement_read'] = current_datetime
+
+        key = {'announcement_uid': payload.pop('announcement_uid')}
+        # print("Annoucement Key: ", key)
+        with connect() as db:
+            # response = db.update('announcements', key, '"announcement_read": "12-31-2023"')
+            response = db.update('announcements', key, payload)
+        return response
+    
 class LeaseExpiringNotify(Resource):
     def get(self):
         with connect() as db:
@@ -628,7 +658,7 @@ api.add_resource(Contacts, '/contacts/<string:uid>')
 # api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
 
 # api.add_resource(Announcements, '/announcements')
-api.add_resource(Announcements, '/announcements/<string:user_id>')
+api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
 # api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 
