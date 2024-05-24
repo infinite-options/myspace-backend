@@ -413,17 +413,23 @@ class Announcements(Resource):
         if payload.get('announcement_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         # print("Announcement Payload: ", payload)
+
         # Get the current date and time
         current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
     
         # Insert or update the "announcement_read" key with the current date and time
         payload['announcement_read'] = current_datetime
 
-        key = {'announcement_uid': payload.pop('announcement_uid')}
-        # print("Annoucement Key: ", key)
-        with connect() as db:
-            # response = db.update('announcements', key, '"announcement_read": "12-31-2023"')
-            response = db.update('announcements', key, payload)
+
+        i = 0
+        for each in payload['announcement_uid']:
+            # print("current uid: ", each)
+            key = {'announcement_uid': each}
+            # print("Annoucement Key: ", key)
+            with connect() as db:
+                response = db.update('announcements', key, payload)
+                i = i + 1
+        response["rows affected"] = i
         return response
     
 class LeaseExpiringNotify(Resource):
