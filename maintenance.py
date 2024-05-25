@@ -825,13 +825,12 @@ class MaintenanceStatus(Resource):
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
                             , CASE  
-                                    WHEN payment_status IN ("PAID", "PAID LATE")                                           THEN "PAID" 
-                                    WHEN maintenance_request_status = 'COMPLETED'                           			   THEN "COMPLETED"
-                                    WHEN maintenance_request_status IN ("NEW" ,"INFO")                                     THEN "NEW REQUEST"
-                                    WHEN maintenance_request_status = "SCHEDULED"                                          THEN "SCHEDULED"
-                                    WHEN maintenance_request_status = "CANCELLED" or quote_status_ranked = "FINISHED"      THEN "COMPLETED"
-                                    WHEN quote_status_ranked IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN") THEN "QUOTES REQUESTED"
-                                    WHEN quote_status_ranked IN ("ACCEPTED" , "SCHEDULE")                                  THEN "QUOTES ACCEPTED"
+                                    WHEN payment_status IN ("PAID", "PAID LATE")                                                            THEN "PAID" 
+                                    WHEN maintenance_request_status IN ("NEW" ,"INFO")                                                      THEN "NEW REQUEST"
+                                    WHEN maintenance_request_status = "SCHEDULED"                                                           THEN "SCHEDULED"
+                                    WHEN maintenance_request_status IN ("CANCELLED" ,"COMPLETED") or quote_status_ranked = "FINISHED"       THEN "COMPLETED"
+                                    WHEN quote_status_ranked IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")                  THEN "QUOTES REQUESTED"
+                                    WHEN quote_status_ranked IN ("ACCEPTED" , "SCHEDULE")                                                   THEN "QUOTES ACCEPTED"
                                     ELSE quote_status_ranked
                                 END AS maintenance_status
                             FROM (
