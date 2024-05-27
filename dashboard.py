@@ -219,16 +219,15 @@ class Dashboard(Resource):
                             FROM (
                                 SELECT *
                                     -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                                    , CASE
-                                            WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
-                                            WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                            WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
-                                            WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                            OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
-                                            WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
-                                            WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
-                                            ELSE quote_status
-                                        END AS maintenance_status
+                                    , CASE  
+										WHEN quote_status = "COMPLETED"                                           			THEN "PAID" 
+                                        WHEN maintenance_request_status IN ("NEW" ,"INFO")                                  THEN "NEW REQUEST"
+                                        WHEN maintenance_request_status = "SCHEDULED"                                       THEN "SCHEDULED"
+                                        WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"          THEN "COMPLETED"
+                                        WHEN quote_status IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN") 	THEN "QUOTES REQUESTED"
+                                        WHEN quote_status IN ("ACCEPTED" , "SCHEDULE")                                  	THEN "QUOTES ACCEPTED"
+                                        ELSE quote_status
+                                    END AS maintenance_status
                                 FROM (
                                     SELECT * 
                                     FROM space.maintenanceRequests
