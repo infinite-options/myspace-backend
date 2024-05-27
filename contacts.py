@@ -831,7 +831,7 @@ class Contacts(Resource):
                 # print(items)
                 # response["Profile"] = items["result"]
 
-                response["Maintenance_Contacts"] = profileQuery
+                response["maintenance_businesses"] = profileQuery
                 return response
 
         else:
