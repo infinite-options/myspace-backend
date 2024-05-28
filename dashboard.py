@@ -176,7 +176,7 @@ class Dashboard(Resource):
                     delta_cashflow_details = db.execute("""
                                 SELECT *,
                                     CAST((expected_cashflow - actual_cashflow) AS DECIMAL(10,2)) AS delta_cashflow
-                                    , CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2)) AS percent_delta_cashflow
+                                    , IF(expected_cashflow = 0, 0, CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2))) AS percent_delta_cashflow
                                 FROM (
                                     SELECT -- *,
                                         property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
@@ -192,19 +192,26 @@ class Dashboard(Resource):
                                         -- , pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date
                                         -- , total_paid, payment_status, amt_remaining
                                         , cf_month, cf_year
-                                        , IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0) AS expected_cashflow
-                                        , IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END), 0) AS actual_cashflow
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN pur_amount_due
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -pur_amount_due
+                                                ELSE 0
+                                            END) AS expected_cashflow
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN total_paid
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -total_paid
+                                                ELSE 0
+                                            END) AS actual_cashflow
                                     FROM space.p_details
                                     LEFT JOIN space.pp_status ON property_uid = pur_property_id
-                                    WHERE (owner_uid = pur_receiver OR owner_uid = pur_payer) AND
-                                            -- business_uid = '600-000003'
-                                            business_uid = \'""" + user_id + """\'
+                                    -- WHERE business_uid = '600-000003'
+                                    WHERE business_uid = \'""" + user_id + """\'
                                     GROUP BY 
                                         owner_uid
                                         , cf_month
                                         , cf_year
                                     ORDER BY owner_uid
-                                    ) AS cf
+                                    ) AS cf_details
                                 """)
 
                     response["HappinessMatrix"]["delta_cashflow_details"] = delta_cashflow_details
@@ -216,12 +223,11 @@ class Dashboard(Resource):
                                     , SUM(expected_cashflow) AS expected_cashflow
                                     , SUM(actual_cashflow) AS actual_cashflow
                                     , CAST((SUM(expected_cashflow) - SUM(actual_cashflow)) AS DECIMAL(10,2)) AS delta_cashflow
-                                    , CAST(ABS(SUM(expected_cashflow) - SUM(actual_cashflow))/SUM(expected_cashflow) AS DECIMAL(10,2)) AS percent_delta_cashflow
+                                    , IF(SUM(expected_cashflow) = 0, 0, CAST(ABS(SUM(expected_cashflow) - SUM(actual_cashflow))/SUM(expected_cashflow) AS DECIMAL(10,2))) AS percent_delta_cashflow
                                 FROM (
-
                                     SELECT *,
                                         CAST((expected_cashflow - actual_cashflow) AS DECIMAL(10,2)) AS delta_cashflow
-                                        , CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2)) AS percent_delta_cashflow
+                                        , IF(expected_cashflow = 0, 0, CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2))) AS percent_delta_cashflow
                                     FROM (
                                         SELECT -- *,
                                             property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
@@ -237,13 +243,20 @@ class Dashboard(Resource):
                                             -- , pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date
                                             -- , total_paid, payment_status, amt_remaining
                                             , cf_month, cf_year
-                                            , IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN pur_amount_due ELSE -pur_amount_due END), 0) AS expected_cashflow
-                                            , IFNULL(SUM(CASE WHEN pur_cf_type = 'revenue' THEN total_paid ELSE -total_paid END), 0) AS actual_cashflow
+                                            , SUM(CASE
+                                                    WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN pur_amount_due
+                                                    WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -pur_amount_due
+                                                    ELSE 0
+                                                END) AS expected_cashflow
+                                            , SUM(CASE
+                                                    WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN total_paid
+                                                    WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -total_paid
+                                                    ELSE 0
+                                                END) AS actual_cashflow
                                         FROM space.p_details
                                         LEFT JOIN space.pp_status ON property_uid = pur_property_id
-                                        WHERE (owner_uid = pur_receiver OR owner_uid = pur_payer) AND
-                                            -- business_uid = '600-000003'
-                                            business_uid = \'""" + user_id + """\'
+                                        -- WHERE business_uid = '600-000003'
+                                        WHERE business_uid = \'""" + user_id + """\'
                                         GROUP BY 
                                             owner_uid
                                             , cf_month
