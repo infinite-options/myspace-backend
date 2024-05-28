@@ -127,7 +127,7 @@ class Dashboard(Resource):
 
                     response["Profitability"]["expense"] = expense
 
-                    print("Complete Profitability")
+                    # print("Complete Profitability")
 
                     
                     # HAPPINESS MATRIX - VACANCY
@@ -215,9 +215,12 @@ class Dashboard(Resource):
                     for entry in response["HappinessMatrix"]["delta_cashflow_details"]["result"]:
                         # Get the owner_uid, expected_cashflow, and actual_cashflow from the current entry
                         owner_uid = entry['owner_uid']
+                        owner_first_name = entry['owner_first_name']
+                        owner_last_name = entry['owner_last_name']
+                        owner_photo_url = entry['owner_photo_url']
                         expected_cashflow = float(entry['expected_cashflow'])
                         actual_cashflow = float(entry['actual_cashflow'])
-                        print("Entry: ", owner_uid, expected_cashflow, type(expected_cashflow), actual_cashflow, type(actual_cashflow))
+                        # print("Entry: ", owner_uid, expected_cashflow, type(expected_cashflow), actual_cashflow, type(actual_cashflow))
                         
                         # If the owner_uid is not already in the dictionary, add it with initial sums
                         if owner_uid not in cashflow_sums:
@@ -235,16 +238,57 @@ class Dashboard(Resource):
                             cashflow_sums[owner_uid]['percent_difference'] = None  # or any other value you prefer for division by zero cases
 
 
-                    print("Cashflow Values: ", cashflow_sums)
+                    # print("Cashflow Values: ", cashflow_sums)
 
                     # Print the sums for each owner_uid
+                    # for owner_uid, sums in cashflow_sums.items():
+                    #     expected_sum = sums['expected_cashflow_sum']
+                    #     actual_sum = sums['actual_cashflow_sum']
+                    #     percent_difference = (expected_sum -actual_sum)/ expected_sum
+                        # print(f"Owner UID: {owner_uid}, Expected Cashflow Sum: {expected_sum}, Actual Cashflow Sum: {actual_sum}, Percent Difference: {percent_difference:.2f}")
+
+
+
+                    # Convert the cashflow_sums dictionary into the desired format
+                    # Initialize a list to store the result entries
+                    result_list = []
+
+                    # Iterate over each owner_uid in cashflow_sums
                     for owner_uid, sums in cashflow_sums.items():
                         expected_sum = sums['expected_cashflow_sum']
                         actual_sum = sums['actual_cashflow_sum']
                         percent_difference = (expected_sum -actual_sum)/ expected_sum
-                        print(f"Owner UID: {owner_uid}, Expected Cashflow Sum: {expected_sum}, Actual Cashflow Sum: {actual_sum}, Percent Difference: {percent_difference:.2f}")
+                        # print(f"Owner UID: {owner_uid}, Expected Cashflow Sum: {expected_sum}, Actual Cashflow Sum: {actual_sum}, Percent Difference: {percent_difference:.2f}")
+                        # Calculate the delta_cashflow_perc
+                        if sums['expected_cashflow_sum'] != 0:
+                            delta_cashflow_perc = (sums['expected_cashflow_sum'] - sums['actual_cashflow_sum']) / sums['expected_cashflow_sum'] * 100
+                        else:
+                            delta_cashflow_perc = None  # or any other value you prefer for division by zero cases
+                        
+                        # Append the entry to the result list
+                        result_list.append({
+                            "owner_id": owner_uid,
+                            "owner_first_name": owner_first_name,
+                            "owner_last_name": owner_last_name,
+                            "owner_photo_url": owner_photo_url,
+                            "delta_cashflow_perc": "{:.2f}".format(delta_cashflow_perc),
+                            "cashflow": sums['actual_cashflow_sum'],
+                            "expected_cashflow": sums['expected_cashflow_sum']
+                        })
 
-                    response["HappinessMatrix"]["delta_cashflow"] = cashflow_sums
+                    # Construct the final result dictionary
+                    result_dict = {
+                        "message": "Successfully executed SQL query",
+                        "code": 200,
+                        "result": result_list
+                    }
+
+                    # Assign the result_dict to response["HappinessMatrix"]["delta_cashflow"]
+                    response["HappinessMatrix"]["delta_cashflow"] = result_dict
+
+                    # Print the final result
+                    print(response["HappinessMatrix"]["delta_cashflow"])
+
 
 
                         # response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"] = float(response["HappinessMatrix"]["delta_cashflow"]["result"][i]["delta_cashflow_perc"])
