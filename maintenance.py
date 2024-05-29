@@ -948,31 +948,29 @@ class MaintenanceStatus(Resource):
                 with connect() as db:
                     print("in MAINTENANCE")
                     maintenanceStatus = db.execute(""" 
-                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
-                            SELECT * -- bill_property_id,  maintenance_property_id,
-                            , CASE
-                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      		THEN "REQUESTED"
-                                        WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
-                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
-                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
-                                        WHEN space.m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
-                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
-                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
-                                        ELSE space.m_details.quote_status
-                                    END AS maintenance_status
+                            -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
+                            SELECT *
+                                , CASE
+                                    WHEN space.m_details.quote_status = "REQUESTED"                                                      		THEN "REQUESTED"
+                                    WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
+                                    WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
+                                    WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
+                                    WHEN space.m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
+                                    WHEN space.m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
+                                    WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
+                                    ELSE space.m_details.quote_status
+                                END AS maintenance_status
                             FROM space.m_details
                             LEFT JOIN space.bills ON space.m_details.maintenance_request_uid = bill_maintenance_request_id
                             -- LEFT JOIN space.maintenanceQuotes ON bill_maintenance_quote_id = space.maintenanceQuotes.maintenance_quote_uid
-                            LEFT JOIN space.purchases ON bill_uid = pur_bill_id
+                            LEFT JOIN (SELECT * FROM space.purchases WHERE pur_receiver = '600-000012' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                            
-                            WHERE space.m_details.quote_business_id = \'""" + uid + """\' AND (pur_receiver = \'""" + uid + """\' OR ISNULL(pur_receiver))
-                            -- WHERE business_uid = '600-000032' AND (pur_receiver = '600-000032' OR ISNULL(pur_receiver))
-                            ORDER BY maintenance_request_created_date;
+                            WHERE quote_business_id = \'""" + uid + """\'
+                            -- WHERE quote_business_id = '600-000012'
                             """)
 
                 if maintenanceStatus.get('code') == 200:

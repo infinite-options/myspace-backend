@@ -34,23 +34,27 @@ class Dashboard(Resource):
                     # print("in maintenance dashboard")
                     currentActivity = db.execute(""" 
                             -- CURRENT ACTIVITY
-                            SELECT -- *,
+                            SELECT *,
                                 quote_business_id
                                 , maintenance_status
                                 , COUNT(maintenance_status) AS num
                                 , SUM(quote_total_estimate) AS total_estimate
                             FROM (
                                 SELECT quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
+                                    , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc
                                     , CASE
-                                            -- WHEN quote_status = "SENT" THEN "SUBMITTED"
-                                            WHEN quote_status = "SENT" OR quote_status = "WITHDRAWN" OR quote_status = "REFUSED" OR quote_status = "REJECTED"  THEN "SUBMITTED"
-                                            WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"   THEN "ACCEPTED"
-                                            WHEN quote_status = "SCHEDULED" OR quote_status = "RESCHEDULE"   THEN "SCHEDULED"
-                                            WHEN quote_status = "COMPLETED"   THEN "PAID"
-                                            ELSE quote_status
-                                        END AS maintenance_status
+                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      		THEN "REQUESTED"
+                                        WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
+                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
+                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
+                                        WHEN space.m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
+                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
+                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
+                                        ELSE space.m_details.quote_status
+                                    END AS maintenance_status
                                 FROM space.m_details
-                                WHERE quote_business_id = \'""" + user_id + """\'
+                                -- WHERE quote_business_id = \'""" + user_id + """\'
+                                WHERE quote_business_id = '600-000012'
                                 ) AS ms
                             GROUP BY maintenance_status;
                             """)
