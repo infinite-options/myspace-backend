@@ -21,7 +21,7 @@ from password import Password
 from dashboard import Dashboard # , ownerDashboard, managerDashboard, tenantDashboard, maintenanceDashboard
 
 from rents import Rents, RentDetails
-from payments import Payments, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
+from payments import Payments, PaymentOwner, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties
 from transactions import AllTransactions
 from cashflow import CashflowByOwner
@@ -567,6 +567,7 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 
 # Payment Endpoints
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
+api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
 api.add_resource(NewPayments, '/makePayment')
 # api.add_resource(Payments, '/makePayment')  # Original endpoint
 # api.add_resource(NewPayments, '/makePayment2')   # Used for endpoint development

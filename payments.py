@@ -464,90 +464,7 @@ class PaymentStatus(Resource):
 
         with connect() as db:
             # print("in connect loop")
-
-            
-            #  OLD ENDPOINTS
-            # # WHAT IS TO BE PAID
-            # paymentStatus = db.execute(""" 
-            #         -- FIND TENANT PAYABLES
-            #         SELECT pp_details.*, bill_maintenance_quote_id
-            #         FROM space.pp_details
-            #         LEFT JOIN space.bills ON bill_uid = pur_bill_id
-            #         WHERE pur_payer = \'""" + user_id + """\' and purchase_status IN ('UNPAID','PARTIALLY PAID');
-            #         """)
-            # # print("Query: ", paymentStatus)
-            # response["PaymentStatus"] = paymentStatus
-
-
-            # # RENT PAYMENT STATUS
-            # if user_id[0:3] == '600':
-            #     print("Manager Rent Status")
-            #     rentStatus = db.execute("""
-            #         -- GET RENT DETAILS
-            #         SELECT *
-            #         FROM space.pp_details
-            #         -- WHERE business_uid = '600-000003'
-            #         -- WHERE owner_uid = '110-000003'
-            #         -- WHERE tenant_uid = '350-000002'
-            #         WHERE business_uid = \'""" + user_id + """\' """)
-            #     # print("Query: ", rentStatus)
-            #     response["RentStatus"] = rentStatus
-            # elif user_id[0:3] == '110':
-            #     print("Owner Rent Status")
-            #     rentStatus = db.execute("""
-            #         -- GET RENT DETAILS
-            #         SELECT *
-            #         FROM space.pp_details
-            #         -- WHERE business_uid = '600-000003'
-            #         -- WHERE owner_uid = '110-000003'
-            #         -- WHERE tenant_uid = '350-000002'
-            #         WHERE owner_uid = \'""" + user_id + """\' """)
-            #     # print("Query: ", rentStatus)
-            #     response["RentStatus"] = rentStatus
-            # elif user_id[0:3] == '350':
-            #     print("Tenant Rent Status")
-            #     rentStatus = db.execute("""
-            #         -- GET RENT DETAILS
-            #         SELECT *
-            #         FROM space.pp_details
-            #         -- WHERE business_uid = '600-000003'
-            #         -- WHERE owner_uid = '110-000003'
-            #         -- WHERE tenant_uid = '350-000002'
-            #         WHERE tenant_uid = \'""" + user_id + """\' """)
-            #     # print("Query: ", rentStatus)
-            #     response["RentStatus"] = rentStatus
-            # else:
-            #     print("user_id not found")
-            #     response["RentStatus"] = "UID Not Found"
-
-            
-
-            # # PAYMENT HISTORY
-            # paidStatus = db.execute("""
-            #         -- FIND PAYMENT HISTORY
-            #         SELECT * FROM space.pp_details
-            #         WHERE payment_status != 'UNPAID' 
-            #           -- AND pur_payer = '600-000003'
-            #           AND pur_payer = \'""" + user_id + """\'
-            #         """)
-            # # print("Query: ", paidStatus)
-            # response["PaidStatus"] = paidStatus
-
-
-            # # RECEIVED PAYMENT HISTORY
-            # receivedStatus = db.execute("""
-            #         -- FIND RECEIVED HISTORY
-            #         SELECT * FROM space.pp_details
-            #         WHERE payment_status != 'UNPAID' 
-            #           -- AND pur_receiver = '600-000003' 
-            #           AND pur_receiver = \'""" + user_id + """\'
-            #         """)
-            # # print("Query: ", paidStatus)
-            # response["ReceivedStatus"] = receivedStatus
-
-            
-
-
+      
 
             # MONIES RECECEIVED
             moneyReceived = db.execute("""
@@ -646,7 +563,7 @@ class PaymentStatus(Resource):
             response["MoneyToBePaid"] = moneyToBePaid
 
 
-             # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
+            # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
             if user_id[0:3] == '600':
                 print("Manager Rent Status")
                 moneyPayable = db.execute("""
@@ -738,10 +655,10 @@ class PaymentStatus(Resource):
             cfMonthExpenseByProperty = db.execute("""
                 -- MONEY TO BE PAID
                 SELECT pur_property_id, pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description,
-                , pur_receiver -- , pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining,
-                , cf_month, cf_year -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email, initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email, payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url, contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url, lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU, tenant_photo_url
-            , SUM(pur_amount_due) AS pur_amount_due
-            , SUM(pur_amount_due-amt_remaining) AS received_actual FROM space.pp_details
+                    , pur_receiver -- , pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining,
+                    , cf_month, cf_year -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email, initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email, payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url, contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url, lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU, tenant_photo_url
+                    , SUM(pur_amount_due) AS pur_amount_due
+                    , SUM(pur_amount_due-amt_remaining) AS received_actual FROM space.pp_details
                 WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                     AND cf_year = DATE_FORMAT(NOW(), '%Y') AND pur_payer = \'""" + user_id + """\'
                 GROUP BY pur_property_id;
@@ -753,10 +670,10 @@ class PaymentStatus(Resource):
             cfMonthRevenueByProperty = db.execute("""
                 -- MONEY TO BE RECEIVED
                 SELECT pur_property_id, pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description,
-    , pur_receiver -- , pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining,
-    , cf_month, cf_year -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email, initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email, payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url, contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url, lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU, tenant_photo_url
-, SUM(pur_amount_due) AS pur_amount_due
-, SUM(pur_amount_due-amt_remaining) AS received_actual FROM space.pp_details
+                    , pur_receiver -- , pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining,
+                    , cf_month, cf_year -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email, initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email, payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url, contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url, lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU, tenant_photo_url
+                    , SUM(pur_amount_due) AS pur_amount_due
+                    , SUM(pur_amount_due-amt_remaining) AS received_actual FROM space.pp_details
                 WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                     AND cf_year = DATE_FORMAT(NOW(), '%Y') AND pur_payer = \'""" + user_id + """\'
                 GROUP BY pur_property_id;
@@ -767,8 +684,71 @@ class PaymentStatus(Resource):
             return response
 
 
+class PaymentOwner(Resource):
+            
+    # decorators = [jwt_required()]
 
+    def get(self, user_id, owner_id):
+        print('in PaymentStatus')
+        response = {}
 
+        # print("User ID: ", user_id)
+
+        with connect() as db:
+            # print("in connect loop")
+
+            # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
+            if (user_id[0:3] == '600', owner_id[0:3] == '110'):
+                print("In Manager Owner Payable Rents")
+                moneyPayable = db.execute("""
+                -- MONEY PAYABLE
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+                    -- AND ppd.pur_payer = '600-000003'
+                    -- AND ppd.property_owner_id = '110-000003'
+                    AND pur_payer = \'""" + user_id + """\'
+                    AND ppd.property_owner_id = \'""" + owner_id + """\'
+                UNION    
+                -- MONEY TO BE PAID
+                SELECT *
+                FROM space.pp_details AS ppd
+                LEFT JOIN (
+                    SELECT 
+                        payment_status AS ps
+                        , pur_group AS pg
+                        , pur_payer AS pp
+                        , CONCAT(pur_group, " ", payment_status) AS pgps                       
+                    FROM space.pp_status 
+                    WHERE LEFT(pur_payer, 3) = '350'
+                ) AS pps ON ppd.pur_group = pps.pg
+                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+                    AND LEFT(ppd.pur_payer, 3) != '350' 
+                    -- AND ppd.pur_receiver = '600-000003'
+                    -- AND ppd.property_owner_id = '110-000003'
+                    AND ppd.pur_receiver = \'""" + user_id + """\'
+                    AND ppd.property_owner_id = \'""" + owner_id + """\'
+                -- ORDER BY cf_year, cf_month
+                ORDER BY STR_TO_DATE(CONCAT('1 ', cf_month, ' ', cf_year), '%d %M %Y') DESC, pgps;
+                """)
+            else:
+                print("Not a Valid Case")
+
+            # print("Query: ", paidStatus)
+            response["OwnerMoneyPayable"] = moneyPayable
+
+            return response
 
 class PaymentMethod(Resource):
     def post(self):
