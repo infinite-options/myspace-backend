@@ -68,7 +68,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN (
                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('tenant_uid', tenant_uid,
-                                'lt_responsibility', lt_responsibility,
+                                'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
@@ -126,7 +126,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN (
                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('tenant_uid', tenant_uid,
-                                'lt_responsibility', lt_responsibility,
+                                'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
@@ -186,7 +186,7 @@ class LeaseDetails(Resource):
                         LEFT JOIN (
                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('tenant_uid', tenant_uid,
-                                'lt_responsibility', lt_responsibility,
+                                'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
