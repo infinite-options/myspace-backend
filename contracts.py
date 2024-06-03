@@ -184,7 +184,7 @@ class Contracts(Resource):
             with connect() as db:
                 response = db.execute("""
                 SELECT -- *,
-                    property_id, property_owner_id, po_owner_percent
+                    property_id, property_unit, property_address, property_city, property_zip, property_owner_id, po_owner_percent
                     , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
                     -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
                     , owner_photo_url
@@ -192,6 +192,7 @@ class Contracts(Resource):
                     , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
                     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                 FROM space.o_details o
+                LEFT JOIN space.properties p ON o.property_id =p.property_uid 
                 LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
                 -- WHERE o.owner_uid = \'""" + user_id + """\';
                 WHERE b.business_uid = \'""" + user_id + """\';
