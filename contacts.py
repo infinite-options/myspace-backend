@@ -355,7 +355,7 @@ class Contacts(Resource):
                     ('    -in Get Owner Contacts for Management')
                     profileQuery = db.execute(""" 
                             SELECT -- *,
-                                contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
+                                contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number, contact_ssn
                                 , payment_method
                                 , SUM(property_count) AS property_count
                                 , JSON_ARRAYAGG(
@@ -381,6 +381,7 @@ class Contacts(Resource):
                                     owner_zip AS contact_zip,
                                     owner_photo_url as contact_photo_url,
                                     owner_ein_number AS contact_ein_number,
+                                    owner_ssn AS contact_ssn,
                                     payment_method AS payment_method,
                                     COUNT(property_id) AS property_count,
                                     JSON_ARRAYAGG(
