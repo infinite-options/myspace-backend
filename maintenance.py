@@ -586,6 +586,7 @@ class MaintenanceQuotes(Resource):
         response = {}
         newDocument = {}
         payload = request.form
+        print("payload: ", payload)
         if payload.get('maintenance_quote_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
@@ -918,6 +919,7 @@ class MaintenanceStatus(Resource):
                             ORDER BY maintenance_request_created_date;
                             """)
 
+                print("Completed Query")
                 if maintenanceStatus.get('code') == 200:
                     status_colors = {
                         'NEW REQUEST': '#A52A2A',
@@ -928,16 +930,23 @@ class MaintenanceStatus(Resource):
                         'PAID': '#3D5CAC',
                     }
 
+                    print("After Colors")
                     mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
                                     status_colors.items()}
-
+                    
+                    print("After Map")
                     response = maintenanceStatus
+                    print("Response: ", response)
 
                     for record in response['result']:
+                        print("Record: ", record)
                         status = record.get('maintenance_status')
+                        print('Status: ', status)
                         mapped_items[status]['maintenance_items'].append(record)
+                        print('Mapped_items: ', mapped_items)
 
                     response['result'] = mapped_items
+                    print("Final Response: ", response)
                     return response
 
                 response["MaintenanceStatus"] = maintenanceStatus
