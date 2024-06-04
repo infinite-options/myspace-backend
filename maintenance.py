@@ -832,7 +832,7 @@ class MaintenanceStatus(Resource):
                                     WHEN maintenance_request_status = 'CANCELLED' or quote_status_ranked = "FINISHED"       THEN "COMPLETED"
                                     WHEN quote_status_ranked IN ("SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN")  THEN "QUOTES REQUESTED"
                                     WHEN quote_status_ranked IN ("ACCEPTED" , "SCHEDULE")                                   THEN "QUOTES ACCEPTED"
-                                    ELSE quote_status_ranked
+                                    ELSE maintenance_request_status
                                 END AS maintenance_status
                             FROM (
                                     SELECT * 
@@ -919,7 +919,7 @@ class MaintenanceStatus(Resource):
                             ORDER BY maintenance_request_created_date;
                             """)
 
-                print("Completed Query")
+                # print("Completed Query")
                 if maintenanceStatus.get('code') == 200:
                     status_colors = {
                         'NEW REQUEST': '#A52A2A',
@@ -930,23 +930,23 @@ class MaintenanceStatus(Resource):
                         'PAID': '#3D5CAC',
                     }
 
-                    print("After Colors")
+                    # print("After Colors")
                     mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
                                     status_colors.items()}
                     
-                    print("After Map")
+                    # print("After Map")
                     response = maintenanceStatus
-                    print("Response: ", response)
+                    # print("Response: ", response)
 
                     for record in response['result']:
-                        print("Record: ", record)
+                        # print("Record: ", record)
                         status = record.get('maintenance_status')
-                        print('Status: ', status)
+                        # print('Status: ', status)
                         mapped_items[status]['maintenance_items'].append(record)
-                        print('Mapped_items: ', mapped_items)
+                        # print('Mapped_items: ', mapped_items)
 
                     response['result'] = mapped_items
-                    print("Final Response: ", response)
+                    # print("Final Response: ", response)
                     return response
 
                 response["MaintenanceStatus"] = maintenanceStatus
