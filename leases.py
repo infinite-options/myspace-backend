@@ -386,10 +386,16 @@ class LeaseApplication(Resource):
         print("In Lease Application PUT")
         response = {}
         data = request.form
-        # data = request.form.to_dict()  #<== IF data came in as Form Data
-        # print("data",data)
-        # if data.get('lease_uid') is None:
-        #     raise BadRequest("Request failed, no UID in payload.")
+        data = request.form.to_dict()  #<== IF data came in as Form Data
+        print("data",data)
+        if data.get('lease_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'lease_uid': data['lease_uid']}
+        print("Key: ", key)
+        quote = {k: v for k, v in data.items()}
+        print("KV Pairs: ", quote)
+
+        
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
                         "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
                         "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
@@ -404,22 +410,27 @@ class LeaseApplication(Resource):
             for field in data:
                 if field in lease_fields:
                     payload[field] = data[field]
+                print("Payload: ", payload)
+
+                
             with connect() as db:
                 lease_uid = {'lease_uid': lease_id}
                 query = db.select('leases', lease_uid)
-                # print(f"QUERY: {query}")
+                print(f"QUERY: {query}")
                 try:
                     lease_from_db = query.get('result')[0]
+                    print("RESULT: ", lease_from_db)
                     lease_docs = lease_from_db.get("lease_documents")
+                    print("DOCS: ", lease_docs)
                     lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
-                    # print('type: ', type(lease_docs))
+                    print('TYPE: ', type(lease_docs))
                     # print(f'previously saved documents: {lease_docs}')
                 except IndexError as e:
                     print(e)
                     raise BadRequest("Request failed, no such CONTRACT in the database.")
 
             files = request.files
-            # print("files", files)
+            print("files", files)
             # files_details = json.loads(data.get('lease_documents_details'))
             if files:
                 detailsIndex = 0
@@ -447,7 +458,7 @@ class LeaseApplication(Resource):
 
         if "lease_fees" in data:
             json_object = json.loads(data["lease_fees"])
-            # print("json_object",json_object)
+            print("json_object",json_object)
             for fees in json_object:
                 # print("fees",fees)
                 if "leaseFees_uid" in fees:

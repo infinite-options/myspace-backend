@@ -53,8 +53,8 @@ class Dashboard(Resource):
                                         ELSE space.m_details.quote_status
                                     END AS maintenance_status
                                 FROM space.m_details
-                                -- WHERE quote_business_id = \'""" + user_id + """\'
-                                WHERE quote_business_id = '600-000012'
+                                WHERE quote_business_id = \'""" + user_id + """\'
+                                -- WHERE quote_business_id = '600-000012'
                                 ) AS ms
                             GROUP BY maintenance_status;
                             """)
