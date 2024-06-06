@@ -386,8 +386,11 @@ class LeaseApplication(Resource):
         print("In Lease Application PUT")
         response = {}
         data = request.form
+        print("data as received",data)
         data = request.form.to_dict()  #<== IF data came in as Form Data
-        print("data",data)
+        print("data for to dict",data)
+        print("data items",data.items())
+
         if data.get('lease_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'lease_uid': data['lease_uid']}
@@ -404,10 +407,13 @@ class LeaseApplication(Resource):
         fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
 
+        print("Data before if statement: ",data)
         if "lease_uid" in data:
             lease_id = data['lease_uid']
+            print('Lease id: ', lease_id)
             payload = {}
             for field in data:
+                print("field: ", field)
                 if field in lease_fields:
                     payload[field] = data[field]
                 print("Payload: ", payload)
@@ -421,8 +427,9 @@ class LeaseApplication(Resource):
                     lease_from_db = query.get('result')[0]
                     print("RESULT: ", lease_from_db)
                     lease_docs = lease_from_db.get("lease_documents")
-                    print("DOCS: ", lease_docs)
-                    lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
+                    print("DOCS: ", lease_docs, type(lease_docs))
+                    # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
+                    lease_docs = json.loads(lease_docs)
                     print('TYPE: ', type(lease_docs))
                     # print(f'previously saved documents: {lease_docs}')
                 except IndexError as e:
