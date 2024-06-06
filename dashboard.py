@@ -176,15 +176,15 @@ class Dashboard(Resource):
                         response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"] = float(response["HappinessMatrix"]["vacancy"]["result"][i]["vacancy_perc"])
                     
 
-                    # HAPPINESS MATRIX - CASHFLOW DETAILS
+                    # HAPPINESS MATRIX - CASHFLOW DETAILS BY MONTH
                     delta_cashflow_details = db.execute("""
                                 SELECT *,
                                     CAST((expected_cashflow - actual_cashflow) AS DECIMAL(10,2)) AS delta_cashflow
                                     , IF(expected_cashflow = 0, 0, CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2))) AS percent_delta_cashflow
                                 FROM (
                                     SELECT -- *,
-                                        property_uid -- , property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
-                                        , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
+                                        -- property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
+                                        owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
                                         , owner_photo_url -- , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                         , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                                         -- , lease_uid, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
@@ -219,6 +219,98 @@ class Dashboard(Resource):
                                 """)
 
                     response["HappinessMatrix"]["delta_cashflow_details"] = delta_cashflow_details
+
+
+                    # HAPPINESS MATRIX - CASHFLOW DETAILS BY PROPERTY
+                    delta_cashflow_details = db.execute("""
+                                SELECT *,
+                                    CAST((expected_cashflow - actual_cashflow) AS DECIMAL(10,2)) AS delta_cashflow
+                                    , IF(expected_cashflow = 0, 0, CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2))) AS percent_delta_cashflow
+                                FROM (
+                                    SELECT -- *,
+                                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
+                                        owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
+                                        , owner_photo_url -- , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                        , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                        -- , lease_uid, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
+                                        -- , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                        -- , pp_status.*
+                                        -- , purchase_uid, pur_timestamp
+                                        -- , pur_property_id, purchase_type, pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date
+                                        -- , pur_amount_due -- , purchase_status, pur_status_value, pur_notes, pur_description
+                                        -- , pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date
+                                        -- , total_paid, payment_status, amt_remaining
+                                        , cf_month, cf_year
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN pur_amount_due
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -pur_amount_due
+                                                ELSE 0
+                                            END) AS expected_cashflow
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN total_paid
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -total_paid
+                                                ELSE 0
+                                            END) AS actual_cashflow
+                                    FROM space.p_details
+                                    LEFT JOIN space.pp_status ON property_uid = pur_property_id
+                                    -- WHERE business_uid = '600-000003'
+                                    WHERE business_uid = \'""" + user_id + """\'
+                                    GROUP BY 
+                                        owner_uid
+                                        , property_uid
+                                        -- , cf_month
+                                        , cf_year
+                                    ORDER BY owner_uid
+                                    ) AS cf_details
+                                """)
+
+                    response["HappinessMatrix"]["delta_cashflow_details_by_property"] = delta_cashflow_details
+
+
+                    # HAPPINESS MATRIX - CASHFLOW DETAILS BY PROPERTY BY MONTH
+                    delta_cashflow_details = db.execute("""
+                                SELECT *,
+                                    CAST((expected_cashflow - actual_cashflow) AS DECIMAL(10,2)) AS delta_cashflow
+                                    , IF(expected_cashflow = 0, 0, CAST(ABS(expected_cashflow - actual_cashflow)/expected_cashflow AS DECIMAL(10,2))) AS percent_delta_cashflow
+                                FROM (
+                                    SELECT -- *,
+                                        property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_utilities, po_owner_percent, po_start_date, po_end_date
+                                        owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
+                                        , owner_photo_url -- , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                        , business_uid -- , business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                        -- , lease_uid, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
+                                        -- , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                                        -- , pp_status.*
+                                        -- , purchase_uid, pur_timestamp
+                                        -- , pur_property_id, purchase_type, pur_cf_type -- , pur_bill_id, purchase_date, pur_due_date
+                                        -- , pur_amount_due -- , purchase_status, pur_status_value, pur_notes, pur_description
+                                        -- , pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date
+                                        -- , total_paid, payment_status, amt_remaining
+                                        , cf_month, cf_year
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN pur_amount_due
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -pur_amount_due
+                                                ELSE 0
+                                            END) AS expected_cashflow
+                                        , SUM(CASE
+                                                WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN total_paid
+                                                WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -total_paid
+                                                ELSE 0
+                                            END) AS actual_cashflow
+                                    FROM space.p_details
+                                    LEFT JOIN space.pp_status ON property_uid = pur_property_id
+                                    -- WHERE business_uid = '600-000003'
+                                    WHERE business_uid = \'""" + user_id + """\'
+                                    GROUP BY 
+                                        owner_uid
+                                        , property_uid
+                                        , cf_month
+                                        , cf_year
+                                    ORDER BY owner_uid
+                                    ) AS cf_details
+                                """)
+
+                    response["HappinessMatrix"]["delta_cashflow_details_by_property_by_month"] = delta_cashflow_details
 
                     # HAPPINESS MATRIX - CASHFLOW
                     delta_cashflow = db.execute("""
