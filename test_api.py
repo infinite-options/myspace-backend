@@ -264,7 +264,7 @@ def test_get_contacts():
     assert response.status_code == 200
 
 def test_get_contactsMaintenance():
-    response = requests.get(ENDPOINT + "/contactsMaintenance")
+    response = requests.get(ENDPOINT + "/contacts/600-000012")
 
     assert response.status_code == 200
 
