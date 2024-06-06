@@ -386,17 +386,17 @@ class LeaseApplication(Resource):
         print("In Lease Application PUT")
         response = {}
         data = request.form
-        print("data as received",data)
+        # print("data as received",data)
         data = request.form.to_dict()  #<== IF data came in as Form Data
-        print("data for to dict",data)
-        print("data items",data.items())
+        # print("data for to dict",data)
+        # print("data items",data.items())
 
         if data.get('lease_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'lease_uid': data['lease_uid']}
-        print("Key: ", key)
+        # print("Key: ", key)
         quote = {k: v for k, v in data.items()}
-        print("KV Pairs: ", quote)
+        # print("KV Pairs: ", quote)
 
         
         lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
@@ -407,48 +407,49 @@ class LeaseApplication(Resource):
         fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                             "perDay_late_fee", "late_fee"]
 
-        print("Data before if statement: ",data)
+        # print("Data before if statement: ",data)
         if "lease_uid" in data:
             lease_id = data['lease_uid']
-            print('Lease id: ', lease_id)
+            # print('Lease id: ', lease_id)
             payload = {}
             for field in data:
-                print("field: ", field)
+                # print("field: ", field)
                 if field in lease_fields:
                     payload[field] = data[field]
-                print("Payload: ", payload)
+                # print("Payload: ", payload)
 
                 
             with connect() as db:
                 lease_uid = {'lease_uid': lease_id}
                 query = db.select('leases', lease_uid)
-                print(f"QUERY: {query}")
+                # print(f"QUERY: {query}")
                 try:
                     lease_from_db = query.get('result')[0]
-                    print("RESULT: ", lease_from_db)
+                    # print("RESULT: ", lease_from_db)
                     lease_docs = lease_from_db.get("lease_documents")
-                    print("DOCS: ", lease_docs, type(lease_docs))
-                    # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # convert to list of documents
-                    lease_docs = json.loads(lease_docs)
-                    print('TYPE: ', type(lease_docs))
+                    # print("DOCS: ", lease_docs, type(lease_docs))
+                    # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
+                    lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else []  # convert to list of documents
+
+                    # print('TYPE: ', lease_docs, type(lease_docs))
                     # print(f'previously saved documents: {lease_docs}')
                 except IndexError as e:
                     print(e)
                     raise BadRequest("Request failed, no such CONTRACT in the database.")
 
             files = request.files
-            print("files", files)
+            # print("files", files)
             # files_details = json.loads(data.get('lease_documents_details'))
             if files:
                 detailsIndex = 0
                 for key in files:
-                    print("key", key)
+                    # print("key", key)
                     file = files[key]
-                    print("file", file)
+                    # print("file", file)
                     # file_info = files_details[detailsIndex]
                     if file and allowed_file(file.filename):
                         key = f'leases/{lease_id}/{file.filename}'
-                        print("key", key)
+                        # print("key", key)
                         s3_link = uploadImage(file, key, '')
                         docObject = {}
                         docObject["link"] = s3_link
@@ -458,14 +459,14 @@ class LeaseApplication(Resource):
                     detailsIndex += 1
 
                 payload['lease_documents'] = json.dumps(lease_docs)
-                print(payload['lease_documents'])
+                # print("Lease Docs: ", payload['lease_documents'])
             with connect() as db:
                 key = {'lease_uid': lease_id}
                 response["lease_update"] = db.update('leases', key, payload)
 
         if "lease_fees" in data:
             json_object = json.loads(data["lease_fees"])
-            print("json_object",json_object)
+            # print("json_object",json_object)
             for fees in json_object:
                 # print("fees",fees)
                 if "leaseFees_uid" in fees:
