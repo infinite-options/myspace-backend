@@ -240,7 +240,7 @@ class Dashboard(Resource):
                                         -- , pur_amount_due -- , purchase_status, pur_status_value, pur_notes, pur_description
                                         -- , pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date
                                         -- , total_paid, payment_status, amt_remaining
-                                        , cf_month, cf_month_num, cf_year
+                                        -- , cf_month, cf_month_num, cf_year
                                         , SUM(CASE
                                                 WHEN pur_cf_type = 'revenue' AND owner_uid = pur_receiver THEN pur_amount_due
                                                 WHEN pur_cf_type = 'expense' AND owner_uid = pur_payer THEN -pur_amount_due
@@ -259,7 +259,7 @@ class Dashboard(Resource):
                                         owner_uid
                                         , property_uid
                                         -- , cf_month
-                                        , cf_year
+                                        -- , cf_year
                                     ORDER BY owner_uid, property_uid
                                     ) AS cf_details
                                 """)
