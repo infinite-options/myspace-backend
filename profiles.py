@@ -91,6 +91,16 @@ class TenantProfile(Resource):
     def post(self):
         response = {}
         tenant_profile = request.form.to_dict()
+        # print("Tenant Profile: ", tenant_profile)
+
+        # Adding new key-value pairs to the dictionary
+        tenant_profile['tenant_documents'] = '[]'
+        tenant_profile['tenant_adult_occupants'] = '[]'
+        tenant_profile['tenant_children_occupants'] = '[]'
+        tenant_profile['tenant_vehicle_info'] = '[]'
+        tenant_profile['tenant_references'] = '[]'
+        tenant_profile['tenant_pet_occupants'] = '[]'
+        # print("Updated Tenant Profile: ", tenant_profile)
         with connect() as db:
             tenant_profile["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
             file = request.files.get("tenant_photo")
