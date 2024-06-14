@@ -15,18 +15,6 @@ from werkzeug.exceptions import BadRequest
 import ast
 
 
-# MAINTENANCE BY STATUS
-#                           TENANT      OWNER     PROPERTY MANAGER     
-# MAINTENANCE BY STATUS        Y           Y               Y
-# BY MONTH    X           X               X
-# BY YEAR     X           X               X
-
-
-# def get_new_propertyUID(conn):
-#     newPropertyQuery = execute("CALL space.new_property_uid;", "get", conn)
-#     if newPropertyQuery["code"] == 280:
-#         return newPropertyQuery["result"][0]["new_id"]
-#     return "Could not generate new property UID", 500
 
 def updateImages(imageFiles, property_uid):
     content = []
@@ -65,67 +53,7 @@ def updateImages(imageFiles, property_uid):
         images.append(image)
     return images
 
-# class PropertiesByOwner(Resource):
-#     def get(self, owner_id):
-#         print('in Properties by Owner')
-#         response = {}
-#         # conn = connect()
 
-#         print("Property Owner UID: ", owner_id)
-
-#         with connect() as db:
-#             print("in connect loop")
-#             propertiesQuery = db.execute(""" 
-#                     -- PROPERTIES BY OWNER
-#                     SELECT * 
-#                     FROM p_details
-#                     LEFT JOIN space.pp_status ON pur_property_id = property_uid
-#                     WHERE owner_uid = \'""" + owner_id + """\'
-#                         AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-#                         AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-#                         AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year));
-#                     """)
-            
-
-#             # print("Query: ", propertiesQuery)
-#             # items = execute(propertiesQuery, "get", conn)
-#             response["Property"] = propertiesQuery
-#             return response
-
-
-# class PropertiesByManager(Resource):
-#     def get(self, owner_id, manager_business_id):
-#         print('in Properties by Manager')
-#         response = {}
-#         # conn = connect()
-
-#         print("Property Owner UID: ", owner_id)
-#         print("Property Manager UID: ", manager_business_id)
-
-#         with connect() as db:
-#             print("in connect loop")
-#             response = db.execute(""" 
-#                     -- PROPERTIES BY MANAGER
-#                     SELECT *
-#                     FROM space.property_owner
-#                     LEFT JOIN space.properties ON property_id = property_uid
-#                     LEFT JOIN space.b_details ON contract_property_id = property_uid
-#                     WHERE property_owner_id = \'""" + owner_id + """\' AND contract_business_id = \'""" + manager_business_id + """\';
-#                     """)
-            
-
-#             # print("Query: ", propertiesQuery)
-#             # items = execute(propertiesQuery, "get", conn)
-#             return response
-
-# 1. rent due date
-# 2. lease expiring data
-# 3. link to lease
-# 4. current tenant
-# 5. current tenant move-in date
-# 6. current property manager
-# 7. property value
-# 8. rent payment status
 
 class Properties(Resource):
     def get(self, uid):
@@ -325,12 +253,14 @@ class Properties(Resource):
         
         elif uid[:3] == '600':
             print("In Business ID")
+
+            # APPLICATIONS
             with connect() as db:
                 # print("in connect loop")
                 print("In Find Applications")
                 applicationQuery = db.execute("""
-                    -- FIND APPLICATIONS CURRENTLY IN PROGRESS
-               SELECT property_uid
+                -- FIND APPLICATIONS CURRENTLY IN PROGRESS
+                SELECT property_uid
                     , leases.*
                     , lease_fees
                     , t_details.*
@@ -357,22 +287,9 @@ class Properties(Resource):
                 AND contract_business_id = \'""" + uid + """\'                   
                 """)
             response["Applications"] = applicationQuery
+
+            #PROPERTIES
             with connect() as db:
-
-                # print("Query: ", propertiesQuery)
-
-                # propertiesQuery = db.execute(""" 
-                #         -- PROPERTIES BY MANAGER
-                #         SELECT * 
-                #         FROM space.p_details
-                #         -- WHERE business_uid = "600-000003"
-                #         -- WHERE owner_uid = "110-000003"
-                #         -- WHERE owner_uid = \'""" + uid + """\'
-                #         WHERE business_uid = \'""" + uid + """\'
-                #         -- WHERE tenant_uid = \'""" + uid + """\'                     
-                #         ;
-                #         """)  
-
                 print("in connect loop")
                 propertiesQuery = db.execute(""" 
                     -- PROPERTY RENT STATUS FOR PROPERTIES
@@ -437,12 +354,10 @@ class Properties(Resource):
             # print("Query: ", propertiesQuery)
             response["Property"] = propertiesQuery
 
-            # return response
-
-
+            # NEW PM REQUESTS
             print("In New PM Requests")
             with connect() as db:
-            # print("in connect loop")
+            # print("in New PM Requests connect loop")
                 contractsQuery = db.execute("""
                     -- NEW PROPERTIES FOR MANAGER
                     SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
@@ -466,22 +381,10 @@ class Properties(Resource):
             # print("Query: ", propertiesQuery)
             response["NewPMRequests"] = contractsQuery
 
-
+            # MAINTENANCE REQUESTS
             print("In Maintenance Requests")
             with connect() as db:
-            # print("in connect loop")
-                # maintenanceQuery = db.execute("""
-                #     -- MAINTENANCE STATUS BY MANAGER
-                #     SELECT *
-                #     FROM space.maintenanceRequests
-                #     LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                #     LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                #     -- WHERE business_uid = "600-000032"
-                #     WHERE business_uid = \'""" + uid + """\'
-                #     -- WHERE owner_uid = "110-000003"
-                #     -- WHERE owner_uid = \'""" + uid + """\'
-                #     """)
-                
+            # print("in Maintenance Requests connect loop")
                 maintenanceQuery = db.execute("""
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
@@ -967,55 +870,4 @@ class Properties(Resource):
 
             return response
 
-# class PropertyDashboardByOwner (Resource):
-#     def get(self, owner_id):
-#         print('in Property Dashboard by Owner')
-#         response = {}
-#         # conn = connect()
-
-#         print("Property Owner UID: ", owner_id)
-
-#         with connect() as db:
-#             print("in connect loop")
-#             propertiesQuery = db.execute(""" 
-#                     -- MANTENANCE AND RENT STATUS BY PROPERTY BY OWNER
-#                     SELECT * 
-#                     FROM (
-#                         SELECT * 
-#                         FROM space.o_details
-#                         LEFT JOIN space.properties ON property_uid = property_id
-#                         WHERE owner_uid = "110-000003"
-#                         ) AS p
-#                     LEFT JOIN (
-#                         -- OPEN MAINTENANCE (not paid, not completed, not cancelled) BY PROPERTY
-#                         SELECT  -- *, 
-#                             maintenance_property_id, COUNT(maintenance_request_status) AS num_open_maintenace_req
-#                         FROM space.m_details
-#                         WHERE maintenance_request_status != "PAID" AND maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
-#                         GROUP BY maintenance_property_id
-#                         ) AS m ON property_id = maintenance_property_id
-#                     LEFT JOIN (
-#                         -- RENT STATUS BY PROPERTY FOR OWNER PAGE (USED IN RENTS ALSO)
-#                         SELECT property_id
-#                             -- , property_owner_id, po_owner_percent
-#                             -- , property_address, property_unit, property_city, property_state, property_zip
-#                             -- , pp_status.*
-#                             , IF (ISNULL(payment_status), "VACANT", payment_status) AS rent_status
-#                         FROM space.property_owner
-#                         LEFT JOIN space.properties ON property_uid = property_id
-#                         LEFT JOIN space.pp_status ON pur_property_id = property_id
-#                         WHERE property_owner_id = "110-000003"
-#                             AND (purchase_type = "RENT" OR ISNULL(purchase_type))
-#                             AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-#                             AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-#                         GROUP BY property_id
-#                         ORDER BY rent_status
-#                         ) AS r ON p.property_id = r.property_id;
-#                     """)
-            
-
-#             # print("Query: ", propertiesQuery)
-#             # items = execute(propertiesQuery, "get", conn)
-#             response["Property_Dashboard"] = propertiesQuery
-#             return response
 
