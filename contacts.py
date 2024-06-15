@@ -632,40 +632,38 @@ class Contacts(Resource):
                     #maintenance
                     ('    -in Get Maintenance Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT 
-                                m.business_uid AS contact_uid,
-                                "Maintenance" AS contact_type,
-                                m.business_name AS contact_first_name,
-                                m.business_type AS contact_last_name,
-                                m.business_phone_number AS contact_phone_number,
-                                m.business_email AS contact_email,
-                                m.business_address AS contact_address,
-                                m.business_unit AS contact_unit,
-                                m.business_city AS contact_city, 
-                                m.business_state AS contact_state,
-                                m.business_zip AS contact_zip,
-                                m.business_photo_url as contact_photo_url,
-                                m.business_locations AS contact_business_locations,
-                                payment_method AS payment_method
-                            FROM space.b_details AS b
-                            LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
-                            LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
-                            LEFT JOIN (
-                                    SELECT -- *,
-                                        paymentMethod_profile_id
-                                        , JSON_ARRAYAGG(
-                                        JSON_OBJECT(
-                                            'paymentMethod_type', paymentMethod_type,
-                                            'paymentMethod_status', paymentMethod_status
-                                        )
-                                    ) AS payment_method
-                                    FROM space.paymentMethods
-                                    GROUP BY paymentMethod_profile_id
-                                    ) AS pm ON pm.paymentMethod_profile_id = m.business_uid
-                            -- WHERE b.business_uid = '600-000003'
-                            WHERE b.business_uid = \'""" + uid + """\' 
-                                AND m.business_uid IS NOT NULL AND m.business_type = 'MAINTENANCE'
-                            GROUP BY b.business_uid, m.business_uid;
+                            SELECT -- *,
+                                maintenance_status
+                                , quote_business_id
+                                , b.*
+                                , contract_business_id
+                                , contract_property_id
+                                , COUNT(quote_total_estimate)
+                                , SUM(quote_total_estimate)
+                            FROM (
+                                SELECT *
+                                    , CASE
+                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      								THEN "NEW"
+                                        WHEN space.m_details.quote_status IN ("SENT") 	                                    												THEN "SUBMITTED"
+                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          												THEN "ACCEPTED"
+                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       											THEN "SCHEDULED"
+                                        WHEN space.m_details.quote_status = "FINISHED"                                                       								THEN "FINISHED"
+                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      								THEN "PAID"   
+                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED" )      THEN "ARCHIVE"
+                                        ELSE space.m_details.quote_status
+                                    END AS maintenance_status
+                                FROM space.m_details
+                                LEFT JOIN (
+                                    SELECT * 
+                                    FROM space.contracts
+                                    WHERE contract_status = 'ACTIVE'
+                                    ) AS c ON maintenance_property_id = contract_property_id 
+                                -- WHERE contract_business_id = '600-000003'
+                                WHERE contract_business_id = \'""" + uid + """\'   
+                                ) AS m
+                            LEFT JOIN space.businessProfileInfo b ON quote_business_id = b.business_uid 
+                            GROUP BY maintenance_status, quote_business_id
+                            ORDER BY quote_business_id
                     """)
                     
                     if len(profileQuery["result"]) > 0:
