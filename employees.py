@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from data_pm import connect, uploadImage
+from werkzeug.exceptions import BadRequest
 
 class Employee(Resource):
     def post(self):
@@ -41,9 +42,11 @@ class Employee(Resource):
 class EmployeeVerification(Resource):
     def put(self):
         response = {}
-
+        # print("In Employee Verification")
         payload = request.get_json()
+        # print("Receive Payload: ", payload)
         for i in range(len(payload)):
+            # print("Employee ID: ", payload[i].get('employee_uid'))
             if payload[i].get('employee_uid') is None:
                 raise BadRequest("Request failed, no UID in payload.")
             key = {'employee_uid': payload[i].pop('employee_uid')}
