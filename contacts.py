@@ -352,140 +352,101 @@ class Contacts(Resource):
                     print("in connect loop")
                    
                     #owners
-                    ('    -in Get Owner Contacts for Management')
+                    # print ('    -in Get Owner Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT -- *,
-                                contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number, contact_ssn
-                                , payment_method
-                                , SUM(property_count) AS property_count
-                                , JSON_ARRAYAGG(
-                                        JSON_OBJECT(
-                                            'agreement_status', agreement_status,
-                                            'property_count', property_count,
-                                            'properties', properties
-                                        )
-                                    ) AS entities
+                            -- OWNER CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
+                            SELECT *
                             FROM (
-                                SELECT 
-                                    contract_status AS agreement_status,
-                                    owner_uid AS contact_uid,
-                                    "Owner" AS contact_type,
-                                    owner_first_name AS contact_first_name,
-                                    owner_last_name AS contact_last_name,
-                                    owner_phone_number AS contact_phone_number,
-                                    owner_email AS contact_email,
-                                    owner_address AS contact_address,
-                                    owner_unit AS contact_unit,
-                                    owner_city AS contact_city,
-                                    owner_state AS contact_state,
-                                    owner_zip AS contact_zip,
-                                    owner_photo_url as contact_photo_url,
-                                    owner_ein_number AS contact_ein_number,
-                                    owner_ssn AS contact_ssn,
-                                    payment_method AS payment_method,
-                                    COUNT(property_id) AS property_count,
-                                    JSON_ARRAYAGG(
-                                        JSON_OBJECT(
-                                            'property_address', p.property_address,
-                                            'property_unit', p.property_unit,
-                                            'property_city', p.property_city,
-                                            'property_state', p.property_state,
-                                            'property_zip', p.property_zip,
-                                            'property_type', p.property_type
-                                        )
-                                    ) AS properties
-                                FROM space.b_details AS b
-                                LEFT JOIN space.o_details AS o ON b.contract_property_id = o.property_id
-                                LEFT JOIN space.properties AS p ON o.property_id = p.property_uid
-                                LEFT JOIN (
-                                    SELECT -- *,
-                                        paymentMethod_profile_id
-                                        , JSON_ARRAYAGG(
-                                        JSON_OBJECT(
-                                            'paymentMethod_type', paymentMethod_type,
-                                            'paymentMethod_status', paymentMethod_status
-                                        )
-                                    ) AS payment_method
-                                    FROM space.paymentMethods
-                                    GROUP BY paymentMethod_profile_id
-                                    ) AS pm ON pm.paymentMethod_profile_id = o.owner_uid
-                                -- WHERE b.business_uid = '600-000003'
-                                WHERE b.business_uid = \'""" + uid + """\'
-                                GROUP BY owner_uid , contract_status
-                                ) AS c
-                            GROUP BY contact_uid
-                    """)
+                                SELECT -- *,
+                                    owner_uid, owner_user_id, po_owner_percent, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                    , JSON_ARRAYAGG(JSON_OBJECT
+                                        ('contract_uid', contract_uid,
+                                        'contract_property_id', contract_property_id,
+                                        'contract_start_date', contract_start_date,
+                                        'contract_end_date', contract_end_date,
+                                        'contract_documents', contract_documents,
+                                        'contract_status', contract_status,
+                                        'property_uid', property_uid,
+                                        'property_available_to_rent', property_available_to_rent,
+                                        'property_listed_date', property_listed_date,
+                                        'property_address', property_address,
+                                        'property_unit', property_unit,
+                                        'property_city', property_city,
+                                        'property_state', property_state,
+                                        'property_zip', property_zip,
+                                        'property_listed_rent', property_listed_rent,
+                                        'property_favorite_image', property_favorite_image,
+                                        'payment_status', payment_status,
+                                        'cf_month', cf_month,
+                                        'cf_month_num', cf_month_num,
+                                        'cf_year', cf_year,
+                                        'total_paid', total_paid,
+                                        'pur_amount_due', pur_amount_due,
+                                        'amt_remaining', amt_remaining,
+                                        'maintenance_count', maintenance_count
+                                        )) AS properties
+                                FROM (
+                                    SELECT * 
+                                    FROM space.b_details
+                                    LEFT JOIN space.properties ON property_uid = contract_property_id
+                                    LEFT JOIN space.o_details ON contract_property_id = property_id
+                                    -- ADD RENT STATUS
+                                    LEFT JOIN (
+                                        SELECT  -- *,
+                                            pur_property_id, payment_status, cf_month, cf_month_num, cf_year
+                                            , SUM(total_paid) AS total_paid
+                                            , SUM(pur_amount_due) AS pur_amount_due
+                                            , SUM(amt_remaining) AS amt_remaining
+                                        FROM space.pp_status
+                                        WHERE purchase_type = "Rent"
+                                            AND cf_month_num = MONTH(CURRENT_DATE)
+                                            AND cf_year = YEAR(CURRENT_DATE)
+                                            AND LEFT(pur_payer,3) = '350'
+                                        GROUP BY pur_property_id
+                                        ) AS r ON pur_property_id = property_uid AND contract_status = 'ACTIVE'
+                                    -- ADD MAINTENANCE ISSUES
+                                    LEFT JOIN (
+                                        SELECT -- *, 
+                                            maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
+                                        FROM space.maintenanceRequests
+                                        WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
+                                        GROUP BY maintenance_property_id
+                                        ) AS m ON maintenance_property_id = property_uid
+                                    WHERE contract_business_id = '600-000003'
+                                    -- WHERE contract_business_id = \'""" + uid + """\'
+                                ) AS owners
+                                GROUP BY owner_uid
+                            ) AS o
+                            LEFT JOIN (
+                                SELECT -- *,
+                                    pur_receiver
+                                    , JSON_ARRAYAGG(JSON_OBJECT
+                                        ('total_amount_due', total_amount_due,
+                                        'total_paid', total_paid,
+                                        'cf_month', cf_month,
+                                        'cf_month_num', cf_month_num,
+                                        'cf_year', cf_year
+                                        )) AS total_paid
+                                FROM (        
+                                SELECT -- *
+                                    -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, 
+                                    SUM(pur_amount_due) AS total_amount_due -- , purchase_status, pur_status_value, pur_notes, pur_description
+                                    , pur_receiver -- , pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret, latest_date
+                                    , SUM(total_paid) AS total_paid -- , payment_status, amt_remaining
+                                    , cf_month, cf_month_num, cf_year
+                                FROM space.pp_status
+                                WHERE pur_payer = "600-000003"
+                                -- WHERE pur_payer = \'""" + uid + """\'
+                                GROUP BY pur_receiver, cf_month, cf_year
+                                ) AS payments
+                                GROUP BY pur_receiver
+                            ) AS pp ON pur_receiver = owner_uid
+                            """)
+                    # print("Finished query")
                     
                     if len(profileQuery["result"]) > 0:
                         response["management_contacts"]["owners"] = profileQuery["result"]
 
-                    profileQuery = db.execute(""" 
-                            -- RENT STATUS AND MAINTENANCE ISSUES BY PROPERTY
-                            SELECT -- *,
-                                c.*
-                                -- , property_uid, property_available_to_rent, property_active_date, property_listed_date
-                                , property_address, property_unit, property_city, property_state, property_zip -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image
-                                -- , property_id, property_owner_id, po_owner_percent, po_start_date, po_end_date
-                                , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
-                                , r.*
-                                , m.*
-                            FROM (
-                                SELECT -- *
-                                    contract_uid, c1.contract_property_id, c1.contract_business_id -- , contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_property_id, contract_status
-                                    , c2.contract_status
-                                FROM space.contracts c1
-                                LEFT JOIN (
-                                    SELECT contract_property_id, contract_business_id, contract_status
-                                    FROM space.contracts
-                                    WHERE contract_status = 'ACTIVE'
-                                    ) AS c2 ON c1.contract_property_id = c2.contract_property_id AND c1.contract_business_id = c2.contract_business_id
-                                -- WHERE c1.contract_business_id = '600-000003'
-                                -- WHERE c1.contract_business_id = '600-000051'
-                                WHERE c1.contract_business_id = \'""" + uid + """\'
-                                    AND ((c1.contract_status = 'ACTIVE' AND c2.contract_status IS NOT NULL)
-                                    OR (c1.contract_status != 'ACTIVE' AND c2.contract_status IS NULL))
-                                ) AS c
-                            LEFT JOIN space.properties ON contract_property_id = property_uid
-                            LEFT JOIN space.o_details ON contract_property_id = property_id
-                            LEFT JOIN (
-                                -- ADD RENT STATUS
-                                SELECT  pur_property_id, payment_status, amt_remaining, cf_month, cf_month_num, cf_year
-                                FROM space.pp_status
-                                WHERE purchase_type = "Rent"
-                                    AND cf_month_num = MONTH(CURRENT_DATE)
-                                    AND cf_year = YEAR(CURRENT_DATE)
-                                    AND LEFT(pur_payer,3) = '350' 
-                                ) AS r ON pur_property_id = contract_property_id
-                            LEFT JOIN (
-                                -- ADD MAINTENANCE ISSUES
-                                SELECT -- *, 
-                                    maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
-                                FROM space.maintenanceRequests
-                                WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
-                                GROUP BY maintenance_property_id
-                                ) AS m ON maintenance_property_id = contract_property_id;
-                            """)
-                    
-                    if len(profileQuery["result"]) > 0:
-                        response["management_contacts"]["owners_properties"] = profileQuery["result"]
-
-
-                    profileQuery = db.execute(""" 
-                            -- PAYMENT STATUS BY MONTH-YEAR AND OWNER
-                            SELECT -- *
-                                -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, 
-                                SUM(pur_amount_due) AS total_amount_due -- , purchase_status, pur_status_value, pur_notes, pur_description
-                                , pur_receiver -- , pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret, latest_date
-                                , SUM(total_paid) AS total_paid -- , payment_status, amt_remaining
-                                , cf_month, cf_month_num, cf_year
-                            FROM space.pp_status
-                            -- WHERE pur_payer = "600-000051"
-                            WHERE pur_payer = \'""" + uid + """\'
-                            GROUP BY pur_receiver, cf_month, cf_year;
-                            """)
-                    
-                    if len(profileQuery["result"]) > 0:
-                        response["management_contacts"]["owners_payments"] = profileQuery["result"]
 
 
                     # tenants
@@ -867,7 +828,7 @@ class Contacts(Resource):
                     response["owner_contacts"]["managers"] = profileQuery["result"]
 
 
-                print('    -in Get Tenant Contacts for Owner')
+                print('    -in Get Tenant Contacts for Owner - UPDATED')
                 with connect() as db:
                     print("in connect loop")
                     #change query
