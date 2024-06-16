@@ -770,9 +770,66 @@ class Contacts(Resource):
             print('in Contacts - Get Contacts for Owners')
             response["owner_contacts"] = {}
 
-            print('    -in Get Manager Contacts for Owner')
+            
             with connect() as db:
                 print("in connect loop")
+
+                print('    -in Get Property & Manager Contacts for Owner')
+                profileQuery = db.execute(f"""
+                    -- RENT, MAINTENANCE STATUS & PROPERTY MANAGER BY PROPERTY
+                    SELECT * 
+                    FROM space.o_details
+                    LEFT JOIN space.properties ON property_id = property_uid
+                    -- ADD RENT STATUS
+                    LEFT JOIN (
+                        SELECT  pur_property_id, payment_status, amt_remaining, cf_month, cf_month_num, cf_year
+                        FROM space.pp_status
+                        WHERE purchase_type = "Rent"
+                            AND cf_month_num = MONTH(CURRENT_DATE)
+                            AND cf_year = YEAR(CURRENT_DATE)
+                            AND LEFT(pur_payer,3) = '350' 
+                        ) AS r ON pur_property_id = property_uid
+                    -- ADD MAINTENANCE ISSUES
+                    LEFT JOIN (
+                        SELECT -- *, 
+                            maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
+                        FROM space.maintenanceRequests
+                        WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
+                        GROUP BY maintenance_property_id
+                        ) AS m ON maintenance_property_id = property_uid
+                    -- ADD BUSINESS DETAILS
+                    LEFT JOIN (
+                        SELECT * 
+                        FROM space.b_details
+                        WHERE contract_status = 'ACTIVE'
+                        ) AS b ON contract_property_id = property_uid
+                    -- WHERE owner_uid = '110-000003' 
+                    WHERE owner_uid = '{uid}' 
+                """)
+
+                if len(profileQuery["result"]) > 0:
+                    response["owner_contacts"]["managers_by_property"] = profileQuery["result"]
+
+                
+                print('    -in Payments for Owner')
+                profileQuery = db.execute(f"""
+                    -- ACTUAL PAYMENTS BY PROPERTY        
+                    SELECT -- *,
+                        pur_payer, cf_month, cf_year
+                        , SUM(total_paid) AS total_paid
+                        , SUM(pur_amount_due) AS pur_amount_due
+                    FROM space.pp_status
+                    -- WHERE pur_receiver = '110-000003'
+                    WHERE pur_receiver = '{uid}'
+                    GROUP BY cf_month, cf_year, pur_payer
+                    ORDER BY cf_month_num, cf_year
+                """)
+
+                if len(profileQuery["result"]) > 0:
+                    response["owner_contacts"]["payments "] = profileQuery["result"]
+
+
+                print('    -in Get Manager Contacts for Owner')
                 profileQuery = db.execute(f"""
                     SELECT -- *,
                         contact_uid, contact_type, contact_first_name, contact_last_name, contact_phone_number, contact_email, contact_address, contact_unit, contact_city, contact_state, contact_zip, contact_photo_url, contact_ein_number
