@@ -80,7 +80,7 @@ class Dashboard(Resource):
                             ORDER BY maintenance_status;
                             """)
 
-                    print("Query: ", workOrders)
+                    # print("Query: ", workOrders)
                     response["WorkOrders"] = workOrders
 
                     return response
