@@ -359,6 +359,8 @@ class Contacts(Resource):
                             FROM (
                                 SELECT -- *,
                                     owner_uid, owner_user_id, po_owner_percent, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                    , SUM(CASE WHEN contract_status = 'NEW' THEN 1 ELSE 0 END) AS NEW_count
+                                    , SUM(CASE WHEN contract_status = 'SENT' THEN 1 ELSE 0 END) AS SENT_count
                                     , JSON_ARRAYAGG(JSON_OBJECT
                                         ('contract_uid', contract_uid,
                                         'contract_property_id', contract_property_id,
@@ -412,8 +414,8 @@ class Contacts(Resource):
                                         WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
                                         GROUP BY maintenance_property_id
                                         ) AS m ON maintenance_property_id = property_uid
-                                    WHERE contract_business_id = '600-000003'
-                                    -- WHERE contract_business_id = \'""" + uid + """\'
+                                    -- WHERE contract_business_id = '600-000003'
+                                    WHERE contract_business_id = \'""" + uid + """\'
                                 ) AS owners
                                 GROUP BY owner_uid
                             ) AS o
@@ -435,8 +437,8 @@ class Contacts(Resource):
                                     , SUM(total_paid) AS total_paid -- , payment_status, amt_remaining
                                     , cf_month, cf_month_num, cf_year
                                 FROM space.pp_status
-                                WHERE pur_payer = "600-000003"
-                                -- WHERE pur_payer = \'""" + uid + """\'
+                                -- WHERE pur_payer = "600-000003"
+                                WHERE pur_payer = \'""" + uid + """\'
                                 GROUP BY pur_receiver, cf_month, cf_year
                                 ) AS payments
                                 GROUP BY pur_receiver
@@ -704,10 +706,13 @@ class Contacts(Resource):
 
                 print('    -in Get Manager Contacts for Owner - UPDATED')
                 profileQuery = db.execute(f"""
+                    -- MANAGER CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
                     SELECT *
                     FROM (
                         SELECT -- *,
                             business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                            , SUM(CASE WHEN contract_status = 'NEW' THEN 1 ELSE 0 END) AS NEW_count
+                            , SUM(CASE WHEN contract_status = 'SENT' THEN 1 ELSE 0 END) AS SENT_count
                             , JSON_ARRAYAGG(JSON_OBJECT
                                 ('property_id', property_id,
                                 'property_available_to_rent', property_available_to_rent,
@@ -749,7 +754,7 @@ class Contacts(Resource):
                                 -- WHERE contract_status = 'ACTIVE'
                                 ) AS b ON contract_property_id = property_uid
                             -- WHERE owner_uid = '110-000003'
-                            WHERE owner_uid = '{uid}' 
+                            WHERE owner_uid = \'""" + uid + """\' 
                         ) as prop
                         GROUP BY business_uid
                     ) AS p
@@ -783,7 +788,7 @@ class Contacts(Resource):
                                 , SUM(pur_amount_due) AS pur_amount_due
                             FROM space.pp_status
                             -- WHERE pur_receiver = '110-000003'
-                            WHERE pur_receiver = '{uid}'
+                            WHERE pur_receiver = \'""" + uid + """\'
                             GROUP BY cf_month, cf_year, pur_payer
                             ORDER BY cf_month_num, cf_year
                         ) AS p
@@ -867,8 +872,8 @@ class Contacts(Resource):
                                     ) AS r
                                 GROUP BY pur_property_id
                                 ) AS r ON pur_property_id = property_id AND tenant_uid = pur_payer
-                            WHERE owner_uid = '110-000003'
-                            -- WHERE owner_uid = '{uid}'
+                            -- WHERE owner_uid = '110-000003'
+                            WHERE owner_uid = \'""" + uid + """\'
                         ) as t
                         GROUP BY tenant_uid
                     """)
