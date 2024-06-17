@@ -261,7 +261,7 @@ class LeaseApplication(Resource):
         response = {}
 
         data = request.form
-        # print("data",data)
+        print("data",data)
 
         # Remove tenenat_uid from data and store as an independant variable
         if 'tenant_uid' in data and data['tenant_uid']!="":
@@ -281,23 +281,6 @@ class LeaseApplication(Resource):
                 if len(response['result']) != 0:
                     return ("Tenant Request for this Property is already Active, Please wait for the PM to respond.")
                 else:
-                # ApplicationStatus = LeaseApplication.get(self, tenant_uid, data.get('lease_property_id'))
-                # print(ApplicationStatus)
-                # if ApplicationStatus != "New Application":
-                #     print(ApplicationStatus)
-                #
-                #     # key = {'lease_uid': data.pop('lease_uid')}
-                #     # key = ApplicationStatus
-                #     # print(key)
-                #     key = {'lease_uid': ApplicationStatus}
-                #     print(key)
-                #
-                #     with connect() as db:
-                #         response = db.update('leases', key, data)
-                #
-                #     print(response)
-
-                # else:
 
                     ApplicationStatus = "New"
 
@@ -320,17 +303,20 @@ class LeaseApplication(Resource):
                         for field in fields_with_lists:
                             # print("field list", field)
                             if data.get(field) is None:
-                                # print(field,"None")
+                                # print(field,"Is None")
                                 newLease[field] = '[]'
+                            else: 
+                                newLease[field] = data[field]
+                                print("new_lease field list", newLease[field])
                         # print("new_lease", newLease)
                         db.insert('leases', newLease)
 
-                    print("Data inserted into space.leases")
+                    # print("Data inserted into space.leases")
 
                     fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                         "perDay_late_fee", "late_fee"]
                     with connect() as db:
-                        print("Need to find lease_uid")
+                        # print("Need to find lease_uid")
                         leaseQuery = db.execute(""" 
                                 -- FIND lease_uid
                                 SELECT * FROM space.leases
@@ -340,14 +326,14 @@ class LeaseApplication(Resource):
                         # print(leaseQuery['result'][0]['lease_uid'])
                         lease_id = leaseQuery['result'][0]['lease_uid']
                         response["lease_uid"] = lease_id
-                        print("Lease ID", lease_id)
+                        # print("Lease ID", lease_id)
 
                         if "lease_fees" in data:
-                            # print("lease_fees in data")
+                            print("lease_fees in data")
                             json_object = json.loads(data["lease_fees"])
-                            # print("lease fees json_object", json_object)
+                            print("lease fees json_object", json_object)
                             for fees in json_object:
-                                # print("fees",fees)
+                                print("fees",fees)
                                 new_leaseFees = {}
                                 new_leaseFees["fees_lease_id"] = lease_id
                                 for item in fields_leaseFees:
@@ -359,7 +345,7 @@ class LeaseApplication(Resource):
 
                     with connect() as db:
                         print("Add record in lease_tenant table", lease_id, tenant_uid, tenant_responsibiity)
-                        # print("Made it to here")
+                        print("Made it to here")
                         ltQuery = (""" 
                                 INSERT INTO space.lease_tenant
                                 SET lt_lease_id = \'""" + lease_id + """\'
@@ -369,7 +355,7 @@ class LeaseApplication(Resource):
 
                         response["lt_query"] = db.execute(ltQuery, [], 'post')
 
-                        # print(ltQuery)
+                        print(ltQuery)
                         print("Data inserted into space.lease_tenant")
 
                     # key = {'lease_uid': data.pop('lease_uid')}
