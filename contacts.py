@@ -12,316 +12,6 @@ from dateutil.relativedelta import relativedelta
 import calendar
 
 
-
-# class ContactsMaintenance(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self):
-#         print('in Get Maintenace Contacts')
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                     --  FIND ALL MAINTENANCE COMPANIES
-#                     SELECT * FROM space.businessProfileInfo
-#                     WHERE business_type = 'MAINTENANCE';
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Maintenance_Contacts"] = profileQuery
-#             return response
-        
-
-# class ContactsOwnerContactsDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, owner_uid):
-#         print('in Get Owner Contacts', owner_uid)
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                     -- FIND ALL OWNER CONTACTS
-#                     SELECT -- *,
-#                         business_uid AS contact_uid, "Property Manager" AS contact_type, business_name AS contact_business_name, business_phone_number AS contact_phone_numnber, business_email AS contact_email, business_address AS contact_address, business_unit AS contact_unit, business_city AS contact_city, business_state AS contact_state, business_zip AS contact_zip
-#                         , business_ein_number, business_services_fees, business_locations, business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number, business_documents
-#                         , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
-#                         , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-#                     FROM (
-#                         SELECT *
-#                         FROM space.o_details AS o
-#                         LEFT JOIN space.properties ON o.property_id = property_uid
-#                         WHERE owner_uid = \'""" + owner_uid + """\'
-#                     ) AS op
-#                     LEFT JOIN space.b_details AS b ON b.contract_property_id = property_uid
-#                     -- LEFT JOIN space.contractFees ON contract_uid = contract_id
-#                     WHERE b.contract_status IS NOT NULL
-#                     GROUP BY b.business_uid, property_id;
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Owner_Contacts"] = profileQuery
-#             return response
-        
-
-
-
-# class ContactsBusinessContacts(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Business Contacts')
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                    -- FIND ALL CURRENT BUSINESS CONTACTS
-#                     SELECT owner_uid AS contact_uid, "Owner" AS contact_type, owner_first_name AS contact_first_name, owner_last_name AS contact_last_name, owner_phone_number AS contact_phone_numnber, owner_email AS contact_email, owner_address AS contact_address, owner_unit AS contact_unit, owner_city AS contact_city, owner_state AS contact_state, owner_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.o_details ON b.contract_property_id = property_id
-#                     WHERE b.business_uid = \'""" + business_uid + """\'
-#                     GROUP BY b.business_uid, owner_uid
-#                     UNION
-#                     SELECT tenant_uid AS contact_uid, "Tenant" AS contact_type, tenant_first_name AS contact_first_name, tenant_last_name AS contact_last_name, tenant_phone_number AS contact_phone_numnber, tenant_email AS contact_email, tenant_address AS contact_address, tenant_unit AS contact_unit, tenant_city AS contact_city, tenant_state AS contact_state, tenant_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.leases ON b.contract_property_id = lease_property_id
-#                     LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-#                     WHERE b.business_uid = \'""" + business_uid + """\' AND lease_uid IS NOT NULL
-#                     GROUP BY b.business_uid, tenant_uid
-#                     UNION
-#                     SELECT m.business_uid AS contact_uid, "Business" AS contact_type, m.business_name AS contact_first_name, m.business_type AS contact_last_name, m.business_phone_number AS contact_phone_numnber, m.business_email AS contact_email, m.business_address AS contact_address, m.business_unit AS contact_unit, m.business_city AS contact_city, m.business_state AS contact_state, m.business_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
-#                     LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
-#                     WHERE b.business_uid = \'""" + business_uid + """\' AND m.business_uid IS NOT NULL
-#                     GROUP BY b.business_uid, m.business_uid;
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Business_Contacts"] = profileQuery
-#             return response
-
-
-# class ContactsBusinessContactsOwnerDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Owner Contacts', business_uid)
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                     -- FIND OWNER CONTACT DETAILS
-#                     SELECT *
-#                     -- owner_uid AS contact_uid, "Owner" AS contact_type, owner_first_name AS contact_first_name, owner_last_name AS contact_last_name, owner_phone_number AS contact_phone_numnber, owner_email AS contact_email, owner_address AS contact_address, owner_unit AS contact_unit, owner_city AS contact_city, owner_state AS contact_state, owner_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.o_details ON b.contract_property_id = property_id
-#                     WHERE b.business_uid = \'""" + business_uid + """\';
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Owner_Details"] = profileQuery
-#             return response
-
-    
-# class ContactsBusinessContactsTenantDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Owner Contacts', business_uid)
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                     -- FIND TENANT CONTACT DETAILS
-#                     SELECT *
-#                         -- tenant_uid AS contact_uid, "Tenant" AS contact_type, tenant_first_name AS contact_first_name, tenant_last_name AS contact_last_name, tenant_phone_number AS contact_phone_numnber, tenant_email AS contact_email, tenant_address AS contact_address, tenant_unit AS contact_unit, tenant_city AS contact_city, tenant_state AS contact_state, tenant_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.leases ON b.contract_property_id = lease_property_id
-#                     LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-#                     WHERE b.business_uid = \'""" + business_uid + """\' AND lease_uid IS NOT NULL;
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Tenant_Details"] = profileQuery
-#             return response
-        
-# class ContactsBusinessContactsMaintenanceDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Owner Contacts', business_uid)
-#         response = {}
-#         # conn = connect()
-
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(""" 
-#                     -- FIND MAINTENANCE CONTACT DETAILS
-#                     SELECT *
-#                         -- m.business_uid AS contact_uid, m.business_name AS contact_first_name, m.business_type AS contact_last_name, m.business_phone_number AS contact_phone_numnber, m.business_email AS contact_email, m.business_address AS contact_address, m.business_unit AS contact_unit, m.business_city AS contact_city, m.business_state AS contact_state, m.business_zip AS contact_zip
-#                     FROM space.b_details AS b
-#                     LEFT JOIN space.m_details ON contract_property_id = maintenance_property_id
-#                     LEFT JOIN space.businessProfileInfo AS m ON quote_business_id = m.business_uid
-#                     WHERE b.business_uid = \'""" + business_uid + """\';
-#                     """)
-            
-
-#             # print("Query: ", profileQuery)
-#             # items = execute(profileQuery, "get", conn)
-#             # print(items)
-#             # response["Profile"] = items["result"]
-
-#             response["Maintenance_Details"] = profileQuery
-#             return response
-        
-# class ContactsOwnerManagerDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, owner_uid):
-#         print('in Get Manager Contacts for Owners')
-#         response = {}
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(f"""
-#                 SELECT
-#                 b.business_uid AS contact_uid,
-#                 'Manager' AS contact_type,
-#                 b.business_name AS contact_first_name,
-#                 'Management' AS contact_last_name,
-#                 b.business_phone_number AS contact_phone_number,
-#                 b.business_email AS contact_email,
-#                 b.business_address AS contact_address,
-#                 b.business_city AS contact_city,
-#                 b.business_state AS contact_state,
-#                 b.business_zip AS contact_zip,
-#                 COUNT(p.property_uid) AS property_count,
-#                 GROUP_CONCAT(p.property_address) AS property_addresses
-#                 FROM
-#                     space.b_details AS b
-#                 LEFT JOIN
-#                     space.o_details AS o ON b.contract_property_id = o.property_id
-#                 LEFT JOIN
-#                     space.properties AS p ON o.property_id = p.property_uid
-#                 WHERE
-#                     o.property_owner_id = '{owner_uid}' AND contract_status = 'ACTIVE'
-#                 GROUP BY
-#                     b.business_uid;
-#             """)
-#             response["Owner_Contacts"] = profileQuery
-#             return response
-        
-# class ContactsMaintenanceManagerDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Manager Contacts for Maintenance')
-#         response = {}
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(f"""
-#                 SELECT 
-#                     business_uid as contact_uid,
-#                     "Property Manager" as contact_type,
-#                     business_name as contact_first_name,
-#                     "Management" as contact_last_name,
-#                     business_phone_number as contact_phone_number,
-#                     business_email as contact_email,
-#                     business_address as contact_address,
-#                     business_city as contact_city,
-#                     business_state as contact_state,
-#                     business_zip as contact_zip 
-#                 FROM 
-#                     space.m_details as m
-#                 INNER JOIN 
-#                     space.b_details as b ON m.maintenance_property_id = b.contract_property_id
-#                 WHERE 
-# 	                quote_business_id = '{business_uid}'
-#                 GROUP BY 
-#                     business_uid;
-                
-#             """)
-#             response["Maintenance_Contacts_Managers"] = profileQuery
-#             return response
-        
-# class ContactsMaintenanceTenantDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, business_uid):
-#         print('in Get Tenant Contacts for Maintenance')
-#         response = {}
-
-#         with connect() as db:
-#             print("in connect loop")
-#             profileQuery = db.execute(f"""
-#                 SELECT
-#                     tenant_uid as contact_uid,
-#                     "Tenant" as contact_type,
-#                     tenant_first_name as contact_first_name,
-#                     tenant_last_name as contact_last_name,
-#                     tenant_phone_number as contact_phone_number,
-#                     tenant_email as contact_email,
-#                     tenant_address as contact_address,
-#                     tenant_city as contact_city,
-#                     tenant_state as contact_state,
-#                     tenant_zip as contact_zip 
-#                 FROM 
-#                     space.t_details as t 
-#                 INNER JOIN 
-#                     space.leases as l ON t.lt_lease_id = l.lease_uid
-#                 INNER JOIN
-#                     space.m_details as m ON l.lease_property_id = m.maintenance_property_id
-#                 WHERE 
-#                     lease_status = 'ACTIVE' AND quote_business_id = '{business_uid}'
-#                 GROUP BY 
-#                     tenant_uid;       
-#             """)
-#             response["Maintenance_Contacts_Tenants"] = profileQuery
-#             return response
-
 class Contacts(Resource):
     # decorators = [jwt_required()]
 
@@ -443,6 +133,19 @@ class Contacts(Resource):
                                 ) AS payments
                                 GROUP BY pur_receiver
                             ) AS pp ON pur_receiver = owner_uid
+                            LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = owner_uid
                             """)
                     # print("Finished query")
                     
@@ -455,102 +158,119 @@ class Contacts(Resource):
                     # print ('    -in Get Tenant Contacts for Management - UPDATED')
                     ('    -in Get Tenant Contacts for Management')
                     profileQuery = db.execute(""" 
-                            SELECT tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_photo_url
-                                , JSON_ARRAYAGG(JSON_OBJECT
-                                        ('contract_uid', contract_uid,
-                                        'contract_property_id', contract_property_id,
-                                        'contract_start_date', contract_start_date,
-                                        'contract_end_date', contract_end_date,
-                                        'contract_status', contract_status,
-                                        'lease_uid', lease_uid,
-                                        'lease_start', lease_start,
-                                        'lease_end', lease_end,
-                                        'lease_status', lease_status,
-                                        'lease_documents', lease_documents,
-                                        'lease_adults', lease_adults,
-                                        'lease_children', lease_children,
-                                        'lease_pets', lease_pets,
-                                        'lease_documents', lease_documents,
-                                        'lease_vehicles', lease_vehicles,
-                                        'lease_referred', lease_referred,
-                                        'lease_effective_date', lease_effective_date,
-                                        'lt_responsibility', lt_responsibility,
-                                        'property_available_to_rent', property_available_to_rent,
-                                        'property_address', property_address,
-                                        'property_unit', property_unit,
-                                        'property_city', property_city,
-                                        'property_state', property_state,
-                                        'property_zip', property_zip,
-                                        'rent_payments', rent_payments,
-                                        'maintenance_count', maintenance_count,
-                                        'pur_payer', pur_payer
-                                        )) AS property           
-                            FROM (
+                            -- TENANT CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
+                            SELECT *
+                                FROM (
+                                SELECT tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_photo_url
+                                    , JSON_ARRAYAGG(JSON_OBJECT
+                                            ('contract_uid', contract_uid,
+                                            'contract_property_id', contract_property_id,
+                                            'contract_start_date', contract_start_date,
+                                            'contract_end_date', contract_end_date,
+                                            'contract_status', contract_status,
+                                            'lease_uid', lease_uid,
+                                            'lease_start', lease_start,
+                                            'lease_end', lease_end,
+                                            'lease_status', lease_status,
+                                            'lease_documents', lease_documents,
+                                            'lease_adults', lease_adults,
+                                            'lease_children', lease_children,
+                                            'lease_pets', lease_pets,
+                                            'lease_documents', lease_documents,
+                                            'lease_vehicles', lease_vehicles,
+                                            'lease_referred', lease_referred,
+                                            'lease_effective_date', lease_effective_date,
+                                            'lt_responsibility', lt_responsibility,
+                                            'property_available_to_rent', property_available_to_rent,
+                                            'property_address', property_address,
+                                            'property_unit', property_unit,
+                                            'property_city', property_city,
+                                            'property_state', property_state,
+                                            'property_zip', property_zip,
+                                            'rent_payments', rent_payments,
+                                            'maintenance_count', maintenance_count,
+                                            'pur_payer', pur_payer
+                                            )) AS property           
+                                FROM (
+                                    SELECT -- *,
+                                        tenant_uid, lt_responsibility, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents
+                                        -- , tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_pet_occupants, tenant_current_address-DNU
+                                        , tenant_references, tenant_photo_url
+                                        , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date
+                                        , contract_fees, contract_assigned_contacts
+                                        , contract_documents, contract_name, contract_status -- , contract_early_end_date
+                                        -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                        , lease_uid, lease_property_id, lease_application_date, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date
+                                        , lease_actual_rent
+                                        , property_uid, property_available_to_rent, property_active_date, property_listed_date, property_address, property_unit, property_city, property_state, property_zip
+                                        , property_favorite_image
+                                        , r.*
+                                        , maintenance_count
+                                    FROM space.b_details
+                                    LEFT JOIN space.leases ON contract_property_id = lease_property_id
+                                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                                    LEFT JOIN space.properties ON contract_property_id = property_uid
+
+                                    -- ADD RENT BY PROPERTY BY TENANT
+                                    LEFT JOIN (
+                                        SELECT pur_property_id, pur_payer
+                                            , JSON_ARRAYAGG(JSON_OBJECT
+                                                ('pur_property_id', pur_property_id,
+                                                'purchase_type', purchase_type,
+                                                'pur_due_date', pur_due_date,
+                                                'pur_amount_due', pur_amount_due,
+                                                'purchase_status', purchase_status,
+                                                'latest_date', latest_date,
+                                                'total_paid', total_paid,
+                                                'amt_remaining', amt_remaining,
+                                                'cf_month', cf_month,
+                                                'cf_year', cf_year
+                                                )) AS rent_payments 
+                                        FROM (
+                                            SELECT  -- *,
+                                                pur_property_id, pur_payer, purchase_type, pur_due_date, purchase_status, latest_date, cf_month, cf_month_num, cf_year
+                                                , SUM(total_paid) AS total_paid
+                                                , SUM(pur_amount_due) AS pur_amount_due
+                                                , SUM(amt_remaining) AS amt_remaining
+                                            FROM space.pp_status
+                                            WHERE purchase_type = "Rent"
+                                        -- 		AND cf_month_num = MONTH(CURRENT_DATE)
+                                        -- 		AND cf_year = YEAR(CURRENT_DATE)
+                                                AND LEFT(pur_payer,3) = '350'
+                                            GROUP BY pur_property_id, pur_payer, cf_month, cf_year
+                                            ORDER BY pur_property_id, pur_payer, cf_month_num
+                                            ) AS rents
+                                        GROUP BY pur_property_id, pur_payer
+                                        ) AS r ON pur_property_id = property_uid AND tenant_uid = pur_payer AND lease_status = 'ACTIVE'
+
+                                    -- ADD MAINTENANCE ISSUES
+                                    LEFT JOIN (
+                                        SELECT -- *, 
+                                            maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
+                                        FROM space.maintenanceRequests
+                                        WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
+                                        GROUP BY maintenance_property_id
+                                        ) AS m ON maintenance_property_id = property_uid
+                                    -- WHERE contract_business_id = '600-000003' 
+                                    WHERE contract_business_id = \'""" + uid + """\'
+                                        -- AND lease_status = 'ACTIVE'
+                                    
+                                    ) AS tenants
+                                GROUP BY tenant_uid
+                            ) AS pp
+                            LEFT JOIN (
                                 SELECT -- *,
-                                    tenant_uid, lt_responsibility, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents
-                                    -- , tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_pet_occupants, tenant_current_address-DNU
-                                    , tenant_references, tenant_photo_url
-                                    , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date
-                                    , contract_fees, contract_assigned_contacts
-                                    , contract_documents, contract_name, contract_status -- , contract_early_end_date
-                                    -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-                                    , lease_uid, lease_property_id, lease_application_date, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date
-                                    , lease_actual_rent
-                                    , property_uid, property_available_to_rent, property_active_date, property_listed_date, property_address, property_unit, property_city, property_state, property_zip
-                                    , property_favorite_image
-                                    , r.*
-                                    , maintenance_count
-                                FROM space.b_details
-                                LEFT JOIN space.leases ON contract_property_id = lease_property_id
-                                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                                LEFT JOIN space.properties ON contract_property_id = property_uid
-
-                                -- ADD RENT BY PROPERTY BY TENANT
-                                LEFT JOIN (
-                                    SELECT pur_property_id, pur_payer
-                                        , JSON_ARRAYAGG(JSON_OBJECT
-                                            ('pur_property_id', pur_property_id,
-                                            'purchase_type', purchase_type,
-                                            'pur_due_date', pur_due_date,
-                                            'pur_amount_due', pur_amount_due,
-                                            'purchase_status', purchase_status,
-                                            'latest_date', latest_date,
-                                            'total_paid', total_paid,
-                                            'amt_remaining', amt_remaining,
-                                            'cf_month', cf_month,
-                                            'cf_year', cf_year
-                                            )) AS rent_payments 
-                                    FROM (
-                                        SELECT  -- *,
-                                            pur_property_id, pur_payer, purchase_type, pur_due_date, purchase_status, latest_date, cf_month, cf_month_num, cf_year
-                                            , SUM(total_paid) AS total_paid
-                                            , SUM(pur_amount_due) AS pur_amount_due
-                                            , SUM(amt_remaining) AS amt_remaining
-                                        FROM space.pp_status
-                                        WHERE purchase_type = "Rent"
-                                    -- 		AND cf_month_num = MONTH(CURRENT_DATE)
-                                    -- 		AND cf_year = YEAR(CURRENT_DATE)
-                                            AND LEFT(pur_payer,3) = '350'
-                                        GROUP BY pur_property_id, pur_payer, cf_month, cf_year
-                                        ORDER BY pur_property_id, pur_payer, cf_month_num
-                                        ) AS rents
-                                    GROUP BY pur_property_id, pur_payer
-                                    ) AS r ON pur_property_id = property_uid AND tenant_uid = pur_payer AND lease_status = 'ACTIVE'
-
-                                -- ADD MAINTENANCE ISSUES
-                                LEFT JOIN (
-                                    SELECT -- *, 
-                                        maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
-                                    FROM space.maintenanceRequests
-                                    WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
-                                    GROUP BY maintenance_property_id
-                                    ) AS m ON maintenance_property_id = property_uid
-                                -- WHERE contract_business_id = '600-000003' 
-                                WHERE contract_business_id = \'""" + uid + """\'
-                                    -- AND lease_status = 'ACTIVE'
-                                
-                                ) AS tenants
-                            GROUP BY tenant_uid
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                     """)
                     
                     if len(profileQuery["result"]) > 0:
