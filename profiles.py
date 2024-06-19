@@ -279,7 +279,7 @@ class Profile(Resource):
                 response["profile"] = tenantQuery
 
             elif user_id.startswith("120"):
-                    response = db.select('employees', {"employee_uid": user_id})
+                    response["profile"] = db.select('employees', {"employee_uid": user_id})
             else:
                 raise BadRequest("Request failed, no UID in payload.")
 

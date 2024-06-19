@@ -62,42 +62,43 @@ class Properties(Resource):
         # conn = connect()
         print("Property User UID: ", uid)
 
-        if uid[:3] == '110':
+        if   uid[:3] == '110':
             print("In Owner ID")
             with connect() as db:
                 # print("in connect loop")
+
                 print("In Find Applications")
                 applicationQuery = db.execute("""
                     -- FIND APPLICATIONS CURRENTLY IN PROGRESS
-               SELECT property_uid
-                    , leases.*
-                    , lease_fees
-                    , t_details.*
-                FROM space.properties
-                LEFT JOIN space.leases ON property_uid = lease_property_id
-                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('leaseFees_uid', leaseFees_uid,
-                        'fee_name', fee_name,
-                        'fee_type', fee_type,
-                        'charge', charge,
-                        'due_by', due_by,
-                        'late_by', late_by,
-                        'late_fee',late_fee,
-                        'perDay_late_fee', perDay_late_fee,
-                        'frequency', frequency,
-                        'available_topay', available_topay,
-                        'due_by_date', due_by_date
-                        )) AS lease_fees
-                        FROM space.leaseFees
-                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                LEFT JOIN space.property_owner ON property_id = property_uid
-                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
-                AND property_owner_id = \'""" + uid + """\'  
-                
-                """)
+                    SELECT property_uid
+                            , leases.*
+                            , lease_fees
+                            , t_details.*
+                        FROM space.properties
+                        LEFT JOIN space.leases ON property_uid = lease_property_id
+                        LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee',late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS lease_fees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                        LEFT JOIN space.property_owner ON property_id = property_uid
+                        WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
+                        AND property_owner_id = \'""" + uid + """\'   
+                        """)
             response["Applications"] = applicationQuery
-            # print("Query: ", propertiesQuery)
+            # print("Query: ", applicationQuery)
+
             with connect() as db:
                 propertiesQuery = db.execute("""  
                     -- PROPERTY RENT STATUS FOR PROPERTIES
@@ -158,27 +159,12 @@ class Properties(Resource):
                         ) AS pp
                         ON property_uid = pur_property_id                    
                         """)
-
             # print("Query: ", propertiesQuery)
-
             response["Property"] = propertiesQuery
-            # return response
+
 
             print("In Maintenance Requests")
             with connect() as db:
-            # print("in connect loop")
-                # maintenanceQuery = db.execute("""
-                #     -- MAINTENANCE STATUS BY MANAGER
-                #     SELECT *
-                #     FROM space.maintenanceRequests
-                #     LEFT JOIN space.o_details ON maintenance_property_id = property_id
-                #     LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                #     -- WHERE business_uid = "600-000032"
-                #     -- WHERE business_uid = \'""" + uid + """\'
-                #     -- WHERE owner_uid = "110-000003"
-                #     WHERE owner_uid = \'""" + uid + """\'
-                #     """)
-
                 maintenanceQuery = db.execute("""
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
@@ -554,9 +540,38 @@ class Properties(Resource):
         
         elif uid[:3] == '200':
             print("In Property ID")
+
             with connect() as db:
-                response = db.select('properties', {"property_uid": uid})
-            # return response
+                # print("in connect loop")
+                print("In Find Property with Appliances")
+                propertiesQuery = db.execute("""
+                    -- RETURN PROPERTIES WITH APPLIANCES
+                    SELECT p.*,
+                        JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'appliance_uid', a.appliance_uid,
+                                'appliance_property_id', a.appliance_property_id,
+                                'appliance_type', a.appliance_type,
+                                'appliance_url', a.appliance_url,
+                                'appliance_images', a.appliance_images,
+                                'appliance_available', a.appliance_available,
+                                'appliance_installed', a.appliance_installed,
+                                'appliance_model_num', a.appliance_model_num,
+                                'appliance_purchased', a.appliance_purchased,
+                                'appliance_serial_num', a.appliance_serial_num,
+                                'appliance_manufacturer', a.appliance_manufacturer,
+                                'appliance_warranty_info', a.appliance_warranty_info,
+                                'appliance_warranty_till', a.appliance_warranty_till,
+                                'appliance_purchased_from', a.appliance_purchased_from,
+                                'appliance_purchase_order', a.appliance_purchase_order
+                            )
+                        ) AS appliances
+                    FROM space.properties p
+                    LEFT JOIN space.appliances a ON p.property_uid = a.appliance_property_id
+                    WHERE property_uid = '200-000001'
+                    GROUP BY p.property_uid;
+                """)
+            response["Property"] = propertiesQuery
         
         else:
             print("UID Not found")
