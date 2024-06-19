@@ -335,7 +335,7 @@ class Contacts(Resource):
 
                     return response
                 
-                
+
 
             elif business_type == "MAINTENANCE":
                 print("In Contacts - Get Maintenance Contacts")
@@ -428,7 +428,24 @@ class Contacts(Resource):
                     """)
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["managers"] = profileQuery["result"]
-                    return response
+
+
+
+                #employees
+                    # print ('    -in Get Employee Contacts for Maintenance')
+                    profileQuery = db.execute(""" 
+                            -- EMPLOYEE CONTACTS FOR MAINTENANCE
+                            SELECT * 
+                            FROM space.employees
+                            LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
+                            -- WHERE business_uid = '600-000012';
+                            WHERE business_uid = \'""" + uid + """\'
+                    """)
+                    
+                    if len(profileQuery["result"]) > 0:
+                        response["maintenance_contacts"]["employees"] = profileQuery["result"]
+
+                    return response        
                     
         #owner contacts
         elif uid.startswith("110"):
