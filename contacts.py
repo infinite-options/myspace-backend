@@ -156,7 +156,6 @@ class Contacts(Resource):
 
                     # tenants
                     # print ('    -in Get Tenant Contacts for Management - UPDATED')
-                    ('    -in Get Tenant Contacts for Management')
                     profileQuery = db.execute(""" 
                             -- TENANT CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
                             SELECT *
@@ -280,8 +279,8 @@ class Contacts(Resource):
 
                     #maintenance
                     # print ('    -in Get Maintenance Contacts for Management - UPDATED')
-                    ('    -in Get Maintenance Contacts for Management')
                     profileQuery = db.execute(""" 
+                            -- MAINTENANCE CONTACTS FOR MANAGEMENT
                             SELECT -- *,
                                 maintenance_status
                                 , quote_business_id
@@ -318,8 +317,25 @@ class Contacts(Resource):
                     
                     if len(profileQuery["result"]) > 0:
                         response["management_contacts"]["maintenance"] = profileQuery["result"]
+                
+
+                    #employees
+                    # print ('    -in Get Employee Contacts for Management')
+                    profileQuery = db.execute(""" 
+                            -- EMPLOYEE CONTACTS FOR MANAGEMENT
+                            SELECT * 
+                            FROM space.employees
+                            LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
+                            -- WHERE business_uid = '600-000012';
+                            WHERE business_uid = \'""" + uid + """\'
+                    """)
+                    
+                    if len(profileQuery["result"]) > 0:
+                        response["management_contacts"]["employees"] = profileQuery["result"]
 
                     return response
+                
+                
 
             elif business_type == "MAINTENANCE":
                 print("In Contacts - Get Maintenance Contacts")
