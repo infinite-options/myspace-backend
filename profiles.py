@@ -208,6 +208,7 @@ class BusinessProfileByUid(Resource):
 
 class Profile(Resource):
     def get(self, user_id):
+        print("In Profile Endpoint", user_id)
         with connect() as db:
             if user_id.startswith("110"):
                 ownerQuery = db.execute("""
@@ -280,7 +281,23 @@ class Profile(Resource):
                 response["profile"] = tenantQuery
 
             elif user_id.startswith("120"):
-                    response["profile"] = db.select('employees', {"employee_uid": user_id})
+                    # response["profile"] = db.select('employees', {"employee_uid": user_id})
+                print ('    -in Get Employee Profile')
+                employeeQuery = db.execute(""" 
+                            -- EMPLOYEE CONTACTS
+                            SELECT * 
+                            FROM space.employees
+                            LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
+                            -- WHERE employee_uid = '120-000009';
+                            WHERE employee_uid = \'""" + user_id + """\'
+                            """)
+                
+                print(employeeQuery)
+                    
+                if len(employeeQuery["result"]) > 0:
+                    response = {}
+                    response["profile"] = employeeQuery
+                    
             else:
                 raise BadRequest("Request failed, no UID in payload.")
 
