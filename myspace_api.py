@@ -552,14 +552,6 @@ class stripe_key(Resource):
 # Dashboard Queries
 
 api.add_resource(Dashboard, '/dashboard/<string:user_id>')
-# Owner Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
-# api.add_resource(ownerDashboard, '/ownerDashboard/<string:owner_id>')
-# # Manager Dashboard: Maintenance,Lease, Rent, Vacancy, Cashflow.  Still need to Need to add Cashflow
-# api.add_resource(managerDashboard, '/managerDashboard/<string:manager_id>')
-# # Tenant Dashboard: Property Maintenance, Announcements
-# api.add_resource(tenantDashboard, '/tenantDashboard/<string:tenant_id>')
-# # Maintenance Dashboard: Current Activities, Work Orders
-# api.add_resource(maintenanceDashboard, '/maintenanceDashboard/<string:business_id>')
 
 
 # Owner Queries
@@ -570,38 +562,25 @@ api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
 api.add_resource(NewPayments, '/makePayment')
 # api.add_resource(Payments, '/makePayment')  # Original endpoint
-# api.add_resource(NewPayments, '/makePayment2')   # Used for endpoint development
 
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 
 
 # Maintenance Endpoints
-# Maintenance Status for Businesses (Property Manager and Maintenance Company)
 api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
-# Mainentance Requests GET for Owner and Tenant and POST and PUT for new and modified maintenance requests
 api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
-#api.add_resource(MaintenanceByProperty, '/maintenanceByProperty/<string:property_id>')
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
 
-# api.add_resource(ownerDashboardProperties,
-#                  '/ownerDashboardProperties/<string:owner_id>')
 
-# api.add_resource(Quotes, '/quotes')
-# api.add_resource(QuotesByBusiness, '/quotesByBusiness')
-# api.add_resource(QuotesStatusByBusiness, '/quotesStatusByBusiness')
-# api.add_resource(StatusUpdate, '/statusUpdate')
-# api.add_resource(QuotesByRequest, '/quotesByRequest')
 
 
 api.add_resource(Rents, '/rents/<string:uid>')
 api.add_resource(RentDetails, '/rentDetails/<string:uid>')
 
 api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
-# api.add_resource(PropertiesByOwner, '/propertiesByOwner/<string:owner_id>')
-# api.add_resource(PropertiesByManager, '/propertiesByManager/<string:owner_id>/<string:manager_business_id>')
-# api.add_resource(PropertyDashboardByOwner, '/propertyDashboardByOwner/<string:owner_id>')
+
 
 
 
@@ -612,14 +591,11 @@ api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
-#api.add_resource(CashflowByOwner, '/cashflowByOwner/<string:owner_id>/<string:year>')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
 api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
 
 api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
-
-
 
 
 api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
@@ -642,31 +618,7 @@ api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<stri
 
 
 api.add_resource(Contacts, '/contacts/<string:uid>')
-# api.add_resource(ContactsMaintenance, '/contactsMaintenance')
-# # api.add_resource(ContactsOwnerContactsDetails,
-# #                  '/contactsOwnerContactsDetails/<string:owner_uid>')
-# api.add_resource(ContactsBusinessContacts,
-#                  '/contactsBusinessContacts/<string:business_uid>')
-# api.add_resource(ContactsBusinessContactsOwnerDetails,
-#                  '/contactsBusinessContactsOwnerDetails/<string:business_uid>')
-# api.add_resource(ContactsBusinessContactsTenantDetails,
-#                  '/contactsBusinessContactsTenantDetails/<string:business_uid>')
-# api.add_resource(ContactsBusinessContactsMaintenanceDetails,
-#                  '/contactsBusinessContactsMaintenanceDetails/<string:business_uid>')
-# api.add_resource(ContactsOwnerManagerDetails,
-#                  '/contactsOwnerManagerDetails/<string:owner_uid>')
-# api.add_resource(ContactsMaintenanceManagerDetails,
-#                  '/contactsMaintenanceManagerDetails/<string:business_uid>')
-# api.add_resource(ContactsMaintenanceTenantDetails,
-#                  '/contactsMaintenanceTenantDetails/<string:business_uid>')
-
-
-# api.add_resource(Announcements, '/announcements')
-# api.add_resource(AnnouncementsByUserId, '/announcements/<string:user_id>')
-
-# api.add_resource(Announcements, '/announcements')
 api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
-# api.add_resource(RolesByUserid, '/rolesByUserId/<string:user_id>')
 api.add_resource(RequestPayment, '/requestPayment')
 
 api.add_resource(List, '/lists')

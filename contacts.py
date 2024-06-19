@@ -41,7 +41,7 @@ class Contacts(Resource):
                 with connect() as db:
                     print("in connect loop")
                    
-                    #owners
+                    # OWNERS
                     # print ('    -in Get Owner Contacts for Management - UPDATED')
                     profileQuery = db.execute(""" 
                             -- OWNER CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
@@ -153,8 +153,7 @@ class Contacts(Resource):
                         response["management_contacts"]["owners"] = profileQuery["result"]
 
 
-
-                    # tenants
+                    # TENANTS
                     # print ('    -in Get Tenant Contacts for Management - UPDATED')
                     profileQuery = db.execute(""" 
                             -- TENANT CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
@@ -276,8 +275,7 @@ class Contacts(Resource):
                         response["management_contacts"]["tenants"] = profileQuery["result"]
 
 
-
-                    #maintenance
+                    # MAINTENANCE
                     # print ('    -in Get Maintenance Contacts for Management - UPDATED')
                     profileQuery = db.execute(""" 
                             -- MAINTENANCE CONTACTS FOR MANAGEMENT
@@ -319,7 +317,7 @@ class Contacts(Resource):
                         response["management_contacts"]["maintenance"] = profileQuery["result"]
                 
 
-                    #employees
+                    # EMPLOYEES
                     # print ('    -in Get Employee Contacts for Management')
                     profileQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS FOR MANAGEMENT
@@ -336,14 +334,15 @@ class Contacts(Resource):
                     return response
                 
 
-
             elif business_type == "MAINTENANCE":
                 print("In Contacts - Get Maintenance Contacts")
                 response["maintenance_contacts"] = {}
 
-                print('    -in Get Tenant Contacts for Maintenance')
                 with connect() as db:
-                    # print("in connect loop")
+                    print("in connect loop")
+
+                    # TENANTS
+                    # print('    -in Get Manager Contacts for Maintenance')
                     profileQuery = db.execute(f"""
                         SELECT
                             tenant_uid as contact_uid,
@@ -384,14 +383,13 @@ class Contacts(Resource):
                             AND lease_status = 'ACTIVE' 
                         GROUP BY tenant_uid;       
                     """)
+                    
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["tenants"] = profileQuery["result"]
 
 
-
-                print('    -in Get Manager Contacts for Maintenance')
-                with connect() as db:
-                    print("in connect loop")
+                    # MANAGERS
+                    # print('    -in Get Manager Contacts for Maintenance')
                     profileQuery = db.execute(f"""
                         SELECT 
                             business_uid as contact_uid,
@@ -426,12 +424,12 @@ class Contacts(Resource):
                         WHERE quote_business_id = '{uid}'
                         GROUP BY business_uid;
                     """)
+
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["managers"] = profileQuery["result"]
 
 
-
-                #employees
+                    # Employees
                     # print ('    -in Get Employee Contacts for Maintenance')
                     profileQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS FOR MAINTENANCE
@@ -445,8 +443,10 @@ class Contacts(Resource):
                     if len(profileQuery["result"]) > 0:
                         response["maintenance_contacts"]["employees"] = profileQuery["result"]
 
-                    return response        
-                    
+                    return response    
+
+
+       
         #owner contacts
         elif uid.startswith("110"):
             # print('in Get Owner Contacts')
@@ -457,7 +457,8 @@ class Contacts(Resource):
             with connect() as db:
                 print("in connect loop")
 
-                print('    -in Get Manager Contacts for Owner - UPDATED')
+                # MANAGERS
+                # print('    -in Get Manager Contacts for Owner - UPDATED')
                 profileQuery = db.execute(f"""
                     -- MANAGER CONTACTS WITH RENTS, MAINTEANCE AND PAYMENT
                     SELECT *
@@ -552,99 +553,100 @@ class Contacts(Resource):
                 if len(profileQuery["result"]) > 0:
                     response["owner_contacts"]["managers"] = profileQuery["result"]
 
-
-                print('    -in Get Tenant Contacts for Owner - UPDATED')
-                with connect() as db:
-                    print("in connect loop")
-                    #change query
-                    profileQuery = db.execute(f"""
-                        -- ALL TENANTS & APPLICANTS FOR AN OWNER
-                        SELECT -- *,
-                            tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_references, tenant_photo_url
-                            , JSON_ARRAYAGG(JSON_OBJECT
-                                ('property_id', property_id,
-                                    'property_owner_id', property_owner_id,
-                                    'po_owner_percent', po_owner_percent,
-                                    'lease_uid', lease_uid,
-                                    'lease_start', lease_start,
-                                    'lease_end', lease_end,
-                                    'lease_status', lease_status,
-                                    'lease_documents', lease_documents,
-                                    'lease_adults', lease_adults,
-                                    'lease_children', lease_children,
-                                    'lease_pets', lease_pets,
-                                    'lease_vehicles', lease_vehicles,
-                                    'lease_referred', lease_referred,
-                                    'lease_effective_date', lease_effective_date,
-                                    'lease_actual_rent', lease_actual_rent,
-                                    'payment_method', payment_method,
-                                    'rents_paid', rents_paid
-                                    )) AS properties
-                        FROM (
-                            SELECT * 
-                            FROM space.o_details
-                            LEFT JOIN space.leases ON lease_property_id = property_id
-                            LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                            LEFT JOIN (
+                # TENANTS
+                # print('    -in Get Tenant Contacts for Owner - UPDATED')
+                profileQuery = db.execute(f"""
+                    -- ALL TENANTS & APPLICANTS FOR AN OWNER
+                    SELECT -- *,
+                        tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_references, tenant_photo_url
+                        , JSON_ARRAYAGG(JSON_OBJECT
+                            ('property_id', property_id,
+                                'property_owner_id', property_owner_id,
+                                'po_owner_percent', po_owner_percent,
+                                'lease_uid', lease_uid,
+                                'lease_start', lease_start,
+                                'lease_end', lease_end,
+                                'lease_status', lease_status,
+                                'lease_documents', lease_documents,
+                                'lease_adults', lease_adults,
+                                'lease_children', lease_children,
+                                'lease_pets', lease_pets,
+                                'lease_vehicles', lease_vehicles,
+                                'lease_referred', lease_referred,
+                                'lease_effective_date', lease_effective_date,
+                                'lease_actual_rent', lease_actual_rent,
+                                'payment_method', payment_method,
+                                'rents_paid', rents_paid
+                                )) AS properties
+                    FROM (
+                        SELECT * 
+                        FROM space.o_details
+                        LEFT JOIN space.leases ON lease_property_id = property_id
+                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                        LEFT JOIN (
+                            SELECT -- *,
+                                paymentMethod_profile_id
+                                , JSON_ARRAYAGG(JSON_OBJECT
+                                    ('paymentMethod_type', paymentMethod_type,
+                                    'paymentMethod_name', paymentMethod_name,
+                                    'paymentMethod_status', paymentMethod_status
+                                    )) AS payment_method
+                            FROM space.paymentMethods
+                            GROUP BY paymentMethod_profile_id
+                            ) AS pm ON paymentMethod_profile_id = tenant_uid
+                        -- ACTUAL PAYMENTS BY PROPERTY 
+                        LEFT JOIN (
+                            SELECT -- *,
+                                pur_property_id, purchase_type, pur_payer
+                                , JSON_ARRAYAGG(JSON_OBJECT
+                                    ('payment_status', payment_status,
+                                    'amt_remaining', amt_remaining,
+                                    'cf_month', cf_month,
+                                    'cf_month_num', cf_month_num,
+                                    'cf_year', cf_year,
+                                    'pur_amount_due', pur_amount_due,
+                                    'total_paid', total_paid
+                                    )) AS rents_paid
+                            FROM (
                                 SELECT -- *,
-                                    paymentMethod_profile_id
-                                    , JSON_ARRAYAGG(JSON_OBJECT
-                                        ('paymentMethod_type', paymentMethod_type,
-                                        'paymentMethod_name', paymentMethod_name,
-                                        'paymentMethod_status', paymentMethod_status
-                                        )) AS payment_method
-                                FROM space.paymentMethods
-                                GROUP BY paymentMethod_profile_id
-                                ) AS pm ON paymentMethod_profile_id = tenant_uid
-                            -- ACTUAL PAYMENTS BY PROPERTY 
-                            LEFT JOIN (
-                                SELECT -- *,
-                                    pur_property_id, purchase_type, pur_payer
-                                    , JSON_ARRAYAGG(JSON_OBJECT
-                                        ('payment_status', payment_status,
-                                        'amt_remaining', amt_remaining,
-                                        'cf_month', cf_month,
-                                        'cf_month_num', cf_month_num,
-                                        'cf_year', cf_year,
-                                        'pur_amount_due', pur_amount_due,
-                                        'total_paid', total_paid
-                                        )) AS rents_paid
-                                FROM (
-                                    SELECT -- *,
-                                        -- purchase_uid, pur_timestamp, 
-                                        pur_property_id, purchase_type -- , pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, pur_receiver, pur_initiator
-                                        , pur_payer -- , pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret, latest_date, total_paid
-                                        , payment_status
-                                        , SUM(amt_remaining) AS amt_remaining, cf_month, cf_month_num, cf_year
-                                        , SUM(total_paid) AS total_paid
-                                        , SUM(pur_amount_due) AS pur_amount_due
-                                    FROM space.pp_status
-                                    WHERE LEFT(pur_payer,3) = '350'
-                                    GROUP BY pur_payer, pur_property_id, cf_month, cf_year
-                                    ORDER BY pur_property_id, cf_month_num, cf_year
-                                    ) AS r
-                                GROUP BY pur_property_id
-                                ) AS r ON pur_property_id = property_id AND tenant_uid = pur_payer
-                            -- WHERE owner_uid = '110-000003'
-                            WHERE owner_uid = \'""" + uid + """\'
-                        ) as t
-                        GROUP BY tenant_uid
-                    """)
+                                    -- purchase_uid, pur_timestamp, 
+                                    pur_property_id, purchase_type -- , pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, pur_receiver, pur_initiator
+                                    , pur_payer -- , pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret, latest_date, total_paid
+                                    , payment_status
+                                    , SUM(amt_remaining) AS amt_remaining, cf_month, cf_month_num, cf_year
+                                    , SUM(total_paid) AS total_paid
+                                    , SUM(pur_amount_due) AS pur_amount_due
+                                FROM space.pp_status
+                                WHERE LEFT(pur_payer,3) = '350'
+                                GROUP BY pur_payer, pur_property_id, cf_month, cf_year
+                                ORDER BY pur_property_id, cf_month_num, cf_year
+                                ) AS r
+                            GROUP BY pur_property_id
+                            ) AS r ON pur_property_id = property_id AND tenant_uid = pur_payer
+                        -- WHERE owner_uid = '110-000003'
+                        WHERE owner_uid = \'""" + uid + """\'
+                    ) as t
+                    GROUP BY tenant_uid
+                """)
 
-                    if len(profileQuery["result"]) > 0:
-                        response["owner_contacts"]["tenants"] = profileQuery["result"]
+                if len(profileQuery["result"]) > 0:
+                    response["owner_contacts"]["tenants"] = profileQuery["result"]
                 
                 return response
             
+
         #all maintenance contacts
         elif uid.startswith("ALL"):
-            print('in Get All Maintenace Contacts')
+            # print('in Get All Maintenace Contacts')
             response = {}
             # conn = connect()
 
 
             with connect() as db:
                 print("in connect loop")
+
+                # ALL MAINTENANCE CONTACTS
+                # print('    -in Get All Maintenance Contacts')
                 profileQuery = db.execute(""" 
                         --  FIND ALL MAINTENANCE COMPANIES
                         SELECT -- *,
@@ -679,12 +681,8 @@ class Contacts(Resource):
                         """)
                 
 
-                # print("Query: ", profileQuery)
-                # items = execute(profileQuery, "get", conn)
-                # print(items)
-                # response["Profile"] = items["result"]
-
-                response["maintenance_businesses"] = profileQuery
+                if len(profileQuery["result"]) > 0:
+                    response["maintenance_businesses"] = profileQuery
                 return response
 
         else:
