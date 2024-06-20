@@ -42,28 +42,27 @@ def allowed_file(filename):
 
 class Bills(Resource):
     def get(self,user_id):
-        print(user_id)
+        print("In Get Bills", user_id)
         response = {}
 
         if user_id[:3] == '040':
             with connect() as db:
                 queryResponse = (""" 
-                                            
-                                            SELECT *
-                                            FROM space.bills
-                                            WHERE bill_uid = \'""" + user_id + """\';
-                                            """)
+                        
+                        SELECT *
+                        FROM space.bills
+                        WHERE bill_uid = \'""" + user_id + """\';
+                        """)
                 response = db.execute(queryResponse)
             return response
 
         elif user_id[:3] == '900':
             with connect() as db:
-                queryResponse = (""" 
-                                            
-                                            SELECT * 
-                                            FROM space.bills 
-                                            WHERE bill_maintenance_quote_id = \'""" + user_id + """\';
-                                            """)
+                queryResponse = ("""                
+                        SELECT * 
+                        FROM space.bills 
+                        WHERE bill_maintenance_quote_id = \'""" + user_id + """\';
+                        """)
                 response = db.execute(queryResponse)
             return response
     
@@ -553,15 +552,18 @@ class AddRevenue(Resource):
 
 class RentPurchase(Resource):
     def post(self):
+        print("In Rent Purchase")
         response = {}
         with connect() as db:
             data = request.get_json(force=True)
+            print("Data Received: ", data)
 
             newRequest = {}
 
             # # GET NEW UID
             newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
+            print("New UID: ", newRequest['purchase_uid'])
 
 
 
@@ -572,11 +574,18 @@ class RentPurchase(Resource):
             dt = datetime.datetime(2023,9,21)
             newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
             newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
+            print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
 
-            #get the rent amount
+            # THINGS THAT ARE MISSING:
+            # 1. NEED TO GET LEASE INFO TO FIND RENT, RENT START DATE, DEPOSIT, DUE DATES AND LATE DATES
+            # 2. NEED TO RECURSIVELY POST TO PURCHASES FOR EACH MONTH DUE
+            # 3. NEED TO WAIVE LATE FEES?  SEND FLAG FROM FRONTEND?
+
+            #get the rent amount  - NEED TO GET THIS FROM THE LEASE
             rent_amt_st = db.select('properties',
                                           {'property_uid': data.get("property_id")})
             rent_amt = rent_amt_st.get('result')[0]['property_listed_rent']
+            print("Rent Amount: ", rent_amt)
             newRequest['pur_amount_due'] = rent_amt
             newRequest['purchase_status'] = "UNPAID"
             newRequest['pur_notes'] = "RENT FOR NEXT MONTH"

@@ -185,6 +185,7 @@ class Contacts(Resource):
                                             'property_city', property_city,
                                             'property_state', property_state,
                                             'property_zip', property_zip,
+                                            'property_favorite_image', property_favorite_image,
                                             'rent_payments', rent_payments,
                                             'maintenance_count', maintenance_count,
                                             'pur_payer', pur_payer
