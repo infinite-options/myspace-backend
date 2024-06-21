@@ -9,6 +9,7 @@ from calendar import monthrange
 import json
 import ast
 from dateutil.relativedelta import relativedelta
+from werkzeug.exceptions import BadRequest
 
 
 def updateImagesAppliances(imageFiles, property_uid, appliance):
@@ -98,7 +99,7 @@ class Appliances(Resource):
 
         return response
 
-    def put(self):
+    # def put(self):
         response = {}
         with connect() as db:
             data = request.form
@@ -282,6 +283,52 @@ class Appliances(Resource):
                 # print(existingApp)
                 response = db.update('properties', primaryKey, updatedProperty)
         return response
+
+
+    def post(self):
+        print("In POST Appliances")
+        response = {}
+        payload = request.get_json()
+        with connect() as db:
+            new_appliance_id = db.call('new_appliance_uid')['result'][0]['new_id']
+            payload['appliance_uid'] = new_appliance_id
+            print(payload)
+        
+            query_response = db.insert('space.appliances', payload)
+            response = query_response
+            print(response)
+        return response
+    
+
+    def delete(self, uid):
+        print("In DELETE Appliances", uid)
+        response = {}
+        with connect() as db:
+            applianceQuery = ("""
+                DELETE 
+                FROM space.appliances
+                -- WHERE appliance_uid = '060-000005'
+                WHERE appliance_uid = \'""" + uid + """\';
+                """)
+            response = db.delete(applianceQuery)
+            print(response)
+        return response
+
+
+    def put(self):
+        response = {}
+        payload = request.get_json()
+        print(payload)
+        if payload.get('appliance_uid') is None:
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'appliance_uid': payload.pop('appliance_uid')}
+        with connect() as db:
+            response = db.update('space.appliances', key, payload)
+        return response
+
+
+
+
 
     # def post(self):
     #     print("In Maintenace Requests")
