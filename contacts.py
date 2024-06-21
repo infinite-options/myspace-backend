@@ -284,14 +284,16 @@ class Contacts(Resource):
                                 maintenance_status
                                 , quote_business_id
                                 , b.*
+                                , pm.*
                                 , contract_business_id
                                 , contract_property_id
+                                -- , COUNT(quote_total_estimate)
                                 , COUNT(quote_status)
                                 , SUM(quote_total_estimate)
                             FROM (
                                 SELECT *
                                     , CASE
-                                        WHEN space.m_details.quote_status = "REQUESTED"                                                      								THEN "NEW"
+                                        WHEN space.m_details.quote_status IN ("REQUESTED")                                                      							THEN "NEW"
                                         WHEN space.m_details.quote_status IN ("SENT") 	                                    												THEN "SUBMITTED"
                                         WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          												THEN "ACCEPTED"
                                         WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       											THEN "SCHEDULED"
@@ -306,13 +308,26 @@ class Contacts(Resource):
                                     FROM space.contracts
                                     WHERE contract_status = 'ACTIVE'
                                     ) AS c ON maintenance_property_id = contract_property_id 
-                                -- WHERE contract_business_id = '600-000003'
+                                -- WHERE contract_business_id = '600-000051'
                                 WHERE contract_business_id = \'""" + uid + """\'   
                                 ) AS m
-                            LEFT JOIN space.businessProfileInfo b ON quote_business_id = b.business_uid 
+                            LEFT JOIN space.businessProfileInfo b ON quote_business_id = b.business_uid
+                            LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = b.business_uid
                             GROUP BY maintenance_status, quote_business_id
                             ORDER BY quote_business_id
-                    """)
+                            """)
                     
                     if len(profileQuery["result"]) > 0:
                         response["management_contacts"]["maintenance"] = profileQuery["result"]

@@ -584,7 +584,7 @@ api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 
 # appliances
 api.add_resource(Appliances, "/appliances")
-api.add_resource(RemoveAppliance, "/RemoveAppliance")
+# api.add_resource(RemoveAppliance, "/RemoveAppliance")
 
 
 
