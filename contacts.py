@@ -286,7 +286,7 @@ class Contacts(Resource):
                                 , b.*
                                 , contract_business_id
                                 , contract_property_id
-                                , COUNT(quote_total_estimate)
+                                , COUNT(quote_status)
                                 , SUM(quote_total_estimate)
                             FROM (
                                 SELECT *
