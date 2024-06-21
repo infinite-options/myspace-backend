@@ -340,9 +340,22 @@ class Contacts(Resource):
                             SELECT * 
                             FROM space.employees
                             LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
+                            LEFT JOIN (
+                                SELECT -- *,
+                                    paymentMethod_profile_id
+                                    , JSON_ARRAYAGG(
+                                    JSON_OBJECT(
+                                        'paymentMethod_type', paymentMethod_type,
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
+                                    )
+                                ) AS payment_method
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id
+                                ) AS pm ON pm.paymentMethod_profile_id = employee_uid
                             -- WHERE business_uid = '600-000012';
                             WHERE business_uid = \'""" + uid + """\'
-                    """)
+                            """)
                     
                     if len(profileQuery["result"]) > 0:
                         response["management_contacts"]["employees"] = profileQuery["result"]

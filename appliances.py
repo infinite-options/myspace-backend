@@ -112,7 +112,7 @@ class Appliances(Resource):
             i = -1
             imageFiles = {}
             getAppliance = db.execute(
-                """SELECT appliances FROM pm.properties WHERE property_uid= \'""" + property_uid + """\'""")
+                """SELECT appliances FROM space.appliances WHERE property_uid= \'""" + property_uid + """\'""")
             getappLen = len(json.loads(
                 getAppliance['result'][0]['appliances']).keys())
             existingApp = json.loads(
@@ -282,6 +282,77 @@ class Appliances(Resource):
                 # print(existingApp)
                 response = db.update('properties', primaryKey, updatedProperty)
         return response
+
+    # def post(self):
+    #     print("In Maintenace Requests")
+    #     response = {}
+    #     with connect() as db:
+    #         data = request.form
+    #         fields = [
+    #             'maintenance_property_id'
+    #             , 'maintenance_title'
+    #             , 'maintenance_desc'
+    #             , 'maintenance_request_type'
+    #             , 'maintenance_request_created_by'
+    #             , 'maintenance_priority'
+    #             , 'maintenance_can_reschedule'
+    #             , 'maintenance_assigned_business'
+    #             , 'maintenance_assigned_worker'
+    #             , 'maintenance_scheduled_date'
+    #             , 'maintenance_scheduled_time'
+    #             , 'maintenance_frequency'
+    #             , 'maintenance_notes'
+    #             , 'maintenance_request_created_date'
+    #             , 'maintenance_request_closed_date'
+    #             , 'maintenance_request_adjustment_date'
+    #             , 'maintenance_callback_number'
+    #             , 'maintenance_estimated_cost'
+    #         ]
+
+    #         newRequest = {}
+    #         for field in fields:
+    #             newRequest[field] = data.get(field, None)
+    #             # print(field, " = ", newRequest[field])
+
+
+    #         # # GET NEW UID
+    #         print("Get New Request UID")
+    #         newRequestID = db.call('new_request_uid')['result'][0]['new_id']
+    #         newRequest['maintenance_request_uid'] = newRequestID
+    #         print(newRequestID)
+
+    #         images = []
+    #         i = -1
+    #         # WHILE WHAT IS TRUE?
+    #         while True:
+    #             print("In while loop")
+    #             filename = f'img_{i}'
+    #             # print("Filename: ", filename)
+    #             if i == -1:
+    #                 filename = 'img_cover'
+    #             file = request.files.get(filename)
+    #             # print("File: ", file)
+    #             if file:
+    #                 key = f'maintenanceRequests/{newRequestID}/{filename}'
+    #                 image = uploadImage(file, key, '')
+    #                 images.append(image)
+    #             else:
+    #                 break
+    #             i += 1
+    #         newRequest['maintenance_images'] = json.dumps(images)
+    #         # print("Images to be uploaded: ", newRequest['maintenance_images'])
+
+    #         newRequest['maintenance_request_status'] = 'NEW'
+    #         # newRequest['frequency'] = 'One time'
+    #         # newRequest['can_reschedule'] = False
+
+    #         # print(newRequest)
+
+    #         response = db.insert('maintenanceRequests', newRequest)
+    #         response['Maintenance_UID'] = newRequestID
+    #         response['images'] = newRequest['maintenance_images']
+
+    #     return response
 
 
 class RemoveAppliance(Resource):

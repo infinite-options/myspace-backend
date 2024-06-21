@@ -752,13 +752,13 @@ class PaymentOwner(Resource):
 
 class PaymentMethod(Resource):
     def post(self):
-        response = []
+        response = {    }
         payload = request.get_json()
         print(payload)
         with connect() as db:
             query_response = db.insert('paymentMethods', payload)
             print(query_response)
-            response.append(query_response)
+            response = query_response
         return response
     
     def put(self):
