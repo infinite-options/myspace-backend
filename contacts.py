@@ -281,37 +281,53 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             -- MAINTENANCE CONTACTS FOR MANAGEMENT
                             SELECT -- *,
-                                maintenance_status
-                                , quote_business_id
-                                , b.*
-                                , pm.*
-                                , contract_business_id
-                                , contract_property_id
-                                -- , COUNT(quote_total_estimate)
-                                , COUNT(quote_status)
-                                , SUM(quote_total_estimate)
+                                contract_business_id
+                                , quote_business_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_locations, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                                , payment_method
+                                , maintenance_status
+                                , COUNT(maintenance_status) AS num
+                                , SUM(quote_total_estimate) AS total_estimate
+                                , JSON_ARRAYAGG(JSON_OBJECT(
+                                    'maintenance_request_uid', maintenance_request_uid,
+                                    'maintenance_property_id', maintenance_property_id,
+                                    'quote_business_id', quote_business_id,
+                                    'contract_business_id', contract_business_id,
+                                    'maintenance_title', maintenance_title,
+                                    'maintenance_desc', maintenance_desc,
+                                    'maintenance_images', maintenance_images,
+                                    'maintenance_request_type', maintenance_request_type,
+                                    'maintenance_priority', maintenance_priority,
+                                    'maintenance_request_created_date', maintenance_request_created_date,
+                                    'maintenance_scheduled_date', maintenance_scheduled_date,
+                                    'maintenance_scheduled_time', maintenance_scheduled_time,
+                                    'maintenance_frequency', maintenance_frequency,
+                                    'property_address', property_address,
+                                    'property_unit', property_unit,
+                                    'property_city', property_city,
+                                    'property_state', property_state,
+                                    'property_zip', property_zip
+                                    )) AS maintenance_request_info
                             FROM (
                                 SELECT *
-                                    , CASE
-                                        WHEN space.m_details.quote_status IN ("REQUESTED")                                                      							THEN "NEW"
-                                        WHEN space.m_details.quote_status IN ("SENT") 	                                    												THEN "SUBMITTED"
-                                        WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          												THEN "ACCEPTED"
-                                        WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       											THEN "SCHEDULED"
-                                        WHEN space.m_details.quote_status = "FINISHED"                                                       								THEN "FINISHED"
-                                        WHEN space.m_details.quote_status = "COMPLETED"                                                      								THEN "PAID"   
-                                        WHEN space.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED" )      THEN "ARCHIVE"
-                                        ELSE space.m_details.quote_status
+                                , CASE
+                                        WHEN quote_status = "REQUESTED"                                 THEN "REQUESTED"
+                                        WHEN quote_status = "SENT" 	                                    THEN "SUBMITTED"
+                                        WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                   THEN "ACCEPTED"
+                                        WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")               THEN "SCHEDULED"
+                                        WHEN quote_status = "FINISHED"                                  THEN "FINISHED"
+                                        WHEN quote_status = "COMPLETED"                                 THEN "PAID"   
+                                        WHEN quote_status IN ("CANCELLED", "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED")      THEN "ARCHIVE"
+                                        ELSE quote_status
                                     END AS maintenance_status
                                 FROM space.m_details
-                                LEFT JOIN (
-                                    SELECT * 
-                                    FROM space.contracts
-                                    WHERE contract_status = 'ACTIVE'
-                                    ) AS c ON maintenance_property_id = contract_property_id 
-                                -- WHERE contract_business_id = '600-000051'
-                                WHERE contract_business_id = \'""" + uid + """\'   
-                                ) AS m
-                            LEFT JOIN space.businessProfileInfo b ON quote_business_id = b.business_uid
+                                LEFT JOIN space.properties ON maintenance_property_id = property_uid
+                                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS C ON contract_property_id = property_uid
+                                LEFT JOIN space.businessProfileInfo ON business_uid = quote_business_id
+                                -- WHERE quote_business_id = '600-000012' 
+                                -- WHERE contract_business_id = '600-000003' 
+                                -- WHERE quote_business_id = \'""" + uid + """\'
+                                WHERE contract_business_id = \'""" + uid + """\'
+                                ) AS ms
                             LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
@@ -324,9 +340,9 @@ class Contacts(Resource):
                                 ) AS payment_method
                                 FROM space.paymentMethods
                                 GROUP BY paymentMethod_profile_id
-                                ) AS pm ON pm.paymentMethod_profile_id = b.business_uid
+                                ) AS pm ON pm.paymentMethod_profile_id = quote_business_id
                             GROUP BY maintenance_status, quote_business_id
-                            ORDER BY quote_business_id
+                            ORDER BY maintenance_status;
                             """)
                     
                     if len(profileQuery["result"]) > 0:
@@ -401,7 +417,8 @@ class Contacts(Resource):
                                     , JSON_ARRAYAGG(
                                     JSON_OBJECT(
                                         'paymentMethod_type', paymentMethod_type,
-                                        'paymentMethod_status', paymentMethod_status
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
                                 FROM space.paymentMethods
@@ -443,7 +460,8 @@ class Contacts(Resource):
                                     , JSON_ARRAYAGG(
                                     JSON_OBJECT(
                                         'paymentMethod_type', paymentMethod_type,
-                                        'paymentMethod_status', paymentMethod_status
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
                                 FROM space.paymentMethods
@@ -700,7 +718,8 @@ class Contacts(Resource):
                                     , JSON_ARRAYAGG(
                                     JSON_OBJECT(
                                         'paymentMethod_type', paymentMethod_type,
-                                        'paymentMethod_status', paymentMethod_status
+                                        'paymentMethod_status', paymentMethod_status,
+                                        'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
                                 FROM space.paymentMethods
