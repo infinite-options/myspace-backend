@@ -98,206 +98,209 @@ class Appliances(Resource):
             print(response)
 
         return response
-
-    # def put(self):
-        response = {}
-        with connect() as db:
-            data = request.form
-            # print('data', data)
-            property_uid = data.get('property_uid')
-            # print('property_uid', property_uid)
-            appliances = eval(data.get('appliances'))
-            # print('appliances', appliances)
-            documents = json.loads(data.get('documents'))
-            images = []
-            i = -1
-            imageFiles = {}
-            getAppliance = db.execute(
-                """SELECT appliances FROM space.appliances WHERE property_uid= \'""" + property_uid + """\'""")
-            getappLen = len(json.loads(
-                getAppliance['result'][0]['appliances']).keys())
-            existingApp = json.loads(
-                getAppliance['result'][0]['appliances'])
-            # print(getappLen)
-            if getappLen == 0:
-                # print('in if len 0')
-                for key in appliances:
-                    appliances[key]['images'] = []
-                    # print(key, '->', (appliances[key]['available']))
-                    if 'available' in appliances[key].keys():
-                        # print('here')
-                        appliances[key]['available'] = appliances[key]['available'] == 'True'
-                        # print(appliances[key]['available'])
-                    # print('images')
-                    for i, doc in enumerate(documents):
-                        filename = f'doc_{key}_{i}'
-                        file = request.files.get(filename)
-                        s3Link = doc.get('link')
-                        if file:
-                            doc['file'] = file
-                        elif s3Link:
-                            doc['link'] = s3Link
-                        else:
-                            break
-                    documents = updateDocumentsAppliances(
-                        documents, property_uid, key)
-                    appliances[key]['documents'] = list(documents)
-                    i = -1
-                    while True:
-                        filename = f'img_{key}_{i}'
-                        if i == -1:
-                            filename = f'img_{key}_cover'
-
-                        file = request.files.get(filename)
-                        s3Link = data.get(filename)
-                        if file:
-                            imageFiles[filename] = file
-                        elif s3Link:
-                            imageFiles[filename] = s3Link
-                        else:
-                            break
-                        i += 1
-                    images = updateImagesAppliances(
-                        imageFiles, property_uid, key)
-                    appliances[key]['images'] = list((images))
-                    ## Image uploading stuff ends here###
-
-                    primaryKey = {
-                        'property_uid': property_uid
-                    }
-                    updatedProperty = {
-                        'appliances': json.dumps(appliances)
-                    }
-                    print(appliances)
-                    response = db.update(
-                        'properties', primaryKey, updatedProperty)
-            else:
-                print('in else not 0')
-                for key in appliances:
-                    if key in existingApp.keys():
-                        print('in if key in exisiitngapp')
-                        print(key, '->', existingApp.keys())
-                        # print('images')
-                        if 'available' in appliances[key].keys():
-                            print('if available')
-                            print('available', '->', appliances[key].keys())
-                            appliances[key]['available'] = appliances[key]['available'] == 'True'
-                            appliances[key]['available']
-                        for i, doc in enumerate(documents):
-                            print('in add docs')
-                            filename = f'doc_{key}_{i}'
-                            file = request.files.get(filename)
-                            s3Link = doc.get('link')
-                            if file:
-                                doc['file'] = file
-                            elif s3Link:
-                                doc['link'] = s3Link
-                            else:
-                                break
-                        documents = updateDocumentsAppliances(
-                            documents, property_uid, key)
-                        appliances[key]['documents'] = list(documents)
-                        i = -1
-                        while True:
-                            # print('in add images')
-                            filename = f'img_{key}_{i}'
-                            # print('filename', filename)
-                            if i == -1:
-                                filename = f'img_{key}_cover'
-                            # print('filename after if', filename)
-                            file = request.files.get(filename)
-                            # print('file', file)
-                            s3Link = data.get(filename)
-                            # print('s3Link', s3Link)
-                            if file:
-                                # print('in if file')
-                                imageFiles[filename] = file
-                                # print(appliances[key])
-                            elif s3Link:
-                                # print('in if s3link')
-                                imageFiles[filename] = s3Link
-                            else:
-                                break
-                            i += 1
-                        images = updateImagesAppliances(
-                            imageFiles, property_uid, key)
-                        appliances[key]['images'] = list((images))
-
-                        existingApp[key] = appliances[key]
-                    else:
-                        # print('in else not in existingapp')
-                        # print('images')
-                        if 'available' in appliances[key].keys():
-                            # print('here')
-                            appliances[key]['available'] = appliances[key]['available'] == 'True'
-                            appliances[key]['available']
-                        for i, doc in enumerate(documents):
-                            filename = f'doc_{key}_{i}'
-                            file = request.files.get(filename)
-                            s3Link = doc.get('link')
-                            if file:
-                                doc['file'] = file
-                            elif s3Link:
-                                doc['link'] = s3Link
-                            else:
-                                break
-                        documents = updateDocumentsAppliances(
-                            documents, property_uid, key)
-                        appliances[key]['documents'] = list(documents)
-                        i = -1
-                        while True:
-                            # print('in add images')
-                            filename = f'img_{key}_{i}'
-                            # print('filename', filename)
-                            if i == -1:
-                                filename = f'img_{key}_cover'
-                            # print('filename after if', filename)
-                            file = request.files.get(filename)
-                            # print('file', file)
-                            s3Link = data.get(filename)
-                            # print('s3Link', s3Link)
-                            if file:
-                                # print('in if file')
-                                imageFiles[filename] = file
-                                # print(appliances[key])
-                            elif s3Link:
-                                # print('in if s3link')
-                                imageFiles[filename] = s3Link
-                            else:
-                                break
-                            i += 1
-                        images = updateImagesAppliances(
-                            imageFiles, property_uid, key)
-                        appliances[key]['images'] = list((images))
-                        # print(appliances[key])
-                        existingApp[key] = appliances[key]
-                        # print(existingApp[key])
-                        ## Image uploading stuff ends here###
-
-                primaryKey = {
-                    'property_uid': property_uid
-                }
-                updatedProperty = {
-                    'appliances': json.dumps(existingApp)
-                }
-                # print(existingApp)
-                response = db.update('properties', primaryKey, updatedProperty)
-        return response
-
+    
 
     def post(self):
         print("In POST Appliances")
         response = {}
-        payload = request.get_json()
+
         with connect() as db:
-            new_appliance_id = db.call('new_appliance_uid')['result'][0]['new_id']
-            payload['appliance_uid'] = new_appliance_id
-            print(payload)
-        
-            query_response = db.insert('space.appliances', payload)
-            response = query_response
-            print(response)
+            data = request.form
+            print("Received Data: ", data)
+            fields = [
+                'appliance_property_id',
+                'appliance_type',
+                'appliance_url',
+                'appliance_images',
+                'appliance_available',
+                'appliance_installed',
+                'appliance_model_num',
+                'appliance_purchased',
+                'appliance_serial_num',
+                'appliance_manufacturer',
+                'appliance_warranty_info',
+                'appliance_warranty_till',
+                'appliance_purchased_from',
+                'appliance_purchase_order'
+                    ]
+
+            newAppliance = {}
+
+            print("Property ID: ", data.get("appliance_property_id"))
+            print("Appliance Type: ", request.form.get('appliance_type'))
+
+            for field in fields:
+                print("Field: ", field)
+                print("Form Data: ", data.get(field))
+                newAppliance[field] = data.get(field)
+                print("New Appliance Field: ", newAppliance[field])
+            print("Current newAppliance", newAppliance, type(newAppliance))
+
+
+            # # GET NEW UID
+            print("Get New Appliance UID")
+            newRequestID = db.call('new_appliance_uid')['result'][0]['new_id']
+            newAppliance['appliance_uid'] = newRequestID
+            print(newAppliance['appliance_uid'])
+
+            # Image Upload 
+            images = []
+            i = 0
+            imageFiles = {}
+            favorite_image = data.get("img_favorite")
+            while True:
+                filename = f'img_{i}'                
+                file = request.files.get(filename)
+                s3Link = data.get(filename)
+                if file:
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    key = f'appliance/{newRequestID}/{unique_filename}'
+                    image = uploadImage(file, key, '')
+                    images.append(image)
+
+                    if filename == favorite_image:
+                        newAppliance["appliance_images"] = image
+
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        newAppliance["appliance_images"] = s3Link
+                else:
+                    break
+                i += 1
+            
+            newAppliance["appliance_images"] = json.dumps(images)
+            print("Appliance Images: ", newAppliance["appliance_images"])        
+
+
+            print("New Appliance Object: ", newAppliance)
+            response = db.insert('appliances', newAppliance)
+            response['Appliance'] = "Added"
+            response['appliance_uid'] = newRequestID
+            response['images'] = newAppliance["appliance_images"]
+
         return response
+    
+    def put(self):
+        print("In PUT Appliances")
+        response = {}
+
+        with connect() as db:
+            data = request.form
+            print("Received Data: ", data)
+            fields = [
+                'appliance_uid',
+                'appliance_property_id',
+                'appliance_type',
+                'appliance_url',
+                'appliance_images',
+                'appliance_available',
+                'appliance_installed',
+                'appliance_model_num',
+                'appliance_purchased',
+                'appliance_serial_num',
+                'appliance_manufacturer',
+                'appliance_warranty_info',
+                'appliance_warranty_till',
+                'appliance_purchased_from',
+                'appliance_purchase_order'
+                    ]
+
+            newAppliance = {}
+
+            print("Property ID: ", data.get("appliance_property_id"))
+            print("Appliance UID: ", data.get("appliance_uid"))
+            print("Appliance Type: ", request.form.get('appliance_type'))
+
+
+            # Check if appliance_uid is present and valid
+            appliance_uid = data.get('appliance_uid')
+    
+            if appliance_uid is None or appliance_uid == 0 or appliance_uid == '':
+                response = "appliance_uid is required and must be non-zero"
+                return response
+
+            for field in fields:
+                print("Field: ", field)
+                print("Form Data: ", data.get(field))
+                newAppliance[field] = data.get(field)
+                print("New Appliance Field: ", newAppliance[field])
+            print("Current newAppliance", newAppliance, type(newAppliance))
+
+
+            # Image Upload 
+            images = []
+            i = 0
+            imageFiles = {}
+            favorite_image = data.get("img_favorite")
+            while True:
+                filename = f'img_{i}'                
+                file = request.files.get(filename)
+                s3Link = data.get(filename)
+                if file:
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    key = f'appliance/{appliance_uid}/{unique_filename}'
+                    image = uploadImage(file, key, '')
+                    images.append(image)
+
+                    if filename == favorite_image:
+                        newAppliance["appliance_images"] = image
+
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        newAppliance["appliance_images"] = s3Link
+                else:
+                    break
+                i += 1
+            
+            newAppliance["appliance_images"] = json.dumps(images)
+            print("Appliance Images: ", newAppliance["appliance_images"])        
+
+
+            print("New Appliance Object: ", newAppliance)
+            key = {'appliance_uid': appliance_uid}
+            response = db.update('appliances', key, newAppliance)
+            response['Appliance'] = "Added"
+            response['appliance_uid'] = appliance_uid
+            response['images'] = newAppliance["appliance_images"]
+
+        return response
+    
+    
+
+
+    # def post(self):
+    #     print("In POST Appliances")
+    #     response = {}
+    #     payload = request.get_json()
+    #     with connect() as db:
+    #         new_appliance_id = db.call('new_appliance_uid')['result'][0]['new_id']
+    #         payload['appliance_uid'] = new_appliance_id
+    #         print(payload)
+        
+    #         query_response = db.insert('space.appliances', payload)
+    #         response = query_response
+    #         print(response)
+    #     return response
+    
+
+    # def put(self):
+    #     response = {}
+    #     payload = request.get_json()
+    #     print(payload)
+    #     if payload.get('appliance_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'appliance_uid': payload.pop('appliance_uid')}
+    #     with connect() as db:
+    #         response = db.update('space.appliances', key, payload)
+    #     return response
     
 
     def delete(self, uid):
@@ -315,16 +318,49 @@ class Appliances(Resource):
         return response
 
 
-    def put(self):
+    # def post(self):
+    #     print("In POST Appliances")
+    #     response = {}
+    #     payload = request.get_json()
+    #     with connect() as db:
+    #         new_appliance_id = db.call('new_appliance_uid')['result'][0]['new_id']
+    #         payload['appliance_uid'] = new_appliance_id
+    #         print(payload)
+        
+    #         query_response = db.insert('space.appliances', payload)
+    #         response = query_response
+    #         print(response)
+    #     return response
+    
+
+    # def put(self):
+    #     response = {}
+    #     payload = request.get_json()
+    #     print(payload)
+    #     if payload.get('appliance_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'appliance_uid': payload.pop('appliance_uid')}
+    #     with connect() as db:
+    #         response = db.update('space.appliances', key, payload)
+    #     return response
+    
+
+    def delete(self, uid):
+        print("In DELETE Appliances", uid)
         response = {}
-        payload = request.get_json()
-        print(payload)
-        if payload.get('appliance_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'appliance_uid': payload.pop('appliance_uid')}
         with connect() as db:
-            response = db.update('space.appliances', key, payload)
+            applianceQuery = ("""
+                DELETE 
+                FROM space.appliances
+                -- WHERE appliance_uid = '060-000005'
+                WHERE appliance_uid = \'""" + uid + """\';
+                """)
+            response = db.delete(applianceQuery)
+            print(response)
         return response
+
+
+
 
 
 
