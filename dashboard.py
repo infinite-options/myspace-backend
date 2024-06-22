@@ -71,8 +71,8 @@ class Dashboard(Resource):
                                     END AS maintenance_status
                                 FROM space.m_details
                                 LEFT JOIN space.properties ON maintenance_property_id = property_uid
-                                WHERE quote_business_id = '600-000012' 
-                                -- WHERE quote_business_id = \'""" + user_id + """\'
+                                -- WHERE quote_business_id = '600-000012' 
+                                WHERE quote_business_id = \'""" + user_id + """\'
                                 ) AS ms
                             GROUP BY maintenance_status
                             ORDER BY maintenance_status;
@@ -117,9 +117,8 @@ class Dashboard(Resource):
                                         ELSE quote_status
                                     END AS maintenance_status 
                             FROM space.m_details
-                            WHERE quote_business_id = '600-000012' 
-                            -- WHERE quote_business_id = \'""" + user_id + """\'
-                                -- AND maintenance_status IN ("REQUESTED","SUBMITTED","ACCEPTED","SCHEDULED","FINISHED", "PAID")
+                            -- WHERE quote_business_id = '600-000012' 
+                            WHERE quote_business_id = \'""" + user_id + """\'
                                 AND quote_status IN ("ACCEPTED", "SCHEDULE", "SCHEDULED" , "RESCHEDULE", "FINISHED", "COMPLETED");
                             """)
 
