@@ -553,12 +553,214 @@ class AddRevenue(Resource):
 class RentPurchase(Resource):
     def post(self):
         print("In Rent Purchase")
+        data = request.get_json(force=True)
+        print("Data Received: ", data)
+
+        lease_uid = data["lease_uid"]
+        today = date.today().strftime('%m-%d-%Y')
+
         response = {}
+
         with connect() as db:
-            data = request.get_json(force=True)
-            print("Data Received: ", data)
+            
 
             newRequest = {}
+
+            # GET LEASE FEES
+            feesResponse = (""" 
+                SELECT * FROM space.leases
+                LEFT JOIN space.leaseFees ON fees_lease_id = lease_uid
+                LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
+                LEFT JOIN space.contracts ON contract_property_id = lease_property_id
+                LEFT JOIN space.property_owner ON property_id = lease_property_id
+                -- WHERE lease_uid = '300-000001'
+                WHERE lease_uid = \'""" + lease_uid + """\'
+                """)
+            response = db.execute(feesResponse)
+            fees = response['result']
+
+            print("\nGet Fees Response: ", len(fees), fees)
+
+
+
+
+            # STILL NEED A LOOP FOR LEASES THAT STARTED MONTHS AGO
+
+            # print("\nLease Start Date: ", type(fees[0]["lease_start"]), datetime.strptime(fees[0]["lease_start"], "%m-%d-%Y"))
+            # print("Lease Effective Date: ", type(fees[0]["lease_effective_date"]), datetime.strptime(fees[0]["lease_effective_date"], "%m-%d-%Y"))
+
+            # lease_start_date = datetime.strptime(fees[0]["lease_start"], "%m-%d-%Y")
+            # current_date = datetime.now()
+
+            # if lease_start_date.year < current_date.year or (lease_start_date.year == current_date.year and lease_start_date.month < current_date.month):
+            #     print("Need to run loop multiple times")
+            #     lease_month = lease_start_date.month
+            #     print("Lease Start Month: ", type(lease_month), lease_month)
+
+            #     while lease_month <= current_date.month:
+            #         print("lease_month", lease_month)
+            #         lease_month = lease_month + 1
+
+
+
+
+
+            for fee in fees:  
+                print("\nFee: ", fee)
+                # print("Frequency: ", fee["frequency"] )
+                # print("\nLease Start Date: ", type(fees[0]["lease_start"]), datetime.strptime(fees[0]["lease_start"], "%m-%d-%Y"))
+                # print("Lease Effective Date: ", type(fees[0]["lease_effective_date"]), datetime.strptime(fees[0]["lease_effective_date"], "%m-%d-%Y"))
+
+                # # CALC NUMBER OF TIMES TO RUN THIS FEE
+                # if fee["frequency"] == 'Monthly':
+                #     lease_start_date = datetime.strptime(fees[0]["lease_start"], "%m-%d-%Y")
+                #     lease_month = lease_start_date.month
+                #     current_date = datetime.now()
+
+                #     while lease_month <= current_date.month and lease_start_date.year <= current_date.year:
+                #         lease_month = lease_month + 1
+
+                #     if lease_start_date.year < current_date.year or (lease_start_date.year == current_date.year and lease_month <= current_date.month):
+                #         print("Need to run loop multiple times")
+                #         while lease_month <= current_date.month:
+                #             print("lease_month", lease_month)
+                #             lease_month = lease_month + 1
+                    
+
+
+                # ADD TENANT PURCHASE TO PURCHASE TABLE
+                # GET NEW PURCHASE UID
+                newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                newRequest['purchase_uid'] = newRequestID
+                print("New UID: ", newRequest['purchase_uid'])
+                purchase_group = newRequestID
+
+
+                newRequest['pur_timestamp'] = today
+                newRequest['pur_property_id'] = fee["lease_property_id"]
+                newRequest['purchase_type'] = fee["fee_name"]
+                newRequest['pur_cf_type'] = "revenue"
+                # print("New Request: ", newRequest)
+                # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
+                dt = fee["lease_start"]
+                print("Lease Start Date: ", dt)
+                newRequest['purchase_date'] = dt
+                newRequest['pur_due_date'] = dt
+                print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
+                newRequest['pur_amount_due'] = fee["charge"]
+                newRequest['purchase_status'] = "UNPAID"
+                newRequest['pur_status_value'] = "0"
+                newRequest['pur_notes'] = "New Lease Charge"
+                newRequest['pur_description'] = "New Lease Charge"
+                newRequest['pur_receiver'] = fee["contract_business_id"]
+                newRequest['pur_initiator'] = fee["contract_business_id"]
+                newRequest['pur_payer'] = fee["lt_tenant_id"]
+                newRequest['pur_late_Fee'] = fee["late_fee"]
+                newRequest['pur_perDay_late_fee'] = fee["perDay_late_fee"]
+                newRequest['pur_due_by'] = fee["due_by"]
+                newRequest['pur_late_by'] = fee["late_by"]
+                newRequest['pur_group'] = purchase_group
+                print("\n","Complete New Request: ", newRequest)
+
+                response = db.insert('purchases', newRequest)
+
+
+                # ADD MANAGER PURCHASE TO PURCHASE TABLE
+                # GET NEW PURCHASE UID
+                newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                newRequest['purchase_uid'] = newRequestID
+                print("New UID: ", newRequest['purchase_uid'])
+
+
+                newRequest['pur_timestamp'] = today
+                newRequest['pur_property_id'] = fee["lease_property_id"]
+                newRequest['purchase_type'] = fee["fee_name"]
+                newRequest['pur_cf_type'] = "revenue"
+                # print("New Request: ", newRequest)
+                # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
+                dt = fee["lease_start"]
+                # print("Lease Start Date: ", dt)
+                newRequest['purchase_date'] = dt
+                newRequest['pur_due_date'] = dt
+                print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
+                newRequest['pur_amount_due'] = fee["charge"]
+                newRequest['purchase_status'] = "UNPAID"
+                newRequest['pur_status_value'] = "0"
+                newRequest['pur_notes'] = "New Lease Charge"
+                newRequest['pur_description'] = "New Lease Charge"
+                newRequest['pur_receiver'] = fee["property_owner_id"]
+                newRequest['pur_initiator'] = fee["contract_business_id"]
+                newRequest['pur_payer'] = fee["contract_business_id"]
+                newRequest['pur_late_Fee'] = 0
+                newRequest['pur_perDay_late_fee'] = 0
+                newRequest['pur_due_by'] = fee["due_by"]
+                newRequest['pur_late_by'] = fee["late_by"]
+                newRequest['pur_group'] = purchase_group
+                print("\n","Complete Manager Payment Request: ", newRequest)
+
+                response = db.insert('purchases', newRequest)
+
+
+
+                # ADD MANAGER FEE TO PURCHASE TABLE
+                # Based on Fee Frequency determine which contract_fees to apply
+                charges = json.loads(fee["contract_fees"])
+                print("\n", "Charges: ", type(charges), charges)
+                # json_string = json.loads(fee["contract_fees"])
+                # print("\n", "JSON String: ", type(json_string), json_string)
+                number_of_charges = len(charges)
+                print("Number of charges:", number_of_charges)
+                # print("Number of charges: ", len(charges["Management Contract Fees"]))
+                for charge in charges: 
+                    print("\n", "Charge: ", charge)
+                    print("Charge Frequency: ", charge['frequency'])
+                    print("Fee Frequency: ", fee['frequency'])
+                    if charge['frequency'] == fee['frequency']:
+                        print("Match Frequency")
+
+                        # GET NEW PURCHASE UID
+                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequest['purchase_uid'] = newRequestID
+                        print("New UID: ", newRequest['purchase_uid'])
+
+                        newRequest['pur_timestamp'] = today
+                        newRequest['pur_property_id'] = fee["lease_property_id"]
+                        newRequest['purchase_type'] = charge["fee_name"]
+                        newRequest['pur_cf_type'] = "expense"
+                        # print("New Request: ", newRequest)
+                        # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
+                        dt = fee["lease_start"]
+                        # print("Lease Start Date: ", dt)
+                        newRequest['purchase_date'] = dt
+                        newRequest['pur_due_date'] = dt
+                        print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
+                        
+                        newRequest['purchase_status'] = "UNPAID"
+                        newRequest['pur_status_value'] = "0"
+                        newRequest['pur_notes'] = "New Lease Charge"
+                        newRequest['pur_description'] = "New Lease Charge"
+                        newRequest['pur_receiver'] = fee["contract_business_id"]
+                        newRequest['pur_initiator'] = fee["contract_business_id"]
+                        newRequest['pur_payer'] = fee["property_owner_id"]
+                        newRequest['pur_late_Fee'] = 0
+                        newRequest['pur_perDay_late_fee'] = 0
+                        newRequest['pur_due_by'] = fee["due_by"]
+                        newRequest['pur_late_by'] = fee["late_by"]
+                        newRequest['pur_group'] = purchase_group
+
+                        if fee['frequency'] == 'Monthly':
+                            newRequest['pur_amount_due'] = format(float(fee["charge"])*float(charge["charge"])/100, ".2f")
+                        elif fee['frequency'] == 'One-time':
+                            newRequest['pur_amount_due'] = charge["charge"]
+                        
+                            
+                        print("\n","Complete Manager Payment Request: ", newRequest)
+
+                        response = db.insert('purchases', newRequest)
+
+
+            return response
+
 
             # # GET NEW UID
             newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
