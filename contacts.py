@@ -51,6 +51,7 @@ class Contacts(Resource):
                                     owner_uid, owner_user_id, po_owner_percent, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
                                     , SUM(CASE WHEN contract_status = 'NEW' THEN 1 ELSE 0 END) AS NEW_count
                                     , SUM(CASE WHEN contract_status = 'SENT' THEN 1 ELSE 0 END) AS SENT_count
+                                    , SUM(CASE WHEN contract_status = 'ACTIVE' THEN 1 ELSE 0 END) AS PROPERTY_count
                                     , JSON_ARRAYAGG(JSON_OBJECT
                                         ('contract_uid', contract_uid,
                                         'contract_property_id', contract_property_id,
