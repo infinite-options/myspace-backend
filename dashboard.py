@@ -105,8 +105,13 @@ class Dashboard(Resource):
 
                     currentQuotes = db.execute(""" 
                             -- CURRENT QUOTES
-                            SELECT *
-                            , CASE
+                            SELECT m_details.*
+                                , property_uid
+                                , property_address, property_unit, property_city, property_state, property_zip
+                                , business_uid
+                                , business_name, business_phone_number, business_email 
+                                , business_photo_url
+                                , CASE
                                         WHEN quote_status = "REQUESTED"                                 THEN "REQUESTED"
                                         WHEN quote_status = "SENT" 	                                    THEN "SUBMITTED"
                                         WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                   THEN "ACCEPTED"
@@ -117,6 +122,7 @@ class Dashboard(Resource):
                                         ELSE quote_status
                                     END AS maintenance_status 
                             FROM space.m_details
+                            LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.b_details ON contract_property_id = maintenance_property_id
                             -- WHERE quote_business_id = '600-000012' 
                             WHERE quote_business_id = \'""" + user_id + """\'
