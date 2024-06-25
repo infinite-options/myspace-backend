@@ -27,7 +27,7 @@ from transactions import AllTransactions
 from cashflow import CashflowByOwner
 from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary
 from employees import Employee, EmployeeVerification
-from profiles import Profile, BusinessProfileList, OwnerProfile, TenantProfile, BusinessProfile, OwnerProfileByOwnerUid, TenantProfileByTenantUid,  BusinessProfileByUid
+from profiles import Profile, BusinessProfileList, OwnerProfile, TenantProfile, BusinessProfile, OwnerProfileByOwnerUid, TenantProfileByTenantUid,  BusinessProfileByUid, BusinessProfileWeb
 from documents import OwnerDocuments, TenantDocuments, QuoteDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
@@ -609,6 +609,7 @@ api.add_resource(BusinessProfileByUid,
 api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
 api.add_resource(TenantProfile, '/tenantProfile')
 api.add_resource(BusinessProfile, '/businessProfile')
+api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
 
 
 

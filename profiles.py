@@ -154,6 +154,71 @@ class TenantProfileByTenantUid(Resource):
 #         return response
 
 
+
+class BusinessProfileWeb(Resource):
+    def post(self):
+        response = {}
+        business_profile = request.form.to_dict()
+        print("Business Profile Info: ", business_profile)
+
+        with connect() as db:
+            business_profile["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
+            business_profile["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+
+            # Photos
+            file_business = request.files.get("business_photo")
+            file_employee = request.files.get("employee_photo")
+
+            if file_business:
+                key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
+                business_profile["business_photo_url"] = uploadImage(file_business, key, '')
+            if file_employee:
+                key = f'employees/{business_profile["employee_uid"]}/employee_photo'
+                business_profile["employee_photo_url"] = uploadImage(file_employee, key, '')
+
+            # Insert into databases
+            response = db.insert('businessProfileInfo', business_profile)
+            response["business_uid"] = business_profile["business_uid"]
+
+            response = db.insert('employees', business_profile)
+            response["employee_uid"] = business_profile["employee_uid"]
+
+            print("Payment Methods: ", business_profile["paymentpayload"])
+
+
+        return response
+
+    # def post(self):
+    #     response = {    }
+    #     payload = request.get_json()
+    #     print(payload)
+    #     with connect() as db:
+    #         query_response = db.insert('paymentMethods', payload)
+    #         print(query_response)
+    #         response = query_response
+    #     return response
+
+    # def post(self):
+    #     response = {}
+    #     employee = request.form.to_dict()
+    #     with connect() as db:
+    #         employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+    #         file = request.files.get("employee_photo")
+    #         if file:
+    #             key = f'employees/{employee["employee_uid"]}/employee_photo'
+    #             employee["employee_photo_url"] = uploadImage(file, key, '')
+    #         response = db.insert('employees', employee)
+    #         response["employee_uid"] = employee["employee_uid"]
+    #     return response
+
+
+
+
+
+
+
+
+
 class BusinessProfile(Resource):
     def post(self):
         response = {}
