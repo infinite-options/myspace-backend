@@ -618,10 +618,16 @@ class Contacts(Resource):
                     -- ALL TENANTS & APPLICANTS FOR AN OWNER
                     SELECT -- *,
                         tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_references, tenant_photo_url
+                        , payment_method
                         , JSON_ARRAYAGG(JSON_OBJECT
                             ('property_id', property_id,
                                 'property_owner_id', property_owner_id,
                                 'po_owner_percent', po_owner_percent,
+                                'property_address', property_address,
+                                'property_unit', property_unit,
+                                'property_city', property_city,
+                                'property_state', property_state,
+                                'property_zip', property_zip,
                                 'lease_uid', lease_uid,
                                 'lease_start', lease_start,
                                 'lease_end', lease_end,
@@ -634,13 +640,13 @@ class Contacts(Resource):
                                 'lease_referred', lease_referred,
                                 'lease_effective_date', lease_effective_date,
                                 'lease_actual_rent', lease_actual_rent,
-                                'payment_method', payment_method,
                                 'rents_paid', rents_paid
                                 )) AS properties
                     FROM (
                         SELECT * 
                         FROM space.o_details
                         LEFT JOIN space.leases ON lease_property_id = property_id
+                        LEFT JOIN space.properties ON property_uid = property_id
                         LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN (
                             SELECT -- *,
