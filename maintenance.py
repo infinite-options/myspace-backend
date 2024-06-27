@@ -453,46 +453,121 @@ class MaintenanceQuotes(Resource):
                                         """)
 
             response["maintenanceQuotes"] = ownerQuery
+
+
         elif uid[:3] == '600':
+            
+            business_type = ""
+            print('in Get Business Contacts')
             with connect() as db:
-                businessQuery = db.execute(""" 
-                                        -- MAINTENANCE QUOTES
-                                        SELECT -- *, 
-                                        maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
-                                        , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
-                                        , property_uid
-                                        -- , property_available_to_rent, property_active_date, property_listed_date
-                                        , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
-                                        -- , property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent
-                                        , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
-                                        , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                                        , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
-                                        , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
-                                        FROM space.maintenanceQuotes
-                                        LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                        LEFT JOIN (
-                                            SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
-                                                ('qd_uid', qd_uid,
-                                                'qd_type', qd_type,
-                                                'qd_name', qd_name,
-                                                'qd_description', qd_description,
-                                                'qd_created_date', qd_created_date,
-                                                'qd_shared', qd_shared,
-                                                'qd_link', qd_link
-                                                )) AS quote_docs
-                                                FROM space.quoteDocuments
-                                                GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
-                                        LEFT JOIN space.properties ON maintenance_property_id = property_uid 
-                                        LEFT JOIN space.property_owner ON property_id = property_uid
-                                        LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
-                                        LEFT JOIN space.contracts ON contract_property_id = property_uid 
-                                        LEFT JOIN space.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
-                                        LEFT JOIN space.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
-                                        -- WHERE owner_uid = \'""" + uid + """\';
-                                        WHERE space.pm_business_info.business_uid = \'""" + uid + """\';
-                                        -- WHERE space.pm_business_info.business_uid = '600-000003';
-                                        """)
-            response["maintenanceQuotes"] = businessQuery
+                # print("in connect loop")
+                query = db.execute(""" 
+                    -- FIND ALL CURRENT BUSINESS CONTACTS
+                        SELECT business_type
+                        FROM space.businessProfileInfo
+                        WHERE business_uid = \'""" + uid + """\';
+                        """)
+
+            business_type = query['result'][0]['business_type']
+            print(business_type)
+
+            if business_type == "MANAGEMENT":
+                print("in Management")
+
+
+
+
+                with connect() as db:
+                    businessQuery = db.execute(""" 
+                                            -- MAINTENANCE QUOTES
+                                            SELECT -- *, 
+                                            maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
+                                            , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
+                                            , property_uid
+                                            -- , property_available_to_rent, property_active_date, property_listed_date
+                                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
+                                            -- , property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent
+                                            , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                            , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                            , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
+                                            , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
+                                            FROM space.maintenanceQuotes
+                                            LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                            LEFT JOIN (
+                                                SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                    ('qd_uid', qd_uid,
+                                                    'qd_type', qd_type,
+                                                    'qd_name', qd_name,
+                                                    'qd_description', qd_description,
+                                                    'qd_created_date', qd_created_date,
+                                                    'qd_shared', qd_shared,
+                                                    'qd_link', qd_link
+                                                    )) AS quote_docs
+                                                    FROM space.quoteDocuments
+                                                    GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
+                                            LEFT JOIN space.properties ON maintenance_property_id = property_uid 
+                                            LEFT JOIN space.property_owner ON property_id = property_uid
+                                            LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
+                                            LEFT JOIN space.contracts ON contract_property_id = property_uid 
+                                            LEFT JOIN space.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                            LEFT JOIN space.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                            -- WHERE owner_uid = \'""" + uid + """\';
+                                            WHERE space.pm_business_info.business_uid = \'""" + uid + """\';
+                                            -- WHERE space.pm_business_info.business_uid = '600-000003';
+                                            """)
+                    response["maintenanceQuotes"] = businessQuery
+
+
+
+            else:
+                print("in Maintenance")
+                with connect() as db:
+                    
+                    businessQuery = db.execute(""" 
+                                            -- MAINTENANCE QUOTES
+                                            SELECT -- *, 
+                                                maintenance_quote_uid, quote_maintenance_request_id, quote_status, quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date, quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date, quote_docs
+                                                , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost, maintenance_pm_notes
+                                                , property_uid
+                                                -- , property_available_to_rent, property_active_date, property_listed_date
+                                                , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude, property_type
+                                                -- , property_num_beds, property_num_baths, property_value, property_value_year, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image, property_id, property_owner_id, po_owner_percent
+                                                , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents, owner_photo_url
+                                                , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                                , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
+                                                , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
+                                            FROM space.maintenanceQuotes
+                                            LEFT JOIN space.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                            LEFT JOIN (
+                                                SELECT qd_quote_id, JSON_ARRAYAGG(JSON_OBJECT
+                                                    ('qd_uid', qd_uid,
+                                                    'qd_type', qd_type,
+                                                    'qd_name', qd_name,
+                                                    'qd_description', qd_description,
+                                                    'qd_created_date', qd_created_date,
+                                                    'qd_shared', qd_shared,
+                                                    'qd_link', qd_link
+                                                    )) AS quote_docs
+                                                    FROM space.quoteDocuments
+                                                    GROUP BY qd_quote_id) as q ON qd_quote_id = maintenance_quote_uid
+                                            LEFT JOIN space.properties ON maintenance_property_id = property_uid 
+                                            LEFT JOIN space.property_owner ON property_id = property_uid
+                                            LEFT JOIN space.ownerProfileInfo ON property_owner_id = owner_uid
+                                            LEFT JOIN space.contracts ON contract_property_id = property_uid 
+                                            LEFT JOIN space.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                            LEFT JOIN space.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                            -- WHERE owner_uid = \'""" + uid + """\';
+                                            -- WHERE space.pm_business_info.business_uid = \'""" + uid + """\';
+                                            -- WHERE space.pm_business_info.business_uid = '600-000003';
+                                            WHERE quote_business_id = \'""" + uid + """\';
+                                            -- WHERE quote_business_id = '600-000256';
+                                            """)
+                    response["maintenanceQuotes"] = businessQuery
+
+
+
+
+
 
         elif uid[:3] == '350':
             with connect() as db:
