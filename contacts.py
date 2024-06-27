@@ -401,33 +401,44 @@ class Contacts(Resource):
                     # TENANTS
                     # print('    -in Get Manager Contacts for Maintenance')
                     profileQuery = db.execute(f"""
+                        -- TENANTS FOR MAINTENANCE
                         SELECT
                             tenant_uid as contact_uid,
                             "Tenant" as contact_type,
-                            tenant_first_name as contact_first_name,
-                            tenant_last_name as contact_last_name,
-                            tenant_phone_number as contact_phone_number,
-                            tenant_email as contact_email,
-                            tenant_address as contact_address,
-                            tenant_city as contact_city,
-                            tenant_state as contact_state,
-                            tenant_zip as contact_zip,
-                            tenant_photo_url as contact_photo_url,
-                            tenant_adult_occupants as contact_adult_occupants,
-                            -- tenant_children_occupants as contact_children_occupants,
-                            tenant_pet_occupants as contact_pet_occupants,
-                            -- tenant_vehicle_info as contact_vehicle_info,
-                            tenant_drivers_license_number as contact_drivers_license_number,
-                            tenant_drivers_license_state as contact_drivers_license_state,
-                            payment_method AS payment_method
+                            tenant_first_name,
+                            tenant_last_name,
+                            tenant_phone_number,
+                            tenant_email,
+                            tenant_address,
+                            tenant_city,
+                            tenant_state,
+                            tenant_zip,
+                            tenant_photo_url,
+                            tenant_adult_occupants,
+                            -- tenant_children_occupants,
+                            tenant_pet_occupants,
+                            -- tenant_vehicle_info,
+                            tenant_drivers_license_number,
+                            tenant_drivers_license_state,
+                            JSON_ARRAYAGG( JSON_OBJECT(
+                                        'property_uid', property_uid,
+                                        'property_address', property_address,
+                                        'property_unit', property_unit,
+                                        'property_city', property_city,
+                                        'property_state', property_state,
+                                        'property_zip', property_zip,
+                                        'property_favorite_image', property_favorite_image
+                                    )
+                                ) AS properties,
+                            payment_method
                         FROM space.t_details as t 
                         LEFT JOIN space.leases as l ON t.lt_lease_id = l.lease_uid
+                        LEFT JOIN space.properties ON lease_property_id = property_uid
                         LEFT JOIN space.m_details as m ON l.lease_property_id = m.maintenance_property_id
                         LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
-                                    , JSON_ARRAYAGG(
-                                    JSON_OBJECT(
+                                    , JSON_ARRAYAGG( JSON_OBJECT(
                                         'paymentMethod_type', paymentMethod_type,
                                         'paymentMethod_status', paymentMethod_status,
                                         'paymentMethod_name', paymentMethod_name
@@ -439,7 +450,7 @@ class Contacts(Resource):
                         -- WHERE quote_business_id = '600-000012'
                         WHERE quote_business_id = '{uid}'
                             AND lease_status = 'ACTIVE' 
-                        GROUP BY tenant_uid;       
+                        GROUP BY tenant_uid;          
                     """)
                     
                     if len(profileQuery["result"]) > 0:
@@ -450,20 +461,18 @@ class Contacts(Resource):
                     # print('    -in Get Manager Contacts for Maintenance')
                     profileQuery = db.execute(f"""
                         SELECT 
-                            business_uid as contact_uid,
-                            "Property Manager" as contact_type,
-                            business_name as contact_first_name,
-                            "Management" as contact_last_name,
-                            business_phone_number as contact_phone_number,
-                            business_email as contact_email,
-                            business_address as contact_address,
-                            business_unit as contact_unit,
-                            business_city as contact_city,
-                            business_state as contact_state,
-                            business_zip as contact_zip,
-                            b.business_photo_url AS contact_photo_url,
-                            b.business_ein_number as contact_ein_number,
-                            payment_method AS payment_method
+                            business_uid,
+                            business_name,
+                            business_phone_number,
+                            business_email,
+                            business_address,
+                            business_unit,
+                            business_city,
+                            business_state,
+                            business_zip,
+                            b.business_photo_url,
+                            b.business_ein_number,
+                            payment_method
                         FROM space.m_details as m
                         LEFT JOIN space.b_details as b ON m.maintenance_property_id = b.contract_property_id
                         LEFT JOIN (

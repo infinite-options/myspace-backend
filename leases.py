@@ -282,7 +282,7 @@ class LeaseApplication(Resource):
                             LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
                             WHERE lt_tenant_id = \'""" + tenant_uid + """\' 
                             AND lease_property_id = \'""" + property_uid + """\'
-                            AND lease_status in ('NEW','ACTIVE','PROCESSING');
+                            AND lease_status in ('NEW','PROCESSING');
                             """)
                 if len(response['result']) != 0:
                     return ("Tenant Request for this Property is already Active, Please wait for the PM to respond.")
@@ -294,8 +294,7 @@ class LeaseApplication(Resource):
                     response = {}
                     fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
                               "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
-                              "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by",
-                              "lease_rent_late_by","lease_rent_perDay_late_fee", "lease_actual_rent"]
+                              "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent"]
                     fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
                                          , "lease_documents"]
                     fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
@@ -419,7 +418,7 @@ class LeaseApplication(Resource):
         data = request.form
         # print("data as received",data)
         data = request.form.to_dict()  #<== IF data came in as Form Data
-        # print("data for to dict",data)
+        print("data for to dict",data)
         # print("data items",data.items())
 
         # Verify lease_uid has been included in the data
@@ -461,13 +460,13 @@ class LeaseApplication(Resource):
                 # print("field: ", field)
                 if field in lease_fields:
                     payload[field] = data[field]
-                # print("Payload: ", payload)
+                print("Payload: ", payload)
 
                 
             with connect() as db:
                 lease_uid = {'lease_uid': lease_id}
                 query = db.select('leases', lease_uid)
-                # print(f"QUERY: {query}")
+                print(f"QUERY: {query}")
                 try:
                     lease_from_db = query.get('result')[0]
                     # print("RESULT: ", lease_from_db)
