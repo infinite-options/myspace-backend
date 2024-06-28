@@ -256,6 +256,7 @@ class Contacts(Resource):
                                         -- AND lease_status = 'ACTIVE'
                                     
                                     ) AS tenants
+                                WHERE !ISNULL(tenant_user_id)
                                 GROUP BY tenant_uid
                             ) AS pp
                             LEFT JOIN (
@@ -354,6 +355,7 @@ class Contacts(Resource):
                                 GROUP BY maintenance_status, quote_business_id
                                 ORDER BY maintenance_status
                             ) AS mc
+                            WHERE !ISNULL(quote_business_id)
                             GROUP BY quote_business_id
                             """)
                     
@@ -448,7 +450,7 @@ class Contacts(Resource):
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                         -- WHERE quote_business_id = '600-000012'
-                        WHERE quote_business_id = '{uid}'
+                        WHERE quote_business_id = \'""" + uid + """\'
                             AND lease_status = 'ACTIVE' 
                         GROUP BY tenant_uid;          
                     """)
@@ -489,7 +491,7 @@ class Contacts(Resource):
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = business_uid
                         -- WHERE quote_business_id = '600-000012'
-                        WHERE quote_business_id = '{uid}'
+                        WHERE quote_business_id = \'""" + uid + """\'
                         GROUP BY business_uid;
                     """)
 
@@ -578,6 +580,7 @@ class Contacts(Resource):
                             -- WHERE owner_uid = '110-000003'
                             WHERE owner_uid = \'""" + uid + """\' 
                         ) as prop
+                        WHERE !ISNULL(business_uid)
                         GROUP BY business_uid
                     ) AS p
                     -- PROPERTY MANAGER PAYMENT METHODS
@@ -700,6 +703,7 @@ class Contacts(Resource):
                         -- WHERE owner_uid = '110-000003'
                         WHERE owner_uid = \'""" + uid + """\'
                     ) as t
+                    WHERE !ISNULL(tenant_user_id)
                     GROUP BY tenant_uid
                 """)
 
