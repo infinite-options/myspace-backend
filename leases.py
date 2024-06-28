@@ -262,7 +262,6 @@ class LeaseApplication(Resource):
 
         # data = request.form
         # print("data as received",data)
-        # data to dictionary still works but not sure why we should do it
         data = request.form.to_dict()
         # print("data for to dict",data)
 
@@ -300,7 +299,8 @@ class LeaseApplication(Resource):
                     fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                         "perDay_late_fee", "late_fee"]
                    
-                   
+                    # print("Data before if statement: ",data)
+
                     # Insert data into leases table
                     newLease = {}
                         
@@ -327,11 +327,42 @@ class LeaseApplication(Resource):
                             newLease[field] = data[field]
                             # print("new_lease field list", newLease[field])
                     # print("new_lease", newLease)
+                    
+                    docInfo = json.loads(data["lease_documents"])
+                    print("Currently in lease_documents: ", type(docInfo), docInfo)
+                    print("Type: ", docInfo[0]["type"])
 
 
 
+
+                    # Initializes lease_docs for POST
+                    lease_docs = []  
+
+
+
+
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     # Insert documents into Correct Fields
-                    lease_docs = []
+                    dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                    print(dateKey)
+                    
                     files = request.files
                     print("files", files)
                     # files_details = json.loads(data.get('lease_documents_details'))
@@ -341,22 +372,21 @@ class LeaseApplication(Resource):
                             # print("key", key)
                             file = files[key]
                             # print("file", file)
-                            # file_info = files_details[detailsIndex]
+                
                             if file and allowed_file(file.filename):
-                                key = f'leases/{lease_uid}/{file.filename}'
+                                key = f'leases/{lease_uid}/{dateKey}/{file.filename}'
                                 # print("key", key)
                                 s3_link = uploadImage(file, key, '')
                                 docObject = {}
                                 docObject["link"] = s3_link
                                 docObject["filename"] = file.filename
+                                docObject["type"] = docInfo[detailsIndex]["type"]
                                 # docObject["type"] = file_info["fileType"]
                                 lease_docs.append(docObject)
                             detailsIndex += 1
 
                         newLease['lease_documents'] = json.dumps(lease_docs)
                         print("\nLease Docs: ", newLease['lease_documents'])
-
-
 
 
                     # Actual Insert Statement
@@ -381,6 +411,20 @@ class LeaseApplication(Resource):
 
 
 
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     # Insert data into lease-Tenants table
                     tenant_responsibiity = str(1)      # Change this when we get multiple tenants
 
@@ -415,122 +459,171 @@ class LeaseApplication(Resource):
         print("In Lease Application PUT")
         response = {}
 
-        data = request.form
+        # data = request.form
         # print("data as received",data)
         data = request.form.to_dict()  #<== IF data came in as Form Data
-        print("data for to dict",data)
-        # print("data items",data.items())
+        # print("data for to dict",data)
 
         # Verify lease_uid has been included in the data
         if data.get('lease_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         
         
-        key = {'lease_uid': data['lease_uid']}
-        # print("Key: ", key)
-        quote = {k: v for k, v in data.items()}
-        # print("KV Pairs: ", quote)
+        # key = {'lease_uid': data['lease_uid']}
+        # # print("Key: ", key)
+        # quote = {k: v for k, v in data.items()}
+        # # print("KV Pairs: ", quote)
 
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        lease_fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
-                        "lease_early_end_date", "lease_renew_status", "move_out_date", "lease_move_in_date", "lease_effective_date",
-                        "lease_docuSign", "lease_rent_available_topay", "lease_rent_due_by", "lease_rent_late_by",
-                        "lease_rent_perDay_late_fee", "lease_actual_rent"]
-        fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
-                            "perDay_late_fee", "late_fee"]
 
-        # print("Data before if statement: ",data)
+        with connect() as db:
         
         
-        if "lease_uid" in data:
+        
+        
+        
+        
+        
+        
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            response = {}
+            fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
+                                "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
+                                "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent"]
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
+                                , "lease_documents"]
+            fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                                "perDay_late_fee", "late_fee"]
+
+            # print("Data before if statement: ",data)
+            
+            # Insert data into leases table
+            payload = {}
+            
             lease_id = data['lease_uid']
             # print('Lease id: ', lease_id)
-            payload = {}
+            
+
+
+            # Put Incoming Data in Correct Fields
             for field in data:
                 # print("field: ", field)
-                if field in lease_fields:
+                if field in fields:
                     payload[field] = data[field]
-                print("Payload: ", payload)
+                    # print("payload field", payload[field])
+            for field in fields_with_lists:
+                        # print("field list", field)
+                        if data.get(field) is None:
+                            # print(field,"Is None")
+                            payload[field] = '[]'
+                        else: 
+                            payload[field] = data[field]
+                            # print("payload field list", payload[field])
+            # print("Payload: ", payload)
 
-                
-            with connect() as db:
-                lease_uid = {'lease_uid': lease_id}
-                query = db.select('leases', lease_uid)
-                print(f"QUERY: {query}")
-                try:
-                    lease_from_db = query.get('result')[0]
-                    # print("RESULT: ", lease_from_db)
-                    lease_docs = lease_from_db.get("lease_documents")
-                    print("\nDOCS: ", lease_docs, type(lease_docs))
-                    # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
-                    lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else []  # convert to list of documents
+            docInfo = json.loads(data["lease_documents"])
+            print("Currently in lease_documents: ", type(docInfo), docInfo)
+            print("Type: ", docInfo[0]["type"])
 
-                    # print('TYPE: ', lease_docs, type(lease_docs))
-                    # print(f'previously saved documents: {lease_docs}')
-                except IndexError as e:
-                    print(e)
-                    raise BadRequest("Request failed, no such CONTRACT in the database.")
 
+
+
+            # Get Existing Docs and store in lease_docs
+            lease_uid = {'lease_uid': lease_id}
+            query = db.select('leases', lease_uid)
+            print(f"QUERY: {query}")
+            try:
+                lease_from_db = query.get('result')[0]
+                # print("RESULT: ", lease_from_db)
+                lease_docs = lease_from_db.get("lease_documents")
+                print("\nDOCS: ", lease_docs, type(lease_docs))
+                # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
+                lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else []  # convert to list of documents
+                print("Lease Docs: ", lease_docs)
+
+                # print('TYPE: ', lease_docs, type(lease_docs))
+                # print(f'previously saved documents: {lease_docs}')
+            except IndexError as e:
+                print(e)
+                raise BadRequest("Request failed, no such CONTRACT in the database.")
+
+            
+            
+            
+            
+            
+            # Insert documents into Correct Fields
+            dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            print(dateKey)
+            
             files = request.files
             print("files", files)
             # files_details = json.loads(data.get('lease_documents_details'))
             if files:
                 detailsIndex = 0
                 for key in files:
-                    print("key", key)
+                    # print("key", key)
                     file = files[key]
-                    print("file", file)
-                    # file_info = files_details[detailsIndex]
+                    # print("file", file)
+                    
                     if file and allowed_file(file.filename):
-                        key = f'leases/{lease_id}/{file.filename}'
+                        key = f'leases/{lease_id}/{dateKey}/{file.filename}'
                         print("key", key)
                         s3_link = uploadImage(file, key, '')
                         docObject = {}
                         docObject["link"] = s3_link
                         docObject["filename"] = file.filename
+                        docObject["type"] = docInfo[detailsIndex]["type"]
                         # docObject["type"] = file_info["fileType"]
                         lease_docs.append(docObject)
                     detailsIndex += 1
 
                 payload['lease_documents'] = json.dumps(lease_docs)
-                # print("Lease Docs: ", payload['lease_documents'])
-            with connect() as db:
-                key = {'lease_uid': lease_id}
-                response["lease_update"] = db.update('leases', key, payload)
+                # print("\nLease Docs: ", payload['lease_documents'])
 
-        if "lease_fees" in data:
-            json_object = json.loads(data["lease_fees"])
-            # print("json_object",json_object)
-            for fees in json_object:
-                # print("fees",fees)
-                if "leaseFees_uid" in fees:
-                    leaseFees_id = fees['leaseFees_uid']
-                    # del fees['leaseFees_uid']
-                    payload = {}
-                    for field in fees:
-                        if field in fields_leaseFees:                                                        
-                            payload[field] = fees[field]
-                            
-                    with connect() as db:
+
+            # Actual Update Statement
+            key = {'lease_uid': lease_id}
+            response["lease_update"] = db.update('leases', key, payload)
+
+            
+            
+            # Insert data into leaseFees table
+            if "lease_fees" in data:
+                print("lease_fees in data")
+                json_object = json.loads(data["lease_fees"])
+                print("json_object",json_object)
+                for fees in json_object:
+                    print("fees",fees)
+                    if "leaseFees_uid" in fees:
+                        leaseFees_id = fees['leaseFees_uid']
+                        # del fees['leaseFees_uid']
+                        payload = {}
+                        for field in fees:
+                            if field in fields_leaseFees:                                                        
+                                payload[field] = fees[field]
                         key = {'leaseFees_uid': leaseFees_id}
+                        print("Fees Key: ", key)
+                        print("Fees Payload: ", payload)
                         response["leaseFees_update"] = db.update('leaseFees', key, payload)
-                else:
-                    payload = {}
-                    for field in fees:
-                        if field in fields_leaseFees:                                                        
-                            payload[field] = fees[field]
-                    payload["fees_lease_id"] = data['lease_uid']
-                    with connect() as db:
+                        print(response["leaseFees_update"])
+                    else:
+                        print("In else")
+                        payload = {}
+                        payload["fees_lease_id"] = data['lease_uid']
+                        for field in fees:
+                            if field in fields_leaseFees:                                                        
+                                payload[field] = fees[field]
+                        print("Fees Payload: ", payload)
                         response["leaseFees_update"] = db.insert('leaseFees', payload)
+                        print(response["leaseFees_update"])
 
         return response
