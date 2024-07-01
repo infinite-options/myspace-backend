@@ -497,7 +497,7 @@ class LeaseApplication(Resource):
             response = {}
             fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
                                 "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
-                                "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent"]
+                                "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent", "lease_end_reason"]
             fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
                                 , "lease_documents"]
             fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
