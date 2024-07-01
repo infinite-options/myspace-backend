@@ -149,7 +149,7 @@ class MaintenanceRequests(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
@@ -212,7 +212,7 @@ class MaintenanceRequests(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
@@ -274,7 +274,7 @@ class MaintenanceRequests(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
@@ -851,7 +851,7 @@ class MaintenanceStatus(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
@@ -1149,7 +1149,7 @@ class MaintenanceStatus(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
@@ -1228,7 +1228,7 @@ class MaintenanceStatus(Resource):
                     # 'QUOTES REQUESTED': '#D29494',  # Deprecated as per new figma
                     'PROCESSING': '#3D5CAC',
                     'SCHEDULED': '#3D5CAC',
-                    'CANCELLED': '#TBD',
+                    'CANCELLED': '#FFFFFF',
                     'COMPLETED': '#3D5CAC',
                 }
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
