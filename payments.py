@@ -754,11 +754,24 @@ class PaymentMethod(Resource):
     def post(self):
         response = {    }
         payload = request.get_json()
-        print(payload)
+        print(type(payload), payload)
+        i = 0
+
         with connect() as db:
-            query_response = db.insert('paymentMethods', payload)
-            print(query_response)
-            response = query_response
+
+            if isinstance(payload, list):
+                for item in payload:
+                    print(item)
+                    query_response = db.insert('paymentMethods', item)
+                    print(query_response)
+                    response[i] = query_response
+                    i += 1
+
+            else:
+                query_response = db.insert('paymentMethods', payload)
+                print(query_response)
+                response = query_response
+
         return response
     
     def put(self):

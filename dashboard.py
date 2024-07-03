@@ -641,7 +641,6 @@ class Dashboard(Resource):
 
                     return response
 
-
         elif user_id.startswith("110"):
             with connect() as db:
                 # print("in owner dashboard")
@@ -870,6 +869,19 @@ class Dashboard(Resource):
                         ORDER BY lease_status;
                         """)
                 response["property"] = property
+                print(property['result'][0]['property_uid'])
+                data = property['result']
+                print(data)
+                
+
+               # Extract property_uid values
+                property_uids = [item['property_uid'] for item in data]
+
+                # Print the property_uids in parentheses
+                print("(" + ", ".join(property_uids) + ")")
+
+
+                
 
                 # MONIES PAID
                 moneyPaid = db.execute("""
