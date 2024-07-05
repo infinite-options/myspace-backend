@@ -869,7 +869,8 @@ class Dashboard(Resource):
                         ORDER BY lease_status;
                         """)
                 response["property"] = property
-                print(property['result'][0]['property_uid'])
+
+                # print(property['result'][0]['property_uid'])
                 data = property['result']
                 print(data)
                 
@@ -881,7 +882,7 @@ class Dashboard(Resource):
                 print("(" + ", ".join(property_uids) + ")")
 
 
-                
+
 
                 # MONIES PAID
                 moneyPaid = db.execute("""

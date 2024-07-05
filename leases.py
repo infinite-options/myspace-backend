@@ -72,7 +72,10 @@ class LeaseDetails(Resource):
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
-                                'tenant_email', tenant_email
+                                'tenant_email', tenant_email,
+                                'tenant_drivers_license_number', tenant_drivers_license_number,
+                                'tenant_drivers_license_state', tenant_drivers_license_state,
+                                'tenant_ssn', tenant_ssn
                                 )) AS tenants
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
@@ -130,7 +133,10 @@ class LeaseDetails(Resource):
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
-                                'tenant_email', tenant_email
+                                'tenant_email', tenant_email,
+                                'tenant_drivers_license_number', tenant_drivers_license_number,
+                                'tenant_drivers_license_state', tenant_drivers_license_state,
+                                'tenant_ssn', tenant_ssn
                                 )) AS tenants
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
@@ -190,7 +196,10 @@ class LeaseDetails(Resource):
                                 'tenant_first_name', tenant_first_name,
                                 'tenant_last_name', tenant_last_name,
                                 'tenant_phone_number', tenant_phone_number,
-                                'tenant_email', tenant_email
+                                'tenant_email', tenant_email,
+                                'tenant_drivers_license_number', tenant_drivers_license_number,
+                                'tenant_drivers_license_state', tenant_drivers_license_state,
+                                'tenant_ssn', tenant_ssn
                                 )) AS tenants
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
