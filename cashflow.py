@@ -97,7 +97,7 @@ class CashflowByOwner(Resource):
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
                         purchase_uid, cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
+                        , pur_cf_type, purchase_type, pur_payer
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
@@ -283,8 +283,8 @@ class CashflowByOwner(Resource):
                 response_revenue = db.execute("""
                     -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                     SELECT -- * , 
-                        purchase_uid,cf_year, cf_month, pur_due_date
-                        , pur_cf_type, purchase_type
+                        purchase_uid, cf_year, cf_month, pur_due_date
+                        , pur_cf_type, purchase_type, pur_payer
                         , pur_amount_due, total_paid, amt_remaining, payment_status
                         , property_address, property_unit
                     FROM space.pp_details
@@ -623,7 +623,7 @@ class Cashflow(Resource):
                         -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                         SELECT -- * , 
                             cf_year, cf_month, pur_due_date
-                            , pur_cf_type, purchase_type
+                            , pur_cf_type, purchase_type, pur_payer
                             , pur_amount_due, total_paid, amt_remaining, payment_status
                             , property_address, property_unit
                 , space.bills.*
@@ -952,7 +952,7 @@ class Cashflow(Resource):
                         -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER
                         SELECT -- * , 
                             purchase_uid, pur_property_id, cf_year, cf_month, pur_due_date
-                            , pur_cf_type, purchase_type
+                            , pur_cf_type, purchase_type, pur_payer
                             , pur_amount_due, pur_notes, pur_description, total_paid, amt_remaining, payment_status
                             , property_address, property_unit
                             , space.bills.*
