@@ -211,14 +211,6 @@ class BusinessProfileWeb(Resource):
     #         response["employee_uid"] = employee["employee_uid"]
     #     return response
 
-
-
-
-
-
-
-
-
 class BusinessProfile(Resource):
     def post(self):
         response = {}

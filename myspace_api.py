@@ -34,7 +34,7 @@ from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 # from purchases import Bills, AddExpense, AddRevenue
-from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS
+from cron import ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, PeriodicPurchases_CLASS
 # from maintenance import MaintenanceStatusByProperty, MaintenanceByProperty,  \
 #     MaintenanceRequestsByOwner, MaintenanceRequests, MaintenanceSummaryByOwner, \
 #     MaintenanceSummaryAndStatusByOwner, MaintenanceQuotes, MaintenanceQuotesByUid, MaintenanceDashboardPOST
@@ -643,6 +643,7 @@ api.add_resource(Password, '/password')
 #CRON JOBS
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
+api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
 api.add_resource(RentPurchase, '/rentPurchase')
 api.add_resource(LateFees_CLASS, '/LateFees')
 

@@ -21,47 +21,25 @@ class MonthlyRentPurchase_CLASS(Resource):
         dt = datetime.today()
        
         # Run query to find rents of ACTIVE leases
-        with connect() as db:
+        with connect() as db:    
             response = db.execute("""
                     -- CALCULATE RECURRING FEES
-                    SELECT 
-                    leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
-                    -- , of_DNU, lease_rent_old_DNU
-                    , lease_uid, lease_property_id
-                    -- , lease_application_date
-                    , lease_start, lease_end, lease_status
-                    -- , lease_assigned_contacts, lease_documents
-                    , lease_early_end_date, lease_renew_status, move_out_date
-                    -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date
-                    -- , linked_application_id-DNU, lease_docuSign
-                    -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee
-                    -- , lease_fees, lease_consent, lease_actual_rent, lease_test
-                    -- , t_details.*
-                    -- , o_details.*
-                    , lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                    -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state
-                    -- , tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip
-                    -- , tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU
-                    , tenant_photo_url
-                    , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                    -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number
-                    -- , owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
-                    , owner_photo_url
-                    -- , b_details.*
-                    , contract_uid, contract_property_id, contract_business_id
-                    -- , contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                    -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations
-                    -- , business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number
-                    -- , business_documents, business_address, business_unit, business_city, business_state, business_zip
-                    , business_photo_url
-                FROM space.leaseFees	
-                LEFT JOIN space.leases ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-                LEFT JOIN space.o_details ON lease_property_id = property_id
-                LEFT JOIN space.b_details ON contract_property_id = property_id
-                -- WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
-                WHERE frequency = "Monthly" and lease_status = "ACTIVE" and contract_status = "ACTIVE";
-                """)
+                    SELECT leaseFees.*
+                        , lease_tenant.*
+                        , property_owner_id, po_owner_percent
+                        , contract_business_id, contract_status, contract_fees
+                        , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
+                        -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
+                    FROM space.leaseFees
+                    LEFT JOIN space.leases ON fees_lease_id = lease_uid
+                    LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
+                    LEFT JOIN space.property_owner ON lease_property_id = property_id
+                    LEFT JOIN space.contracts ON lease_property_id = contract_property_id
+                    WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
+                        AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+                        AND contract_status = 'ACTIVE'
+                    ORDER BY frequency;
+                    """)
 
             for i in range(len(response['result'])):
                 # print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
@@ -112,9 +90,21 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 
                 # Calculate number of days until rent is due
-                days_for_rent = (due_date - dt).days
-                # print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
-                # print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+                if response['result'][i]['frequency'] == 'Monthly':
+                    days_for_rent = (due_date - dt).days
+                    print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
+                    print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+                elif response['result'][i]['frequency'] == 'Weekly':
+                    print("Weekly")
+                    days_for_rent = 500
+                    
+                elif response['result'][i]['frequency'] == 'Bi-Weekly':
+                    print("Bi-Weekly")
+                    days_for_rent = 500
+                    
+                elif response['result'][i]['frequency'] == 'Annually':
+                    print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
+                    days_for_rent = 500
 
 
 
@@ -333,44 +323,22 @@ def MonthlyRentPurchase_CRON(self):
     with connect() as db:
         response = db.execute("""
                 -- CALCULATE RECURRING FEES
-                SELECT 
-                leaseFees_uid, fees_lease_id, fee_name, fee_type, charge, due_by, late_by, late_fee, perDay_late_fee, frequency, available_topay
-                -- , of_DNU, lease_rent_old_DNU
-                , lease_uid, lease_property_id
-                -- , lease_application_date
-                , lease_start, lease_end, lease_status
-                -- , lease_assigned_contacts, lease_documents
-                , lease_early_end_date, lease_renew_status, move_out_date
-                -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date
-                -- , linked_application_id-DNU, lease_docuSign
-                -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee
-                -- , lease_fees, lease_consent, lease_actual_rent, lease_test
-                -- , t_details.*
-                -- , o_details.*
-                , lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state
-                -- , tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip
-                -- , tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_current_address-DNU
-                , tenant_photo_url
-                , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                -- , owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number
-                -- , owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_documents
-                , owner_photo_url
-                -- , b_details.*
-                , contract_uid, contract_property_id, contract_business_id
-                -- , contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations
-                -- , business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number
-                -- , business_documents, business_address, business_unit, business_city, business_state, business_zip
-                , business_photo_url
-            FROM space.leaseFees	
-            LEFT JOIN space.leases ON fees_lease_id = lease_uid
-            LEFT JOIN space.t_details ON lt_lease_id = lease_uid
-            LEFT JOIN space.o_details ON lease_property_id = property_id
-            LEFT JOIN space.b_details ON contract_property_id = property_id
-            -- WHERE fee_name LIKE '%rent%' and lease_status = "ACTIVE";
-            WHERE frequency = "Monthly" and lease_status = "ACTIVE" and contract_status = "ACTIVE";
-            """)
+                    SELECT leaseFees.*
+                        , lease_tenant.*
+                        , property_owner_id, po_owner_percent
+                        , contract_business_id, contract_status, contract_fees
+                        , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
+                        -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
+                    FROM space.leaseFees
+                    LEFT JOIN space.leases ON fees_lease_id = lease_uid
+                    LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
+                    LEFT JOIN space.property_owner ON lease_property_id = property_id
+                    LEFT JOIN space.contracts ON lease_property_id = contract_property_id
+                    WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
+                        AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+                        AND contract_status = 'ACTIVE'
+                    ORDER BY frequency;
+                """)
 
         for i in range(len(response['result'])):
             # print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
@@ -421,9 +389,21 @@ def MonthlyRentPurchase_CRON(self):
 
             
             # Calculate number of days until rent is due
-            days_for_rent = (due_date - dt).days
-            # print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
-            # print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+            if response['result'][i]['frequency'] == 'Monthly':
+                days_for_rent = (due_date - dt).days
+                print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
+                print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+            elif response['result'][i]['frequency'] == 'Weekly':
+                print("Weekly")
+                days_for_rent = 500
+                
+            elif response['result'][i]['frequency'] == 'Bi-Weekly':
+                print("Bi-Weekly")
+                days_for_rent = 500
+                
+            elif response['result'][i]['frequency'] == 'Annually':
+                print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
+                days_for_rent = 500
 
 
 
@@ -926,6 +906,97 @@ def LateFees_CRON(self):
             'code': 200}
 
     return response
+
+
+
+class PeriodicPurchases_CLASS(Resource):
+    def get(self):
+        print("In Periodic Purchases CRON Job)")
+
+        # Get email notification that CRON Job ran
+        # Ensure CRON job does not get missed
+
+        numCronPurchases = 0
+
+        # Establish current month and year
+        dt = datetime.today()
+        
+        # Run query to find rents of ACTIVE leases with recurring fees
+        with connect() as db:
+            response = db.execute("""
+                    -- CALCULATE RECURRING FEES
+                    SELECT leaseFees.*
+                        , lease_tenant.*
+                        , property_owner_id, po_owner_percent
+                        , contract_business_id, contract_status, contract_fees
+                        , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
+                        -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
+                    FROM space.leaseFees
+                    LEFT JOIN space.leases ON fees_lease_id = lease_uid
+                    LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
+                    LEFT JOIN space.property_owner ON lease_property_id = property_id
+                    LEFT JOIN space.contracts ON lease_property_id = contract_property_id
+                    WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
+                        AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+                        AND contract_status = 'ACTIVE'
+                    ORDER BY frequency;
+                    """)
+            
+            # print(response)
+
+
+
+            for i in range(len(response['result'])):
+                print('\n', response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'])
+
+                # Check if available_topay is NONE
+                if response['result'][i]['available_topay'] is None:
+                    # print("available_topay Is NULL!!")
+                    payable = 10
+                else:
+                    payable = response['result'][i]['available_topay']
+                # print("available_topay: ", payable)
+
+
+                # Check if due_by is NONE
+                # print(response['result'][i]['due_by'])
+                if response['result'][i]['due_by'] is None or response['result'][i]['due_by'] == 0:
+                    # print("due_by Is NULL!!")
+                    due_by = 1
+                else:
+                    due_by = response['result'][i]['due_by']
+                # print("due_by: ", due_by, type(due_by))
+                # print("dt.day: ", dt.day, type(dt.day))
+
+
+                # Calculate Actual Rent due date
+                if due_by < dt.day:
+                    # print(due_by, " < ", dt.day)
+                    due_date = datetime(dt.year, dt.month, due_by) + relativedelta(months=1)
+                else:
+                    due_date = datetime(dt.year, dt.month, due_by)
+                # print("due date: ", due_date,  type(due_date))
+                pm_due_date = due_date + relativedelta(days=10)
+                # print("PM due date: ", pm_due_date,  type(pm_due_date))
+
+                
+                # Calculate number of days until rent is due
+                if response['result'][i]['frequency'] == 'Monthly':
+                    days_for_rent = (due_date - dt).days
+                    print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
+                    print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+                elif response['result'][i]['frequency'] == 'Weekly':
+                    print("Weekly")
+                    break
+                elif response['result'][i]['frequency'] == 'Bi-Weekly':
+                    print("Bi-Weekly")
+                    break
+                elif response['result'][i]['frequency'] == 'Annually':
+                    print("Annually")
+                    break
+
+        
+        return 
 
 
 

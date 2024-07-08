@@ -828,8 +828,10 @@ class PaymentMethod(Resource):
         return response
     
     def put(self):
+        print("In Payment Method PUT")
         response = {}
         payload = request.get_json()
+        print("PUT Payload: ", payload)
         if payload.get('paymentMethod_uid') is None:
             raise BadRequest("Request failed, no UID in payload.")
         key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
