@@ -595,7 +595,8 @@ api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
 api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
-api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:type>')
+# api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:type>')
+api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:month>/<string:year>')
 
 
 api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
