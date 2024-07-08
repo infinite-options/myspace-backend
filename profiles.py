@@ -366,6 +366,7 @@ class Profile(Resource):
         owner = [key for key in profile_info.keys() if "owner" in key]
         tenant = [key for key in profile_info.keys() if "tenant" in key]
         prop_man = [key for key in profile_info.keys() if "business" in key]
+        # employee = [key for key in profile_info.keys() if "owner" in key]
 
         if owner:
             print("owner")
@@ -397,6 +398,16 @@ class Profile(Resource):
                     profile_info["business_photo_url"] = uploadImage(file, key, '')
                 response = db.insert('businessProfileInfo', profile_info)
                 response["business_uid"] = profile_info["business_uid"]
+        # elif employee:
+        #     print("employee")
+        #     with connect() as db:
+        #         profile_info["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
+        #         file = request.files.get("business_photo")
+        #         if file:
+        #             key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
+        #             profile_info["business_photo_url"] = uploadImage(file, key, '')
+        #         response = db.insert('businessProfileInfo', profile_info)
+        #         response["business_uid"] = profile_info["business_uid"]
         else:
             raise BadRequest("Request failed, check payload.")
 
@@ -413,6 +424,8 @@ class Profile(Resource):
             print("business")
             with connect() as db:
                 response = db.update('businessProfileInfo', key, payload)
+        
+        
         elif payload.get('tenant_uid'):
             tenant_uid = payload.pop('tenant_uid')
             query_key = {'tenant_uid': tenant_uid}
@@ -502,6 +515,18 @@ class Profile(Resource):
             print("owner")
             with connect() as db:
                 response = db.update('ownerProfileInfo', key, payload)
+
+        
+        # elif payload.get('employee_uid'):
+        #     key = {'employee_uid': payload.pop('employee_uid')}
+        #     file = request.files.get("employee_photo")
+        #     if file:
+        #         key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+        #         payload["employee_photo_url"] = uploadImage(file, key1, '')
+        #     print("employee")
+        #     with connect() as db:
+        #         response = db.update('employeeProfileInfo', key, payload)
+
         else:
             raise BadRequest("Request failed, no UID in payload.")
         return response
