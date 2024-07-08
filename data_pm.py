@@ -74,6 +74,15 @@ def connect():
     )
     return DatabaseConnection(conn)
 
+# Disconnect from MySQL database (API v2)
+def disconnect(conn):
+    try:
+        conn.close()
+        # print("Successfully disconnected from MySQL database. (API v2)")
+    except:
+        print("Could not properly disconnect from MySQL database. (API v2)")
+        raise Exception("Failure disconnecting from MySQL database. (API v2)")
+
 
 def serializeJSON(unserialized):
     # print(unserialized, type(unserialized))

@@ -52,7 +52,7 @@ from users import UserInfo
 
 # from refresh import Refresh
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, disconnect,uploadImage, s3
 from twilio.rest import Client
 import os
 import boto3
@@ -189,6 +189,117 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 # NOTIFICATION_HUB_KEY = os.environ.get('NOTIFICATION_HUB_KEY')
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME')
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
+
+
+# ------------------------------------------------
+
+def sendEmail2(recipient, subject, body):
+    print('in sendemail2')
+    with app.app_context():
+        msg = Message(
+            sender="support@nityaayurveda.com",
+            recipients=recipient,
+            subject=subject,
+            body=body
+        )
+        print(msg)
+        mail.send(msg)
+        print('after mail send')
+
+
+app.sendEmail2 = sendEmail2
+
+
+class NityaSendEmailCRON_CLASS(Resource):
+
+    def get(self):
+        print("In Send EMail get")
+        try:
+            conn = connect()
+
+            # # Send email to Client
+            # msg = Message(
+            #     subject="Daily Email Check!",
+            #     sender="support@nityaayurveda.com",
+            #     recipients=["anu.sandhu7893@gmail.com"],
+            # )
+            # msg.body = (
+            #     "Nitya Ayurveda Email Send is working. If you don't receive this email daily, something is wrong"
+            # )
+            # print(msg.body)
+            # mail.send(msg)
+            recipient = ["pmarathay@gmail.com"]
+            subject = "Daily Email Check!"
+            body = (
+                "Nitya Ayurveda Email Send is working. If you don't receive this email daily, something is wrong")
+            # mail.send(msg)
+            sendEmail2(recipient, subject, body)
+
+            return "Email Sent", 200
+
+        except:
+            raise BadRequest("Request failed, please try again later.")
+        finally:
+            disconnect(conn)
+
+
+def NityaSendEmailCRON():
+    print("In Send EMail get")
+    from flask_mail import Mail, Message
+    try:
+        conn = connect()
+        print('here after connect')
+
+        recipient = ["Lmarathay@yahoo.com",
+                     "pmarathay@gmail.com", "anu.sandhu7893@gmail.com"]
+        print(recipient)
+        subject = "Daily Email Check!"
+        print(subject)
+        body = (
+            "Nitya Ayurveda Email Send is working. If you don't receive this email daily, something is wrong"
+        )
+        print(body)
+        # mail.send(msg)
+        sendEmail2(recipient, subject, body)
+
+        print('here after mail send')
+
+        return "Email Sent", 200
+
+    except:
+        raise BadRequest("Email didnt send something is wrong.")
+    finally:
+        disconnect(conn)
+
+
+# ------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def sendEmail(recipient, subject, body):
     with app.app_context():
         # print("In sendEmail: ", recipient, subject, body)
@@ -649,6 +760,8 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 
 # api.add_resource(ExtendLease, '/ExtendLease')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
+
+api.add_resource(NityaSendEmailCRON_CLASS, "/nityaSendEmailCRON_CLASS")
 
 api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
 api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
