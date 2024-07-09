@@ -269,23 +269,23 @@ class Profile(Resource):
         with connect() as db:
             if user_id.startswith("110"):
                 ownerQuery = db.execute("""
-                        SELECT * FROM space.ownerProfileInfo 
-                        LEFT JOIN (
-                                        SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
-                                            ('paymentMethod_uid', paymentMethod_uid,
-                                            'paymentMethod_type', paymentMethod_type,
-                                            'paymentMethod_name', paymentMethod_name,
-                                            'paymentMethod_acct', paymentMethod_acct,
-                                            'paymentMethod_routing_number', paymentMethod_routing_number,
-                                            'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
-                                            'paymentMethod_exp_date', paymentMethod_exp_date,
-                                            'paymentMethod_cvv', paymentMethod_cvv,
-                                            'paymentMethod_billingzip', paymentMethod_billingzip,
-                                            'paymentMethod_status', paymentMethod_status
-                                            )) AS paymentMethods
-                                            FROM space.paymentMethods
-                                            GROUP BY paymentMethod_profile_id) as p ON owner_uid = paymentMethod_profile_id
-                        WHERE owner_uid = \'""" + user_id + """\'
+                            SELECT * FROM space.ownerProfileInfo 
+                            LEFT JOIN (
+                                SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                                    ('paymentMethod_uid', paymentMethod_uid,
+                                    'paymentMethod_type', paymentMethod_type,
+                                    'paymentMethod_name', paymentMethod_name,
+                                    'paymentMethod_acct', paymentMethod_acct,
+                                    'paymentMethod_routing_number', paymentMethod_routing_number,
+                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                    'paymentMethod_exp_date', paymentMethod_exp_date,
+                                    'paymentMethod_cvv', paymentMethod_cvv,
+                                    'paymentMethod_billingzip', paymentMethod_billingzip,
+                                    'paymentMethod_status', paymentMethod_status
+                                    )) AS paymentMethods
+                                    FROM space.paymentMethods
+                                    GROUP BY paymentMethod_profile_id) as p ON owner_uid = paymentMethod_profile_id
+                            WHERE owner_uid = \'""" + user_id + """\'
                         """)
                 response = {}
                 response["profile"] = ownerQuery
@@ -342,10 +342,40 @@ class Profile(Resource):
                 print ('    -in Get Employee Profile')
                 employeeQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS
-                            SELECT * 
+                            SELECT *
                             FROM space.employees
                             LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
-                            -- WHERE employee_uid = '120-000009';
+                            LEFT JOIN (
+                                SELECT paymentMethod_profile_id AS pm_employee_id, JSON_ARRAYAGG(JSON_OBJECT
+                                    ('paymentMethod_uid', paymentMethod_uid,
+                                    'paymentMethod_type', paymentMethod_type,
+                                    'paymentMethod_name', paymentMethod_name,
+                                    'paymentMethod_acct', paymentMethod_acct,
+                                    'paymentMethod_routing_number', paymentMethod_routing_number,
+                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                    'paymentMethod_exp_date', paymentMethod_exp_date,
+                                    'paymentMethod_cvv', paymentMethod_cvv,
+                                    'paymentMethod_billingzip', paymentMethod_billingzip,
+                                    'paymentMethod_status', paymentMethod_status
+                                    )) AS employeePaymentMethods
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id) as e ON employee_uid = e.pm_employee_id
+                            LEFT JOIN (
+                                SELECT paymentMethod_profile_id AS pm_business_id, JSON_ARRAYAGG(JSON_OBJECT
+                                    ('paymentMethod_uid', paymentMethod_uid,
+                                    'paymentMethod_type', paymentMethod_type,
+                                    'paymentMethod_name', paymentMethod_name,
+                                    'paymentMethod_acct', paymentMethod_acct,
+                                    'paymentMethod_routing_number', paymentMethod_routing_number,
+                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                                    'paymentMethod_exp_date', paymentMethod_exp_date,
+                                    'paymentMethod_cvv', paymentMethod_cvv,
+                                    'paymentMethod_billingzip', paymentMethod_billingzip,
+                                    'paymentMethod_status', paymentMethod_status
+                                    )) AS paymentMethods
+                                FROM space.paymentMethods
+                                GROUP BY paymentMethod_profile_id) as p ON business_uid = p.pm_business_id
+                            -- WHERE employee_uid = '120-000441';
                             WHERE employee_uid = \'""" + user_id + """\'
                             """)
                 
