@@ -166,15 +166,15 @@ class BusinessProfileWeb(Resource):
             business_profile["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
 
             # Photos
-            file_business = request.files.get("business_photo")
-            file_employee = request.files.get("employee_photo")
+            # file_business = request.files.get("business_photo")
+            # file_employee = request.files.get("employee_photo")
 
-            if file_business:
-                key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
-                business_profile["business_photo_url"] = uploadImage(file_business, key, '')
-            if file_employee:
-                key = f'employees/{business_profile["employee_uid"]}/employee_photo'
-                business_profile["employee_photo_url"] = uploadImage(file_employee, key, '')
+            # if file_business:
+            #     key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
+            #     business_profile["business_photo_url"] = uploadImage(file_business, key, '')
+            # if file_employee:
+            #     key = f'employees/{business_profile["employee_uid"]}/employee_photo'
+            #     business_profile["employee_photo_url"] = uploadImage(file_employee, key, '')
 
             # Insert into databases
             response = db.insert('businessProfileInfo', business_profile)
@@ -183,7 +183,7 @@ class BusinessProfileWeb(Resource):
             response = db.insert('employees', business_profile)
             response["employee_uid"] = business_profile["employee_uid"]
 
-            print("Payment Methods: ", business_profile["paymentpayload"])
+            # print("Payment Methods: ", business_profile["paymentpayload"])
 
 
         return response
@@ -391,16 +391,19 @@ class Profile(Resource):
             return response
 
     def post(self):
+        # print("In Profile POST")
         response = {}
+        employee_info  = {}
         profile_info = request.form.to_dict()
+        # print("Incoming Profile: ", profile_info)
         owner = [key for key in profile_info.keys() if "owner" in key]
         tenant = [key for key in profile_info.keys() if "tenant" in key]
-        prop_man = [key for key in profile_info.keys() if "business" in key]
+        business = [key for key in profile_info.keys() if "business" in key]
         # employee = [key for key in profile_info.keys() if "owner" in key]
 
-        if owner:
-            print("owner")
-            with connect() as db:
+        with connect() as db:
+            if owner:
+                print("owner")
                 profile_info["owner_uid"] = db.call('space.new_owner_uid')['result'][0]['new_id']
                 file = request.files.get("owner_photo")
                 if file:
@@ -408,9 +411,8 @@ class Profile(Resource):
                     profile_info["owner_photo_url"] = uploadImage(file, key, '')
                 response = db.insert('ownerProfileInfo', profile_info)
                 response["owner_uid"] = profile_info["owner_uid"]
-        elif tenant:
-            print("tenant")
-            with connect() as db:
+            elif tenant:
+                print("tenant")
                 profile_info["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
                 file = request.files.get("tenant_photo")
                 if file:
@@ -418,28 +420,31 @@ class Profile(Resource):
                     profile_info["tenant_photo_url"] = uploadImage(file, key, '')
                 response = db.insert('tenantProfileInfo', profile_info)
                 response["tenant_uid"] = profile_info["tenant_uid"]
-        elif prop_man:
-            print("manager")
-            with connect() as db:
+            elif business:
+                print("manager")
                 profile_info["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
                 file = request.files.get("business_photo")
+                # print(profile_info, file)
                 if file:
                     key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
                     profile_info["business_photo_url"] = uploadImage(file, key, '')
                 response = db.insert('businessProfileInfo', profile_info)
+                # response["business_uid"] = profile_info["business_uid"]
+
+                print("employee")
+                employee_info["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+                employee_info["employee_user_id"] = profile_info["business_user_id"]
+                employee_info["employee_business_id"] = profile_info["business_uid"]
+                file = request.files.get("employee_photo_url")
+                # print(employee_info, file)
+                if file:
+                    key = f'employee/{employee_info["employee_uid"]}/employee_photo'
+                    employee_info["employee_photo_url"] = uploadImage(file, key, '')
+                response = db.insert('employees', employee_info)
                 response["business_uid"] = profile_info["business_uid"]
-        # elif employee:
-        #     print("employee")
-        #     with connect() as db:
-        #         profile_info["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
-        #         file = request.files.get("business_photo")
-        #         if file:
-        #             key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
-        #             profile_info["business_photo_url"] = uploadImage(file, key, '')
-        #         response = db.insert('businessProfileInfo', profile_info)
-        #         response["business_uid"] = profile_info["business_uid"]
-        else:
-            raise BadRequest("Request failed, check payload.")
+                response["employee_uid"] = employee_info["employee_uid"]
+            else:
+                raise BadRequest("Request failed, check payload.")
 
         return response
 
