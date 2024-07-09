@@ -600,6 +600,7 @@ def MonthlyRentPurchase_CRON(self):
                         # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                         
                         # print(newPMRequest)
+                        print("Number of CRON Purchases: ", numCronPurchases, dt)
                         db.insert('purchases', newPMRequest)
 
                         # For each fee, post to purchases table
