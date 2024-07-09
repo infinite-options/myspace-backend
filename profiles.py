@@ -446,17 +446,19 @@ class Profile(Resource):
     def put(self):
         payload = request.form.to_dict()
         if payload.get('business_uid'):
-            key = {'business_uid': payload.pop('business_uid')}
+            valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url"}
+            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            key = {'business_uid': filtered_payload.pop('business_uid')}
             file = request.files.get("business_photo")
             if file:
                 key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
-                payload["business_photo_url"] = uploadImage(file, key1, '')
+                filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
             print("business")
             with connect() as db:
-                response = db.update('businessProfileInfo', key, payload)
+                response = db.update('businessProfileInfo', key, filtered_payload)
         
         
-        elif payload.get('tenant_uid'):
+        if payload.get('tenant_uid'):
             tenant_uid = payload.pop('tenant_uid')
             query_key = {'tenant_uid': tenant_uid}
             file = request.files.get("tenant_photo")
@@ -536,7 +538,7 @@ class Profile(Resource):
                 response['database_response'] = db.update('tenantProfileInfo', query_key, clean_json_data(payload))
 
 
-        elif payload.get('owner_uid'):
+        if payload.get('owner_uid'):
             key = {'owner_uid': payload.pop('owner_uid')}
             file = request.files.get("owner_photo")
             if file:
@@ -548,14 +550,16 @@ class Profile(Resource):
 
         
         if payload.get('employee_uid'):
-            key = {'employee_uid': payload.pop('employee_uid')}
+            valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
+            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            key = {'employee_uid': filtered_payload.pop('employee_uid')}
             file = request.files.get("employee_photo")
             if file:
                 key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
-                payload["employee_photo_url"] = uploadImage(file, key1, '')
+                filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
             print("employee")
             with connect() as db:
-                response = db.update('employees', key, payload)
+                response = db.update('employees', key, filtered_payload)
 
         else:
             raise BadRequest("Request failed, no UID in payload.")
