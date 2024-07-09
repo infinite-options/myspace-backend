@@ -1359,7 +1359,8 @@ class CashflowSummary(Resource):
 
 class CashflowRevised(Resource):
     # def get(self, user_id, type):
-    def get(self, user_id, month, year):
+    # def get(self, user_id, month, year):
+    def get(self, user_id):
         print("In Cashflow Revised")
         response = {}
 
@@ -1485,8 +1486,8 @@ class CashflowRevised(Resource):
                         --     , lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lt_lease_id, lt_tenant_id, lt_responsibility
                         --     , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         FROM space.pp_details
-                        -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003') AND cf_month = 'JANUARY' AND cf_year = '2024'
-                        WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\') AND cf_month = \'""" + month + """\' AND cf_year = \'""" + year + """\'
+                        -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003') -- AND cf_month = 'JANUARY' AND cf_year = '2024'
+                        WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
                         GROUP BY cf_month, cf_year, pur_cf_type, purchase_type, property_uid 
                         ORDER BY cf_month_num, property_uid
                         ) AS p
