@@ -547,16 +547,17 @@ class Profile(Resource):
                 response = db.update('ownerProfileInfo', key, payload)
 
         
-        # elif payload.get('employee_uid'):
-        #     key = {'employee_uid': payload.pop('employee_uid')}
-        #     file = request.files.get("employee_photo")
-        #     if file:
-        #         key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
-        #         payload["employee_photo_url"] = uploadImage(file, key1, '')
-        #     print("employee")
-        #     with connect() as db:
-        #         response = db.update('employeeProfileInfo', key, payload)
+        if payload.get('employee_uid'):
+            key = {'employee_uid': payload.pop('employee_uid')}
+            file = request.files.get("employee_photo")
+            if file:
+                key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+                payload["employee_photo_url"] = uploadImage(file, key1, '')
+            print("employee")
+            with connect() as db:
+                response = db.update('employees', key, payload)
 
         else:
             raise BadRequest("Request failed, no UID in payload.")
+        
         return response
