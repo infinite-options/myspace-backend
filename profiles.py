@@ -20,6 +20,7 @@ import ast
 # BY YEAR     X           X               X
 
 def clean_json_data(data):
+    # print(data)
     for field, value in data.items():
         if value == '':
             value = None
@@ -28,8 +29,7 @@ def clean_json_data(data):
     
     # data = {key: value for key, value in data.items() if "-DNU" not in key}
 
-    # print("Cleaned data")
-    # print(data)
+    # print("Cleaned data: ", data)
     return data
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
@@ -395,11 +395,11 @@ class Profile(Resource):
         response = {}
         employee_info  = {}
         profile_info = request.form.to_dict()
-        # print("Incoming Profile: ", profile_info)
+        print("Incoming Profile: ", profile_info)
         owner = [key for key in profile_info.keys() if "owner" in key]
         tenant = [key for key in profile_info.keys() if "tenant" in key]
         business = [key for key in profile_info.keys() if "business" in key]
-        # employee = [key for key in profile_info.keys() if "owner" in key]
+        # employee = [key for key in profile_info.keys() if "employee" in key]
 
         with connect() as db:
             if owner:
@@ -413,6 +413,16 @@ class Profile(Resource):
                 response["owner_uid"] = profile_info["owner_uid"]
             elif tenant:
                 print("tenant")
+
+                # Check and add the keys using ternary expressions
+                profile_info['tenant_documents'] = profile_info['tenant_documents'] if 'tenant_documents' in profile_info else '[]'
+                profile_info['tenant_adult_occupants'] = profile_info['tenant_adult_occupants'] if 'tenant_adult_occupants' in profile_info else '[]'
+                profile_info['tenant_children_occupants'] = profile_info['tenant_children_occupants'] if 'tenant_children_occupants' in profile_info else '[]'
+                profile_info['tenant_vehicle_info'] = profile_info['tenant_vehicle_info'] if 'tenant_vehicle_info' in profile_info else '[]'
+                profile_info['tenant_references'] = profile_info['tenant_references'] if 'tenant_references' in profile_info else '[]'
+                profile_info['tenant_pet_occupants'] = profile_info['tenant_pet_occupants'] if 'tenant_pet_occupants' in profile_info else '[]'
+                # print("Updated Tenant Profile: ", tenant_profile)
+
                 profile_info["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
                 file = request.files.get("tenant_photo")
                 if file:
@@ -443,6 +453,18 @@ class Profile(Resource):
                 response = db.insert('employees', employee_info)
                 response["business_uid"] = profile_info["business_uid"]
                 response["employee_uid"] = employee_info["employee_uid"]
+            # elif employee:
+            #     print("employee")
+            #     employee_info["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+            #     employee_info["employee_user_id"] = profile_info["employee_user_id"]
+            #     employee_info["employee_business_id"] = profile_info["business_uid"]
+            #     file = request.files.get("employee_photo_url")
+            #     # print(employee_info, file)
+            #     if file:
+            #         key = f'employee/{employee_info["employee_uid"]}/employee_photo'
+            #         employee_info["employee_photo_url"] = uploadImage(file, key, '')
+            #     response = db.insert('employees', employee_info)
+            #     response["employee_uid"] = employee_info["employee_uid"]
             else:
                 raise BadRequest("Request failed, check payload.")
 
