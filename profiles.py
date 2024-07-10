@@ -38,7 +38,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-class OwnerProfile(Resource):
+# class OwnerProfile(Resource):
     def post(self):
         response = {}
         owner_profile = request.form.to_dict()
@@ -63,87 +63,87 @@ class OwnerProfile(Resource):
             response = db.update('ownerProfileInfo', key, payload)
         return response
 
-class OwnerProfileByOwnerUid(Resource):
-    # decorators = [jwt_required()]
+# class OwnerProfileByOwnerUid(Resource):
+#     # decorators = [jwt_required()]
 
-    def get(self, owner_id):
-        print('in Owner Profile')
-        response = {}
+#     def get(self, owner_id):
+#         print('in Owner Profile')
+#         response = {}
 
-        with connect() as db:
-            print("in connect loop")
-            profileQuery = db.execute(""" 
-                    -- OWNER PROFILE
-                    SELECT * FROM space.ownerProfileInfo
-                    WHERE owner_uid = \'""" + owner_id + """\';
-                    """)
+#         with connect() as db:
+#             print("in connect loop")
+#             profileQuery = db.execute(""" 
+#                     -- OWNER PROFILE
+#                     SELECT * FROM space.ownerProfileInfo
+#                     WHERE owner_uid = \'""" + owner_id + """\';
+#                     """)
             
 
-            # print("Query: ", profileQuery)
-            # items = execute(profileQuery, "get", conn)
-            # print(items)
-            response["Profile"] = profileQuery 
+#             # print("Query: ", profileQuery)
+#             # items = execute(profileQuery, "get", conn)
+#             # print(items)
+#             response["Profile"] = profileQuery 
 
 
-            return response
+#             return response
 
-class TenantProfile(Resource): 
-    def post(self):
-        response = {}
-        tenant_profile = request.form.to_dict()
-        # print("Tenant Profile: ", tenant_profile)
+# class TenantProfile(Resource): 
+#     def post(self):
+#         response = {}
+#         tenant_profile = request.form.to_dict()
+#         # print("Tenant Profile: ", tenant_profile)
 
-        # Check and add the keys using ternary expressions
-        tenant_profile['tenant_documents'] = tenant_profile['tenant_documents'] if 'tenant_documents' in tenant_profile else '[]'
-        tenant_profile['tenant_adult_occupants'] = tenant_profile['tenant_adult_occupants'] if 'tenant_adult_occupants' in tenant_profile else '[]'
-        tenant_profile['tenant_children_occupants'] = tenant_profile['tenant_children_occupants'] if 'tenant_children_occupants' in tenant_profile else '[]'
-        tenant_profile['tenant_vehicle_info'] = tenant_profile['tenant_vehicle_info'] if 'tenant_vehicle_info' in tenant_profile else '[]'
-        tenant_profile['tenant_references'] = tenant_profile['tenant_references'] if 'tenant_references' in tenant_profile else '[]'
-        tenant_profile['tenant_pet_occupants'] = tenant_profile['tenant_pet_occupants'] if 'tenant_pet_occupants' in tenant_profile else '[]'
-        # print("Updated Tenant Profile: ", tenant_profile)
+#         # Check and add the keys using ternary expressions
+#         tenant_profile['tenant_documents'] = tenant_profile['tenant_documents'] if 'tenant_documents' in tenant_profile else '[]'
+#         tenant_profile['tenant_adult_occupants'] = tenant_profile['tenant_adult_occupants'] if 'tenant_adult_occupants' in tenant_profile else '[]'
+#         tenant_profile['tenant_children_occupants'] = tenant_profile['tenant_children_occupants'] if 'tenant_children_occupants' in tenant_profile else '[]'
+#         tenant_profile['tenant_vehicle_info'] = tenant_profile['tenant_vehicle_info'] if 'tenant_vehicle_info' in tenant_profile else '[]'
+#         tenant_profile['tenant_references'] = tenant_profile['tenant_references'] if 'tenant_references' in tenant_profile else '[]'
+#         tenant_profile['tenant_pet_occupants'] = tenant_profile['tenant_pet_occupants'] if 'tenant_pet_occupants' in tenant_profile else '[]'
+#         # print("Updated Tenant Profile: ", tenant_profile)
 
-        with connect() as db:
-            tenant_profile["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
-            file = request.files.get("tenant_photo")
-            if file:
-                key = f'tenantProfileInfo/{tenant_profile["tenant_uid"]}/tenant_photo'
-                tenant_profile["tenant_photo_url"] = uploadImage(file, key, '')
-            response = db.insert('tenantProfileInfo', tenant_profile)
-            response["tenant_uid"] = tenant_profile["tenant_uid"]
-        return response
+#         with connect() as db:
+#             tenant_profile["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
+#             file = request.files.get("tenant_photo")
+#             if file:
+#                 key = f'tenantProfileInfo/{tenant_profile["tenant_uid"]}/tenant_photo'
+#                 tenant_profile["tenant_photo_url"] = uploadImage(file, key, '')
+#             response = db.insert('tenantProfileInfo', tenant_profile)
+#             response["tenant_uid"] = tenant_profile["tenant_uid"]
+#         return response
     
-    def put(self):
-        response = {}
-        print('in TenantProfile')
-        payload = request.get_json()
-        if payload.get('tenant_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'tenant_uid': payload.pop('tenant_uid')}
-        with connect() as db:
-            response = db.update('tenantProfileInfo', key, clean_json_data(payload))
-        return response
+#     def put(self):
+#         response = {}
+#         print('in TenantProfile')
+#         payload = request.get_json()
+#         if payload.get('tenant_uid') is None:
+#             raise BadRequest("Request failed, no UID in payload.")
+#         key = {'tenant_uid': payload.pop('tenant_uid')}
+#         with connect() as db:
+#             response = db.update('tenantProfileInfo', key, clean_json_data(payload))
+#         return response
 
-class TenantProfileByTenantUid(Resource):
-    # decorators = [jwt_required()]
+# class TenantProfileByTenantUid(Resource):
+#     # decorators = [jwt_required()]
 
-    def get(self, tenant_id):
-        print('in Tenant Profile')
-        response = {}
+#     def get(self, tenant_id):
+#         print('in Tenant Profile')
+#         response = {}
 
-        with connect() as db:
-            print("in connect loop")
-            profileQuery = db.execute(""" 
-                    -- TENANT PROFILE
-                    SELECT * FROM space.tenantProfileInfo
-                    WHERE tenant_uid = \'""" + tenant_id + """\';
-                    """)
+#         with connect() as db:
+#             print("in connect loop")
+#             profileQuery = db.execute(""" 
+#                     -- TENANT PROFILE
+#                     SELECT * FROM space.tenantProfileInfo
+#                     WHERE tenant_uid = \'""" + tenant_id + """\';
+#                     """)
             
 
-            # print("Query: ", profileQuery)
-            # items = execute(profileQuery, "get", conn)
-            # print(items)
-            response["Profile"] = profileQuery
-            return response
+#             # print("Query: ", profileQuery)
+#             # items = execute(profileQuery, "get", conn)
+#             # print(items)
+#             response["Profile"] = profileQuery
+#             return response
 
 
 # class RolesByUserid(Resource):
@@ -155,86 +155,86 @@ class TenantProfileByTenantUid(Resource):
 
 
 
-class BusinessProfileWeb(Resource):
-    def post(self):
-        response = {}
-        business_profile = request.form.to_dict()
-        print("Business Profile Info: ", business_profile)
+# class BusinessProfileWeb(Resource):
+#     def post(self):
+#         response = {}
+#         business_profile = request.form.to_dict()
+#         print("Business Profile Info: ", business_profile)
 
-        with connect() as db:
-            business_profile["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
-            business_profile["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+#         with connect() as db:
+#             business_profile["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
+#             business_profile["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
 
-            # Photos
-            # file_business = request.files.get("business_photo")
-            # file_employee = request.files.get("employee_photo")
+#             # Photos
+#             # file_business = request.files.get("business_photo")
+#             # file_employee = request.files.get("employee_photo")
 
-            # if file_business:
-            #     key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
-            #     business_profile["business_photo_url"] = uploadImage(file_business, key, '')
-            # if file_employee:
-            #     key = f'employees/{business_profile["employee_uid"]}/employee_photo'
-            #     business_profile["employee_photo_url"] = uploadImage(file_employee, key, '')
+#             # if file_business:
+#             #     key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
+#             #     business_profile["business_photo_url"] = uploadImage(file_business, key, '')
+#             # if file_employee:
+#             #     key = f'employees/{business_profile["employee_uid"]}/employee_photo'
+#             #     business_profile["employee_photo_url"] = uploadImage(file_employee, key, '')
 
-            # Insert into databases
-            response = db.insert('businessProfileInfo', business_profile)
-            response["business_uid"] = business_profile["business_uid"]
+#             # Insert into databases
+#             response = db.insert('businessProfileInfo', business_profile)
+#             response["business_uid"] = business_profile["business_uid"]
 
-            response = db.insert('employees', business_profile)
-            response["employee_uid"] = business_profile["employee_uid"]
+#             response = db.insert('employees', business_profile)
+#             response["employee_uid"] = business_profile["employee_uid"]
 
-            # print("Payment Methods: ", business_profile["paymentpayload"])
+#             # print("Payment Methods: ", business_profile["paymentpayload"])
 
 
-        return response
+#         return response
 
-    # def post(self):
-    #     response = {    }
-    #     payload = request.get_json()
-    #     print(payload)
-    #     with connect() as db:
-    #         query_response = db.insert('paymentMethods', payload)
-    #         print(query_response)
-    #         response = query_response
-    #     return response
+#     # def post(self):
+#     #     response = {    }
+#     #     payload = request.get_json()
+#     #     print(payload)
+#     #     with connect() as db:
+#     #         query_response = db.insert('paymentMethods', payload)
+#     #         print(query_response)
+#     #         response = query_response
+#     #     return response
 
-    # def post(self):
-    #     response = {}
-    #     employee = request.form.to_dict()
-    #     with connect() as db:
-    #         employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
-    #         file = request.files.get("employee_photo")
-    #         if file:
-    #             key = f'employees/{employee["employee_uid"]}/employee_photo'
-    #             employee["employee_photo_url"] = uploadImage(file, key, '')
-    #         response = db.insert('employees', employee)
-    #         response["employee_uid"] = employee["employee_uid"]
-    #     return response
+#     # def post(self):
+#     #     response = {}
+#     #     employee = request.form.to_dict()
+#     #     with connect() as db:
+#     #         employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+#     #         file = request.files.get("employee_photo")
+#     #         if file:
+#     #             key = f'employees/{employee["employee_uid"]}/employee_photo'
+#     #             employee["employee_photo_url"] = uploadImage(file, key, '')
+#     #         response = db.insert('employees', employee)
+#     #         response["employee_uid"] = employee["employee_uid"]
+#     #     return response
 
 class BusinessProfile(Resource):
-    def post(self):
-        response = {}
-        business_profile = request.form.to_dict()
-        with connect() as db:
-            business_profile["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
-            file = request.files.get("business_photo")
-            if file:
-                key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
-                business_profile["business_photo_url"] = uploadImage(file, key, '')
-            response = db.insert('businessProfileInfo', business_profile)
-            response["business_uid"] = business_profile["business_uid"]
-        return response
+    # def post(self):
+    #     response = {}
+    #     business_profile = request.form.to_dict()
+    #     with connect() as db:
+    #         business_profile["business_uid"] = db.call('space.new_business_uid')['result'][0]['new_id']
+    #         file = request.files.get("business_photo")
+    #         if file:
+    #             key = f'businessProfileInfo/{business_profile["business_uid"]}/business_photo'
+    #             business_profile["business_photo_url"] = uploadImage(file, key, '')
+    #         response = db.insert('businessProfileInfo', business_profile)
+    #         response["business_uid"] = business_profile["business_uid"]
+    #     return response
 
-    def put(self):
-        response = {}
-        payload = request.get_json()
-        if payload.get('business_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'business_uid': payload.pop('business_uid')}
-        print(payload)
-        with connect() as db:
-            response = db.update('businessProfileInfo', key, payload)
-        return response
+    # def put(self):
+    #     response = {}
+    #     payload = request.get_json()
+    #     if payload.get('business_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'business_uid': payload.pop('business_uid')}
+    #     print(payload)
+    #     with connect() as db:
+    #         response = db.update('businessProfileInfo', key, payload)
+    #     return response
     
     def get(self):
         response = {}
@@ -250,12 +250,13 @@ class BusinessProfileList(Resource):
             business = db.execute("""
                             SELECT business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, 
                              business_locations, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-                             FROM space.businessProfileInfo WHERE business_type = \'""" + business_type + """\' 
+                            FROM space.businessProfileInfo 
+                            WHERE business_type = \'""" + business_type + """\' 
             """)
         response["Businesses"] = business
         return response
 
-class BusinessProfileByUid(Resource):
+# class BusinessProfileByUid(Resource):
     def get(self, business_uid):
         print('in BusinessProfileByUid')
         with connect() as db:
@@ -386,7 +387,11 @@ class Profile(Resource):
                     response["profile"] = employeeQuery
                     
             else:
-                raise BadRequest("Request failed, no UID in payload.")
+                where = request.args.to_dict()
+                with connect() as db:
+                    response = db.select('businessProfileInfo', where)
+                return response
+                # raise BadRequest("Request failed, no UID in payload.")
 
             return response
 
@@ -399,7 +404,7 @@ class Profile(Resource):
         owner = [key for key in profile_info.keys() if "owner" in key]
         tenant = [key for key in profile_info.keys() if "tenant" in key]
         business = [key for key in profile_info.keys() if "business" in key]
-        # employee = [key for key in profile_info.keys() if "employee" in key]
+        employee = [key for key in profile_info.keys() if "employee" in key]
 
         with connect() as db:
             if owner:
@@ -453,18 +458,18 @@ class Profile(Resource):
                 response = db.insert('employees', employee_info)
                 response["business_uid"] = profile_info["business_uid"]
                 response["employee_uid"] = employee_info["employee_uid"]
-            # elif employee:
-            #     print("employee")
-            #     employee_info["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
-            #     employee_info["employee_user_id"] = profile_info["employee_user_id"]
-            #     employee_info["employee_business_id"] = profile_info["business_uid"]
-            #     file = request.files.get("employee_photo_url")
-            #     # print(employee_info, file)
-            #     if file:
-            #         key = f'employee/{employee_info["employee_uid"]}/employee_photo'
-            #         employee_info["employee_photo_url"] = uploadImage(file, key, '')
-            #     response = db.insert('employees', employee_info)
-            #     response["employee_uid"] = employee_info["employee_uid"]
+            elif employee:
+                print("employee")
+                employee_info["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+                employee_info["employee_user_id"] = profile_info["employee_user_id"]
+                employee_info["employee_business_id"] = profile_info["business_uid"]
+                file = request.files.get("employee_photo_url")
+                # print(employee_info, file)
+                if file:
+                    key = f'employee/{employee_info["employee_uid"]}/employee_photo'
+                    employee_info["employee_photo_url"] = uploadImage(file, key, '')
+                response = db.insert('employees', employee_info)
+                response["employee_uid"] = employee_info["employee_uid"]
             else:
                 raise BadRequest("Request failed, check payload.")
 
@@ -473,6 +478,8 @@ class Profile(Resource):
     def put(self):
         payload = request.form.to_dict()
         print("Profile Payload: ", payload)
+
+        bucket_name = 'io-pm'
 
         if payload.get('business_uid'):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url"}
@@ -494,6 +501,17 @@ class Profile(Resource):
             file = request.files.get("tenant_photo_url")
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
+                
+                try:
+                    s3.head_object(Bucket=bucket_name, Key=key1)
+                    s3.delete_object(Bucket=bucket_name, Key=key1)
+                    print(f"Deleted existing file {key1} from bucket {bucket_name}")
+                except s3.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        print(f"File {key1} does not exist in bucket {bucket_name}")
+                    else:
+                        print(f"Error deleting file {key1} from bucket {bucket_name}: {e}")
+
                 payload["tenant_photo_url"] = uploadImage(file, key1, '')
             # print("tenant")
             # print("Tenant Payload: ", payload)
