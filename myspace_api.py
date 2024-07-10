@@ -606,14 +606,13 @@ api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
 api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
 
 # Can we delete these?
-api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
-api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
-api.add_resource(BusinessProfileByUid,
-                 '/businessProfile/<string:business_uid>')
-api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
-api.add_resource(TenantProfile, '/tenantProfile')
+# api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
+# api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
+# api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
+# api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
+# api.add_resource(TenantProfile, '/tenantProfile')
 api.add_resource(BusinessProfile, '/businessProfile')
-api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
+# api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
 
 
 
