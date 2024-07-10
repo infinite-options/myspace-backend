@@ -31,6 +31,20 @@ s3 = boto3.client('s3')
 #         return filename
 #     return None
 
+def deleteImage(key):
+    bucket = 'io-pm'
+    try:
+        s3.delete_object(Bucket=bucket, Key=key)
+        print(f"Deleted existing file {key} from bucket {bucket}")
+        return True
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            print(f"File {key} does not exist in bucket {bucket}")
+        else:
+            print(f"Error deleting file {key} from bucket {bucket}: {e}")
+        return False
+
+
 def uploadImage(file, key, content):
     bucket = 'io-pm'
 

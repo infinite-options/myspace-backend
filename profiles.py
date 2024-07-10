@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, deleteImage, uploadImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -479,8 +479,6 @@ class Profile(Resource):
         payload = request.form.to_dict()
         print("Profile Payload: ", payload)
 
-        bucket_name = 'io-pm'
-
         if payload.get('business_uid'):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url"}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
@@ -488,6 +486,16 @@ class Profile(Resource):
             file = request.files.get("business_photo")
             if file:
                 key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
+
+                try:
+                    deleteImage(key1)
+                    print(f"Deleted existing file {key1}")
+                except s3.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        print(f"File {key1} does not exist")
+                    else:
+                        print(f"Error deleting file {key1}: {e}")
+
                 filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
             print("business")
             with connect() as db:
@@ -503,14 +511,13 @@ class Profile(Resource):
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
                 
                 try:
-                    s3.head_object(Bucket=bucket_name, Key=key1)
-                    s3.delete_object(Bucket=bucket_name, Key=key1)
-                    print(f"Deleted existing file {key1} from bucket {bucket_name}")
+                    deleteImage(key1)
+                    print(f"Deleted existing file {key1}")
                 except s3.exceptions.ClientError as e:
                     if e.response['Error']['Code'] == '404':
-                        print(f"File {key1} does not exist in bucket {bucket_name}")
+                        print(f"File {key1} does not exist")
                     else:
-                        print(f"Error deleting file {key1} from bucket {bucket_name}: {e}")
+                        print(f"Error deleting file {key1}: {e}")
 
                 payload["tenant_photo_url"] = uploadImage(file, key1, '')
             # print("tenant")
@@ -598,6 +605,16 @@ class Profile(Resource):
             file = request.files.get("owner_photo_url")
             if file:
                 key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+
+                try:
+                    deleteImage(key1)
+                    print(f"Deleted existing file {key1}")
+                except s3.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        print(f"File {key1} does not exist")
+                    else:
+                        print(f"Error deleting file {key1}: {e}")
+
                 payload["owner_photo_url"] = uploadImage(file, key1, '')
             # print("owner")
             # print("Owner Payload: ", payload)
@@ -610,9 +627,19 @@ class Profile(Resource):
             valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
             key = {'employee_uid': filtered_payload.pop('employee_uid')}
-            file = request.files.get("employee_photo")
+            file = request.files.get("employee_photo_url")
             if file:
-                key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+                key1 = f'employees/{key["employee_uid"]}/employee_photo'
+
+                try:
+                    deleteImage(key1)
+                    print(f"Deleted existing file {key1}")
+                except s3.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == '404':
+                        print(f"File {key1} does not exist")
+                    else:
+                        print(f"Error deleting file {key1}: {e}")
+
                 filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
             print("employee")
             with connect() as db:
