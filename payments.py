@@ -805,9 +805,10 @@ class PaymentOwner(Resource):
 
 class PaymentMethod(Resource):
     def post(self):
-        response = {    }
+        print("In Payment Method POST")
+        response = {}
         payload = request.get_json()
-        print(type(payload), payload)
+        print("POST Payload: ", type(payload), payload)
         i = 0
 
         with connect() as db:
@@ -831,13 +832,37 @@ class PaymentMethod(Resource):
         print("In Payment Method PUT")
         response = {}
         payload = request.get_json()
-        print("PUT Payload: ", payload)
-        if payload.get('paymentMethod_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
+        # print("PUT Payload: ", type(payload), payload)
+        i = 0
+
         with connect() as db:
-            response = db.update('paymentMethods', key, payload)
+
+            if isinstance(payload, list):
+                # print("In List")
+                for item in payload:
+                    if item.get('paymentMethod_uid') is None:
+                        print("Bad Request: ", item)
+                        raise BadRequest("Request failed, no UID in payload.")
+                    else:
+                        # print(item)
+                        key = {'paymentMethod_uid': item.pop('paymentMethod_uid')}
+                        # print("Key: ", type(key), key)
+                        query_response = db.update('paymentMethods', key, item)
+                        # print(query_response)
+                        response[i] = query_response
+                        i += 1
+
+            else:
+                if payload.get('paymentMethod_uid') is None:
+                    raise BadRequest("Request failed, no UID in payload.")
+                key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
+                query_response = db.update('paymentMethods', key, payload)
+                # print(query_response)
+                response = query_response
+
         return response
+
+
 
     def get(self, user_id):
         print('in PaymentMethod GET')
