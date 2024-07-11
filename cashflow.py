@@ -1439,6 +1439,7 @@ class CashflowRevised(Resource):
             #     return cashflow
             
             # if type == 'CATEGORY':
+            
             print("Cashflow by Year, by Month, by CF Type, by Purchase Category")
             cashflow = db.execute("""                            
                     -- GROUPED BY OWNER, BY YEAR, BY MONTH, BY CF_TYPE, BY PURCHASE CATEGORY

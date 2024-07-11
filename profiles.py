@@ -450,6 +450,7 @@ class Profile(Resource):
                 employee_info["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
                 employee_info["employee_user_id"] = profile_info["business_user_id"]
                 employee_info["employee_business_id"] = profile_info["business_uid"]
+                employee_info["employee_role"] = "OWNER"
                 file = request.files.get("employee_photo_url")
                 # print(employee_info, file)
                 if file:
