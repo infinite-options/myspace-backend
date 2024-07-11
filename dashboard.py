@@ -29,7 +29,7 @@ class Dashboard(Resource):
             business_type = query['result'][0]['business_type']
             # print(business_type)
 
-            if business_type != "MANAGEMENT":
+            if business_type == "MAINTENANCE":
                 with connect() as db:
                     # print("in maintenance dashboard")
                     currentActivity = db.execute(""" 
@@ -133,7 +133,7 @@ class Dashboard(Resource):
                     response["CurrentQuotes"] = currentQuotes
 
                     return response
-            else:
+            elif business_type == "MANAGEMENT":
                 with connect() as db:
                     print("in Manager dashboard")
                     print("in connect loop")
@@ -613,33 +613,34 @@ class Dashboard(Resource):
 
                     # NEW PM REQUESTS
                     print("In New PM Requests")
-                    with connect() as db:
-                    # print("in connect loop")
-                        contractsQuery = db.execute("""
-                                -- NEW PROPERTIES FOR MANAGER
-                                SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
-                                FROM space.o_details
-                                LEFT JOIN space.properties ON property_id = property_uid
-                                LEFT JOIN space.b_details ON contract_property_id = property_uid
-                                LEFT JOIN (
-                                SELECT announcement_properties, JSON_ARRAYAGG(JSON_OBJECT
-                                ('announcement_uid', announcement_uid,
-                                'announcement_title', announcement_title,
-                                'announcement_msg', announcement_msg,
-                                'announcement_mode', announcement_mode,
-                                'announcement_date', announcement_date,
-                                'announcement_receiver', announcement_receiver
-                                )) AS announcements
-                                FROM space.announcements
-                                GROUP BY announcement_properties) as t ON announcement_properties = property_uid
-                                WHERE contract_business_id = \'""" + user_id + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
-                            """)
+                    contractsQuery = db.execute("""
+                            -- NEW PROPERTIES FOR MANAGER
+                            SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
+                            FROM space.o_details
+                            LEFT JOIN space.properties ON property_id = property_uid
+                            LEFT JOIN space.b_details ON contract_property_id = property_uid
+                            LEFT JOIN (
+                            SELECT announcement_properties, JSON_ARRAYAGG(JSON_OBJECT
+                            ('announcement_uid', announcement_uid,
+                            'announcement_title', announcement_title,
+                            'announcement_msg', announcement_msg,
+                            'announcement_mode', announcement_mode,
+                            'announcement_date', announcement_date,
+                            'announcement_receiver', announcement_receiver
+                            )) AS announcements
+                            FROM space.announcements
+                            GROUP BY announcement_properties) as t ON announcement_properties = property_uid
+                            WHERE contract_business_id = \'""" + user_id + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
+                        """)
 
-                    # print("Query: ", propertiesQuery)
+                    # print("PM Request Query: ", propertiesQuery)
                     response["NewPMRequests"] = contractsQuery
                     # print(response)
 
                     return response
+            else:
+                print("No Match")
+                return("Not a valid option")
 
         elif user_id.startswith("110"):
             with connect() as db:
