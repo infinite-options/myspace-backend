@@ -630,7 +630,9 @@ class LateFees_CLASS(Resource):
                 -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
                 SELECT *
                 FROM space.purchases
+                LEFT JOIN space.contracts ON contract_property_id = pur_property_id
                 WHERE purchase_type = "RENT" AND
+                    contract_status = "ACTIVE" AND
                     (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
                     SUBSTRING(pur_payer, 1, 3) = '350';
                 """)
@@ -699,6 +701,7 @@ class LateFees_CLASS(Resource):
                                 # print(lateFees['result'][j]['pur_description'])
                                 if response['result'][i]['purchase_uid'] == lateFees['result'][j]['pur_description']:
                                     found_id = lateFees['result'][j]['purchase_uid']
+                                    # pur_group = lateFees['result'][j]['pur_group']
                                     print("Found it: ", found_id) 
 
                                     break
@@ -722,6 +725,7 @@ class LateFees_CLASS(Resource):
                             # print(newRequestID)
 
                             newRequest['purchase_uid'] = newRequestID
+                            newRequest['pur_group'] = newRequestID
                             newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
                             newRequest['pur_property_id'] = response['result'][i]['pur_property_id']
                             newRequest['purchase_type'] = "Late Fee"
@@ -752,9 +756,17 @@ class LateFees_CLASS(Resource):
 
                             db.insert('purchases', newRequest)
                             print("Inserted into db: ", newRequest)
+
+                            # Need to Have PM Pay Owner
+                            #  - print fees and see what the Service Fee % split is
+                            #  - Calculate the amount due to the PM and the Amount due to the Owner
+                            # Need to Have Owner Pay PM
+
+                            # Figure out PM Service Charge for Colleting Rents
+                            #  NEED to find contract_uid to look up fees.  Find contract associated with purchase
                         
                         
-                        print(response['result'][i])
+                        print("\n",response['result'][i])
                             
                 #     else:
                 #         print("Amount = 0. Skip ", response['result'][i]['purchase_uid'])
