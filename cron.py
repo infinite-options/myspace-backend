@@ -687,7 +687,7 @@ class LateFees_CLASS(Resource):
                     # amount_due = format(float(response['result'][i]['pur_late_Fee']) + float(response['result'][i]['pur_perDay_late_fee']) * numDays, ".2f")
                     amount_due = round(float(response['result'][i]['pur_late_Fee']) + float(response['result'][i]['pur_perDay_late_fee']) * numDays, 2)
 
-                    # print("Late amount and Number of Days: ", amount_due, type(amount_due), numDays, type(numDays))
+                    print("Late amount and Number of Days: ", amount_due, type(amount_due), numDays, type(numDays))
                     numCronPurchases = numCronPurchases + 1
 
                     if amount_due > 0:
@@ -743,7 +743,7 @@ class LateFees_CLASS(Resource):
                             newRequest['pur_late_fee'] = 0
                             newRequest['pur_perDay_late_fee'] = 0
 
-                            if due_by == previous_day.date():
+                            if due_by ==  previous_day:
                                 print("\n", "Late Today")
                                 newRequest['pur_notes'] = "One Time Late Fee Applied"
                             else:
@@ -902,7 +902,7 @@ def LateFees_CRON(self):
                         newRequest['pur_late_fee'] = 0
                         newRequest['pur_perDay_late_fee'] = 0
 
-                        if due_by == previous_day.date():
+                        if due_by == previous_day:
                             print("\n", "Late Today")
                             newRequest['pur_notes'] = "One Time Late Fee Applied"
                         else:

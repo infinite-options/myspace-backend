@@ -1471,7 +1471,8 @@ class CashflowRevised(Resource):
                             , JSON_ARRAYAGG(JSON_OBJECT(
                                 'purchase_uid',  purchase_uid,
                                 'purchase_status', purchase_status,
-                                'pur_amount_due', pur_amount_due
+                                'pur_amount_due', pur_amount_due,
+                                'total_paid', total_paid
                                 )) AS individual_purchase
                             -- , purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description
                         --     , pur_receiver, pur_initiator, pur_payer
