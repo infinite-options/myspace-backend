@@ -682,6 +682,8 @@ class LateFees_CLASS(Resource):
                     rent_due = response['result'][i]['pur_amount_due']
                     one_time_late_fee = response['result'][i]['pur_late_Fee']
                     per_day_late_fee = response['result'][i]['pur_perDay_late_fee']
+                    purchase_notes = response['result'][i]['pur_notes']
+                    purchase_description = response['result'][i]['pur_description']
                     fees = json.loads(response['result'][i]['contract_fees'])
                     # PAYMENT PARTIES
                     tenant = response['result'][i]['pur_payer']
@@ -693,6 +695,7 @@ class LateFees_CLASS(Resource):
                     print("Payment Description: ", description, type(description))
                     print("Payment Amount Due: ", rent_due, type(rent_due))
                     print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
+                    print("Purchase Notes: ", purchase_notes, purchase_description)
                     print("PM Contract Fees: ", fees, type(fees))
                     print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
 
@@ -720,8 +723,8 @@ class LateFees_CLASS(Resource):
                             # print(lateFees['result'][j]['pur_description'])
                             if  purchase_uid == lateFees['result'][j]['pur_description']:
                                 putFlag = putFlag + 1
-                                print("\nFound Matching Entry ", putFlag)
-                                # print("\nEntire Row: ", lateFees['result'][j])
+                                print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
+                                # print("Entire Row: ", lateFees['result'][j])
                                 payer = lateFees['result'][j]['pur_payer']
                                 receiver = lateFees['result'][j]['pur_receiver']
                                 key = {'purchase_uid': lateFees['result'][j]['purchase_uid']}
@@ -732,12 +735,14 @@ class LateFees_CLASS(Resource):
                                     response['purchase_table_update'] = db.update('space_test.purchases', key, payload)
                                     print("updated ", key, payload)
                                     # print(response)
-                                elif payer[0:3] == '110': 
-                                    print("Figure out what the appropriate Fee split is")
+                                elif payer[0:3] == '110':                                   
+                                    print("Figure out what the appropriate Fee split is", purchase_notes )
                                     for fee in fees:
-                                # print(fee)
-                                # Extract only the monthly fees
-                                        if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
+                                        # print("Current Fee: ", fee)
+                                        # print("Current Fee Name: ", fee['fee_name'])
+                                        # if fee['fee_name'] == purchase_notes: print('match'), print('no match')
+                                        # Extract only the monthly fees
+                                        if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_notes']:
                                             charge = fee['charge']
                                             charge_type = fee['fee_type']
                                             print("\nCharge: ", charge, charge_type)
@@ -841,7 +846,7 @@ class LateFees_CLASS(Resource):
                                 # print(newRequestID)
                                 newRequest['pur_receiver'] = manager
                                 newRequest['pur_payer'] = owner
-
+                                newRequest['pur_notes'] = fee['fee_name']
                                 newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                 
                                 # print(newRequest)
