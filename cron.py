@@ -617,6 +617,7 @@ class LateFees_CLASS(Resource):
         print("In Late Fees")
 
         numCronPurchases = 0
+        numCronUpdates = 0
 
         # Establish current day, month and year
         dt = date.today()
@@ -629,9 +630,9 @@ class LateFees_CLASS(Resource):
             response = db.execute("""
                 -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
                 SELECT *
-                FROM space_test.purchases
-                LEFT JOIN space_test.contracts ON contract_property_id = pur_property_id
-                LEFT JOIN space_test.property_owner ON property_id = pur_property_id
+                FROM space.purchases
+                LEFT JOIN space.contracts ON contract_property_id = pur_property_id
+                LEFT JOIN space.property_owner ON property_id = pur_property_id
                 WHERE purchase_type = "RENT" AND
                     contract_status = "ACTIVE" AND
                     (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
@@ -643,38 +644,38 @@ class LateFees_CLASS(Resource):
                 purchase_uid = response['result'][i]['purchase_uid']
                 property_id = response['result'][i]['pur_property_id']
                 description = response['result'][i]['pur_description']
-                print("\nNext Row: ", i, purchase_uid, property_id, description)
+                # print("\nNext Row: ", i, purchase_uid, property_id, description)
 
                 # PAYMENT DATES
                 # Set Due Date - If None set to due on 1st day of the Month
                 due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else "1"
                 due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
-                print("Due by: ", due_by, type(due_by))
+                # print("Due by: ", due_by, type(due_by))
 
                 # Set Late By Date - If None set to late after 1 day
                 late_by = int(response['result'][i]['pur_late_by'] if response['result'][i]['pur_late_by'] else 1)
-                print("Late by: ", late_by, type(late_by))
+                # print("Late by: ", late_by, type(late_by))
                 late_date = due_by + timedelta(days=late_by)
-                print("Late Date: ", late_date, type(late_date))
+                # print("Late Date: ", late_date, type(late_date))
 
                 # Set Previous Day for Late Fee Calculations
                 yesterday = dt - timedelta(days=1) 
-                print("previous_day: ", yesterday, type(yesterday) )
+                # print("previous_day: ", yesterday, type(yesterday) )
 
                 # Number of Days Late
                 numDays = (yesterday - late_date).days
-                print("Number of Days Late: ", numDays, type(numDays))
+                # print("Number of Days Late: ", numDays, type(numDays))
 
                 # Set Date for PM to Pay Late Fees to Owner
                 pm_due_date = dt + timedelta(days=30)
-                print("pm_due_date: ", pm_due_date, type(pm_due_date) )
+                # print("pm_due_date: ", pm_due_date, type(pm_due_date) )
 
-                print("Due, Late, Yesterday, NumDays, PM_Due: ", due_by, late_date, yesterday, numDays, pm_due_date)
+                # print("Due, Late, Yesterday, NumDays, PM_Due: ", due_by, late_date, yesterday, numDays, pm_due_date)
 
 
         # DETERMINE IF UNPAID RENT IS LATE
                 if late_date < dt:
-                    print("Rent is late!")
+                    # print("Rent is late!")
 
 
         # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
@@ -690,18 +691,18 @@ class LateFees_CLASS(Resource):
                     owner = response['result'][i]['property_owner_id']
                     manager = response['result'][i]['contract_business_id']
                 
-                    print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
-                    print("Property id: ", property_id, type(property_id) )
-                    print("Payment Description: ", description, type(description))
-                    print("Payment Amount Due: ", rent_due, type(rent_due))
-                    print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
-                    print("Purchase Notes: ", purchase_notes, purchase_description)
-                    print("PM Contract Fees: ", fees, type(fees))
-                    print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
+                    # print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
+                    # print("Property id: ", property_id, type(property_id) )
+                    # print("Payment Description: ", description, type(description))
+                    # print("Payment Amount Due: ", rent_due, type(rent_due))
+                    # print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
+                    # print("Purchase Notes: ", purchase_notes, purchase_description)
+                    # print("PM Contract Fees: ", fees, type(fees))
+                    # print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
 
         # CALCULATE THE LATE FEE AMOUNT
                     late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
-                    print("Late Fee: ", late_fee, type(late_fee))
+                    # print("Late Fee: ", late_fee, type(late_fee))
 
 
         # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
@@ -709,7 +710,7 @@ class LateFees_CLASS(Resource):
                     lateFees = db.execute("""
                             -- DETERMINE WHICH LATE FEES ALREADY EXIST
                             SELECT *
-                            FROM space_test.purchases    
+                            FROM space.purchases    
                             WHERE purchase_type = "LATE FEE" AND
                                 (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                             """)
@@ -718,52 +719,52 @@ class LateFees_CLASS(Resource):
 
         # UPDATE APPRORIATE ROWS
                     putFlag = 0
-                    if len(lateFees['result']) > 0:
+                    if len(lateFees['result']) > 0 and late_fee > 0:
                         for j in range(len(lateFees['result'])):
                             # print(lateFees['result'][j]['pur_description'])
                             if  purchase_uid == lateFees['result'][j]['pur_description']:
                                 putFlag = putFlag + 1
-                                print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
+                                # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
                                 # print("Entire Row: ", lateFees['result'][j])
                                 payer = lateFees['result'][j]['pur_payer']
                                 receiver = lateFees['result'][j]['pur_receiver']
                                 key = {'purchase_uid': lateFees['result'][j]['purchase_uid']}
                                 if payer[0:3] == '350' or payer[0:3] == '600':
                                     payload = {'pur_amount_due': late_fee}
-                                    print(key, payload)
+                                    # print(key, payload)
 
-                                    response['purchase_table_update'] = db.update('space_test.purchases', key, payload)
-                                    print("updated ", key, payload)
+                                    response['purchase_table_update'] = db.update('space.purchases', key, payload)
+                                    # print("updated ", key, payload)
+                                    numCronUpdates = numCronUpdates + 1
                                     # print(response)
                                 elif payer[0:3] == '110':                                   
-                                    print("Figure out what the appropriate Fee split is", purchase_notes )
+                                    # print("Figure out what the appropriate Fee split is", purchase_notes )
                                     for fee in fees:
-                                        # print("Current Fee: ", fee)
-                                        # print("Current Fee Name: ", fee['fee_name'])
-                                        # if fee['fee_name'] == purchase_notes: print('match'), print('no match')
                                         # Extract only the monthly fees
                                         if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_notes']:
                                             charge = fee['charge']
                                             charge_type = fee['fee_type']
-                                            print("\nCharge: ", charge, charge_type)
+                                            # print("\nCharge: ", charge, charge_type)
 
                                             amount_due = float(late_fee) * float(charge) / 100
                                             payload = {'pur_amount_due': amount_due}
-                                            print(key, payload)
+                                            # print(key, payload)
 
-                                            response['purchase_table_update'] = db.update('space_test.purchases', key, payload)
-                                            print("Updated PM", key, payload)
+                                            response['purchase_table_update'] = db.update('space.purchases', key, payload)
+                                            numCronUpdates = numCronUpdates + 1
+                                            # print("Updated PM", key, payload)
                                 else:
                                     print("No Match Found: ", payer)
                          
                             continue
         # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
-                    print("PUT Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
-                    if putFlag == 0:
+                    
+                    if putFlag == 0 and late_fee > 0:
+                        print("PUT Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
 
                         # Create JSON Object for Rent Purchase
                         newRequest = {}
-                        newRequestID = db.call('space_test.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         # print(newRequestID)
 
@@ -799,19 +800,20 @@ class LateFees_CLASS(Resource):
                         
 
                         if numDays ==  0:
-                            print("\n", "Late Today")
+                            # print("\n", "Late Today")
                             newRequest['pur_notes'] = "One Time Late Fee Applied"
                         else:
                             newRequest['pur_notes'] = "One Time Late Fee and Per Day Late Fee Applied"
                             # newRequest['pur_notes'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
-                        print("\nInsert Tenant to Property Manager Late Fee")
-                        db.insert('space_test.purchases', newRequest)
+                        # print("\nInsert Tenant to Property Manager Late Fee")
+                        db.insert('space.purchases', newRequest)
+                        numCronPurchases = numCronPurchases + 1
                         # print("Inserted into db: ", newRequest)
 
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('space_test.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
@@ -821,15 +823,16 @@ class LateFees_CLASS(Resource):
                             
                         # print(newRequest)
                         # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
-                        print("\nInsert Property Manager to Owner Late Fee")
-                        db.insert('space_test.purchases', newRequest)   
+                        # print("\nInsert Property Manager to Owner Late Fee")
+                        db.insert('space.purchases', newRequest)
+                        numCronPurchases = numCronPurchases + 1
 
                         
                         # Create JSON Object for Rent Purchase for Owner-PM Payment
                         # Determine Split between PM and Owner
                         # print("\n  Contract Fees", response['result'][i]['contract_fees'])
                         fees = json.loads(response['result'][i]['contract_fees'])
-                        print("\nFees: ", fees, type(fees))
+                        # print("\nFees: ", fees, type(fees))
 
                         for fee in fees:
                             # print(fee)
@@ -837,11 +840,11 @@ class LateFees_CLASS(Resource):
                             if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
                                 charge = fee['charge']
                                 charge_type = fee['fee_type']
-                                print("\nCharge: ", charge, charge_type)
+                                # print("\nCharge: ", charge, charge_type)
 
                                 # Use this fee to create an Owner-PM late Fee PUT OR PST 
                                 # Create JSON Object for Rent Purchase for PM-Owner Payment
-                                newRequestID = db.call('space_test.new_purchase_uid')['result'][0]['new_id']
+                                newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
                                 newRequest['purchase_uid'] = newRequestID
                                 # print(newRequestID)
                                 newRequest['pur_receiver'] = manager
@@ -851,175 +854,270 @@ class LateFees_CLASS(Resource):
                                 
                                 # print(newRequest)
                                 # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
-                                print("\nInsert Owner to Property Manager Late Fee")
-                                db.insert('space_test.purchases', newRequest)       
+                                # print("\nInsert Owner to Property Manager Late Fee")
+                                db.insert('space.purchases', newRequest)  
+                                numCronPurchases = numCronPurchases + 1     
 
 
-        print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows affected.")
+        print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated.")
         response = {'message': f'Successfully completed CRON Job for {dt}' ,
-                    'rows affected': f'{numCronPurchases}',
+                    'rows added': f'{numCronPurchases}', 'rows updated': f'{numCronUpdates}',
                 'code': 200}
 
         return response
 
 def LateFees_CRON(self):
-    print("In Late Fees")
+        print("In Late Fees")
 
-    numCronPurchases = 0
+        numCronPurchases = 0
+        numCronUpdates = 0
 
-    # Establish current month and year
-    dt = date.today()
-    month = dt.month
-    year = dt.year
-    nextMonth = (dt + relativedelta(months=1))
-    # print(dt, type(dt), month, type(month), year, type(year))
+        # Establish current day, month and year
+        dt = date.today()
+        month = dt.month
+        year = dt.year
+        print(dt, type(dt), month, type(month), year, type(year))
 
-    # Run query to find which Rents are UNPAID OR PARTIALLY PAID
-    with connect() as db:
-        response = db.execute("""
-            -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
-            SELECT *
-            FROM space.purchases
-            WHERE purchase_type = "RENT" AND
-                (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
-                SUBSTRING(pur_payer, 1, 3) = '350';
-            """)
-
-        # print(response['result'][0])
-
-    # Run query to find existing LATE FEE rows that are UNPAID OR PARTIALLY PAID
-    with connect() as db:
-        lateFees = db.execute("""
-                -- DETERMINE WHICH LATE FEES ALREADY EXIST
+        # FIND ALL Rents that are UNPAID OR PARTIALLY PAID
+        with connect() as db:
+            response = db.execute("""
+                -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
                 SELECT *
                 FROM space.purchases
-                WHERE purchase_type = "LATE FEE" AND
-                    (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
-            """)
+                LEFT JOIN space.contracts ON contract_property_id = pur_property_id
+                LEFT JOIN space.property_owner ON property_id = pur_property_id
+                WHERE purchase_type = "RENT" AND
+                    contract_status = "ACTIVE" AND
+                    (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
+                    SUBSTRING(pur_payer, 1, 3) = '350';
+                """)
 
-        if len(lateFees['result']) > 0: 
-            # print(lateFees['result'][0])
-            print("Late Fees Exist")
-        else:
-            print("No Late Fees!")
+        # EXTRACT KEY DATES FOR EACH UNPAID RENT
+            for i in range(len(response['result'])):
+                purchase_uid = response['result'][i]['purchase_uid']
+                property_id = response['result'][i]['pur_property_id']
+                description = response['result'][i]['pur_description']
+                # print("\nNext Row: ", i, purchase_uid, property_id, description)
+
+                # PAYMENT DATES
+                # Set Due Date - If None set to due on 1st day of the Month
+                due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else "1"
+                due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
+                # print("Due by: ", due_by, type(due_by))
+
+                # Set Late By Date - If None set to late after 1 day
+                late_by = int(response['result'][i]['pur_late_by'] if response['result'][i]['pur_late_by'] else 1)
+                # print("Late by: ", late_by, type(late_by))
+                late_date = due_by + timedelta(days=late_by)
+                # print("Late Date: ", late_date, type(late_date))
+
+                # Set Previous Day for Late Fee Calculations
+                yesterday = dt - timedelta(days=1) 
+                # print("previous_day: ", yesterday, type(yesterday) )
+
+                # Number of Days Late
+                numDays = (yesterday - late_date).days
+                # print("Number of Days Late: ", numDays, type(numDays))
+
+                # Set Date for PM to Pay Late Fees to Owner
+                pm_due_date = dt + timedelta(days=30)
+                # print("pm_due_date: ", pm_due_date, type(pm_due_date) )
+
+                # print("Due, Late, Yesterday, NumDays, PM_Due: ", due_by, late_date, yesterday, numDays, pm_due_date)
 
 
-        # FOR EACH RENT THAT IS UNPAID CHECK IF IT IS LATE
-        for i in range(len(response['result'])):
+        # DETERMINE IF UNPAID RENT IS LATE
+                if late_date < dt:
+                    # print("Rent is late!")
 
-            # print("\nProperty id: ", response['result'][i]['pur_property_id'])
-            # print("Payment Description: ", response['result'][i]['pur_description'])
 
-            # Check if pur_due_date is NONE
-            due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else 1
-            due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
-            # print("Due by: ", due_by, type(due_by))
-            late_by = int(response['result'][i]['pur_late_by'] if response['result'][i]['pur_late_by'] else 1)
-            # print("Late by: ", late_by, type(late_by))
-            late_date = due_by + timedelta(days=late_by)
-            # print("Late Date: ", late_date, type(late_date))
+        # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
+                    # PAYMENT PARAMTERS
+                    rent_due = response['result'][i]['pur_amount_due']
+                    one_time_late_fee = response['result'][i]['pur_late_Fee']
+                    per_day_late_fee = response['result'][i]['pur_perDay_late_fee']
+                    purchase_notes = response['result'][i]['pur_notes']
+                    purchase_description = response['result'][i]['pur_description']
+                    fees = json.loads(response['result'][i]['contract_fees'])
+                    # PAYMENT PARTIES
+                    tenant = response['result'][i]['pur_payer']
+                    owner = response['result'][i]['property_owner_id']
+                    manager = response['result'][i]['contract_business_id']
+                
+                    # print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
+                    # print("Property id: ", property_id, type(property_id) )
+                    # print("Payment Description: ", description, type(description))
+                    # print("Payment Amount Due: ", rent_due, type(rent_due))
+                    # print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
+                    # print("Purchase Notes: ", purchase_notes, purchase_description)
+                    # print("PM Contract Fees: ", fees, type(fees))
+                    # print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
 
-        
-            previous_day = dt - timedelta(days=1) 
-            # print("Property id: ", response['result'][i]['pur_property_id'])
-            # print("previous_day: ", previous_day, type(previous_day) )
+        # CALCULATE THE LATE FEE AMOUNT
+                    late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
+                    # print("Late Fee: ", late_fee, type(late_fee))
 
-            # if due_by <= previous_day.date():
-            if late_date < dt:
-                # print("\n")
-                # print(i, response['result'][i]['purchase_uid'], "Late Fee to be Applied ")
-                numDays = (previous_day - late_date).days
-                # print("Number of days late: ", numDays, type(numDays))
-                # Amount Due = Late Fee + Per Day Late Fee * Num of Days
-                # print(response['result'][i])
-                # print(response['result'][i]['pur_late_Fee'], type(response['result'][i]['pur_late_Fee']))
-                # print(response['result'][i]['pur_perDay_late_fee'], type(response['result'][i]['pur_perDay_late_fee']))
-                # amount_due = format(float(response['result'][i]['pur_late_Fee']) + float(response['result'][i]['pur_perDay_late_fee']) * numDays, ".2f")
-                amount_due = round(float(response['result'][i]['pur_late_Fee']) + float(response['result'][i]['pur_perDay_late_fee']) * numDays, 2)
 
-                # print("Late amount and Number of Days: ", amount_due, type(amount_due), numDays, type(numDays))
-                numCronPurchases = numCronPurchases + 1
+        # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
+                    # Run Query to get all late fees
+                    lateFees = db.execute("""
+                            -- DETERMINE WHICH LATE FEES ALREADY EXIST
+                            SELECT *
+                            FROM space.purchases    
+                            WHERE purchase_type = "LATE FEE" AND
+                                (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
+                            """)
+                    # print("\n",lateFees['result'][0:11], type(lateFees))
 
-                if amount_due > 0:
-                    # CHECK IF LATE FEE ALEADY EXISTS IN THE TABLE
-                    # print("Number of items in Late Fees Table: ", len(lateFees))
-                    found_id = ""
-                    if len(lateFees['result']) > 0:
+
+        # UPDATE APPRORIATE ROWS
+                    putFlag = 0
+                    if len(lateFees['result']) > 0 and late_fee > 0:
                         for j in range(len(lateFees['result'])):
                             # print(lateFees['result'][j]['pur_description'])
-                            if response['result'][i]['purchase_uid'] == lateFees['result'][j]['pur_description']:
-                                found_id = lateFees['result'][j]['purchase_uid']
-                                # print("Found it: ", found_id) 
+                            if  purchase_uid == lateFees['result'][j]['pur_description']:
+                                putFlag = putFlag + 1
+                                # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
+                                # print("Entire Row: ", lateFees['result'][j])
+                                payer = lateFees['result'][j]['pur_payer']
+                                receiver = lateFees['result'][j]['pur_receiver']
+                                key = {'purchase_uid': lateFees['result'][j]['purchase_uid']}
+                                if payer[0:3] == '350' or payer[0:3] == '600':
+                                    payload = {'pur_amount_due': late_fee}
+                                    # print(key, payload)
 
-                                break
+                                    response['purchase_table_update'] = db.update('space.purchases', key, payload)
+                                    # print("updated ", key, payload)
+                                    numCronUpdates = numCronUpdates + 1
+                                    # print(response)
+                                elif payer[0:3] == '110':                                   
+                                    # print("Figure out what the appropriate Fee split is", purchase_notes )
+                                    for fee in fees:
+                                        # Extract only the monthly fees
+                                        if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_notes']:
+                                            charge = fee['charge']
+                                            charge_type = fee['fee_type']
+                                            # print("\nCharge: ", charge, charge_type)
 
-                    if found_id != "":
-                        # UPDATE PURCHASES TABLE
-                        payload = {'pur_amount_due': amount_due}
-                        key = {'purchase_uid': found_id}
-                        # print(key, payload)
+                                            amount_due = float(late_fee) * float(charge) / 100
+                                            payload = {'pur_amount_due': amount_due}
+                                            # print(key, payload)
 
-                        response['purchase_table_update'] = db.update('purchases', key, payload)
-                
-                    else:
-                        # print(i, response['result'][i]['purchase_uid'], "New Late Fee ")
-
-                        # CHARGE LATE FEE BY ADDING ROW IN PURCHASES TABLE
+                                            response['purchase_table_update'] = db.update('space.purchases', key, payload)
+                                            numCronUpdates = numCronUpdates + 1
+                                            # print("Updated PM", key, payload)
+                                else:
+                                    print("No Match Found: ", payer)
+                         
+                            continue
+        # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
+                    
+                    if putFlag == 0 and late_fee > 0:
+                        print("PUT Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
 
                         # Create JSON Object for Rent Purchase
                         newRequest = {}
                         newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
+                        grouping = newRequestID
                         # print(newRequestID)
 
+                        # Common JSON Object Attributes
                         newRequest['purchase_uid'] = newRequestID
-                        newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
-                        newRequest['pur_property_id'] = response['result'][i]['pur_property_id']
+                        newRequest['pur_group'] = grouping
+                        # newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+                        newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y")
+                        newRequest['pur_property_id'] = property_id
                         newRequest['purchase_type'] = "Late Fee"
                         newRequest['pur_cf_type'] = "revenue"
+                        newRequest['pur_amount_due'] = late_fee
                         newRequest['purchase_status'] = "UNPAID"
                         newRequest['pur_status_value'] = "0"
-                        newRequest['pur_amount_due'] = amount_due
-                        newRequest['pur_description'] = response['result'][i]['purchase_uid']
                         
-                    
-                        newRequest['pur_receiver'] = response['result'][i]['pur_receiver']
-                        newRequest['pur_payer'] = response['result'][i]['pur_payer']
-                        newRequest['pur_initiator'] = response['result'][i]['pur_initiator']
-                        newRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
-                        newRequest['pur_due_date'] = datetime.today().date().strftime("%m-%d-%Y")
 
                         newRequest['pur_due_by'] = 1
                         newRequest['pur_late_by'] = 90
                         newRequest['pur_late_fee'] = 0
                         newRequest['pur_perDay_late_fee'] = 0
 
-                        if due_by == previous_day:
-                            print("\n", "Late Today")
+                        # newRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                        newRequest['purchase_date'] = dt.strftime("%m-%d-%Y")
+                        newRequest['pur_description'] = purchase_uid
+                        
+                    
+                        # Create JSON Object for Rent Purchase for Tenant-PM Payment
+                        newRequest['pur_receiver'] = manager
+                        newRequest['pur_payer'] = tenant
+                        newRequest['pur_initiator'] = manager
+                        # newRequest['pur_due_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = dt.strftime("%m-%d-%Y")
+                        
+
+                        if numDays ==  0:
+                            # print("\n", "Late Today")
                             newRequest['pur_notes'] = "One Time Late Fee Applied"
                         else:
                             newRequest['pur_notes'] = "One Time Late Fee and Per Day Late Fee Applied"
                             # newRequest['pur_notes'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
-                        db.insert('purchases', newRequest)
-                        print("Inserted into db: ", newRequest)
-                    
-                    
-                    # print(response['result'][i])
+                        # print("\nInsert Tenant to Property Manager Late Fee")
+                        db.insert('space.purchases', newRequest)
+                        numCronPurchases = numCronPurchases + 1
+                        # print("Inserted into db: ", newRequest)
+
+
+                        # Create JSON Object for Rent Purchase for PM-Owner Payment
+                        newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
+                        newRequest['purchase_uid'] = newRequestID
+                        # print(newRequestID)
+                        newRequest['pur_receiver'] = owner
+                        newRequest['pur_payer'] = manager
+                        newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y")
+
+                            
+                        # print(newRequest)
+                        # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
+                        # print("\nInsert Property Manager to Owner Late Fee")
+                        db.insert('space.purchases', newRequest)
+                        numCronPurchases = numCronPurchases + 1
+
                         
-            #     else:
-            #         print("Amount = 0. Skip ", response['result'][i]['purchase_uid'])
-                    # print(response['result'][i]['purchase_uid'])
-                    # print("No Late Fee Applied ", response['result'][i]['purchase_uid'])
-                    # print(due_by_str, type(due_by_str))
-                    # print(due_by, type(due_by))  # <class 'datetime.date'>
-                    # print(previous_day.date(), type(previous_day.date())) # <class 'datetime.date'>
+                        # Create JSON Object for Rent Purchase for Owner-PM Payment
+                        # Determine Split between PM and Owner
+                        # print("\n  Contract Fees", response['result'][i]['contract_fees'])
+                        fees = json.loads(response['result'][i]['contract_fees'])
+                        # print("\nFees: ", fees, type(fees))
 
-        print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows affected.")
-    response = {'message': f'Successfully completed CRON Job for {dt}' ,
-                'rows affected': f'{numCronPurchases}',
-            'code': 200}
+                        for fee in fees:
+                            # print(fee)
+                            # Extract only the monthly fees
+                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
+                                charge = fee['charge']
+                                charge_type = fee['fee_type']
+                                # print("\nCharge: ", charge, charge_type)
 
-    return response
+                                # Use this fee to create an Owner-PM late Fee PUT OR PST 
+                                # Create JSON Object for Rent Purchase for PM-Owner Payment
+                                newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
+                                newRequest['purchase_uid'] = newRequestID
+                                # print(newRequestID)
+                                newRequest['pur_receiver'] = manager
+                                newRequest['pur_payer'] = owner
+                                newRequest['pur_notes'] = fee['fee_name']
+                                newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
+                                
+                                # print(newRequest)
+                                # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
+                                # print("\nInsert Owner to Property Manager Late Fee")
+                                db.insert('space.purchases', newRequest)  
+                                numCronPurchases = numCronPurchases + 1     
+
+
+        print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated.")
+        response = {'message': f'Successfully completed CRON Job for {dt}' ,
+                    'rows added': f'{numCronPurchases}', 'rows updated': f'{numCronUpdates}',
+                'code': 200}
+
+        return response
 
     
 
