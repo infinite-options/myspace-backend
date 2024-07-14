@@ -848,6 +848,8 @@ class LateFees_CLASS(Resource):
                                 # print(newRequestID)
                                 newRequest['pur_receiver'] = manager
                                 newRequest['pur_payer'] = owner
+                                newRequest['pur_cf_type'] = "expense"
+                                newRequest['purchase_type'] = "Management - Late Fees"
                                 newRequest['pur_notes'] = fee['fee_name']
                                 newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                 
@@ -1100,6 +1102,8 @@ def LateFees_CRON(self):
                                 # print(newRequestID)
                                 newRequest['pur_receiver'] = manager
                                 newRequest['pur_payer'] = owner
+                                newRequest['pur_cf_type'] = "expense"
+                                newRequest['purchase_type'] = "Management - Late Fees"
                                 newRequest['pur_notes'] = fee['fee_name']
                                 newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                 
