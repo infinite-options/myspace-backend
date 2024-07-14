@@ -1439,6 +1439,7 @@ class CashflowRevised(Resource):
                             , SUM(IF(purchase_type = 'Management', total_paid, 0)) AS total_paid
                             , JSON_ARRAYAGG(JSON_OBJECT(
                                 'purchase_uid', purchase_uid,
+                                'pur_group', pur_group,
                                 'pur_receiver', pur_receiver,
                                 'pur_payer', pur_payer,
                                 'purchase_status', purchase_status,
