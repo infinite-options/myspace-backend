@@ -1461,6 +1461,56 @@ class CashflowRevised(Resource):
                             ) AS pm
                         GROUP BY property_uid
                         """)
+                
+            elif user_id[:3] == 'ALL':
+            
+                print("OWNER Cashflow by Year, by Month, by CF Type, by Purchase Category")
+                cashflow = db.execute("""                            
+                        -- THIS RETURNS MANAGMENT FEES PER MONTH BY PROPERTY BY PURCHASE GROUP
+                        SELECT -- *,
+                            property_uid, property_address, property_unit, property_city, property_state, property_zip
+                            -- , pur_group
+                            , SUM(pur_amount_due) AS pur_amount_due
+                            , SUM(total_paid) AS total_paid
+                            , JSON_ARRAYAGG(JSON_OBJECT(
+                                'pur_group', pur_group,
+                                'property', property
+                                )) AS property_group
+                        FROM (
+                            SELECT -- *,
+                                property_uid, property_address, property_unit, property_city, property_state, property_zip
+                                , pur_group
+                                , SUM(IF(purchase_type = 'Management', pur_amount_due, 0)) AS pur_amount_due
+                                , SUM(IF(purchase_type = 'Management', total_paid, 0)) AS total_paid
+                                , JSON_ARRAYAGG(JSON_OBJECT(
+                                    'purchase_uid', purchase_uid,
+                                    'pur_receiver', pur_receiver,
+                                    'pur_payer', pur_payer,
+                                    'purchase_status', purchase_status,
+                                    'purchase_type', purchase_type,
+                                    'pur_amount_due',  pur_amount_due,
+                                    'total_paid', total_paid
+                                    )) AS property
+                            FROM (
+                                -- ALL DETAILS.  pur_cf_type_new changed to fit PM
+                                SELECT pur_receiver, pur_payer, pur_group
+                                    , pur_amount_due, total_paid
+                                    , IF (pur_receiver = '600-000003', "revenue", "expense") AS pur_cf_type_new
+                                    , cf_month, cf_month_num, cf_year
+                                    , purchase_type
+                                    , property_uid, property_address, property_unit, property_city, property_state, property_zip
+                                    , purchase_uid, purchase_status
+                                FROM space.pp_details
+                                WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003') AND cf_month = "July" AND pur_group IS NOT NULL -- AND pur_group = '400-000430'
+                                ) AS pm
+                            GROUP BY pur_group
+                            ) AS p
+                        GROUP BY property_uid
+                        """)
+
+
+
+                
 
             return cashflow
             
