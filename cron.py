@@ -818,7 +818,6 @@ class LateFees_CLASS(Resource):
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
-                        newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y")
 
                             
                         # print(newRequest)
@@ -1071,7 +1070,6 @@ def LateFees_CRON(self):
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
-                        newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y")
 
                             
                         # print(newRequest)
