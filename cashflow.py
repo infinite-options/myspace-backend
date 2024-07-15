@@ -1478,7 +1478,8 @@ class CashflowRevised(Resource):
                                 )
                             ) AS transactions
                         FROM space.pp_details
-                        WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003') 
+                        -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                        WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\') 
                             -- AND cf_month = "July"
                             -- AND pur_property_id = "200-000002"
                             -- AND property_address = '5400 E. Williams Blvd'
@@ -1539,7 +1540,7 @@ class CashflowRevised(Resource):
                         GROUP BY pur_group
                         """)
                 
-                response["Tranactions"] = pur_group
+                response["Transactions"] = pur_group
                 
             else:
                 print("User ID not found")
