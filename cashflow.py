@@ -1440,8 +1440,9 @@ class CashflowRevised(Resource):
                         -- PROPERTY MANAGEMENT REPORT 1
                         -- BY PROPERTY BY MONTH BY CF_TYPE
                         SELECT -- *,
-                            -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
-                            cf_month, cf_month_num, cf_year, purchase_type
+                            -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description
+                            pur_receiver, pur_initiator, pur_payer , pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
+                            , cf_month, cf_month_num, cf_year, purchase_type
                             -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
                             -- , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
                             -- , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
@@ -1497,8 +1498,9 @@ class CashflowRevised(Resource):
                         -- NEED A REPORT THAT SHOWS TRANSACTIONS BY PUR_GROUP TO SEE IF IT IS OKAY TO PAY OR NOT
 
                         SELECT -- *,
-                            -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer, pur_group, pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
-                            cf_month, cf_month_num, cf_year
+                            -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, 
+                            pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
+                            , cf_month, cf_month_num, cf_year
                             -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
                             -- , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
                             -- , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
