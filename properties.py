@@ -647,6 +647,39 @@ class Properties(Resource):
             response['property_UID'] = newRequestID
             response['images'] = newProperty['property_images']
 
+        
+        
+        # Add Appliances (if provided)
+
+            try:
+                appliances = json.loads(data.get('appliances'))    
+                # appliances = "{\"appliances\":[\"050-000023\",\"050-000024\",\"050-000025\"]}"  
+                print("Appliance Data: ", appliances, type(appliances))
+
+                if appliances:
+                        newAppliance = {}
+                        # appliances is now a list of strings
+                        for appliance in appliances:
+                            print(f"Appliance: {appliance}")
+                            # newRequestID = db.call('new_property_uid')['result'][0]['new_id']
+                            # print(newRequestID)
+                            NewApplianceID = db.call('new_appliance_uid')['result'][0]['new_id']
+                            newAppliance['appliance_uid'] = NewApplianceID
+                            print(NewApplianceID)
+                            newAppliance['appliance_property_id'] = newRequestID
+                            newAppliance['appliance_type'] = appliance
+                            add_appliance = db.insert('appliances', newAppliance)
+                            print(add_appliance)
+                else:
+                    print("No appliances provided in the form.")
+
+
+            except:
+                print(f"Add Appliance failed")
+                response['add_appliance_error'] = f"No Aplliance Data Provided"
+
+
+
         return response
     
     
