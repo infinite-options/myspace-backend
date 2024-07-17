@@ -655,7 +655,7 @@ api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
 api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 api.add_resource(SendEmail, "/sendEmail")
 
-api.add_resource(UserInfo, "/userInfo/<string:user_id>")
+api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')

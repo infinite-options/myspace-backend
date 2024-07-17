@@ -35,4 +35,25 @@ class UserInfo(Resource):
                 return userQuery
             else:                
                 abort(404, description="User not found")
+
+    def put(self):
+        print("In update User")
+        with connect() as db:
+            payload = request.get_json()
+            print(payload)
+
+            if payload["user_uid"] is None:
+                raise BadRequest("Request failed, no UID in payload.")
+            
+            key = {'user_uid': payload.pop('user_uid')}
+            print(key)
+            # print(payload)
+            
+            with connect() as db:
+                response = db.update('users', key, payload)
+            return response
+
+
+            
+
         
