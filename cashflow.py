@@ -1496,13 +1496,14 @@ class CashflowRevised(Resource):
                 pur_group = db.execute("""                            
                         SELECT -- *,
                         -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, 
-                        -- pur_receiver, pur_initiator, pur_payer, pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
+                        -- pur_receiver, pur_initiator, pur_payer, 
+                        pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
                         -- CASE 
                         --     WHEN COUNT(*) = SUM(CASE WHEN purchase_status = 'UNPAID' THEN 1 ELSE 0 END) THEN 'RED'
                         --     WHEN COUNT(*) = 0 THEN 'GREEN'
                         --     ELSE 'YELLOW'
                         -- END AS status_check
-                        cf_month, cf_month_num, cf_year
+                        , cf_month, cf_month_num, cf_year
                         -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
                         -- , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
                         -- , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
