@@ -337,9 +337,7 @@ class LeaseApplication(Resource):
                             print("new_lease field list", newLease[field])
                     print("new_lease", newLease)
                     
-                    docInfo = json.loads(data["lease_documents"])
-                    print("Currently in lease_documents: ", type(docInfo), docInfo)
-                    print("Type: ", docInfo[0]["type"])
+
 
 
 
@@ -347,58 +345,47 @@ class LeaseApplication(Resource):
                     # Initializes lease_docs for POST
                     lease_docs = []  
 
-
-
-
+                    
+                    if data.get("lease_documents") and request.files:
+                        print("Documents attached")
+                        docInfo = json.loads(data["lease_documents"])
+                        print("Currently in lease_documents: ", type(docInfo), docInfo)
+                        print("Type: ", docInfo[0]["type"])
                     
                     
                     
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    # Insert documents into Correct Fields
-                    dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                    print(dateKey)
-                    
-                    files = request.files
-                    print("files", files)
-                    # files_details = json.loads(data.get('lease_documents_details'))
-                    if files:
-                        detailsIndex = 0
-                        for key in files:
-                            # print("key", key)
-                            file = files[key]
-                            # print("file", file)
-                
-                            if file and allowed_file(file.filename):
-                                key = f'leases/{lease_uid}/{dateKey}/{file.filename}'
+                        # Insert documents into Correct Fields
+                        dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                        print(dateKey)
+                        
+                        files = request.files
+                        print("files", files)
+                        # files_details = json.loads(data.get('lease_documents_details'))
+                        if files:
+                            detailsIndex = 0
+                            for key in files:
                                 # print("key", key)
-                                s3_link = uploadImage(file, key, '')
-                                docObject = {}
-                                docObject["link"] = s3_link
-                                docObject["filename"] = file.filename
-                                docObject["type"] = docInfo[detailsIndex]["type"]
-                                # docObject["type"] = file_info["fileType"]
-                                lease_docs.append(docObject)
-                            detailsIndex += 1
+                                file = files[key]
+                                # print("file", file)
+                    
+                                if file and allowed_file(file.filename):
+                                    key = f'leases/{lease_uid}/{dateKey}/{file.filename}'
+                                    # print("key", key)
+                                    s3_link = uploadImage(file, key, '')
+                                    docObject = {}
+                                    docObject["link"] = s3_link
+                                    docObject["filename"] = file.filename
+                                    docObject["type"] = docInfo[detailsIndex]["type"]
+                                    # docObject["type"] = file_info["fileType"]
+                                    lease_docs.append(docObject)
+                                detailsIndex += 1
 
-                        newLease['lease_documents'] = json.dumps(lease_docs)
-                        print("\nLease Docs: ", newLease['lease_documents'])
+                            newLease['lease_documents'] = json.dumps(lease_docs)
+                            print("\nLease Docs: ", newLease['lease_documents'])
 
 
                     # Actual Insert Statement
+                    print("About to insert: ", newLease)
                     response["lease"] = db.insert('leases', newLease)
                     # print("Data inserted into space.leases", response)
 
@@ -591,6 +578,7 @@ class LeaseApplication(Resource):
 
             # Actual Update Statement
             key = {'lease_uid': lease_id}
+            print("About to update: ", payload)
             response["lease_update"] = db.update('leases', key, payload)
 
             
