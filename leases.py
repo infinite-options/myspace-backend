@@ -276,10 +276,10 @@ class LeaseApplication(Resource):
 
         # Store tenant and property uids as separate variables - Need to modify this for multiple tenants
         if 'tenant_uid' in data and data['tenant_uid']!="":
-            # print("TENANT_ID",data['tenant_uid'])
+            print("TENANT_ID",data['tenant_uid'])
             tenant_uid = data.get('tenant_uid')
             property_uid = data.get('lease_property_id')
-            # print(tenant_uid)
+            print(tenant_uid)
             # del data['tenant_uid']
             
             with connect() as db:
@@ -308,7 +308,7 @@ class LeaseApplication(Resource):
                     fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                         "perDay_late_fee", "late_fee"]
                    
-                    # print("Data before if statement: ",data)
+                    print("Data before if statement: ",data)
 
                     # Insert data into leases table
                     newLease = {}
@@ -317,25 +317,25 @@ class LeaseApplication(Resource):
                     lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
                     newLease['lease_uid'] = lease_uid
                     response['lease_uid'] = lease_uid
-                    # print("\nNew Lease UID: ", lease_uid)   
+                    print("\nNew Lease UID: ", lease_uid)   
 
 
 
                     # Put Incoming Data in Correct Fields
                     for field in fields:
-                        # print("field", field)
+                        print("field", field)
                         if field in data:
                             newLease[field] = data[field]
-                            # print("new_lease field", newLease[field])
+                            print("new_lease field", newLease[field])
                     for field in fields_with_lists:
-                        # print("field list", field)
+                        print("field list", field)
                         if data.get(field) is None:
-                            # print(field,"Is None")
+                            print(field,"Is None")
                             newLease[field] = '[]'
                         else: 
                             newLease[field] = data[field]
-                            # print("new_lease field list", newLease[field])
-                    # print("new_lease", newLease)
+                            print("new_lease field list", newLease[field])
+                    print("new_lease", newLease)
                     
                     docInfo = json.loads(data["lease_documents"])
                     print("Currently in lease_documents: ", type(docInfo), docInfo)
@@ -475,6 +475,7 @@ class LeaseApplication(Resource):
 
         # Verify lease_uid has been included in the data
         if data.get('lease_uid') is None:
+            print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
         
@@ -488,20 +489,6 @@ class LeaseApplication(Resource):
         with connect() as db:
         
         
-        
-        
-        
-        
-        
-        
-            
-            
-            
-            
-            
-            
-            
-            
             
             response = {}
             fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
@@ -518,7 +505,7 @@ class LeaseApplication(Resource):
             payload = {}
             
             lease_id = data['lease_uid']
-            # print('Lease id: ', lease_id)
+            print('Lease id: ', lease_id)
             
 
 
@@ -536,11 +523,7 @@ class LeaseApplication(Resource):
                         else: 
                             payload[field] = data[field]
                             # print("payload field list", payload[field])
-            # print("Payload: ", payload)
-
-            docInfo = json.loads(data["lease_documents"])
-            print("Currently in lease_documents: ", type(docInfo), docInfo)
-            print("Type: ", docInfo[0]["type"])
+            print("Payload: ", payload)
 
 
 
@@ -565,38 +548,45 @@ class LeaseApplication(Resource):
                 raise BadRequest("Request failed, no such CONTRACT in the database.")
 
             
-            
-            
-            
-            
-            # Insert documents into Correct Fields
-            dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            print(dateKey)
-            
-            files = request.files
-            print("files", files)
-            # files_details = json.loads(data.get('lease_documents_details'))
-            if files:
-                detailsIndex = 0
-                for key in files:
-                    # print("key", key)
-                    file = files[key]
-                    # print("file", file)
-                    
-                    if file and allowed_file(file.filename):
-                        key = f'leases/{lease_id}/{dateKey}/{file.filename}'
-                        print("key", key)
-                        s3_link = uploadImage(file, key, '')
-                        docObject = {}
-                        docObject["link"] = s3_link
-                        docObject["filename"] = file.filename
-                        docObject["type"] = docInfo[detailsIndex]["type"]
-                        # docObject["type"] = file_info["fileType"]
-                        lease_docs.append(docObject)
-                    detailsIndex += 1
 
-                payload['lease_documents'] = json.dumps(lease_docs)
-                # print("\nLease Docs: ", payload['lease_documents'])
+
+
+            if data.get("lease_documents") and request.files:
+                print("Documents attached")
+                docInfo = json.loads(data["lease_documents"])
+                print("Currently in lease_documents: ", type(docInfo), docInfo)
+                print("Type: ", docInfo[0]["type"])
+            
+            
+            
+                # Insert documents into Correct Fields
+                dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                print(dateKey)
+                
+                files = request.files
+                print("files", files)
+                # files_details = json.loads(data.get('lease_documents_details'))
+                if files:
+                    detailsIndex = 0
+                    for key in files:
+                        # print("key", key)
+                        file = files[key]
+                        # print("file", file)
+                        
+                        if file and allowed_file(file.filename):
+                            key = f'leases/{lease_id}/{dateKey}/{file.filename}'
+                            print("key", key)
+                            s3_link = uploadImage(file, key, '')
+                            docObject = {}
+                            docObject["link"] = s3_link
+                            docObject["filename"] = file.filename
+                            docObject["type"] = docInfo[detailsIndex]["type"]
+                            # docObject["type"] = file_info["fileType"]
+                            lease_docs.append(docObject)
+                        detailsIndex += 1
+
+                    payload['lease_documents'] = json.dumps(lease_docs)
+                    # print("\nLease Docs: ", payload['lease_documents'])
 
 
             # Actual Update Statement
