@@ -539,9 +539,11 @@ class Properties(Resource):
     def post(self):
         print("In add Property")
         response = {}
+        appliances = {}
 
         with connect() as db:
             data = request.form
+            print("Incoming data: ", data)
             fields = [
                 "property_owner_id"
                 , "po_owner_percent"
@@ -600,11 +602,11 @@ class Properties(Resource):
 
 
             # # GET NEW UID
-            # print("Get New Property UID")
+            print("Get New Property UID")
             newRequestID = db.call('new_property_uid')['result'][0]['new_id']
             newRequest['property_id'] = newRequestID
             newProperty['property_uid'] = newRequestID
-            print(newRequestID)
+            # print(newRequestID)
 
             # Image Upload 
             images = []
@@ -639,18 +641,23 @@ class Properties(Resource):
 
 
             # print(newRequest)
+            # print("New Property-Owner request: ", newRequest)
             response = db.insert('property_owner', newRequest)
             response['property_owner'] = "Added"
+            # print("\nNew Property-Owner Relationship Added")
 
-            # print(newProperty, type(newProperty))
+            # print("New Propterty request: ", newProperty, type(newProperty))
             response = db.insert('properties', newProperty)
             response['property_UID'] = newRequestID
             response['images'] = newProperty['property_images']
+            # print("\nNew Prop÷erty Added")
 
         
         
         # Add Appliances (if provided)
 
+            # print("\nAppliances: ", data.get('appliances'), type(data.get('appliances')))
+        
             try:
                 appliances = json.loads(data.get('appliances'))    
                 # appliances = "{\"appliances\":[\"050-000023\",\"050-000024\",\"050-000025\"]}"  
@@ -676,7 +683,7 @@ class Properties(Resource):
 
             except:
                 print(f"Add Appliance failed")
-                response['add_appliance_error'] = f"No Aplliance Data Provided"
+                response['add_appliance_error'] = f"No Appliance Data Provided"
 
 
 
