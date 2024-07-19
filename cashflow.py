@@ -1521,8 +1521,10 @@ class CashflowRevised(Resource):
                         -- , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         -- , IF(pur_receiver = '600-000003', "revenue", "expense") AS pur_cf_type
                         , IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense") AS pur_cf_type
-                        , SUM(pur_amount_due) AS pur_amount_due_total
-                        , SUM(total_paid) AS total_paid_total 
+                        , SUM(pur_amount_due) AS pur_amount_due_total_original
+                        , SUM(if(LEFT(pur_payer,3) = '110', - pur_amount_due, pur_amount_due)) AS pur_amount_due_total
+                        , SUM(total_paid) AS total_paid_total_original
+                        , SUM(if(LEFT(pur_payer,3) = '110', - total_paid, total_paid)) AS total_paid_total 
                         , JSON_ARRAYAGG(
                             JSON_OBJECT(
                                 'purchase_uid', purchase_uid,
