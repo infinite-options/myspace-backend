@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, deleteImage, uploadImage, s3
 import boto3
 import json
 import datetime
@@ -225,7 +225,24 @@ class LeaseDetails(Resource):
             return response
 
 
+    def put(self):
+        print("in Lease Details PUT!  THIS IS FOR TEST ONLY.  NOT AN ACTUAL ENDPOINT")
+        data = request.form.to_dict()
+        print("Data Reeived: ", data)
+        key1 = data['documentID']
+        print("Key: ", key1, type(key1))
 
+        try:
+            response = deleteImage(key1)
+            print("Response: ", response)
+            print(f"Deleted existing file {key1}")
+        except s3.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                print(f"File {key1} does not exist")
+            else:
+                print(f"Error deleting file {key1}: {e}")
+
+        return
 
 
 class LeaseApplication(Resource):
@@ -405,21 +422,6 @@ class LeaseApplication(Resource):
                                     new_leaseFees[item] = fees[item]
                             response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
-
-
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                     
                     # Insert data into lease-Tenants table
                     tenant_responsibiity = str(1)      # Change this when we get multiple tenants
@@ -527,6 +529,7 @@ class LeaseApplication(Resource):
                 # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
                 lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else []  # convert to list of documents
                 print("Lease Docs: ", lease_docs)
+                payload[ "lease_documents"] = lease_docs
 
                 # print('TYPE: ', lease_docs, type(lease_docs))
                 # print(f'previously saved documents: {lease_docs}')
