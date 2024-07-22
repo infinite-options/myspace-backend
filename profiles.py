@@ -477,9 +477,10 @@ class Profile(Resource):
         return response
 
     def put(self):
+        response = {}
         payload = request.form.to_dict()
         print("Profile Payload: ", payload)
-        response = {}
+        
 
         if payload.get('business_uid'):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url"}
@@ -504,11 +505,13 @@ class Profile(Resource):
                 response = db.update('businessProfileInfo', key, filtered_payload)
         
         
+        # Profile Picture is Unique to Profile 
         if payload.get('tenant_uid'):
             tenant_uid = payload.get('tenant_uid')
             print("In Tenant")
             key = {'tenant_uid': payload.pop('tenant_uid')}
             print("Tenant Key: ", key)
+
             file = request.files.get("tenant_photo_url")
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
@@ -525,16 +528,16 @@ class Profile(Resource):
                 payload["tenant_photo_url"] = uploadImage(file, key1, '')
 
 
-
-
             # Check if documents are being added OR deleted
             current_docs = payload.get('tenant_documents')
             add_docs = payload.get('tenant_documents_details') 
             del_docs = payload.get('deleted_documents')
+            print("Current Documents: ", current_docs, type(current_docs))
             print("Documents to Add: ", add_docs, type(add_docs))
             print("Documents to Del: ", del_docs, type(del_docs))
 
 
+            # Code requires that FrontEnd always passes in tenant_documents whenever adding or deleting
             # if add_docs is not None or del_docs is not None:    
             if current_docs is not None:    
                 # Store Existing Documents
@@ -572,8 +575,6 @@ class Profile(Resource):
                                 detailsIndex += 1
 
                             payload['tenant_documents'] = json.dumps(tenant_docs)
-                            # print("------updated_contract['contract_documents']------")
-                            # print(updated_contract['contract_documents'])
 
 
                 
@@ -614,17 +615,15 @@ class Profile(Resource):
 
 
 
-                # Update File List in Database        
-                print("tenant")
-                print("key: ", key )
-                print("payload: ", payload)
+            # Update File List in Database        
+            print("tenant")
+            print("key: ", key )
+            print("payload: ", payload)
 
-                # print("tenant")
-                # print("Tenant Payload: ", payload)
-                with connect() as db:
-                    response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
-                print("Response:" , response)
-                #     del request.files['tenant_photo']
+            with connect() as db:
+                response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
+            print("Response:" , response)
+
 
 
 

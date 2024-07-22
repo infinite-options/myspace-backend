@@ -456,63 +456,164 @@ class LeaseApplication(Resource):
     def put(self):
         print("\nIn Lease Application PUT")
         response = {}
-
-        # data = request.form
-        # print("data as received",data)
-        data = request.form.to_dict()  #<== IF data came in as Form Data
-        # print("data for to dict",data)
+        payload = request.form.to_dict()
+        print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
-        if data.get('lease_uid') is None:
+        if payload.get('lease_uid') is None:
             print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        
-        # key = {'lease_uid': data['lease_uid']}
-        # # print("Key: ", key)
-        # quote = {k: v for k, v in data.items()}
-        # # print("KV Pairs: ", quote)
+        lease_uid = payload.get('lease_uid')
+        print("In Lease Application PUT")
+        key = {'lease_uid': payload.pop('lease_uid')}
+        print("Lease Key: ", key)
 
-        
+
+        # Check if documents are being added OR deleted
+        current_docs = payload.get('lease_documents')
+        add_docs = payload.get('lease_documents_details') 
+        del_docs = payload.get('deleted_documents')
+        print("Current Documents: ", current_docs, type(current_docs))
+        print("Documents to Add: ", add_docs, type(add_docs))
+        print("Documents to Del: ", del_docs, type(del_docs))
+
+
+        # Code requires that FrontEnd always passes in lease_documents whenever adding or deleting
+        # if add_docs is not None or del_docs is not None:    
+        if current_docs is not None:    
+            # Store Existing Documents
+            lease_docs = json.loads(payload.get('lease_documents', '[]'))
+            print("Lease Application Docs: ", lease_docs)
+
+
+            # Check if documents are being added
+            if add_docs is not None:
+            
+                    json_add_docs = json.loads(add_docs)     
+                    print("Document Details: ", json_add_docs)           
+                    del payload['lease_documents_details']
+
+                    files = request.files
+
+                    if files:
+                        print("In Lease Application files: ", files)
+                        detailsIndex = 0
+                        for fileKey in files:
+                            file = files[fileKey]
+                        # for file in files:
+                            file_info = json_add_docs[detailsIndex]
+
+                            if file and allowed_file(file.filename):
+                                s3key = f'leases/{lease_uid}/{file.filename}'
+                                print("S3 Key: ", s3key)
+                                s3_link = uploadImage(file, s3key, '')
+                                # s3_link = 'doc_link' # to test locally
+                                docObject = {}
+                                docObject["link"] = s3_link
+                                docObject["filename"] = file.filename
+                                docObject["type"] = file_info["fileType"]
+                                lease_docs.append(docObject)
+                            detailsIndex += 1
+
+                        payload['lease_documents'] = json.dumps(lease_docs)
+
+
+            # Check if documents are being deleted
+            if del_docs is not None:
+            
+                # delete documents from s3
+                print("In Delete")              
+                del payload['deleted_documents']
+                deleted_docs = []
+                
+                if del_docs is not None and isinstance(del_docs, str):
+                    try:                
+                        deleted_docs = ast.literal_eval(del_docs)                                
+                    except (ValueError, SyntaxError) as e:
+                        print(f"Error parsing the deleted_docs string: {e}")
+                        
+                
+                s3Client = boto3.client('s3')
+
+                response = {'s3_delete_responses': []}
+                if(deleted_docs):
+                    try:                
+                        objects_to_delete = []
+                        for doc in deleted_docs:                    
+                            docKey = "leases/" + doc.split("leases/")[-1]
+                            objects_to_delete.append(docKey)               
+
+                        for obj_key in objects_to_delete:                    
+                            delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+                            response['s3_delete_responses'].append({obj_key: delete_response})
+
+                    except Exception as e:
+                        print(f"Deletion from s3 failed: {str(e)}")
+                        response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
+                
+
+
+
+        # Update File List in Database        
+        print("leases")
+        print("key: ", key )
+        print("payload: ", payload)
+
 
         with connect() as db:
-        
-        
-            
-            response = {}
-            fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
-                                "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
-                                "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent", "lease_end_reason"]
-            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
-                                , "lease_documents"]
-            fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
-                                "perDay_late_fee", "late_fee"]
+            response['lease_docs'] = db.update('leases', key, payload)
+        print("Response:" , response)
+       
 
-            # print("Data before if statement: ",data)
+
+
+
+
+
+
+
+        # with connect() as db:
+        
+        
             
-            # Insert data into leases table
-            payload = {}
+        #     response = {}
+        #     fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
+        #                         "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
+        #                         "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent", "lease_end_reason"]
+        #     fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
+        #                         , "lease_documents"]
+        #     fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+        #                         "perDay_late_fee", "late_fee"]
+
+        #     # print("Data before if statement: ",data)
             
-            lease_id = data['lease_uid']
-            print('Lease id: ', lease_id)
+        #     # Insert data into leases table
+        #     payload = {}
+            
+        #     lease_id = data['lease_uid']
+        #     print('Lease id: ', lease_id)
             
 
 
             # Put Incoming Data in Correct Fields
-            for field in data:
-                # print("field: ", field)
-                if field in fields:
-                    payload[field] = data[field]
+            # for field in data:
+                # # print("field: ", field)
+                # if field in fields:
+                #     payload[field] = data[field]
+                #     # print("payload field", payload[field])
+                # if field in fields_with_lists:
+                #     payload[field] = data[field]
                     # print("payload field", payload[field])
-            for field in fields_with_lists:
-                        # print("field list", field)
-                        if data.get(field) is None:
-                            # print(field,"Is None")
-                            payload[field] = '[]'
-                        else: 
-                            payload[field] = data[field]
-                            # print("payload field list", payload[field])
-            print("Payload: ", payload)
+            # for field in fields_with_lists:
+            #             # print("field list", field)
+            #             if data.get(field) is None:
+            #                 # print(field,"Is None")
+            #                 payload[field] = '[]'
+            #             else: 
+            #                 payload[field] = data[field]
+            #                 # print("payload field list", payload[field])
+            # print("Payload: ", payload)
 
 
 
@@ -544,79 +645,79 @@ class LeaseApplication(Resource):
 
 
 
-            if data.get("lease_documents") and request.files:
-                print("\nDocuments attached")
-                docInfo = json.loads(data["lease_documents"])
-                print("Currently in lease_documents: ", type(docInfo), docInfo)
-                print("Type: ", docInfo[0]["type"])
+        #     if data.get("lease_documents") and request.files:
+        #         print("\nDocuments attached")
+        #         docInfo = json.loads(data["lease_documents"])
+        #         print("Currently in lease_documents: ", type(docInfo), docInfo)
+        #         print("Type: ", docInfo[0]["type"])
             
             
             
-                # Insert documents into Correct Fields
-                dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                print(dateKey)
+        #         # Insert documents into Correct Fields
+        #         dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        #         print(dateKey)
                 
-                files = request.files
-                print("files", files)
-                # files_details = json.loads(data.get('lease_documents_details'))
-                if files:
-                    detailsIndex = 0
-                    for key in files:
-                        # print("key", key)
-                        file = files[key]
-                        # print("file", file)
+        #         files = request.files
+        #         print("files", files)
+        #         # files_details = json.loads(data.get('lease_documents_details'))
+        #         if files:
+        #             detailsIndex = 0
+        #             for key in files:
+        #                 # print("key", key)
+        #                 file = files[key]
+        #                 # print("file", file)
                         
-                        if file and allowed_file(file.filename):
-                            key = f'leases/{lease_id}/{dateKey}/{file.filename}'
-                            print("key", key)
-                            s3_link = uploadImage(file, key, '')
-                            docObject = {}
-                            docObject["link"] = s3_link
-                            docObject["filename"] = file.filename
-                            docObject["type"] = docInfo[detailsIndex]["type"]
-                            # docObject["type"] = file_info["fileType"]
-                            lease_docs.append(docObject)
-                        detailsIndex += 1
+        #                 if file and allowed_file(file.filename):
+        #                     s3key = f'leases/{lease_id}/{dateKey}/{file.filename}'
+        #                     print("S3 key", s3key)
+        #                     s3_link = uploadImage(file, s3key, '')
+        #                     docObject = {}
+        #                     docObject["link"] = s3_link
+        #                     docObject["filename"] = file.filename
+        #                     docObject["type"] = docInfo[detailsIndex]["type"]
+        #                     # docObject["type"] = file_info["fileType"]
+        #                     lease_docs.append(docObject)
+        #                 detailsIndex += 1
 
-                    payload['lease_documents'] = json.dumps(lease_docs)
-                    # print("\nLease Docs: ", payload['lease_documents'])
+        #             payload['lease_documents'] = json.dumps(lease_docs)
+        #             # print("\nLease Docs: ", payload['lease_documents'])
 
 
-            # Actual Update Statement
-            key = {'lease_uid': lease_id}
-            print("About to update: ", payload)
-            response["lease_update"] = db.update('leases', key, payload)
+        #     # Actual Update Statement
+        #     key = {'lease_uid': lease_id}
+        #     print("About to update: ", payload)
+        #     response["lease_update"] = db.update('leases', key, payload)
 
             
             
-            # Insert data into leaseFees table
-            if "lease_fees" in data:
-                print("lease_fees in data")
-                json_object = json.loads(data["lease_fees"])
-                print("json_object",json_object)
-                for fees in json_object:
-                    print("fees",fees)
-                    if "leaseFees_uid" in fees:
-                        leaseFees_id = fees['leaseFees_uid']
-                        # del fees['leaseFees_uid']
-                        payload = {}
-                        for field in fees:
-                            if field in fields_leaseFees:                                                        
-                                payload[field] = fees[field]
-                        key = {'leaseFees_uid': leaseFees_id}
-                        print("Fees Key: ", key)
-                        print("Fees Payload: ", payload)
-                        response["leaseFees_update"] = db.update('leaseFees', key, payload)
-                        print(response["leaseFees_update"])
-                    else:
-                        print("In else")
-                        payload = {}
-                        payload["fees_lease_id"] = data['lease_uid']
-                        for field in fees:
-                            if field in fields_leaseFees:                                                        
-                                payload[field] = fees[field]
-                        print("Fees Payload: ", payload)
-                        response["leaseFees_update"] = db.insert('leaseFees', payload)
-                        print(response["leaseFees_update"])
+        #     # Insert data into leaseFees table
+        #     if "lease_fees" in data:
+        #         print("lease_fees in data")
+        #         json_object = json.loads(data["lease_fees"])
+        #         print("json_object",json_object)
+        #         for fees in json_object:
+        #             print("fees",fees)
+        #             if "leaseFees_uid" in fees:
+        #                 leaseFees_id = fees['leaseFees_uid']
+        #                 # del fees['leaseFees_uid']
+        #                 payload = {}
+        #                 for field in fees:
+        #                     if field in fields_leaseFees:                                                        
+        #                         payload[field] = fees[field]
+        #                 key = {'leaseFees_uid': leaseFees_id}
+        #                 print("Fees Key: ", key)
+        #                 print("Fees Payload: ", payload)
+        #                 response["leaseFees_update"] = db.update('leaseFees', key, payload)
+        #                 print(response["leaseFees_update"])
+        #             else:
+        #                 print("In else")
+        #                 payload = {}
+        #                 payload["fees_lease_id"] = data['lease_uid']
+        #                 for field in fees:
+        #                     if field in fields_leaseFees:                                                        
+        #                         payload[field] = fees[field]
+        #                 print("Fees Payload: ", payload)
+        #                 response["leaseFees_update"] = db.insert('leaseFees', payload)
+        #                 print(response["leaseFees_update"])
 
         return response
