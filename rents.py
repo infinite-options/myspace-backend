@@ -184,12 +184,6 @@ class Rents(Resource):
 
 
 
-
-
-       
-
-
-
 class RentDetails(Resource):
     def get(self, uid):
         print("in Get Rent Status")
@@ -253,8 +247,8 @@ class RentDetails(Resource):
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                 FROM space.pp_status -- space.purchases
-                                WHERE purchase_type = "Rent"
-                                    AND LEFT(pur_payer, 3) = '350'
+                                WHERE LEFT(pur_payer, 3) = '350'
+                            --		AND purchase_type = "Rent"
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
@@ -315,8 +309,8 @@ class RentDetails(Resource):
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                 FROM space.pp_status -- space.purchases
-                                WHERE purchase_type = "Rent"
-                                    AND LEFT(pur_payer, 3) = '350'
+                                WHERE LEFT(pur_payer, 3) = '350'
+                            --		AND purchase_type = "Rent"
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
@@ -377,8 +371,8 @@ class RentDetails(Resource):
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
                                 FROM space.pp_status -- space.purchases
-                                WHERE purchase_type = "Rent"
-                                    AND LEFT(pur_payer, 3) = '350'
+                                WHERE LEFT(pur_payer, 3) = '350'
+                            --		AND purchase_type = "Rent"
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
@@ -389,46 +383,3 @@ class RentDetails(Resource):
             # print("Query: ", maintenanceQuery)
             response["RentStatus"] = rentQuery
             return response
-
-
-
-    # def post(self):
-    #     print("In Make Payment")
-    #     response = {}
-    #     with connect() as db:
-    #         data = request.get_json(force=True)
-    #         # print(data)
-
-    #         fields = [
-    #             'pay_purchase_id'
-    #             , 'pay_amount'
-    #             , 'payment_notes'
-    #             , 'pay_charge_id'
-    #             , 'payment_type'
-    #             , 'payment_date'
-    #             , 'payment_verify'
-    #             , 'paid_by'
-    #         ]
-
-    #         # PUTS JSON DATA INTO EACH FILE
-    #         newRequest = {}
-    #         for field in fields:
-    #             newRequest[field] = data.get(field)
-    #             # print(field, " = ", newRequest[field])
-
-
-    #         # # GET NEW UID
-    #         # print("Get New Request UID")
-    #         newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
-    #         newRequest['payment_uid'] = newRequestID
-    #         print(newRequestID)
-
-    #         # SET TRANSACTION DATE TO NOW
-    #         newRequest['payment_date'] = date.today()
-
-    #         # print(newRequest)
-
-    #         response = db.insert('payments', newRequest)
-    #         response['Payments_UID'] = newRequestID
-
-    #     return response

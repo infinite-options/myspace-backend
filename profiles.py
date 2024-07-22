@@ -528,13 +528,15 @@ class Profile(Resource):
 
 
             # Check if documents are being added OR deleted
+            current_docs = payload.get('tenant_documents')
             add_docs = payload.get('tenant_documents_details') 
             del_docs = payload.get('deleted_documents')
             print("Documents to Add: ", add_docs, type(add_docs))
             print("Documents to Del: ", del_docs, type(del_docs))
 
 
-            if add_docs is not None or del_docs is not None:    
+            # if add_docs is not None or del_docs is not None:    
+            if current_docs is not None:    
                 # Store Existing Documents
                 tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
                 print("Tenant Docs: ", tenant_docs)
