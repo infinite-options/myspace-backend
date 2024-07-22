@@ -527,100 +527,102 @@ class Profile(Resource):
 
 
 
-
-
-
-
-            tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
-            print("Tenant Docs: ", tenant_docs)
-
-            documents_details = payload.get('tenant_documents_details')
-            if documents_details is not None:
-                tenant_documents_details = json.loads(documents_details)     
-                print("Document Details: ", tenant_documents_details)           
-                del payload['tenant_documents_details']
-
-            files = request.files
-
-            if files:
-                print("In tenant files")
-                detailsIndex = 0
-                for fileKey in files:
-                    file = files[fileKey]
-                    file_info = tenant_documents_details[detailsIndex]
-                    # print("FILE DETAILS")
-                    # print(file_info)
-                    # file_path = os.path.join(os.getcwd(), file.filename)
-                    # file.save(file_path)
-                    if file and allowed_file(file.filename):
-                        s3key = f'tenants/{tenant_uid}/{file.filename}'
-                        print("S3 Key: ", s3key)
-                        s3_link = uploadImage(file, s3key, '')
-                        # s3_link = 'doc_link' # to test locally
-                        docObject = {}
-                        docObject["link"] = s3_link
-                        docObject["filename"] = file.filename
-                        docObject["type"] = file_info["fileType"]
-                        tenant_docs.append(docObject)
-                    detailsIndex += 1
-
-                payload['tenant_documents'] = json.dumps(tenant_docs)
-                # print("------updated_contract['contract_documents']------")
-                # print(updated_contract['contract_documents'])
-            
-            print("tenant")
-            print("key: ", key )
-            print("payload: ", payload)
-
-
-            # print("tenant")
-            # print("Tenant Payload: ", payload)
-            with connect() as db:
-                response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
-            print("Response:" , response)
-            #     del request.files['tenant_photo']
-
-
+            # Check if documents are being added OR deleted
+            add_docs = payload.get('tenant_documents_details') 
             del_docs = payload.get('deleted_documents')
-            if del_docs is not None:
-            
+            print("Documents to Add: ", add_docs, type(add_docs))
+            print("Documents to Del: ", del_docs, type(del_docs))
 
-                # delete documents from s3
-                print("In  Delete")
-                deleted_docs_str = payload.get("deleted_documents")
-                if deleted_docs_str is not None:                
-                    del payload['deleted_documents']
-                deleted_docs = []
-                
-                if deleted_docs_str is not None and isinstance(deleted_docs_str, str):
-                    try:                
-                        deleted_docs = ast.literal_eval(deleted_docs_str)                                
-                    except (ValueError, SyntaxError) as e:
-                        print(f"Error parsing the deleted_docs string: {e}")
+
+            if add_docs is not None or del_docs is not None:    
+                # Store Existing Documents
+                tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
+                print("Tenant Docs: ", tenant_docs)
+
+
+                # Check if documents are being added
+                if add_docs is not None:
                         
+                        json_add_docs = json.loads(add_docs)     
+                        print("Document Details: ", json_add_docs)           
+                        del payload['tenant_documents_details']
+
+                        files = request.files
+
+                        if files:
+                            print("In tenant files: ", files)
+                            detailsIndex = 0
+                            for fileKey in files:
+                                file = files[fileKey]
+                            # for file in files:
+                                file_info = json_add_docs[detailsIndex]
+
+                                if file and allowed_file(file.filename):
+                                    s3key = f'tenants/{tenant_uid}/{file.filename}'
+                                    print("S3 Key: ", s3key)
+                                    s3_link = uploadImage(file, s3key, '')
+                                    # s3_link = 'doc_link' # to test locally
+                                    docObject = {}
+                                    docObject["link"] = s3_link
+                                    docObject["filename"] = file.filename
+                                    docObject["type"] = file_info["fileType"]
+                                    tenant_docs.append(docObject)
+                                detailsIndex += 1
+
+                            payload['tenant_documents'] = json.dumps(tenant_docs)
+                            # print("------updated_contract['contract_documents']------")
+                            # print(updated_contract['contract_documents'])
+
+
                 
-                s3Client = boto3.client('s3')
 
-                response = {'s3_delete_responses': []}
-                if(deleted_docs):
-                    try:                
-                        objects_to_delete = []
-                        for doc in deleted_docs:                    
-                            key = "tenants/" + doc.split("tenants/")[-1]
-                            objects_to_delete.append(key)               
-
-                        for obj_key in objects_to_delete:                    
-                            delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
-                            response['s3_delete_responses'].append({obj_key: delete_response})
-
-                    except Exception as e:
-                        print(f"Deletion from s3 failed: {str(e)}")
-                        response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
+                # Check if documents are being deleted
+                if del_docs is not None:
                 
+                    # delete documents from s3
+                    print("In Delete")              
+                    del payload['deleted_documents']
+                    deleted_docs = []
+                    
+                    if del_docs is not None and isinstance(del_docs, str):
+                        try:                
+                            deleted_docs = ast.literal_eval(del_docs)                                
+                        except (ValueError, SyntaxError) as e:
+                            print(f"Error parsing the deleted_docs string: {e}")
+                            
+                    
+                    s3Client = boto3.client('s3')
+
+                    response = {'s3_delete_responses': []}
+                    if(deleted_docs):
+                        try:                
+                            objects_to_delete = []
+                            for doc in deleted_docs:                    
+                                docKey = "tenants/" + doc.split("tenants/")[-1]
+                                objects_to_delete.append(docKey)               
+
+                            for obj_key in objects_to_delete:                    
+                                delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+                                response['s3_delete_responses'].append({obj_key: delete_response})
+
+                        except Exception as e:
+                            print(f"Deletion from s3 failed: {str(e)}")
+                            response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
+                    
+
+
+
+                # Update File List in Database        
+                print("tenant")
+                print("key: ", key )
+                print("payload: ", payload)
+
+                # print("tenant")
+                # print("Tenant Payload: ", payload)
                 with connect() as db:
-                    response['database_response'] = db.update('tenantProfileInfo', tenant_uid, clean_json_data(payload))
-
-
+                    response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
+                print("Response:" , response)
+                #     del request.files['tenant_photo']
 
 
 
