@@ -221,17 +221,34 @@ class SendEmail(Resource):
             return "Some fields are missing in the payload", 400
 
 
-class SendEmailCRON_CLASS(Resource):
+class SendEmail_CLASS(Resource):
 
     def get(self):
         print("In Send EMail get")
         try:
             conn = connect()
 
-            recipient = ["pmarathay@gmail.com"]
-            subject = "MySpace Email sent"
-            body = (
-                "MySpace Email sent2")
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace CRON Jobs Completed"
+            body = "The Following CRON Jobs Ran:"
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
+
+            return "Email Sent", 200
+
+        except:
+            raise BadRequest("Request failed, please try again later.")
+        finally:
+            print("exit SendEmail")
+
+def SendEmail_CRON(self):
+        print("In Send EMail get")
+        try:
+            conn = connect()
+
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace CRON Jobs Completed"
+            body = "The Following CRON Jobs Ran:"
             # mail.send(msg)
             sendEmail(recipient, subject, body)
 
@@ -651,7 +668,7 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 # api.add_resource(ExtendLease, '/ExtendLease')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
-api.add_resource(SendEmailCRON_CLASS, "/sendEmailCRON_CLASS")
+api.add_resource(SendEmail_CLASS, "/sendEmail_CLASS")
 api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 api.add_resource(SendEmail, "/sendEmail")
 

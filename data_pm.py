@@ -224,7 +224,7 @@ class DatabaseConnection:
                 object[key] = primaryKey[key]
                 if i != len(primaryKey.keys()) - 1:
                     sql += ' AND '
-            # print(sql, object)
+            print(sql, object)
             response = self.execute(sql, object, 'post')
             # print(response)
         except Exception as e:

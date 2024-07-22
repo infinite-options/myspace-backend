@@ -454,7 +454,7 @@ class LeaseApplication(Resource):
         return response
 	
     def put(self):
-        print("In Lease Application PUT")
+        print("\nIn Lease Application PUT")
         response = {}
 
         # data = request.form
@@ -517,32 +517,35 @@ class LeaseApplication(Resource):
 
 
 
-            # Get Existing Docs and store in lease_docs
-            lease_uid = {'lease_uid': lease_id}
-            query = db.select('leases', lease_uid)
-            print(f"QUERY: {query}")
-            try:
-                lease_from_db = query.get('result')[0]
-                # print("RESULT: ", lease_from_db)
-                lease_docs = lease_from_db.get("lease_documents")
-                print("\nDOCS: ", lease_docs, type(lease_docs))
-                # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
-                lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else []  # convert to list of documents
-                print("Lease Docs: ", lease_docs)
-                payload[ "lease_documents"] = lease_docs
+            # # Get Existing Docs and store in lease_docs
+            # lease_uid = {'lease_uid': lease_id}
+            # query = db.select('leases', lease_uid)
+            # print(f"QUERY: {query} {type(query)}")
+            # try:
+            #     lease_from_db = query.get('result')[0]
+            #     # print("RESULT: ", lease_from_db)
+            #     lease_vehs = lease_from_db.get("lease_vehicles")
+            #     lease_docs = lease_from_db.get("lease_documents")
+            #     print("\nvehicles: ", lease_vehs, type(lease_vehs))
+            #     print("\nDOCS: ", lease_docs, type(lease_docs))
+            #     # lease_docs = ast.literal_eval(lease_docs) if lease_docs else []  # Original statement that tried to convert to list of documents
+            #     lease_docs = json.loads(lease_docs) if lease_docs and lease_docs.strip() else '[]'  # convert to list of documents
+            #     print("Lease Docs: ", lease_docs, type(lease_docs))
+            #     payload[ "lease_documents"] = lease_docs
+            #     print("payload[ lease_documents]: ", payload[ "lease_documents"])
 
-                # print('TYPE: ', lease_docs, type(lease_docs))
-                # print(f'previously saved documents: {lease_docs}')
-            except IndexError as e:
-                print(e)
-                raise BadRequest("Request failed, no such CONTRACT in the database.")
+            #     # print('TYPE: ', lease_docs, type(lease_docs))
+            #     # print(f'previously saved documents: {lease_docs}')
+            # except IndexError as e:
+            #     print(e)
+            #     raise BadRequest("Request failed, no such CONTRACT in the database.")
 
             
 
 
 
             if data.get("lease_documents") and request.files:
-                print("Documents attached")
+                print("\nDocuments attached")
                 docInfo = json.loads(data["lease_documents"])
                 print("Currently in lease_documents: ", type(docInfo), docInfo)
                 print("Type: ", docInfo[0]["type"])
