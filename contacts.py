@@ -108,6 +108,7 @@ class Contacts(Resource):
                                     -- WHERE contract_business_id = '600-000003'
                                     WHERE contract_business_id = \'""" + uid + """\'
                                 ) AS owners
+                                WHERE !ISNULL(owner_uid)
                                 GROUP BY owner_uid
                             ) AS o
                             LEFT JOIN (
@@ -451,7 +452,8 @@ class Contacts(Resource):
                                 ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                         -- WHERE quote_business_id = '600-000012'
                         WHERE quote_business_id = \'""" + uid + """\'
-                            AND lease_status = 'ACTIVE' 
+                            AND lease_status = 'ACTIVE'
+                            AND !ISNULL(tenant_uid) 
                         GROUP BY tenant_uid;          
                     """)
                     
@@ -492,6 +494,7 @@ class Contacts(Resource):
                                 ) AS pm ON pm.paymentMethod_profile_id = business_uid
                         -- WHERE quote_business_id = '600-000012'
                         WHERE quote_business_id = \'""" + uid + """\'
+                            AND !ISNULL(business_uid) 
                         GROUP BY business_uid;
                     """)
 
