@@ -560,7 +560,6 @@ class LeaseApplication(Resource):
         print("key: ", key )
         print("payload: ", payload)
 
-
         with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)
         print("Response:" , response)
