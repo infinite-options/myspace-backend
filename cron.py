@@ -27,7 +27,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     SELECT leaseFees.*
                         , lease_tenant.*
                         , property_owner_id, po_owner_percent
-                        , contract_business_id, contract_status, contract_fees
+                        , contract_uid, contract_business_id, contract_status, contract_fees
                         , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
                         -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
                     FROM space.leaseFees
@@ -42,7 +42,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     """)
 
             for i in range(len(response['result'])):
-                # print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
+                print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
 
             
                 # Check Frequecy of Rent Payment.  Currently query only returns MONTHLY leases
@@ -120,7 +120,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
-                    # print("Rent posted.  Please Pay")
+                    print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
                     # print(i, response['result'][i])           
 
@@ -302,6 +302,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                             # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                             
                             # print(newPMRequest)
+                            print("Number of CRON Purchases: ", numCronPurchases, dt)
                             db.insert('purchases', newPMRequest)
 
                             # For each fee, post to purchases table
@@ -327,7 +328,7 @@ def MonthlyRentPurchase_CRON(self):
                     SELECT leaseFees.*
                         , lease_tenant.*
                         , property_owner_id, po_owner_percent
-                        , contract_business_id, contract_status, contract_fees
+                        , contract_uid, contract_business_id, contract_status, contract_fees
                         , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
                         -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
                     FROM space.leaseFees
@@ -420,7 +421,7 @@ def MonthlyRentPurchase_CRON(self):
             #     pm_due_date = due_date + relativedelta(days=10) # Comment this out since due_date is set above
 
 
-                # print("Rent posted.  Please Pay")
+                print("Rent posted.  Please Pay")
                 numCronPurchases = numCronPurchases + 1
                 # print(i, response['result'][i])           
 
