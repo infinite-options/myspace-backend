@@ -698,13 +698,27 @@ class Dashboard(Resource):
                                 ) AS rs
                             GROUP BY rent_status;
                             """)
-
                     print("Complete Rent Status")
 
                     # print("rent Query: ", rentQuery)
                     response["RentStatus"] = rentQuery
                     # print(response)
                     
+                    # PROPERTY LIST
+                    print("In Property List")
+                    propertyQuery = db.execute("""
+                            SELECT -- *,
+                                property_uid, property_address, property_unit
+                            FROM space.contracts
+                            LEFT JOIN space.properties ON contract_property_id = property_uid
+                            -- WHERE contract_business_id = '600-000003' AND
+                            WHERE contract_business_id = \'""" + user_id + """\' AND
+                                contract_status = 'ACTIVE';
+                        """)
+
+                    # print("Property List: ", propertyQuery)
+                    response["Properties"] = propertyQuery
+                    # print(response)
 
                     # NEW PM REQUESTS
                     print("In New PM Requests")
@@ -728,7 +742,7 @@ class Dashboard(Resource):
                             WHERE contract_business_id = \'""" + user_id + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                         """)
 
-                    # print("PM Request Query: ", propertiesQuery)
+                    # print("PM Request Query: ", contractsQuery)
                     response["NewPMRequests"] = contractsQuery
                     # print(response)
 

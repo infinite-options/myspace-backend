@@ -296,7 +296,8 @@ class RentDetails(Resource):
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                                 ) AS pp
-                                ON property_uid = pur_property_id;
+                                ON property_uid = pur_property_id
+                                ORDER BY cf_month DESC, cf_year DESC;
                         """)
 
             elif uid[:3] == '600':
@@ -396,12 +397,12 @@ class RentDetails(Resource):
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
                                         AND purchase_type = "Late Fee"
-                            ) AS lf ON purchase_uid = lf_purchase_uid
+                                ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
-                                ) AS pp
-                                ON property_uid = pur_property_id;
+                            ) AS pp ON property_uid = pur_property_id
+                            ORDER BY cf_month DESC, cf_year DESC
                             """)
 
             elif uid[:3] == '350':
@@ -450,6 +451,7 @@ class RentDetails(Resource):
                                 FROM space.p_details
                                 -- WHERE business_uid = "600-000003"
                                 -- WHERE owner_uid = "110-000003"
+                                -- WHERE tenant_uid = "350-000017"
                                 -- WHERE owner_uid = \'""" + uid + """\'
                                 -- WHERE business_uid = \'""" + uid + """\'
                                 WHERE tenant_uid = \'""" + uid + """\'  
@@ -506,7 +508,8 @@ class RentDetails(Resource):
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                                 ) AS pp
-                                ON property_uid = pur_property_id;          
+                                ON property_uid = pur_property_id
+                                ORDER BY cf_month DESC, cf_year DESC;          
                          """)
             
             # print("Query: ", maintenanceQuery)
