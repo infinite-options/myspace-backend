@@ -1237,7 +1237,8 @@ class LateFees_CLASS(Resource):
         dt = date.today()
         month = dt.month
         year = dt.year
-        print(dt, type(dt), month, type(month), year, type(year))
+        nextmonth = (dt.replace(day=28) + timedelta(days=4)).replace(day=1).strftime("%m-%d-%Y")
+        print(dt, type(dt), month, type(month), year, type(year), nextmonth, type(nextmonth))
 
         try:
 
@@ -1260,19 +1261,21 @@ class LateFees_CLASS(Resource):
                     purchase_uid = response['result'][i]['purchase_uid']
                     property_id = response['result'][i]['pur_property_id']
                     description = response['result'][i]['pur_description']
-                    # print("\nNext Row: ", i, purchase_uid, property_id, description)
+                    print("\nNext Row: ", i, purchase_uid, property_id, description)
 
                     # PAYMENT DATES
                     # Set Due Date - If None set to due on 1st day of the Month
-                    due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else "1"
+                    print("pur_due_date: ", response['result'][i]['pur_due_date'], type(response['result'][i]['pur_due_date']))
+                    due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else nextmonth
+                    print("Due by STR: ", due_by_str, type(due_by_str))
                     due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
-                    # print("Due by: ", due_by, type(due_by))
+                    print("Due by: ", due_by, type(due_by))
 
                     # Set Late By Date - If None set to late after 1 day
                     late_by = int(response['result'][i]['pur_late_by'] if response['result'][i]['pur_late_by'] else 1)
                     # print("Late by: ", late_by, type(late_by))
                     late_date = due_by + timedelta(days=late_by)
-                    # print("Late Date: ", late_date, type(late_date))
+                    print("Late Date: ", late_date, type(late_date))
 
                     # Set Previous Day for Late Fee Calculations
                     yesterday = dt - timedelta(days=1) 
@@ -1291,7 +1294,7 @@ class LateFees_CLASS(Resource):
 
             # DETERMINE IF UNPAID RENT IS LATE
                     if late_date < dt:
-                        # print("Rent is late!")
+                        print("Rent is late!", purchase_uid, property_id)
 
 
             # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
@@ -1525,7 +1528,8 @@ def LateFees_CRON(self):
         dt = date.today()
         month = dt.month
         year = dt.year
-        print(dt, type(dt), month, type(month), year, type(year))
+        nextmonth = (dt.replace(day=28) + timedelta(days=4)).replace(day=1).strftime("%m-%d-%Y")
+        print(dt, type(dt), month, type(month), year, type(year), nextmonth, type(nextmonth))
 
         try:
 
@@ -1552,7 +1556,7 @@ def LateFees_CRON(self):
 
                     # PAYMENT DATES
                     # Set Due Date - If None set to due on 1st day of the Month
-                    due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else "1"
+                    due_by_str = response['result'][i]['pur_due_date'] if response['result'][i]['pur_due_date'] else nextmonth
                     due_by = datetime.strptime(due_by_str, "%m-%d-%Y").date()
                     # print("Due by: ", due_by, type(due_by))
 
