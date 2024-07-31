@@ -131,6 +131,7 @@ class Appliances(Resource):
             fields = [
                 'appliance_property_id',
                 'appliance_type',
+                'appliance_desc',
                 'appliance_url',
                 'appliance_images',
                 'appliance_available',
@@ -216,6 +217,7 @@ class Appliances(Resource):
                 'appliance_uid',
                 'appliance_property_id',
                 'appliance_type',
+                'appliance_desc',
                 'appliance_url',
                 'appliance_images',
                 'appliance_available',
