@@ -765,6 +765,21 @@ class Properties(Resource):
             current_images.extend(images)
             print("New List of Images: ", current_images)
 
+        # Delete Images
+        if payload.get('delete_images'):
+            delete_images = ast.literal_eval(payload.get('delete_images'))
+            del payload['delete_images']
+            print(delete_images, type(delete_images), len(delete_images))
+            for image in delete_images:
+                print("Image to Delete: ", image)
+                try:
+                    current_images.remove(image)
+                except:
+                    print("Image not in lsit")
+            
+            print("Updated List of Images: ", current_images)
+
+
         payload['property_images'] = json.dumps(current_images)     
 
    
