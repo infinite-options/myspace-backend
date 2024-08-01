@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, uploadImage, deleteImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -771,11 +771,18 @@ class Properties(Resource):
             del payload['delete_images']
             print(delete_images, type(delete_images), len(delete_images))
             for image in delete_images:
-                print("Image to Delete: ", image)
+                print("Image to Delete: ", image, type(image))
                 try:
                     current_images.remove(image)
                 except:
                     print("Image not in lsit")
+
+                try:
+                    delete_key = image.split('io-pm/', 1)[1]
+                    print("Delete key", delete_key)
+                    deleteImage(delete_key)
+                except: 
+                    print("could not delete from S3")
             
             print("Updated List of Images: ", current_images)
 
