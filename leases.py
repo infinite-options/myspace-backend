@@ -235,6 +235,7 @@ class LeaseDetails(Resource):
         print("Key: ", key1, type(key1))
 
         try:
+            # Calls deleteImage function with S3 key
             response = deleteImage(key1)
             print("Response: ", response)
             print(f"Deleted existing file {key1}")
@@ -467,7 +468,6 @@ class LeaseApplication(Resource):
             raise BadRequest("Request failed, no UID in payload.")
         
         lease_uid = payload.get('lease_uid')
-        print("In Lease Application PUT")
         key = {'lease_uid': payload.pop('lease_uid')}
         print("Lease Key: ", key)
 

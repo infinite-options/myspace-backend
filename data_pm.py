@@ -34,7 +34,13 @@ s3 = boto3.client('s3')
 def deleteImage(key):
     bucket = 'io-pm'
     try:
-        s3.delete_object(Bucket=bucket, Key=key)
+        print("Before Delete: ", bucket, key)
+        delete_file = s3.delete_object(
+            Bucket=bucket,
+            Key=key
+        )
+        print("After Delete: ", delete_file)
+        print("After Delete Status Code: ", delete_file['ResponseMetadata']['HTTPStatusCode'])
         print(f"Deleted existing file {key} from bucket {bucket}")
         return True
     except ClientError as e:
@@ -46,24 +52,32 @@ def deleteImage(key):
 
 
 def uploadImage(file, key, content):
+    print("\nIn Upload Image")
     bucket = 'io-pm'
 
     if isinstance(file, FileStorage): 
+        print("In Upload Image isInstance File Storage")
         file.stream.seek(0)
         file_content = file.stream.read()
         content_type, _ = mimetypes.guess_type(file.filename)
         contentType = content_type if content_type else 'application/octet-stream'  # Fallback if MIME type is not detected
+        print("In Upload Image contentType: ", contentType) # This returns jpeg, png, ect
 
 
 
     elif isinstance(file, StreamingBody):
+        print("In Upload Image isInstance Streaming Body")
         file_content = file.read()
         contentType = content
+        print("In Upload Image contentType: ", contentType)
         # Set content type based on your logic or metadata
         # Example: contentType = 'image/jpeg' or other appropriate content type
 
     if file_content:
+        # print("file_content: ", file_content )   # Unnecessary print statement.  Return hexedemical file info
         filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
+        print("Before Upload: ", bucket, key, filename, contentType)
+        # This Statement Actually uploads the file into S3
         upload_file = s3.put_object(
             Bucket=bucket,
             Body=file_content,
@@ -71,6 +85,9 @@ def uploadImage(file, key, content):
             ACL='public-read',
             ContentType=contentType
         )
+        print("After Upload: ", upload_file)
+        print("After Upload Status Code: ", upload_file['ResponseMetadata']['HTTPStatusCode'])
+        print("Derived Filename: ", filename)
 
         return filename
     return None

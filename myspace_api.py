@@ -17,7 +17,7 @@ from password import Password
 
 
 from dashboard import Dashboard
-from appliances import Appliances, RemoveAppliance
+from appliances import Appliances, RemoveAppliance, Appliances_SB
 from rents import Rents, RentDetails
 from payments import Payments, PaymentOwner, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties
@@ -1856,6 +1856,7 @@ api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 
 # appliances
 api.add_resource(Appliances, '/appliances', '/appliances/<string:uid>')
+api.add_resource(Appliances_SB, '/appliancesSB')
 # api.add_resource(RemoveAppliance, "/RemoveAppliance")
 
 

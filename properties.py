@@ -537,7 +537,7 @@ class Properties(Resource):
 
     
     def post(self):
-        print("In add Property")
+        print("\nIn add Property")
         response = {}
         appliances = {}
 
@@ -609,22 +609,31 @@ class Properties(Resource):
             # print(newRequestID)
 
             # Image Upload 
+            print("\nIn images")
             images = []
             i = 0
             imageFiles = {}
             favorite_image = data.get("img_favorite")
             while True:
-                filename = f'img_{i}'                
-                file = request.files.get(filename)
-                s3Link = data.get(filename)
+                filename = f'img_{i}'  
+                print("Put image file into Filename: ", filename)               
+                file = request.files.get(filename)  # if File: puts file into files
+                # print("File:" , file)
+                s3Link = data.get(filename) # if S3 Link but filename into S3
+                # print("S3Link: ", s3Link)
                 if file:
                     imageFiles[filename] = file
                     unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    print("Unique File Name: ", unique_filename)
                     key = f'properties/{newRequestID}/{unique_filename}'
+                    # print("Key: ", key)
+                    # This line calls uploadImage to actually upload the file and create the S3Link
                     image = uploadImage(file, key, '')
+                    # print("Image: ", image)
                     images.append(image)
 
                     if filename == favorite_image:
+                        # print("Favorite Image: ", filename, favorite_image)
                         newProperty["property_favorite_image"] = image
 
                 elif s3Link:
@@ -636,8 +645,10 @@ class Properties(Resource):
                 else:
                     break
                 i += 1
+                print("Images after loop: ", images)
             
-            newProperty['property_images'] = json.dumps(images)        
+            newProperty['property_images'] = json.dumps(images)  
+            print("Images to add to db: ", newProperty['property_images'])      
 
 
             # print(newRequest)
@@ -691,90 +702,114 @@ class Properties(Resource):
     
     
     def put(self):
-        print("In update Property")
-        # response = {}
-        # payload = request.form.to_dict()
-        # print(payload)
-        # if payload.get('property_uid') is None:
-        #     raise BadRequest("Request failed, no UID in payload.")
-        # key = {'property_uid': payload.pop('property_uid')}
-        # with connect() as db:
-        #     response = db.update('properties', key, payload)
-        # return response
+        print("\nIn Property PUT")
+        response = {}
+        payload = request.form.to_dict()
+        print("Propoerty Update Payload: ", payload)
 
-        data = request.form
-        # print(data)
-        property_uid = data.get('property_uid')
-        fields = [
-            'property_available_to_rent'
-            , "property_active_date"
-            , 'property_address'
-            , "property_unit"
-            , "property_city"
-            , "property_state"
-            , "property_zip"
-            , "property_type"
-            , "property_num_beds"
-            , "property_num_baths"
-            , "property_area"
-            , "property_listed_rent"
-            , "property_deposit"
-            , "property_pets_allowed"
-            , "property_deposit_for_rent"
-            , "property_taxes"
-            , "property_mortgages"
-            , "property_insurance"
-            , "property_featured"
-            , "property_value"
-            , "property_value_year"
-            , "property_area"
-            , "property_description"
-            , "property_notes"
-            , "property_amenities_unit"
-            , "property_amenities_community"
-            , "property_amenities_nearby"
-            , "property_latitude"
-            , "property_longitude"
-        ]
+        # Verify lease_uid has been included in the data
+        if payload.get('property_uid') is None:
+            print("No property_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        
+        property_uid = payload.get('property_uid')
+        key = {'property_uid': payload.pop('property_uid')}
+        print("Property Key: ", key)
 
-        newProperty = {}
-        for field in fields:
-            fieldValue = data.get(field)
-            # print(field, fieldValue)
-            if fieldValue:
-                newProperty[field] = data.get(field)
 
-        images = []
-        # i = -1
-        i = 0
-        imageFiles = {}
-        favorite_image = data.get("img_favorite")
-        while True:
-            filename = f'img_{i}'
-            # if i == -1:
-            #     filename = 'img_cover'
-            file = request.files.get(filename)
-            s3Link = data.get(filename)
-            if file:
-                imageFiles[filename] = file
-                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                key = f'properties/{property_uid}/{unique_filename}'
-                image = uploadImage(file, key, '')
-                images.append(image)
+        # Check if images are being added OR deleted
+        if payload.get('property_images') is None:
+            print("No Current Images")
 
-                if filename == favorite_image:
-                    newProperty["property_favorite_image"] = image
+            images = []
+            # i = -1
+            i = 0
+            imageFiles = {}
+            favorite_image = payload.get("img_favorite")
+            while True:
+                filename = f'img_{i}'
+                print("Put image file into Filename: ", filename) 
+                # if i == -1:
+                #     filename = 'img_cover'
+                file = request.files.get(filename)
+                print("File:" , file)            
+                s3Link = payload.get(filename)
+                print("S3Link: ", s3Link)
+                if file:
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    image_key = f'properties/{property_uid}/{unique_filename}'
+                    # This calls the uploadImage function that generates the S3 link
+                    image = uploadImage(file, image_key, '')
+                    images.append(image)
 
-            elif s3Link:
-                imageFiles[filename] = s3Link
-                images.append(s3Link)
+                    if filename == favorite_image:
+                        payload["property_favorite_image"] = image
 
-                if filename == favorite_image:
-                    newProperty["property_favorite_image"] = s3Link
-            else:
-                break
-            i += 1
-        # print("image_files", images)
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        payload["property_favorite_image"] = s3Link
+                else:
+                    break
+                i += 1
+                print("Images after loop: ", images)
+
+                payload['property_images'] = json.dumps(images)     
+
+        else:
+            images =ast.literal_eval(payload.get('property_images'))
+            print("Current images: ", images, type(images))
+        
+            i = 0
+            imageFiles = {}
+            favorite_image = payload.get("img_favorite")
+            while True:
+                filename = f'img_{i}'
+                print("Put image file into Filename: ", filename) 
+                # if i == -1:
+                #     filename = 'img_cover'
+                file = request.files.get(filename)
+                print("File:" , file)            
+                s3Link = payload.get(filename)
+                print("S3Link: ", s3Link)
+                if file:
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    image_key = f'properties/{property_uid}/{unique_filename}'
+                    # This calls the uploadImage function that generates the S3 link
+                    image = uploadImage(file, image_key, '')
+                    images.append(image)
+
+                    if filename == favorite_image:
+                        payload["property_favorite_image"] = image
+
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        payload["property_favorite_image"] = s3Link
+                else:
+                    break
+                i += 1
+                print("Images after loop: ", images)
+
+                payload['property_images'] = json.dumps(images)     
+
+
+    
+        with connect() as db:
+            print("Checking Inputs: ", key, payload)
+            response['property_info'] = db.update('properties', key, payload)
+            print("Response:" , response)
+        return response
+
+    
+
+        
         # images = updateImages(imageFiles, property_uid)
         # newProperty['property_images'] = json.dumps(images)
         # print("images",images)
@@ -785,7 +820,7 @@ class Properties(Resource):
 
         # else:
         
-        newProperty['property_images'] = json.dumps(images)        
+        
 
         # delete images from s3
         deleted_images_str = data.get("deleted_images")

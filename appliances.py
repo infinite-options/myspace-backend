@@ -148,40 +148,48 @@ class Appliances(Resource):
 
             newAppliance = {}
 
-            print("Property ID: ", data.get("appliance_property_id"))
-            print("Appliance Type: ", request.form.get('appliance_type'))
+            # print("Property ID: ", data.get("appliance_property_id"))
+            # print("Appliance Type: ", request.form.get('appliance_type'))
 
             for field in fields:
-                print("Field: ", field)
-                print("Form Data: ", data.get(field))
+                # print("Field: ", field)
+                # print("Form Data: ", data.get(field))
                 newAppliance[field] = data.get(field)
-                print("New Appliance Field: ", newAppliance[field])
-            print("Current newAppliance", newAppliance, type(newAppliance))
+                # print("New Appliance Field: ", newAppliance[field])
+            # print("Current newAppliance", newAppliance, type(newAppliance))
 
 
-            # # GET NEW UID
+            # GET NEW UID
             print("Get New Appliance UID")
             newRequestID = db.call('new_appliance_uid')['result'][0]['new_id']
             newAppliance['appliance_uid'] = newRequestID
             print(newAppliance['appliance_uid'])
 
             # Image Upload 
+            print("\nIn images")
             images = []
             i = 0
             imageFiles = {}
             favorite_image = data.get("img_favorite")
+            print("Favorite Image: ", favorite_image)
             while True:
-                filename = f'img_{i}'                
+                filename = f'img_{i}'
+                print("Filename: ", filename)             
                 file = request.files.get(filename)
+                print("File:" , file)
                 s3Link = data.get(filename)
+                print("S3Link: ", s3Link)
                 if file:
                     imageFiles[filename] = file
                     unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    print("unique_filename: ", unique_filename)
                     key = f'appliance/{newRequestID}/{unique_filename}'
                     image = uploadImage(file, key, '')
+                    print("Image: ", image)
                     images.append(image)
 
                     if filename == favorite_image:
+                        print("favorite image!")
                         newAppliance["appliance_images"] = image
 
                 elif s3Link:
@@ -296,36 +304,6 @@ class Appliances(Resource):
 
         return response
     
-    
-
-
-    # def post(self):
-    #     print("In POST Appliances")
-    #     response = {}
-    #     payload = request.get_json()
-    #     with connect() as db:
-    #         new_appliance_id = db.call('new_appliance_uid')['result'][0]['new_id']
-    #         payload['appliance_uid'] = new_appliance_id
-    #         print(payload)
-        
-    #         query_response = db.insert('space.appliances', payload)
-    #         response = query_response
-    #         print(response)
-    #     return response
-    
-
-    # def put(self):
-    #     response = {}
-    #     payload = request.get_json()
-    #     print(payload)
-    #     if payload.get('appliance_uid') is None:
-    #         raise BadRequest("Request failed, no UID in payload.")
-    #     key = {'appliance_uid': payload.pop('appliance_uid')}
-    #     with connect() as db:
-    #         response = db.update('space.appliances', key, payload)
-    #     return response
-    
-
     def delete(self, uid):
         print("In DELETE Appliances", uid)
         response = {}
@@ -339,6 +317,36 @@ class Appliances(Resource):
             response = db.delete(applianceQuery)
             print(response)
         return response
+
+
+
+class Appliances_SB(Resource):
+    def put(self):
+        response = {}
+        payload = request.form.to_dict()
+        print("Appliance Payload: ", payload)
+        
+        
+        # Profile Picture is Unique to Profile 
+        if payload.get('appliance_uid'):
+            appliance_uid = payload.get('appliance_uid')
+            print("In Appliances")
+            key = {'appliance_uid': payload.pop('appliance_uid')}
+            print("Appliance Key: ", key)                   
+
+            # Update File List in Database        
+            print("Appliance")
+            print("key: ", key )
+            print("payload: ", payload)
+
+            with connect() as db:
+                response['appliance'] = db.update('appliances', key, payload)
+            print("Response:" , response)
+
+        return response
+
+
+
 
 
 class RemoveAppliance(Resource):
