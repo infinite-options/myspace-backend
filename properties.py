@@ -707,7 +707,7 @@ class Properties(Resource):
         payload = request.form.to_dict()
         print("Propoerty Update Payload: ", payload)
 
-        # Verify lease_uid has been included in the data
+        # Verify uid has been included in the data
         if payload.get('property_uid') is None:
             print("No property_uid")
             raise BadRequest("Request failed, no UID in payload.")
@@ -716,6 +716,13 @@ class Properties(Resource):
         key = {'property_uid': payload.pop('property_uid')}
         print("Property Key: ", key)
 
+
+        # Check if images already exist
+        # Put current db images into current images
+        current_images = []
+        if payload.get('property_images') is not None:
+            current_images =ast.literal_eval(payload.get('property_images'))
+            print("Current images: ", current_images, type(current_images))
 
         # Check if images are being added OR deleted
         images = []
@@ -752,18 +759,11 @@ class Properties(Resource):
             else:
                 break
             i += 1
-            print("Images after loop: ", images)
-
-
-        # Check if images already exist
-        if payload.get('property_images') is None:
-            print("No Current Images")
-            current_images = images
-        else:
-            current_images =ast.literal_eval(payload.get('property_images'))
-            print("Current images: ", current_images, type(current_images))
+        
+        print("Images after loop: ", images)
+        if images != []:
             current_images.extend(images)
-            print("New List of Images: ", current_images)
+            payload['property_images'] = json.dumps(current_images) 
 
         # Delete Images
         if payload.get('delete_images'):
@@ -772,11 +772,13 @@ class Properties(Resource):
             print(delete_images, type(delete_images), len(delete_images))
             for image in delete_images:
                 print("Image to Delete: ", image, type(image))
+                # Delete from db list assuming it is in db list
                 try:
                     current_images.remove(image)
                 except:
                     print("Image not in lsit")
 
+                #  Delete from S3 Bucket
                 try:
                     delete_key = image.split('io-pm/', 1)[1]
                     print("Delete key", delete_key)
@@ -787,70 +789,18 @@ class Properties(Resource):
             print("Updated List of Images: ", current_images)
 
 
-        payload['property_images'] = json.dumps(current_images)     
+            print("Current Images: ", current_images)
+            payload['property_images'] = json.dumps(current_images) 
+
 
    
 
         with connect() as db:
             print("Checking Inputs: ", key, payload)
             response['property_info'] = db.update('properties', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
         return response
 
-    
-
-        
-        # images = updateImages(imageFiles, property_uid)
-        # newProperty['property_images'] = json.dumps(images)
-        # print("images",images)
-        # if len(imageLinks) > 0:
-        #     for item in images:
-        #         imageLinks.append(item)
-        #     newProperty['property_images'] = json.dumps(imageLinks)
-
-        # else:
-        
-        
-
-        # delete images from s3
-        deleted_images_str = data.get("deleted_images")
-        deleted_images = []
-        
-        if deleted_images_str is not None and isinstance(deleted_images_str, str):
-            try:                
-                deleted_images = ast.literal_eval(deleted_images_str)                                
-            except (ValueError, SyntaxError) as e:
-                print(f"Error parsing the deleted_images string: {e}")
-                
-        
-        s3Client = boto3.client('s3')
-        
-
-        response = {'s3_delete_responses': []}
-        if(deleted_images):
-            try:                
-                objects_to_delete = []
-                for img in deleted_images:                    
-                    key = "properties/" + img.split("properties/")[-1]
-                    objects_to_delete.append(key)               
-
-                for obj_key in objects_to_delete:                    
-                    delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
-                    response['s3_delete_responses'].append({obj_key: delete_response})
-
-            except Exception as e:
-                print(f"Deletion from s3 failed: {str(e)}")
-                response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
-
-
-
-
-        # print("new_Property", newProperty)
-        key = {'property_uid': property_uid}
-        with connect() as db:
-            response['database_response'] = db.update('properties', key, newProperty)
-        response['images'] = newProperty['property_images']
-        return response
 
 
     def delete(self):

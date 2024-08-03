@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img, uploadImage
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, uploadImage, deleteImage, s3
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -372,13 +372,19 @@ class MaintenanceRequests(Resource):
         print('in maintenanceRequests PUT')
         response = {}
         response1 = {}
-        payload = request.form
+        payload = request.form.to_dict()
         # print(payload)
+
+        # Verify uid has been included in the data
         if payload.get('maintenance_request_uid') is None:
+            print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
-        keyr = {'maintenance_request_uid': payload['maintenance_request_uid']}
+        
+        maintenance_request_uid = payload.get('maintenance_request_uid')
+        keyr = {'maintenance_request_uid': payload.pop('maintenance_request_uid')}
         # print("Key: ", key)
-        maintenanceRequests = {k: v for k, v in payload.items()}
+
+
         # print(maintenanceRequests)
         if payload.get('maintenance_request_status') == "COMPLETED":
             id = payload.get('maintenance_request_uid')
@@ -399,9 +405,88 @@ class MaintenanceRequests(Resource):
                     with connect() as db:
                         response["quotes_update"] = db.update('maintenanceQuotes', keyq, maintenanceQuotes)
 
+
+        # Check if images already exist
+        # Put current db images into current images
+        current_images = []
+        if payload.get('maintenance_images') is not None:
+            current_images =ast.literal_eval(payload.get('maintenance_images'))
+            print("Current images: ", current_images, type(current_images))
+
+        # Check if images are being added OR deleted
+        images = []
+        # i = -1
+        i = 0
+        imageFiles = {}
+        # favorite_image = payload.get("img_favorite")
+        while True:
+            filename = f'img_{i}'
+            print("Put image file into Filename: ", filename) 
+            # if i == -1:
+            #     filename = 'img_cover'
+            file = request.files.get(filename)
+            print("File:" , file)            
+            s3Link = payload.get(filename)
+            print("S3Link: ", s3Link)
+            if file:
+                imageFiles[filename] = file
+                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                image_key = f'maintenanceRequests/{maintenance_request_uid}/{unique_filename}'
+                # This calls the uploadImage function that generates the S3 link
+                image = uploadImage(file, image_key, '')
+                images.append(image)
+
+                # if filename == favorite_image:
+                #     payload["property_favorite_image"] = image
+
+            elif s3Link:
+                imageFiles[filename] = s3Link
+                images.append(s3Link)
+
+                # if filename == favorite_image:
+                #     payload["property_favorite_image"] = s3Link
+            else:
+                break
+            i += 1
+        
+        print("Images after loop: ", images)
+        if images != []:
+            current_images.extend(images)
+            payload['maintenance_images'] = json.dumps(current_images) 
+
+        # Delete Images
+        if payload.get('delete_images'):
+            delete_images = ast.literal_eval(payload.get('delete_images'))
+            del payload['delete_images']
+            print(delete_images, type(delete_images), len(delete_images))
+            for image in delete_images:
+                print("Image to Delete: ", image, type(image))
+                # Delete from db list assuming it is in db list
+                try:
+                    current_images.remove(image)
+                except:
+                    print("Image not in lsit")
+
+                #  Delete from S3 Bucket
+                try:
+                    delete_key = image.split('io-pm/', 1)[1]
+                    print("Delete key", delete_key)
+                    deleteImage(delete_key)
+                except: 
+                    print("could not delete from S3")
+            
+            print("Updated List of Images: ", current_images)
+
+            print("Current Images: ", current_images)
+            payload['maintenance_images'] = json.dumps(current_images)  
+
+
+
+
         with connect() as db:
-            print(keyr, payload)
-            response["request_update"] = db.update('maintenanceRequests', keyr, maintenanceRequests)
+            print("Checking Inputs: ", keyr, payload)
+            response["request_update"] = db.update('maintenanceRequests', keyr, payload)
+            print("Response:" , response)
         return response
 
 
