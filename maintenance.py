@@ -385,7 +385,7 @@ class MaintenanceRequests(Resource):
         # print("Key: ", key)
 
 
-        # print(maintenanceRequests)
+        # Update Maintenance QUOTES if maintenance request status changes to COMPLETED
         if payload.get('maintenance_request_status') == "COMPLETED":
             id = payload.get('maintenance_request_uid')
             with connect() as db:
@@ -418,7 +418,7 @@ class MaintenanceRequests(Resource):
         # i = -1
         i = 0
         imageFiles = {}
-        # favorite_image = payload.get("img_favorite")
+        favorite_image = payload.get("maintenance_favorite_image")
         while True:
             filename = f'img_{i}'
             print("Put image file into Filename: ", filename) 
@@ -436,15 +436,15 @@ class MaintenanceRequests(Resource):
                 image = uploadImage(file, image_key, '')
                 images.append(image)
 
-                # if filename == favorite_image:
-                #     payload["property_favorite_image"] = image
+                if filename == favorite_image:
+                    payload["maintenance_favorite_image"] = image
 
             elif s3Link:
                 imageFiles[filename] = s3Link
                 images.append(s3Link)
 
-                # if filename == favorite_image:
-                #     payload["property_favorite_image"] = s3Link
+                if filename == favorite_image:
+                    payload["maintenance_favorite_image"] = s3Link
             else:
                 break
             i += 1
@@ -481,8 +481,7 @@ class MaintenanceRequests(Resource):
             payload['maintenance_images'] = json.dumps(current_images)  
 
 
-
-
+        # Write to Database
         with connect() as db:
             print("Checking Inputs: ", keyr, payload)
             response["request_update"] = db.update('maintenanceRequests', keyr, payload)

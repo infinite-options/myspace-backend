@@ -3,7 +3,7 @@ from flask import request
 from flask_restful import Resource
 
 import boto3
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, uploadImage, deleteImage, s3
 from datetime import date, timedelta, datetime
 from calendar import monthrange
 import json
@@ -215,94 +215,104 @@ class Appliances(Resource):
         return response
     
     def put(self):
-        print("In PUT Appliances")
+        print("\nIn Appliance PUT")
         response = {}
-
-        with connect() as db:
-            data = request.form
-            print("Received Data: ", data)
-            fields = [
-                'appliance_uid',
-                'appliance_property_id',
-                'appliance_type',
-                'appliance_desc',
-                'appliance_url',
-                'appliance_images',
-                'appliance_available',
-                'appliance_installed',
-                'appliance_model_num',
-                'appliance_purchased',
-                'appliance_serial_num',
-                'appliance_manufacturer',
-                'appliance_warranty_info',
-                'appliance_warranty_till',
-                'appliance_purchased_from',
-                'appliance_purchase_order'
-                    ]
-
-            newAppliance = {}
-
-            print("Property ID: ", data.get("appliance_property_id"))
-            print("Appliance UID: ", data.get("appliance_uid"))
-            print("Appliance Type: ", request.form.get('appliance_type'))
+        payload = request.form.to_dict()
+        print("Appliance Update Payload: ", payload)
+        
+         # Verify uid has been included in the data
+        if payload.get('appliance_uid') is None:
+            print("No appliance_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        
+        appliance_uid = payload.get('appliance_uid')
+        key = {'appliance_uid': payload.pop('appliance_uid')}
+        print("Appliance Key: ", key) 
 
 
-            # Check if appliance_uid is present and valid
-            appliance_uid = data.get('appliance_uid')
-    
-            if appliance_uid is None or appliance_uid == 0 or appliance_uid == '':
-                response = "appliance_uid is required and must be non-zero"
-                return response
+        # Check if images already exist
+        # Put current db images into current images
+        current_images = []
+        if payload.get('appliance_images') is not None:
+            current_images =ast.literal_eval(payload.get('appliance_images'))
+            print("Current images: ", current_images, type(current_images))
 
-            for field in fields:
-                print("Field: ", field)
-                print("Form Data: ", data.get(field))
-                newAppliance[field] = data.get(field)
-                print("New Appliance Field: ", newAppliance[field])
-            print("Current newAppliance", newAppliance, type(newAppliance))
+        # Check if images are being added OR deleted
+        images = []
+        # i = -1
+        i = 0
+        imageFiles = {}
+        favorite_image = payload.get("appliance_favorite_image")
+        while True:
+            filename = f'img_{i}'
+            print("Put image file into Filename: ", filename) 
+            # if i == -1:
+            #     filename = 'img_cover'
+            file = request.files.get(filename)
+            print("File:" , file)            
+            s3Link = payload.get(filename)
+            print("S3Link: ", s3Link)
+            if file:
+                imageFiles[filename] = file
+                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                image_key = f'appliances/{appliance_uid}/{unique_filename}'
+                # This calls the uploadImage function that generates the S3 link
+                image = uploadImage(file, image_key, '')
+                images.append(image)
 
+                if filename == favorite_image:
+                    payload["appliance_favorite_image"] = image
 
-            # Image Upload 
-            images = []
-            i = 0
-            imageFiles = {}
-            favorite_image = data.get("img_favorite")
-            while True:
-                filename = f'img_{i}'                
-                file = request.files.get(filename)
-                s3Link = data.get(filename)
-                if file:
-                    imageFiles[filename] = file
-                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                    key = f'appliance/{appliance_uid}/{unique_filename}'
-                    image = uploadImage(file, key, '')
-                    images.append(image)
+            elif s3Link:
+                imageFiles[filename] = s3Link
+                images.append(s3Link)
 
-                    if filename == favorite_image:
-                        newAppliance["appliance_images"] = image
+                if filename == favorite_image:
+                    payload["appliance_favorite_image"] = s3Link
+            else:
+                break
+            i += 1
+        
+        print("Images after loop: ", images)
+        if images != []:
+            current_images.extend(images)
+            payload['appliance_images'] = json.dumps(current_images) 
 
-                elif s3Link:
-                    imageFiles[filename] = s3Link
-                    images.append(s3Link)
+        # Delete Images
+        if payload.get('delete_images'):
+            delete_images = ast.literal_eval(payload.get('delete_images'))
+            del payload['delete_images']
+            print(delete_images, type(delete_images), len(delete_images))
+            for image in delete_images:
+                print("Image to Delete: ", image, type(image))
+                # Delete from db list assuming it is in db list
+                try:
+                    current_images.remove(image)
+                except:
+                    print("Image not in lsit")
 
-                    if filename == favorite_image:
-                        newAppliance["appliance_images"] = s3Link
-                else:
-                    break
-                i += 1
+                #  Delete from S3 Bucket
+                try:
+                    delete_key = image.split('io-pm/', 1)[1]
+                    print("Delete key", delete_key)
+                    deleteImage(delete_key)
+                except: 
+                    print("could not delete from S3")
             
-            newAppliance["appliance_images"] = json.dumps(images)
-            print("Appliance Images: ", newAppliance["appliance_images"])        
+            print("Updated List of Images: ", current_images)
 
 
-            print("New Appliance Object: ", newAppliance)
-            key = {'appliance_uid': appliance_uid}
-            response = db.update('appliances', key, newAppliance)
-            response['Appliance'] = "Added"
-            response['appliance_uid'] = appliance_uid
-            response['images'] = newAppliance["appliance_images"]
+            print("Current Images: ", current_images)
+            payload['appliance_images'] = json.dumps(current_images) 
 
+        # Write to Database
+        with connect() as db:
+            print("Checking Inputs: ", key, payload)
+            response['appliance'] = db.update('appliances', key, payload)
+            # print("Response:" , response)
         return response
+
+
     
     def delete(self, uid):
         print("In DELETE Appliances", uid)
@@ -322,27 +332,101 @@ class Appliances(Resource):
 
 class Appliances_SB(Resource):
     def put(self):
+        print("\nIn Appliance PUT")
         response = {}
         payload = request.form.to_dict()
-        print("Appliance Payload: ", payload)
+        print("Appliance Update Payload: ", payload)
         
+         # Verify uid has been included in the data
+        if payload.get('appliance_uid') is None:
+            print("No appliance_uid")
+            raise BadRequest("Request failed, no UID in payload.")
         
-        # Profile Picture is Unique to Profile 
-        if payload.get('appliance_uid'):
-            appliance_uid = payload.get('appliance_uid')
-            print("In Appliances")
-            key = {'appliance_uid': payload.pop('appliance_uid')}
-            print("Appliance Key: ", key)                   
+        appliance_uid = payload.get('appliance_uid')
+        key = {'appliance_uid': payload.pop('appliance_uid')}
+        print("Appliance Key: ", key) 
 
-            # Update File List in Database        
-            print("Appliance")
-            print("key: ", key )
-            print("payload: ", payload)
 
-            with connect() as db:
-                response['appliance'] = db.update('appliances', key, payload)
-            print("Response:" , response)
+        # Check if images already exist
+        # Put current db images into current images
+        current_images = []
+        if payload.get('appliance_images') is not None:
+            current_images =ast.literal_eval(payload.get('appliance_images'))
+            print("Current images: ", current_images, type(current_images))
 
+        # Check if images are being added OR deleted
+        images = []
+        # i = -1
+        i = 0
+        imageFiles = {}
+        favorite_image = payload.get("appliance_favorite_image")
+        while True:
+            filename = f'img_{i}'
+            print("Put image file into Filename: ", filename) 
+            # if i == -1:
+            #     filename = 'img_cover'
+            file = request.files.get(filename)
+            print("File:" , file)            
+            s3Link = payload.get(filename)
+            print("S3Link: ", s3Link)
+            if file:
+                imageFiles[filename] = file
+                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                image_key = f'appliances/{appliance_uid}/{unique_filename}'
+                # This calls the uploadImage function that generates the S3 link
+                image = uploadImage(file, image_key, '')
+                images.append(image)
+
+                if filename == favorite_image:
+                    payload["appliance_favorite_image"] = image
+
+            elif s3Link:
+                imageFiles[filename] = s3Link
+                images.append(s3Link)
+
+                if filename == favorite_image:
+                    payload["appliance_favorite_image"] = s3Link
+            else:
+                break
+            i += 1
+        
+        print("Images after loop: ", images)
+        if images != []:
+            current_images.extend(images)
+            payload['appliance_images'] = json.dumps(current_images) 
+
+        # Delete Images
+        if payload.get('delete_images'):
+            delete_images = ast.literal_eval(payload.get('delete_images'))
+            del payload['delete_images']
+            print(delete_images, type(delete_images), len(delete_images))
+            for image in delete_images:
+                print("Image to Delete: ", image, type(image))
+                # Delete from db list assuming it is in db list
+                try:
+                    current_images.remove(image)
+                except:
+                    print("Image not in lsit")
+
+                #  Delete from S3 Bucket
+                try:
+                    delete_key = image.split('io-pm/', 1)[1]
+                    print("Delete key", delete_key)
+                    deleteImage(delete_key)
+                except: 
+                    print("could not delete from S3")
+            
+            print("Updated List of Images: ", current_images)
+
+
+            print("Current Images: ", current_images)
+            payload['appliance_images'] = json.dumps(current_images) 
+
+        # Write to Database
+        with connect() as db:
+            print("Checking Inputs: ", key, payload)
+            response['appliance'] = db.update('appliances', key, payload)
+            # print("Response:" , response)
         return response
 
 

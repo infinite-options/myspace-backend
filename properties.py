@@ -729,7 +729,7 @@ class Properties(Resource):
         # i = -1
         i = 0
         imageFiles = {}
-        favorite_image = payload.get("img_favorite")
+        favorite_image = payload.get("property_favorite_image")
         while True:
             filename = f'img_{i}'
             print("Put image file into Filename: ", filename) 
@@ -792,9 +792,7 @@ class Properties(Resource):
             print("Current Images: ", current_images)
             payload['property_images'] = json.dumps(current_images) 
 
-
-   
-
+        # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
             response['property_info'] = db.update('properties', key, payload)
