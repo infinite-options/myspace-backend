@@ -253,7 +253,7 @@ class LeaseApplication(Resource):
     def __call__(self):
         print("In Lease Application")
 
-# CHECK IF TENANT HAS APPLIED TO THIS PROPERTY BEFORE
+    # CHECK IF TENANT HAS APPLIED TO THIS PROPERTY BEFORE
     def get(self, tenant_id, property_id):
         print("In Lease Application GET")
         print(tenant_id, property_id)
@@ -410,7 +410,7 @@ class LeaseApplication(Resource):
                     # print("Data inserted into space.leases", response)
 
                     
-
+                    # I don't think this works
                     # Insert data into leaseFees table
                     if "lease_fees" in data:
                         # print("lease_fees in data")
@@ -471,17 +471,45 @@ class LeaseApplication(Resource):
         key = {'lease_uid': payload.pop('lease_uid')}
         print("Lease Key: ", key)
 
+        # POST TO LEASE FEES.  Need to post Lease Fees into Lease Fees Table
+        if "lease_fees" in payload:
+            print("lease_fees in data", payload['lease_fees'])
+            fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                                        "perDay_late_fee", "late_fee"]
+            temp_fees = {'lease_fees': payload.pop('lease_fees')}
+            print("Temp: ", temp_fees)
+            # json_object = json.loads({'lease_fees': payload.pop('lease_fees')})
+            # json_object = json.loads(payload.pop["lease_fees"])
+            json_string = temp_fees['lease_fees']
+            json_object = json.loads(json_string)
+            print("lease fees json_object", json_object)
+            for fees in json_object:    
+                print("fees",fees)
+                new_leaseFees = {}
+                new_leaseFees["fees_lease_id"] = lease_uid
+                print("here 1")
+                for item in fields_leaseFees:
+                    if item in fees:
+                        print("here 2", item)
+                        new_leaseFees[item] = fees[item]
+                # print("Lease Fee: ", new_leaseFees)
+                with connect() as db: 
+                    new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
+                    print('New Lease Fees Payload: ', new_leaseFees)
+                    response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
+
+        # CHECK DOCUMENTS
         # Check if documents are being added OR deleted
         current_docs = payload.get('lease_documents')
         add_docs = payload.get('lease_documents_details') 
         del_docs = payload.get('deleted_documents')
-        print("Current Documents: ", current_docs, type(current_docs))
-        print("Documents to Add: ", add_docs, type(add_docs))
-        print("Documents to Del: ", del_docs, type(del_docs))
+        # print("Current Documents: ", current_docs, type(current_docs))
+        # print("Documents to Add: ", add_docs, type(add_docs))
+        # print("Documents to Del: ", del_docs, type(del_docs))
 
 
-    # THIS MAY NEED TO CHANGE GIVEN NEW APPROACH TO ONLY PASS IN INFO IF CHANGED
+        # THIS MAY NEED TO CHANGE GIVEN NEW APPROACH TO ONLY PASS IN INFO IF CHANGED
         # Code requires that FrontEnd always passes in lease_documents whenever adding or deleting
         # if add_docs is not None or del_docs is not None:    
         if current_docs is not None:    
@@ -555,18 +583,23 @@ class LeaseApplication(Resource):
                         print(f"Deletion from s3 failed: {str(e)}")
                         response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
                 
-
+        # Store Fees in a Separate Variable and POP from payload
 
 
         # Update File List in Database        
-        print("leases")
-        print("key: ", key )
-        print("payload: ", payload)
+        # print("leases")
+        # print("key: ", key )
+        # print("payload: ", payload)
 
         with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)
             print("Response:" , response)
        
+
+        # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
+
+        if payload.get('lease_status') == 'ACTIVE':
+            # print("Lease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
 
         # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
@@ -575,7 +608,23 @@ class LeaseApplication(Resource):
         # READ THE LEASE FEES
         # INSERT EACH LEASE FEE INTO PURCHASES TALE
 
-            fees = db.execute(""" 
+            # query =     (""" 
+            #             SELECT leaseFees.*
+            #                 ,lease_property_id, contract_uid, contract_business_id, property_owner_id, lt_tenant_id
+            #             FROM space.leaseFees
+            #             LEFT JOIN space.leases ON fees_lease_id = lease_uid
+            #             LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
+            #             LEFT JOIN space.contracts ON lease_property_id = contract_property_id
+            #             LEFT JOIN space.property_owner ON lease_property_id = property_id
+            #             -- WHERE fees_lease_id = '300-000308';
+            #             WHERE fees_lease_id = \'""" + lease_uid + """\';
+            #             """)
+            
+            # print(query)
+
+
+            with connect() as db:
+                fees = db.execute(""" 
                         SELECT leaseFees.*
                             ,lease_property_id, contract_uid, contract_business_id, property_owner_id, lt_tenant_id
                         FROM space.leaseFees
@@ -587,158 +636,158 @@ class LeaseApplication(Resource):
                         WHERE fees_lease_id = \'""" + lease_uid + """\';
                         """)
             
-            
-            print("Lease Fees: ", fees) 
+                # print("here 2")
+                # print("Lease Fees: ", fees) 
 
-            for fee in fees['result']:
-                print("Current Fee: ", fee)
-                print(fee['fee_name'])
-                manager = fee['contract_business_id']
-                owner = fee['property_owner_id']
-                tenant = fee['lt_tenant_id']
-
-
-                # {'leaseFees_uid': '370-000680', 
-                #  'fees_lease_id': '300-000308', 
-                #  'fee_name': 'Rent', 
-                #  'fee_type': '$', 
-                #  'charge': '1000.00', 
-                #  'frequency': 'Monthly', 
-                #  'available_topay': 10, 
-                #  'due_by': 1, 'late_by': 3, 
-                #  'late_fee': '100', 
-                #  'perDay_late_fee': '20.00', 
-                #  'due_by_date': None, 
-                #  'lease_property_id': '200-000357', 
-                #  'contract_business_id': '600-000314', 
-                #  'property_owner_id': '110-000373', 
-                #  'lt_tenant_id': '350-000222'}
-
-                
+                for fee in fees['result']:
+                    # print("Current Fee: ", fee)
+                    # print(fee['fee_name'])
+                    manager = fee['contract_business_id']
+                    owner = fee['property_owner_id']
+                    tenant = fee['lt_tenant_id']
 
 
-                # Common JSON Object Attributes
-                newRequest = {}
-                
-                newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
-                newRequest['pur_property_id'] = fee['lease_property_id']
-                newRequest['purchase_type'] = fee['fee_name']
-                newRequest['pur_cf_type'] = "revenue"
-                newRequest['pur_amount_due'] = fee['charge']
-                newRequest['purchase_status'] = "UNPAID"
-                newRequest['pur_status_value'] = "0"
-                newRequest['pur_notes'] = fee['fee_name']
+                    # {'leaseFees_uid': '370-000680', 
+                    #  'fees_lease_id': '300-000308', 
+                    #  'fee_name': 'Rent', 
+                    #  'fee_type': '$', 
+                    #  'charge': '1000.00', 
+                    #  'frequency': 'Monthly', 
+                    #  'available_topay': 10, 
+                    #  'due_by': 1, 'late_by': 3, 
+                    #  'late_fee': '100', 
+                    #  'perDay_late_fee': '20.00', 
+                    #  'due_by_date': None, 
+                    #  'lease_property_id': '200-000357', 
+                    #  'contract_business_id': '600-000314', 
+                    #  'property_owner_id': '110-000373', 
+                    #  'lt_tenant_id': '350-000222'}
 
-                newRequest['pur_due_by'] = fee['due_by']
-                newRequest['pur_late_by'] = fee['late_by']
-                newRequest['pur_late_fee'] = fee['late_fee']
-                newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
-
-                newRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
-                newRequest['pur_description'] = f"Initial {fee['fee_name']}"
-
-                
-                # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                grouping = newRequestID
-                newRequest['purchase_uid'] = newRequestID
-                newRequest['pur_group'] = grouping
-                # print(newRequestID)
-                newRequest['pur_receiver'] = manager
-                newRequest['pur_payer'] = tenant
-                newRequest['pur_initiator'] = manager
-                newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                
-                
-                print(newRequest)
-                # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                db.insert('purchases', newRequest)
+                    
 
 
-                # FOR RENTS
-                if fee['fee_name'] == 'Rent':
-                    # Create JSON Object for Rent Purchase for PM-Owner Payment
+                    # Common JSON Object Attributes
+                    newRequest = {}
+                    
+                    newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+                    newRequest['pur_property_id'] = fee['lease_property_id']
+                    newRequest['purchase_type'] = fee['fee_name']
+                    newRequest['pur_cf_type'] = "revenue"
+                    newRequest['pur_amount_due'] = fee['charge']
+                    newRequest['purchase_status'] = "UNPAID"
+                    newRequest['pur_status_value'] = "0"
+                    newRequest['pur_notes'] = fee['fee_name']
+
+                    newRequest['pur_due_by'] = fee['due_by']
+                    newRequest['pur_late_by'] = fee['late_by']
+                    newRequest['pur_late_fee'] = fee['late_fee']
+                    newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
+
+                    newRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                    newRequest['pur_description'] = f"Initial {fee['fee_name']}"
+
+                    
+                    # Create JSON Object for Rent Purchase for Tenant-PM Payment
                     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    grouping = newRequestID
                     newRequest['purchase_uid'] = newRequestID
+                    newRequest['pur_group'] = grouping
                     # print(newRequestID)
-                    newRequest['pur_receiver'] = owner
-                    newRequest['pur_payer'] = manager
+                    newRequest['pur_receiver'] = manager
+                    newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
                     newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                    newRequest['pur_group'] = grouping
-                
+                    
+                    
                     # print(newRequest)
                     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                     db.insert('purchases', newRequest)
 
 
-                    # For each entry posted to the purchases table, post any contract fees based on Rent
-                    # Find contract fees based rent
-                    manager_fees = db.execute("""
-                                    SELECT -- *
-                                        contract_uid, contract_property_id, contract_business_id
-                                        -- , contract_start_date, contract_end_date
-                                        , contract_fees
-                                        -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                                        , jt.*
-                                    FROM 
-                                        space.contracts,
-                                        JSON_TABLE(
-                                            contract_fees,
-                                            "$[*]" COLUMNS (
-                                                of_column VARCHAR(50) PATH "$.of",
-                                                charge_column VARCHAR(50) PATH "$.charge",
-                                                fee_name_column VARCHAR(50) PATH "$.fee_name",
-                                                fee_type_column VARCHAR(10) PATH "$.fee_type",
-                                                frequency_column VARCHAR(20) PATH "$.frequency"
-                                            )
-                                        ) AS jt
-                                    -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
-                                    WHERE contract_uid = \'""" + fee['contract_uid'] + """\' AND of_column LIKE '%rent%';
-                                """)
-                    print("\n", manager_fees)
-                
+                    # FOR RENTS - Create Owner Payment
+                    if fee['fee_name'] == 'Rent':
+                        # Create JSON Object for Rent Purchase for PM-Owner Payment
+                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequest['purchase_uid'] = newRequestID
+                        # print(newRequestID)
+                        newRequest['pur_receiver'] = owner
+                        newRequest['pur_payer'] = manager
+                        newRequest['pur_initiator'] = manager
+                        newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
+                        newRequest['pur_group'] = grouping
+                    
+                        # print(newRequest)
+                        # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                        db.insert('purchases', newRequest)
 
-                    for j in range(len(manager_fees['result'])):
 
-                        # Check if fees is monthly 
-                        if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
+                        # For each entry posted to the purchases table, post any contract fees based on Rent
+                        # Find contract fees based rent
+                        manager_fees = db.execute("""
+                                        SELECT -- *
+                                            contract_uid, contract_property_id, contract_business_id
+                                            -- , contract_start_date, contract_end_date
+                                            , contract_fees
+                                            -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                                            , jt.*
+                                        FROM 
+                                            space.contracts,
+                                            JSON_TABLE(
+                                                contract_fees,
+                                                "$[*]" COLUMNS (
+                                                    of_column VARCHAR(50) PATH "$.of",
+                                                    charge_column VARCHAR(50) PATH "$.charge",
+                                                    fee_name_column VARCHAR(50) PATH "$.fee_name",
+                                                    fee_type_column VARCHAR(10) PATH "$.fee_type",
+                                                    frequency_column VARCHAR(20) PATH "$.frequency"
+                                                )
+                                            ) AS jt
+                                        -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
+                                        WHERE contract_uid = \'""" + fee['contract_uid'] + """\' AND of_column LIKE '%rent%';
+                                    """)
+                        # print("\n", manager_fees)
+                    
 
-                            # Check if charge is a % or Fixed $ Amount
-                            if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
-                                charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(fee['charge']) / 100
-                            else:
-                                charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
-                            # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
+                        for j in range(len(manager_fees['result'])):
 
-                            # Create JSON Object for Fee Purchase
-                            newPMRequest = {}
-                            newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                            # print(newPMRequestID)
-                            newPMRequest['purchase_uid'] = newPMRequestID
-                            newPMRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
-                            newPMRequest['pur_property_id'] = fee['lease_property_id']
-                            newPMRequest['purchase_type'] = "Management"
-                            newPMRequest['pur_cf_type'] = "expense"
-                            newPMRequest['pur_amount_due'] = charge_amt
-                            newPMRequest['purchase_status'] = "UNPAID"
-                            newPMRequest['pur_status_value'] = "0"
-                            newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                            newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for Initial Rent "
-                            # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
-                            # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
-                            newPMRequest['pur_receiver'] = manager
-                            newPMRequest['pur_payer'] = owner
-                            newPMRequest['pur_initiator'] = manager
-                            newPMRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
-                            newPMRequest['pur_group'] = grouping
+                            # Check if fees is monthly 
+                            if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
-                            # *********
-                            newPMRequest['pur_due_date'] =  fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                            # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                            # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
-                            
-                            print(newPMRequest)
-                            db.insert('purchases', newPMRequest)
+                                # Check if charge is a % or Fixed $ Amount
+                                if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
+                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(fee['charge']) / 100
+                                else:
+                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
+                                # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
+
+                                # Create JSON Object for Fee Purchase
+                                newPMRequest = {}
+                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                # print(newPMRequestID)
+                                newPMRequest['purchase_uid'] = newPMRequestID
+                                newPMRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_property_id'] = fee['lease_property_id']
+                                newPMRequest['purchase_type'] = "Management"
+                                newPMRequest['pur_cf_type'] = "expense"
+                                newPMRequest['pur_amount_due'] = charge_amt
+                                newPMRequest['purchase_status'] = "UNPAID"
+                                newPMRequest['pur_status_value'] = "0"
+                                newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
+                                newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for Initial Rent "
+                                # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
+                                # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
+                                newPMRequest['pur_receiver'] = manager
+                                newPMRequest['pur_payer'] = owner
+                                newPMRequest['pur_initiator'] = manager
+                                newPMRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_group'] = grouping
+
+                                # *********
+                                newPMRequest['pur_due_date'] =  fee['due_by_date'] if fee['due_by_date'] != 'None' else None
+                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
+                                
+                                # print(newPMRequest)
+                                db.insert('purchases', newPMRequest)
 
         return response
