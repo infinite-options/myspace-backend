@@ -587,12 +587,11 @@ class MonthlyRentPurchase_CLASS(Resource):
                         WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
                             AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
                             AND contract_status = 'ACTIVE'
-                        ORDER BY frequency;
+                        ORDER BY leaseFees_uid -- frequency;
                         """)
 
                 for i in range(len(response['result'])):
-                    print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
-
+                    # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
                 
                     # Check Frequecy of Rent Payment.  Currently query only returns MONTHLY leases
                     # rentFrequency = response['result'][i]['frequency']
@@ -623,36 +622,39 @@ class MonthlyRentPurchase_CLASS(Resource):
                         due_by = 1
                     else:
                         due_by = response['result'][i]['due_by']
-                    # print("due_by: ", due_by, type(due_by))
-                    # print("dt.day: ", dt.day, type(dt.day))
+                    # print("due_by: ", due_by, type(due_by))  # Day rent is due ie 2
+                    # print("dt.day: ", dt.day, type(dt.day))  # Todays Day ie 8/3/2024 would return 3
 
 
                     # Calculate Actual Rent due date
-                    if due_by < dt.day:
+                    # due_by < dt.day means that due_by date has already pasted so look towards next month.
+                    # example:  2 < 3 means rent was already due on the second.  Look to rent due next month on the 2nd
+                    if due_by < dt.day:                 # Due date has already passed.  Look to next month
                         # print(due_by, " < ", dt.day)
                         due_date = datetime(dt.year, dt.month, due_by) + relativedelta(months=1)
                     else:
-                        due_date = datetime(dt.year, dt.month, due_by)
-                    # print("due date: ", due_date,  type(due_date))
+                        due_date = datetime(dt.year, dt.month, due_by)    # Current month Due date has NOT passed.  Calculate this months rent
+                    # print("due date: ", due_date,  type(due_date))        # Prints Date of Next Rent Due:  2024-09-02
                     pm_due_date = due_date + relativedelta(days=10)
-                    # print("PM due date: ", pm_due_date,  type(pm_due_date))
+                    # print("PM due date: ", pm_due_date,  type(pm_due_date))  # Prints Date of Next PM to Owner Payment :  2024-09-12
 
                     
                     # Calculate number of days until rent is due
                     if response['result'][i]['frequency'] == 'Monthly':
-                        days_for_rent = (due_date - dt).days
-                        print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
-                        print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
+                        # print(due_date, dt)
+                        days_for_rent = (due_date.date() - dt.date()).days
+                        # print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
+                        # print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
                     elif response['result'][i]['frequency'] == 'Weekly':
-                        print("Weekly")
+                        # print("Weekly")
                         days_for_rent = 500
                         
                     elif response['result'][i]['frequency'] == 'Bi-Weekly':
-                        print("Bi-Weekly")
+                        # print("Bi-Weekly")
                         days_for_rent = 500
                         
                     elif response['result'][i]['frequency'] == 'Annually':
-                        print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
+                        # print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
                         days_for_rent = 500
 
 
@@ -661,6 +663,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                     # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
+                    print(i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], "Rent Due: ", due_date.date(), "Rent Posts: ", due_date.date() - timedelta(days=payable), "    days_for_rent: ", days_for_rent, "   payable: ", payable, "    Rent posts in: ",  days_for_rent - payable)
                     if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
 
                     # IF Changing the dates manually
@@ -920,12 +923,11 @@ def MonthlyRentPurchase_CRON(self):
                         WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
                             AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
                             AND contract_status = 'ACTIVE'
-                        ORDER BY frequency;
+                        ORDER BY leaseFees_uid -- frequency;
                         """)
 
                 for i in range(len(response['result'])):
-                    # print("\n",i, response['result'][i]['lease_property_id'], response['result'][i]['fees_lease_id'], response['result'][i]['leaseFees_uid'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
-
+                    # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'])
                 
                     # Check Frequecy of Rent Payment.  Currently query only returns MONTHLY leases
                     # rentFrequency = response['result'][i]['frequency']
@@ -956,36 +958,39 @@ def MonthlyRentPurchase_CRON(self):
                         due_by = 1
                     else:
                         due_by = response['result'][i]['due_by']
-                    # print("due_by: ", due_by, type(due_by))
-                    # print("dt.day: ", dt.day, type(dt.day))
+                    # print("due_by: ", due_by, type(due_by))  # Day rent is due ie 2
+                    # print("dt.day: ", dt.day, type(dt.day))  # Todays Day ie 8/3/2024 would return 3
 
 
                     # Calculate Actual Rent due date
-                    if due_by < dt.day:
+                    # due_by < dt.day means that due_by date has already pasted so look towards next month.
+                    # example:  2 < 3 means rent was already due on the second.  Look to rent due next month on the 2nd
+                    if due_by < dt.day:                 # Due date has already passed.  Look to next month
                         # print(due_by, " < ", dt.day)
                         due_date = datetime(dt.year, dt.month, due_by) + relativedelta(months=1)
                     else:
-                        due_date = datetime(dt.year, dt.month, due_by)
-                    # print("due date: ", due_date,  type(due_date))
+                        due_date = datetime(dt.year, dt.month, due_by)    # Current month Due date has NOT passed.  Calculate this months rent
+                    # print("due date: ", due_date,  type(due_date))        # Prints Date of Next Rent Due:  2024-09-02
                     pm_due_date = due_date + relativedelta(days=10)
-                    # print("PM due date: ", pm_due_date,  type(pm_due_date))
+                    # print("PM due date: ", pm_due_date,  type(pm_due_date))  # Prints Date of Next PM to Owner Payment :  2024-09-12
 
                     
                     # Calculate number of days until rent is due
                     if response['result'][i]['frequency'] == 'Monthly':
-                        days_for_rent = (due_date - dt).days
+                        # print(due_date, dt)
+                        days_for_rent = (due_date.date() - dt.date()).days
                         # print("Rent due in : ", days_for_rent, " days", type(days_for_rent))
                         # print("Rent Posts in: ", days_for_rent - payable , " days", type(payable))
                     elif response['result'][i]['frequency'] == 'Weekly':
-                        print("Weekly")
+                        # print("Weekly")
                         days_for_rent = 500
                         
                     elif response['result'][i]['frequency'] == 'Bi-Weekly':
-                        print("Bi-Weekly")
+                        # print("Bi-Weekly")
                         days_for_rent = 500
                         
                     elif response['result'][i]['frequency'] == 'Annually':
-                        print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
+                        # print("Annually ", response['result'][i]['due_by_date'], type(response['result'][i]['due_by_date']) )
                         days_for_rent = 500
 
 
@@ -994,6 +999,7 @@ def MonthlyRentPurchase_CRON(self):
 
 
                     # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
+                    print(i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], "Rent Due: ", due_date.date(), "Rent Posts: ", due_date.date() - timedelta(days=payable), "    days_for_rent: ", days_for_rent, "   payable: ", payable, "    Rent posts in: ",  days_for_rent - payable)
                     if days_for_rent == payable + (0):  # Remove/Change number to get query to run and return data
 
                     # IF Changing the dates manually
