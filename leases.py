@@ -597,7 +597,6 @@ class LeaseApplication(Resource):
        
 
         # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
-
         if payload.get('lease_status') == 'ACTIVE':
             # print("Lease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
@@ -632,8 +631,9 @@ class LeaseApplication(Resource):
                         LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
                         LEFT JOIN space.contracts ON lease_property_id = contract_property_id
                         LEFT JOIN space.property_owner ON lease_property_id = property_id
-                        -- WHERE fees_lease_id = '300-000308';
-                        WHERE fees_lease_id = \'""" + lease_uid + """\';
+                        -- WHERE fees_lease_id = '300-000308'
+                        WHERE fees_lease_id = \'""" + lease_uid + """\'
+                        	AND contract_status = 'ACTIVE';
                         """)
             
                 # print("here 2")
