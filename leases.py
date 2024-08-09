@@ -171,7 +171,7 @@ class LeaseDetails(Resource):
                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                             END AS lease_end_month
                             FROM space.leases 
-                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            -- WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
                             ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT

@@ -176,7 +176,7 @@ class Appliances(Resource):
             print("Favorite Image: ", favorite_image)
             while True:
                 filename = f'img_{i}'
-                print("Filename: ", filename)             
+                print("Put image file into Filename: ", filename)           
                 file = request.files.get(filename)
                 print("File:" , file)
                 s3Link = data.get(filename)
@@ -186,26 +186,29 @@ class Appliances(Resource):
                     unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
                     print("unique_filename: ", unique_filename)
                     key = f'appliance/{newRequestID}/{unique_filename}'
+                    # print("Key: ", key)
+                    # This line calls uploadImage to actually upload the file and create the S3Link
                     image = uploadImage(file, key, '')
                     print("Image: ", image)
                     images.append(image)
 
                     if filename == favorite_image:
                         print("favorite image!")
-                        newAppliance["appliance_images"] = image
+                        newAppliance["appliance_favorite_images"] = image
 
                 elif s3Link:
                     imageFiles[filename] = s3Link
                     images.append(s3Link)
 
                     if filename == favorite_image:
-                        newAppliance["appliance_images"] = s3Link
+                        newAppliance["appliance_favorite_images"] = s3Link
                 else:
                     break
                 i += 1
+                print("Images after loop: ", images)
             
             newAppliance["appliance_images"] = json.dumps(images)
-            print("Appliance Images: ", newAppliance["appliance_images"])        
+            print("Appliance Images to add to db: ", newAppliance["appliance_images"])        
 
 
             print("New Appliance Object: ", newAppliance)

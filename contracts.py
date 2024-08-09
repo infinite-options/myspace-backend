@@ -177,7 +177,6 @@ class Contracts(Resource):
 
         return response
 
-
     def get(self, user_id):
         if user_id.startswith("600"):
             print('in ContractsByBusiness')
