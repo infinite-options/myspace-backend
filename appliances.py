@@ -134,6 +134,8 @@ class Appliances(Resource):
                 'appliance_desc',
                 'appliance_url',
                 'appliance_images',
+                'appliance_favorite_image',
+                'appliance_documents',
                 'appliance_available',
                 'appliance_installed',
                 'appliance_model_num',
@@ -145,7 +147,7 @@ class Appliances(Resource):
                 'appliance_purchased_from',
                 'appliance_purchase_order'
                     ]
-
+            
             newAppliance = {}
 
             # print("Property ID: ", data.get("appliance_property_id"))
@@ -214,6 +216,7 @@ class Appliances(Resource):
 
         return response
     
+
     def put(self):
         print("\nIn Appliance PUT")
         response = {}
@@ -312,8 +315,7 @@ class Appliances(Resource):
             # print("Response:" , response)
         return response
 
-
-    
+ 
     def delete(self, uid):
         print("In DELETE Appliances", uid)
         response = {}
@@ -428,9 +430,6 @@ class Appliances_SB(Resource):
             response['appliance'] = db.update('appliances', key, payload)
             # print("Response:" , response)
         return response
-
-
-
 
 
 class RemoveAppliance(Resource):

@@ -651,7 +651,6 @@ class Properties(Resource):
             print("Images to add to db: ", newProperty['property_images'])      
 
 
-            # print(newRequest)
             # print("New Property-Owner request: ", newRequest)
             response = db.insert('property_owner', newRequest)
             response['property_owner'] = "Added"
@@ -798,7 +797,6 @@ class Properties(Resource):
             response['property_info'] = db.update('properties', key, payload)
             # print("Response:" , response)
         return response
-
 
 
     def delete(self):
