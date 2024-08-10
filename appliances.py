@@ -194,14 +194,14 @@ class Appliances(Resource):
 
                     if filename == favorite_image:
                         print("favorite image!")
-                        newAppliance["appliance_favorite_images"] = image
+                        newAppliance["appliance_favorite_image"] = image
 
                 elif s3Link:
                     imageFiles[filename] = s3Link
                     images.append(s3Link)
 
                     if filename == favorite_image:
-                        newAppliance["appliance_favorite_images"] = s3Link
+                        newAppliance["appliance_favorite_image"] = s3Link
                 else:
                     break
                 i += 1
