@@ -968,14 +968,14 @@ class Dashboard(Resource):
 
                 # print(property['result'][0]['property_uid'])
                 data = property['result']
-                print(data)
+                # print(data)
                 
 
                # Extract property_uid values
                 property_uids = [item['property_uid'] for item in data]
 
                 # Print the property_uids in parentheses
-                print("(" + ", ".join(property_uids) + ")")
+                # print("(" + ", ".join(property_uids) + ")")
 
 
 
@@ -1003,12 +1003,12 @@ class Dashboard(Resource):
                     maintenance = db.execute("""
                             -- TENENT MAINTENANCE TICKETS
                             SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
-                            	p.business_name, p.business_phone_number, p.business_email,mr.maintenance_request_uid, mr.maintenance_images, mr.maintenance_title,
-                            	mr.maintenance_request_status, mr.maintenance_priority,
-                            	mr.maintenance_request_created_date, mr.maintenance_scheduled_date, mr.maintenance_scheduled_time
+                                p.business_name, p.business_phone_number, p.business_email,
+                                mr.*
                             FROM space.maintenanceRequests mr
-                            	LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
-                            	LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
+                                LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
+                                LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
+                            -- WHERE tenant_uid = '350-000162';
                             WHERE tenant_uid = \'""" + user_id + """\';
                             """)
                     response["maintenanceRequests"] = maintenance
