@@ -501,28 +501,8 @@ class Properties(Resource):
                 print("In Find Property with Appliances")
                 propertiesQuery = db.execute("""
                     -- RETURN PROPERTIES WITH APPLIANCES
-                    SELECT p.*,
-                        JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                'appliance_uid', a.appliance_uid,
-                                'appliance_property_id', a.appliance_property_id,
-                                'appliance_type', a.appliance_type,
-                                'appliance_url', a.appliance_url,
-                                'appliance_images', a.appliance_images,
-                                'appliance_available', a.appliance_available,
-                                'appliance_installed', a.appliance_installed,
-                                'appliance_model_num', a.appliance_model_num,
-                                'appliance_purchased', a.appliance_purchased,
-                                'appliance_serial_num', a.appliance_serial_num,
-                                'appliance_manufacturer', a.appliance_manufacturer,
-                                'appliance_warranty_info', a.appliance_warranty_info,
-                                'appliance_warranty_till', a.appliance_warranty_till,
-                                'appliance_purchased_from', a.appliance_purchased_from,
-                                'appliance_purchase_order', a.appliance_purchase_order
-                            )
-                        ) AS appliances
-                    FROM space.properties p
-                    LEFT JOIN space.appliances a ON p.property_uid = a.appliance_property_id
+                    SELECT *
+                    FROM space.p_details AS p                    
                     WHERE property_uid = \'""" + uid + """\'
                     GROUP BY p.property_uid;
                 """)
