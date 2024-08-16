@@ -139,7 +139,7 @@ class Properties(Resource):
                                 AND LEFT(pur_payer, 3) = '350'
                                 AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                                 AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
-                            GROUP BY pur_due_date, pur_property_id
+                            GROUP BY pur_property_id -- , pur_due_date
                             ) AS pp
                             ON property_uid = pur_property_id                  
                         """)
@@ -300,7 +300,7 @@ class Properties(Resource):
                                 AND LEFT(pur_payer, 3) = '350'
                                 AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                                 AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
-                            GROUP BY pur_due_date, pur_property_id
+                            GROUP BY pur_property_id -- , pur_due_date
                             ) AS pp
                             ON property_uid = pur_property_id  
                         """)  
