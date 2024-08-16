@@ -296,6 +296,72 @@ def Send_Twilio_SMS(message, phone_number):
 
 
 class Announcements(Resource):
+    def get(self, user_id):
+        print("In Announcements GET")
+        response = {}
+        with connect() as db:
+            # if user_id.startswith("600-"):
+            sentQuery = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS receiver_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS receiver_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS receiver_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS receiver_photo_url
+                    , CASE
+                            WHEN a.announcement_receiver LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_receiver LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                      END AS receiver_role
+                    FROM space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    WHERE announcement_sender = \'""" + user_id + """\';
+            """)
+
+            response["sent"] = sentQuery
+
+            receivedQuery = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS sender_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS sender_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS sender_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS sender_photo_url
+                        , CASE
+                            WHEN a.announcement_sender LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_sender LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_sender LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                        END AS sender_role
+                    FROM 
+                        space.announcements a
+                    LEFT JOIN 
+                        space.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                    LEFT JOIN 
+                        space.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                    LEFT JOIN 
+                        space.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                    WHERE 
+                        announcement_receiver = \'""" + user_id + """\';
+
+            """)
+
+            response["received"] = receivedQuery
+
+            # else:
+            #     response = db.execute("""
+            #                             -- Find the user details
+            #                             SELECT *
+            #                             FROM space.announcements AS a
+            #                             WHERE a.announcement_receiver = \'""" + user_id + """\'
+            #                             AND a.App = '1'
+            #                             ORDER BY a.announcement_date DESC;
+            #                             """)
+        return response
+
     def post(self, user_id):
         print("In Announcements POST")
         payload = request.get_json()
@@ -375,72 +441,6 @@ class Announcements(Resource):
                 response = db.insert('announcements', newRequest)
 
         return response                
-
-    def get(self, user_id):
-        print("In Announcements GET")
-        response = {}
-        with connect() as db:
-            # if user_id.startswith("600-"):
-            sentQuery = db.execute("""
-                    SELECT 
-                        a.*,
-                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS receiver_first_name,
-                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS receiver_last_name,
-                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS receiver_phone_number,
-                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS receiver_photo_url
-                    , CASE
-                            WHEN a.announcement_receiver LIKE '600%' THEN 'Business'
-                            WHEN a.announcement_receiver LIKE '350%' THEN 'Tenant'
-                            WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
-                            ELSE 'Unknown'
-                      END AS receiver_role
-                    FROM space.announcements a
-                    LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
-                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
-                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
-                    WHERE announcement_sender = \'""" + user_id + """\';
-            """)
-
-            response["sent"] = sentQuery
-
-            receivedQuery = db.execute("""
-                    SELECT 
-                        a.*,
-                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS sender_first_name,
-                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS sender_last_name,
-                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS sender_phone_number,
-                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS sender_photo_url
-                        , CASE
-                            WHEN a.announcement_sender LIKE '600%' THEN 'Business'
-                            WHEN a.announcement_sender LIKE '350%' THEN 'Tenant'
-                            WHEN a.announcement_sender LIKE '110%' THEN 'Owner'
-                            ELSE 'Unknown'
-                        END AS sender_role
-                    FROM 
-                        space.announcements a
-                    LEFT JOIN 
-                        space.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
-                    LEFT JOIN 
-                        space.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
-                    LEFT JOIN 
-                        space.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
-                    WHERE 
-                        announcement_receiver = \'""" + user_id + """\';
-
-            """)
-
-            response["received"] = receivedQuery
-
-            # else:
-            #     response = db.execute("""
-            #                             -- Find the user details
-            #                             SELECT *
-            #                             FROM space.announcements AS a
-            #                             WHERE a.announcement_receiver = \'""" + user_id + """\'
-            #                             AND a.App = '1'
-            #                             ORDER BY a.announcement_date DESC;
-            #                             """)
-        return response
 
     def put(self):
         print("In Announcements PUT")
