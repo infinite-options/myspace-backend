@@ -523,7 +523,8 @@ class Properties(Resource):
                         ) AS appliances
                     FROM space.properties p
                     LEFT JOIN space.appliances a ON p.property_uid = a.appliance_property_id
-                    WHERE property_uid = '200-000001'
+                    -- WHERE property_uid = '200-000001'
+                    WHERE property_uid = \'""" + uid + """\'
                     GROUP BY p.property_uid;
                 """)
             response["Property"] = propertiesQuery
