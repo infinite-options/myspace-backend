@@ -215,6 +215,7 @@ class LeaseDetails(Resource):
                         WHERE tenants LIKE '%""" + filter_id + """%'
                         ;
                         """)
+            
             else:
                 leaseQuery = "UID Not Found"
 
@@ -279,7 +280,6 @@ class LeaseApplication(Resource):
                 return(leaseQuery['result'][0]['lt_lease_id'])
 
         return ("New Application")
-
 
     # decorators = [jwt_required()]
 
@@ -593,7 +593,7 @@ class LeaseApplication(Resource):
 
         with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
        
 
         # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
@@ -605,22 +605,7 @@ class LeaseApplication(Resource):
         # CONSIDER ADDING FULL FIRST MONTHS RENT AND NEXT MONTHS PARTIAL RENT IF THERE IS A WAY TO AVOID DUPLICATE CHARGES
 
         # READ THE LEASE FEES
-        # INSERT EACH LEASE FEE INTO PURCHASES TALE
-
-            # query =     (""" 
-            #             SELECT leaseFees.*
-            #                 ,lease_property_id, contract_uid, contract_business_id, property_owner_id, lt_tenant_id
-            #             FROM space.leaseFees
-            #             LEFT JOIN space.leases ON fees_lease_id = lease_uid
-            #             LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
-            #             LEFT JOIN space.contracts ON lease_property_id = contract_property_id
-            #             LEFT JOIN space.property_owner ON lease_property_id = property_id
-            #             -- WHERE fees_lease_id = '300-000308';
-            #             WHERE fees_lease_id = \'""" + lease_uid + """\';
-            #             """)
-            
-            # print(query)
-
+        # INSERT EACH LEASE FEE INTO PURCHASES TABLE
 
             with connect() as db:
                 fees = db.execute(""" 
@@ -745,7 +730,7 @@ class LeaseApplication(Resource):
                                         -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
                                         WHERE contract_uid = \'""" + fee['contract_uid'] + """\' AND of_column LIKE '%rent%';
                                     """)
-                        # print("\n", manager_fees)
+                        # print("\n Manager Fees: ", manager_fees)
                     
 
                         for j in range(len(manager_fees['result'])):

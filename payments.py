@@ -90,13 +90,13 @@ class NewPayments(Resource):
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
                 # print('amt_due: ', amt_due, type(amt_due))
 
-                # print(purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
-                # print(datetime.now(), type(datetime.now()))
+                # print("Due Date Provided? ", purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
+                # print("Date Time Stamp: ", datetime.now(), type(datetime.now()))
 
-                # if purchaseInfo['result'][0]['pur_due_date'] == datetime.now():
-                #     print("YES")
-
-                pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
+                if purchaseInfo['result'][0]['pur_due_date'] is None:
+                    pur_due_date = datetime.now()
+                else:
+                    pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
                 # print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
