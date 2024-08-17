@@ -101,6 +101,7 @@ class NewPayments(Resource):
                 
                 purchase_status = "UNPAID"
                 pur_status_value = "0"
+                # print("Amount Reamining: ", amt_remaining, type(amt_remaining))
                 if amt_remaining <= 0: 
                     if pur_due_date >= datetime.now():
                         purchase_status = "PAID"
@@ -114,7 +115,7 @@ class NewPayments(Resource):
                 else:
                     purchase_status = "PARTIALLY PAID"
                     pur_status_value = "1"
-                # print(purchase_status)
+                # print("Purchase Status: ", purchase_status)
 
                 # DEFINE KEY VALUE PAIR
                 key = {'purchase_uid': item['purchase_uid']}

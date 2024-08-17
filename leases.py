@@ -484,18 +484,18 @@ class LeaseApplication(Resource):
             json_object = json.loads(json_string)
             print("lease fees json_object", json_object)
             for fees in json_object:    
-                print("fees",fees)
+                # print("fees",fees)
                 new_leaseFees = {}
                 new_leaseFees["fees_lease_id"] = lease_uid
                 print("here 1")
                 for item in fields_leaseFees:
                     if item in fees:
-                        print("here 2", item)
+                        # print("here 2", item)
                         new_leaseFees[item] = fees[item]
                 # print("Lease Fee: ", new_leaseFees)
                 with connect() as db: 
                     new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
-                    print('New Lease Fees Payload: ', new_leaseFees)
+                    # print('New Lease Fees Payload: ', new_leaseFees)
                     response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
 
@@ -681,7 +681,7 @@ class LeaseApplication(Resource):
                     newRequest['pur_receiver'] = manager
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
-                    newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
+                    newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
                     
                     
                     # print(newRequest)
