@@ -948,7 +948,7 @@ class Dashboard(Resource):
                             -- , property_available_to_rent, property_active_date
                             , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
                             , property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent
-                            , property_images
+                            , property_images, property_favorite_image
                             -- , property_taxes, property_mortgages, property_insurance, property_featured
                             , property_description, property_notes
                             , MAX(CASE WHEN lease_status = 'ACTIVE' THEN 1 ELSE 0 END) AS active_priority

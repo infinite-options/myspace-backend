@@ -737,13 +737,14 @@ class LeaseApplication(Resource):
 
                             # Check if fees is monthly 
                             if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
+                                # print("Mon        thly Charge")
 
                                 # Check if charge is a % or Fixed $ Amount
                                 if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
                                     charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(fee['charge']) / 100
                                 else:
                                     charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
-                                # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
+                                # print("Charge Amount: ", charge_amt, property, fee['contract_uid'], manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
