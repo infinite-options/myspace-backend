@@ -460,7 +460,7 @@ class LeaseApplication(Resource):
         print("\nIn Lease Application PUT")
         response = {}
         payload = request.form.to_dict()
-        # print("Lease Application Payload: ", payload)
+        print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
         if payload.get('lease_uid') is None:
@@ -469,40 +469,57 @@ class LeaseApplication(Resource):
         
         lease_uid = payload.get('lease_uid')
         key = {'lease_uid': payload.pop('lease_uid')}
-        # print("Lease Key: ", key)
+        print("Lease Key: ", key)
 
         # POST TO LEASE FEES.  Need to post Lease Fees into Lease Fees Table
         if "lease_fees" in payload:
-            # print("lease_fees in data", payload['lease_fees'])
+            print("lease_fees in data", payload['lease_fees'])
             fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                         "perDay_late_fee", "late_fee"]
             temp_fees = {'lease_fees': payload.pop('lease_fees')}
-            # print("Temp: ", temp_fees)
-            # json_object = json.loads({'lease_fees': payload.pop('lease_fees')})
-            # json_object = json.loads(payload.pop["lease_fees"])
+            print("Temp: ", temp_fees)
+
             json_string = temp_fees['lease_fees']
             json_object = json.loads(json_string)
-            # print("lease fees json_object", json_object)
-            for fees in json_object:   
-                # fee_key = fees['leaseFees_uid'] 
-                # key = {'lease_uid': payload.pop('lease_uid')}
-                fee_key = {'leaseFees_uid': fees['leaseFees_uid']}
-                # print("fee_key",fee_key, type(fee_key))
-                new_leaseFees = {}
-                new_leaseFees["fees_lease_id"] = lease_uid
-                # new_leaseFees["keys"] = fee_key
-                
-                # print("here 1")
-                for item in fields_leaseFees:
-                    if item in fees:
-                        # print("here 2", item)
-                        new_leaseFees[item] = fees[item]
-                # print("Lease Fee to input: ", new_leaseFees)
-                with connect() as db: 
-                    # new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
-                    # print('New Lease Fees Payload: ', new_leaseFees)
-                    # response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
-                    response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
+            print("lease fees json_object", json_object)
+            for fees in json_object:
+                print("Fees: ", fees)
+                if 'leaseFees_uid' in fees:  
+                    print("In IF Statment ", fees['leaseFees_uid']) 
+                    fee_key = {'leaseFees_uid': fees['leaseFees_uid']}
+                    print("fee_key",fee_key, type(fee_key))
+                    new_leaseFees = {}
+                    new_leaseFees["fees_lease_id"] = lease_uid
+                    new_leaseFees["keys"] = fee_key
+                    
+                    print("here 1")
+                    for item in fields_leaseFees:
+                        if item in fees:
+                            # print("here 2", item)
+                            new_leaseFees[item] = fees[item]
+                    print("Lease Fee to input: ", new_leaseFees)
+                    with connect() as db: 
+                        # new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
+                        # print('New Lease Fees Payload: ', new_leaseFees)
+                        # response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                        response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
+                else:
+                    print("In ELSE Statment ") 
+                    new_leaseFees = {}
+                    new_leaseFees["fees_lease_id"] = lease_uid
+                    
+                    print("here 1")
+                    for item in fields_leaseFees:
+                        if item in fees:
+                            # print("here 2", item)
+                            new_leaseFees[item] = fees[item]
+                    print("Lease Fee to input: ", new_leaseFees)
+                    with connect() as db: 
+                        new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
+                        print('New Lease Fees Payload: ', new_leaseFees)
+                        response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                        # response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
+
 
 
         # CHECK DOCUMENTS
@@ -615,16 +632,17 @@ class LeaseApplication(Resource):
 
             with connect() as db:
                 fees = db.execute(""" 
-                        SELECT leaseFees.*
-                            ,lease_property_id, contract_uid, contract_business_id, property_owner_id, lt_tenant_id
+                        SELECT leaseFees.* -- , leases.*
+                            ,lease_property_id, lease_start, lease_status
+                            , contract_uid, contract_business_id, property_owner_id, lt_tenant_id
                         FROM space.leaseFees
                         LEFT JOIN space.leases ON fees_lease_id = lease_uid
                         LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
                         LEFT JOIN space.contracts ON lease_property_id = contract_property_id
                         LEFT JOIN space.property_owner ON lease_property_id = property_id
-                        -- WHERE fees_lease_id = '300-000308'
+                        -- WHERE fees_lease_id = '300-000005'
                         WHERE fees_lease_id = \'""" + lease_uid + """\'
-                        	AND contract_status = 'ACTIVE';
+                            AND contract_status = 'ACTIVE';
                         """)
             
                 print("here 2")
@@ -687,7 +705,7 @@ class LeaseApplication(Resource):
                     newRequest['pur_receiver'] = manager
                     newRequest['pur_payer'] = tenant
                     newRequest['pur_initiator'] = manager
-                    newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                    newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
                     
                     
                     # print(newRequest)
