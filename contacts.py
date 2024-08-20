@@ -752,9 +752,9 @@ class Contacts(Resource):
                         LEFT JOIN space.leases ON lt_lease_id = lease_uid
                         LEFT JOIN space.properties ON lease_property_id = property_uid
                         LEFT JOIN space.b_details ON lease_property_id = contract_property_id
-                        WHERE lt_tenant_id = "350-000080"
+                        -- WHERE lt_tenant_id = "350-000080"
                         -- WHERE lt_tenant_id = "350-000002"
-                        -- WHERE lt_tenant_id = \'""" + uid + """\'
+                        WHERE lt_tenant_id = \'""" + uid + """\'
                             AND !ISNULL(business_uid)
                         GROUP BY business_uid
                         ) AS b
