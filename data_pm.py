@@ -218,8 +218,8 @@ class DatabaseConnection:
                 sql += f'{key} = %({key})s'
                 if i != len(object.keys()) - 1:
                     sql += ', '
-            print(sql)
-            print(object)
+            # print(sql)
+            # print(object)
             response = self.execute(sql, object, 'post')
         except Exception as e:
             print(e)
