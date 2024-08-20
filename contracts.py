@@ -98,6 +98,7 @@ class Contracts(Resource):
         return response
 
     def put(self):
+        print("In contracts PUT")
         response = {}
         data = request.form
         contract_id = data.get("contract_uid")
@@ -136,7 +137,6 @@ class Contracts(Resource):
                 print("FILES DETAILS LIST")
                 print(files_details)
 
-            # contract_docs = []
 
             if files:
                 detailsIndex = 0
@@ -145,8 +145,6 @@ class Contracts(Resource):
                     file_info = files_details[detailsIndex]
                     # print("FILE DETAILS")
                     # print(file_info)
-                    # file_path = os.path.join(os.getcwd(), file.filename)
-                    # file.save(file_path)
                     if file and allowed_file(file.filename):
                         key = f'contracts/{contract_id}/{file.filename}'
                         s3_link = uploadImage(file, key, '')

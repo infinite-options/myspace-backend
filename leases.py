@@ -713,11 +713,13 @@ class LeaseApplication(Resource):
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
                         # newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                        newRequest['pur_due_date'] = (datetime.strptime(fee['lease_start'], "%m-%d-%Y") + timedelta(days=30)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                                                      
+
                         newRequest['pur_group'] = grouping
                         newRequest['pur_late_fee'] = 0
                         newRequest['pur_perDay_late_fee'] = 0
-                    
+
                         # print(newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
@@ -786,9 +788,7 @@ class LeaseApplication(Resource):
                                 newPMRequest['pur_group'] = grouping
 
                                 # *********
-                                newPMRequest['pur_due_date'] =  (datetime.strptime(fee['lease_start'], "%m-%d-%Y") + timedelta(days=30)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
                                 
                                 # print(newPMRequest)
                                 db.insert('purchases', newPMRequest)
