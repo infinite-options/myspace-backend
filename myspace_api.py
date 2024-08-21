@@ -1,21 +1,16 @@
 # MANIFEST MY SPACE (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-# from announcements import AnnouncementsByUserId # , Announcements,
-# from profiles import RolesByUserid
-from password import Password
+
+
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
-
 # README:  Debug Mode may need to be set to False when deploying live (although it seems to be working through Zappa)
-
 # README:  if there are errors, make sure you have all requirements are loaded
 # pip3 install -r requirements.txt
 
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
-
-
 from dashboard import Dashboard
 from appliances import Appliances, RemoveAppliance, Appliances_SB
 from rents import Rents, RentDetails
@@ -42,38 +37,57 @@ from status_update import StatusUpdate
 from utilities import Utilities
 from cron import MonthlyRent_CLASS
 from users import UserInfo
-
-
-# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+from password import Password
 from data_pm import connect, uploadImage, s3
-from twilio.rest import Client
+
+
+
 import os
 import boto3
 import json
-from datetime import datetime as dt
-from datetime import timezone as dtz
 import time
-from datetime import datetime, date, timedelta
-from pytz import timezone as ptz  # Not sure what the difference is
-from decimal import Decimal
-from hashlib import sha512
 import sys
 import pymysql
 import requests
 import pytz
-
 import stripe
+import urllib.request
+import base64
+import math
+import string
+import random
+import hashlib
+import binascii
+import csv
+import re  # regex
 
+from dotenv import load_dotenv
+from datetime import datetime as dt
+from datetime import timezone as dtz
+from datetime import datetime, date, timedelta
 from flask import Flask, request, render_template, url_for, redirect
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
 # from flask_jwt_extended import JWTManager
+from pytz import timezone as ptz  # Not sure what the difference is
+from decimal import Decimal
+from hashlib import sha512
+from twilio.rest import Client
+from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
+# from google_auth_oauthlib.flow import InstalledAppFlow
+from urllib.parse import urlparse
+from io import BytesIO
+from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import *
+from math import ceil
+from werkzeug.exceptions import BadRequest, NotFound
 
 # used for serializer email and error handling
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
 
-from werkzeug.exceptions import BadRequest, NotFound
+
+
 # NEED to figure out where the NotFound or InternalServerError is displayed
 # from werkzeug.exceptions import BadRequest, InternalServerError
 
@@ -81,114 +95,104 @@ from werkzeug.exceptions import BadRequest, NotFound
 # from NotificationHub import Notification
 # from NotificationHub import NotificationHub
 
-
-
 # BING API KEY
 # Import Bing API key into bing_api_key.py
 
 #  NEED TO SOLVE THIS
 # from env_keys import BING_API_KEY, RDS_PW
 
-# from dotenv import load_dotenv
 
-
-
-
-# OTHER IMPORTS NOT IN NITYA
-from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
-# from google_auth_oauthlib.flow import InstalledAppFlow
-from urllib.parse import urlparse
-import urllib.request
-import base64
-from io import BytesIO
-from dateutil.relativedelta import relativedelta
-import math
-from dateutil.relativedelta import *
-from math import ceil
-import string
-import random
-import hashlib
-import binascii
-import csv
-
-# regex
-import re
-# from env_keys import BING_API_KEY, RDS_PW
 
 
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 s3 = boto3.client('s3')
 
 
-
 app = Flask(__name__)
+api = Api(app)
+# load_dotenv()
+
 CORS(app)
 # CORS(app, resources={r'/api/*': {'origins': '*'}})
+
 # Set this to false when deploying to live application
 app.config['DEBUG'] = True
 
 
+
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
-# EMAIL INFO
-# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_SERVER'] = 'smtp.mydomain.com'
-app.config['MAIL_PORT'] = 465
 
-app.config['MAIL_USERNAME'] = 'support@manifestmy.space'
-app.config['MAIL_PASSWORD'] = 'Support4MySpace'
-app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
-
-sender = os.getenv('SUPPORT_EMAIL')
+# --------------- Google Scopes and Credentials------------------
+# SCOPES = "https://www.googleapis.com/auth/calendar"
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+# CLIENT_SECRET_FILE = "credentials.json"
+# APPLICATION_NAME = "nitya-ayurveda"
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+s = URLSafeTimedSerializer('thisisaverysecretkey')
 
 
+# --------------- Stripe Variables ------------------
 # STRIPE KEYS
-
 stripe_public_test_key = os.getenv("stripe_public_test_key")
 stripe_secret_test_key = os.getenv("stripe_secret_test_key")
 
 stripe_public_live_key = os.getenv("stripe_public_live_key")
 stripe_secret_live_key = os.getenv("stripe_secret_live_key")
 
-stripe.api_key = stripe_secret_test_key
 
-
-
+# --------------- Twilio Setting ------------------
 # Twilio's settings
 # from twilio.rest import Client
-
-# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 
 
 
+# --------------- Mail Variables ------------------
+# Mail username and password loaded in .env file
+app.config['MAIL_USERNAME'] = os.getenv('SUPPORT_EMAIL')
+app.config['MAIL_PASSWORD'] = os.getenv('SUPPORT_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+# print("Sender: ", app.config['MAIL_DEFAULT_SENDER'])
 
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-# app.config['MAIL_DEBUG'] = True
-# app.config['MAIL_SUPPRESS_SEND'] = False
-# app.config['TESTING'] = False
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+# Setting for mydomain.com
+app.config["MAIL_SERVER"] = "smtp.mydomain.com"
+app.config["MAIL_PORT"] = 465
+
+# Setting for gmail
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_PORT'] = 465
+
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+
+
+# Set this to false when deploying to live application
+app.config["DEBUG"] = True
+# app.config["DEBUG"] = False
+
+# MAIL  -- This statement has to be below the Mail Variables
 mail = Mail(app)
-s = URLSafeTimedSerializer('thisisaverysecretkey')
-# API
-api = Api(app)
 
 
+
+
+# --------------- Time Variables ------------------
 # convert to UTC time zone when testing in local time zone
 utc = pytz.utc
-# These statment return Day and Time in GMT
+
+# # These statment return Day and Time in GMT
 # def getToday(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d")
-# def getNow(): return datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S")
+# def getNow(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d %H:%M:%S")
 
-# These statment return Day and Time in Local Time - Not sure about PST vs PDT
+# # These statment return Day and Time in Local Time - Not sure about PST vs PDT
+def getToday():
+    return datetime.strftime(datetime.now(), "%Y-%m-%d")
 
-
-def getToday(): return datetime.strftime(datetime.now(), "%Y-%m-%d")
-def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
+def getNow():
+    return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 
 # NOTIFICATIONS - NEED TO INCLUDE NOTIFICATION HUB FILE IN SAME DIRECTORY
@@ -431,6 +435,7 @@ class Announcements(Resource):
                         user_email = user_query['result'][0]['email']
                         sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
                     if payload["announcement_type"][j] == "Text":
+                        continue
                         newRequest['Text'] = "1"
                         user_phone = user_query['result'][0]['phone_number']
                         msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]

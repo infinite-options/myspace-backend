@@ -1,3 +1,4 @@
+import os
 import pymysql
 import datetime
 import json
@@ -92,20 +93,62 @@ def uploadImage(file, key, content):
         return filename
     return None
 
-
+# --------------- DATABASE CONFIGUATION ------------------
+# Connect to MySQL database (API v2)
 def connect():
-    conn = pymysql.connect(
-        host='io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com',
-        port=3306,
-        user='admin',
-        passwd='prashant',
-        db='space',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    return DatabaseConnection(conn)
+    # global RDS_PW
+    # global RDS_HOST
+    # global RDS_PORT
+    # global RDS_USER
+    # global RDS_DB
+
+    print("Trying to connect to RDS (API v2)...")
+    # print("RDS_HOST: ", os.getenv('RDS_HOST'))
+    # print("RDS_USER: ", os.getenv('RDS_USER'))
+    # print("RDS_PORT: ", os.getenv('RDS_PORT'), type(os.getenv('RDS_PORT')))
+    # print("RDS_PW: ", os.getenv('RDS_PW'))
+    # print("RDS_DB: ", os.getenv('RDS_DB'))
+
+    try:
+        conn = pymysql.connect(
+            host=os.getenv('RDS_HOST'),
+            user=os.getenv('RDS_USER'),
+            port=int(os.getenv('RDS_PORT')),
+            passwd=os.getenv('RDS_PW'),
+            db=os.getenv('RDS_DB'),
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor,
+        )
+        print("Successfully connected to RDS. (API v2)")
+        return DatabaseConnection(conn)
+    except:
+        print("Could not connect to RDS. (API v2)")
+        raise Exception("RDS Connection failed. (API v2)")
 
 
+# def connect():
+#     conn = pymysql.connect(
+#         host='io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com',
+#         port=3306,
+#         user='admin',
+#         passwd='prashant',
+#         db='space',
+#         charset='utf8mb4',
+#         cursorclass=pymysql.cursors.DictCursor
+#     )
+#     return DatabaseConnection(conn)
+
+# Disconnect from MySQL database (API v2)
+def disconnect(conn):
+    try:
+        conn.close()
+        print("Successfully disconnected from MySQL database. (API v2)")
+    except:
+        print("Could not properly disconnect from MySQL database. (API v2)")
+        raise Exception("Failure disconnecting from MySQL database. (API v2)")
+
+
+# Serialize JSON
 def serializeJSON(unserialized):
     # print(unserialized, type(unserialized))
     if type(unserialized) == list:
