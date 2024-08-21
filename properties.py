@@ -253,7 +253,8 @@ class Properties(Resource):
                         GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
                 LEFT JOIN space.t_details ON lease_uid = lt_lease_id
                 LEFT JOIN space.contracts ON contract_property_id = property_uid
-                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
+                WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
+                AND contract_status = "ACTIVE"
                 AND contract_business_id = \'""" + uid + """\'                   
                 """)
             response["Applications"] = applicationQuery

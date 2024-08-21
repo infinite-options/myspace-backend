@@ -126,18 +126,6 @@ def connect():
         raise Exception("RDS Connection failed. (API v2)")
 
 
-# def connect():
-#     conn = pymysql.connect(
-#         host='io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com',
-#         port=3306,
-#         user='admin',
-#         passwd='prashant',
-#         db='space',
-#         charset='utf8mb4',
-#         cursorclass=pymysql.cursors.DictCursor
-#     )
-#     return DatabaseConnection(conn)
-
 # Disconnect from MySQL database (API v2)
 def disconnect(conn):
     try:
