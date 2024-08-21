@@ -329,42 +329,64 @@ class MaintenanceRequests(Resource):
                 # print(field, " = ", newRequest[field])
 
 
-            # # GET NEW UID
+            # GET NEW UID
             print("Get New Request UID")
             newRequestID = db.call('new_request_uid')['result'][0]['new_id']
             newRequest['maintenance_request_uid'] = newRequestID
             print(newRequestID)
 
+
+            # Image Upload 
+            print("\nIn images")
             images = []
-            i = -1
-            # WHILE WHAT IS TRUE?
+            i = 0
+            imageFiles = {}
+            favorite_image = data.get("img_favorite")
             while True:
-                print("In while loop")
-                filename = f'img_{i}'
-                # print("Filename: ", filename)
-                if i == -1:
-                    filename = 'img_cover'
-                file = request.files.get(filename)
-                # print("File: ", file)
+                filename = f'img_{i}'  
+                print("Put image file into Filename: ", filename)               
+                file = request.files.get(filename)  # if File: puts file into files
+                # print("File:" , file)
+                s3Link = data.get(filename) # if S3 Link put filename into S3
+                # print("S3Link: ", s3Link)
                 if file:
-                    key = f'maintenanceRequests/{newRequestID}/{filename}'
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    print("Unique File Name: ", unique_filename)
+                    key = f'maintenanceRequests/{newRequestID}/{unique_filename}'
+                    # print("Key: ", key)
+                    # This line calls uploadImage to actually upload the file and create the S3Link
                     image = uploadImage(file, key, '')
+                    # print("Image: ", image)
                     images.append(image)
+
+                    if filename == favorite_image:
+                        # print("Favorite Image: ", filename, favorite_image)
+                        newRequest["maintenance_favorite_image"] = image
+
+                elif s3Link:
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == favorite_image:
+                        newRequest["maintenance_favorite_image"] = s3Link
                 else:
                     break
                 i += 1
-            newRequest['maintenance_images'] = json.dumps(images)
-            # print("Images to be uploaded: ", newRequest['maintenance_images'])
+                print("Images after loop: ", images)
+            
+            newRequest['maintenance_images'] = json.dumps(images)  
+            print("Images to add to db: ", newRequest['maintenance_images'])   
+            newRequest['maintenance_request_status'] = 'NEW'   
 
-            newRequest['maintenance_request_status'] = 'NEW'
-            # newRequest['frequency'] = 'One time'
-            # newRequest['can_reschedule'] = False
 
-            # print(newRequest)
-
+            # print("New Propterty request: ", newProperty, type(newProperty))
             response = db.insert('maintenanceRequests', newRequest)
             response['Maintenance_UID'] = newRequestID
             response['images'] = newRequest['maintenance_images']
+            # print("\nNew Prop÷erty Added")
+            response['favorite images'] = newRequest['maintenance_favorite_image']
+
 
         return response
     
