@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, deleteImage, s3
+from data_pm import connect, uploadImage, deleteImage, s3, processImage
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -697,6 +697,16 @@ class Properties(Resource):
         key = {'property_uid': payload.pop('property_uid')}
         print("Property Key: ", key)
 
+
+        # --------------- FUNCTION TEST ------------------
+
+        function_test = processImage(key, payload)
+        print("\nFunction Test Return: ", function_test)
+
+        
+        # --------------- FUNCTION TEST END ------------------
+
+
         # Check if images already exist
         # Put current db images into current_images
         current_images = []
@@ -770,7 +780,7 @@ class Properties(Resource):
             print("Updated List of Images: ", current_images)
 
 
-            print("Current Images: ", current_images)
+            print("\nCurrent Images: ", current_images)
             payload['property_images'] = json.dumps(current_images) 
 
         # Write to Database

@@ -1,3 +1,5 @@
+from flask import request
+
 import os
 import pymysql
 import datetime
@@ -5,10 +7,13 @@ import json
 import boto3
 from botocore.response import StreamingBody
 from decimal import Decimal
+from datetime import date, datetime, timedelta
 from werkzeug.datastructures import FileStorage
 import mimetypes
+import ast
 
 s3 = boto3.client('s3')
+
 
 
 # def uploadImage(file, key, content):
@@ -92,6 +97,96 @@ def uploadImage(file, key, content):
 
         return filename
     return None
+
+# --------------- PROCESS IMAGES ------------------
+
+def processImage(key, payload):
+    print("\nIn Process Image: ", payload)
+
+    response = {}
+    property_uid = key['property_uid']
+   
+    current_images = []
+    if payload.get('property_images') is not None:
+        current_images =ast.literal_eval(payload.get('property_images'))
+        print("Current images: ", current_images, type(current_images))
+
+    # Check if images are being added OR deleted
+    images = []
+    # i = -1
+    i = 0
+    imageFiles = {}
+    favorite_image = payload.get("property_favorite_image")
+    while True:
+        filename = f'img_{i}'
+        print("Put image file into Filename: ", filename) 
+        # if i == -1:
+        #     filename = 'img_cover'
+        file = request.files.get(filename)
+        print("File:" , file)            
+        s3Link = payload.get(filename)
+        print("S3Link: ", s3Link)
+        if file:
+            print("In File if Statement")
+            imageFiles[filename] = file
+            unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+            image_key = f'properties/{property_uid}/{unique_filename}'
+            # This calls the uploadImage function that generates the S3 link
+            image = uploadImage(file, image_key, '')
+            images.append(image)
+
+            if filename == favorite_image:
+                payload["property_favorite_image"] = image
+
+        elif s3Link:
+            imageFiles[filename] = s3Link
+            images.append(s3Link)
+
+            if filename == favorite_image:
+                payload["property_favorite_image"] = s3Link
+        else:
+            break
+        i += 1
+    
+    print("Images after loop: ", images)
+    if images != []:
+        current_images.extend(images)
+        payload['property_images'] = json.dumps(current_images) 
+
+    # Delete Images
+    if payload.get('delete_images'):
+        delete_images = ast.literal_eval(payload.get('delete_images'))
+        del payload['delete_images']
+        print(delete_images, type(delete_images), len(delete_images))
+        for image in delete_images:
+            print("Image to Delete: ", image, type(image))
+            # Delete from db list assuming it is in db list
+            try:
+                current_images.remove(image)
+            except:
+                print("Image not in list")
+
+            #  Delete from S3 Bucket
+            try:
+                delete_key = image.split('io-pm/', 1)[1]
+                print("Delete key", delete_key)
+                deleteImage(delete_key)
+            except: 
+                print("could not delete from S3")
+        
+        print("Updated List of Images: ", current_images)
+
+
+        print("Current Images: ", current_images)
+        payload['property_images'] = json.dumps(current_images) 
+
+    # Write to Database
+    with connect() as db:
+        print("Checking Inputs: ", key, payload)
+        response['property_info'] = db.update('properties', key, payload)
+        # print("Response:" , response)
+    return response
+
 
 # --------------- DATABASE CONFIGUATION ------------------
 # Connect to MySQL database (API v2)
