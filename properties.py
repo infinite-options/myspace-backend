@@ -697,9 +697,8 @@ class Properties(Resource):
         key = {'property_uid': payload.pop('property_uid')}
         print("Property Key: ", key)
 
-
         # Check if images already exist
-        # Put current db images into current images
+        # Put current db images into current_images
         current_images = []
         if payload.get('property_images') is not None:
             current_images =ast.literal_eval(payload.get('property_images'))
@@ -721,6 +720,7 @@ class Properties(Resource):
             s3Link = payload.get(filename)
             print("S3Link: ", s3Link)
             if file:
+                print("In File if Statement")
                 imageFiles[filename] = file
                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
                 image_key = f'properties/{property_uid}/{unique_filename}'
@@ -757,7 +757,7 @@ class Properties(Resource):
                 try:
                     current_images.remove(image)
                 except:
-                    print("Image not in lsit")
+                    print("Image not in list")
 
                 #  Delete from S3 Bucket
                 try:
