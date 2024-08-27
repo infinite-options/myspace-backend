@@ -58,7 +58,10 @@ def deleteImage(key):
 
 
 def uploadImage(file, key, content):
-    print("\nIn Upload Image: ", file, key, content)
+    print("\nIn Upload Image: ")
+    print("File: ", file)
+    print("Key: ", key)
+    print("Content: ", content)
     bucket = 'io-pm'
 
     if isinstance(file, FileStorage): 

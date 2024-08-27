@@ -175,17 +175,31 @@ class Contracts(Resource):
 
 
             file = request.files.get(filename)
-            print("File:" , file)            
+            print("File:" , file)    
+            # print("Filename:", file.filename)
+            # print("File Type:", file.content_type) 
+
+        
             s3Link = payload.get(filename)
             print("S3Link: ", s3Link)
+
+
             if file:
                 print("In File if Statement")
                 documentFiles[filename] = file
                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
                 image_key = f'contracts/{contract_uid}/{unique_filename}'
                 # This calls the uploadImage function that generates the S3 link
-                document = uploadImage(file, image_key, '')
-                documents.append(document)
+                document = uploadImage(file, image_key, '')  # This returns the document http link
+                print("Document after upload: ", document)
+
+                docObject = {}
+                docObject["link"] = document
+                docObject["filename"] = file.filename
+                docObject["type"] = file.content_type
+                print("Doc Object: ", docObject)
+
+                documents.append(docObject)
 
                 
 
