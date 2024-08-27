@@ -12,13 +12,13 @@ from werkzeug.exceptions import BadRequest
 
 class Dashboard(Resource):
     def get(self, user_id):
-        print('in Dashboard')
+        print('in Dashboard ', user_id)
         response = {}
         if user_id.startswith("600"):
             business_type = ""
-            # print('in Get Business Contacts')
+            print('in Get Business Contacts')
             with connect() as db:
-                # print("in connect loop")
+                print("in connect loop")
                 query = db.execute(""" 
                     -- FIND ALL CURRENT BUSINESS CONTACTS
                         SELECT business_type
@@ -27,11 +27,11 @@ class Dashboard(Resource):
                         """)
 
             business_type = query['result'][0]['business_type']
-            # print(business_type)
+            print(business_type)
 
             if business_type == "MAINTENANCE":
                 with connect() as db:
-                    # print("in maintenance dashboard")
+                    print("in maintenance dashboard")
                     currentActivity = db.execute(""" 
                             -- CURRENT ACTIVITY FOR GRAPH AND TABLE
                             SELECT -- *,
