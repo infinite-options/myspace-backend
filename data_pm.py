@@ -134,7 +134,7 @@ def processImage(key, payload):
         if file:
             print("In File if Statement")
             imageFiles[filename] = file
-            unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+            unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
             image_key = f'properties/{property_uid}/{unique_filename}'
             # This calls the uploadImage function that generates the S3 link
             image = uploadImage(file, image_key, '')
