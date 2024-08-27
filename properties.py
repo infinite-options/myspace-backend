@@ -519,139 +519,35 @@ class Properties(Resource):
 
     
     def post(self):
-        print("\nIn add Property")
+        print("\nIn Property POST")
         response = {}
         appliances = {}
+        payload = request.form.to_dict()
+        print("Propoerty Add Payload: ", payload)
+
+        # Verify uid has NOT been included in the data
+        if payload.get('property_uid'):
+            print("property_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
 
         with connect() as db:
-            data = request.form
-            print("Incoming data: ", data)
-            fields = [
-                "property_owner_id"
-                , "po_owner_percent"
-                , 'property_available_to_rent'
-                , "property_active_date"
-                , 'property_address'
-                , "property_unit"
-                , "property_city"
-                , "property_state"
-                , "property_zip"
-                , "property_type"
-                , "property_num_beds"
-                , "property_num_baths"
-                , "property_area"
-                , "property_listed_rent"
-                , "property_deposit"
-                , "property_pets_allowed"
-                , "property_deposit_for_rent"
-                , "property_taxes"
-                , "property_mortgages"
-                , "property_insurance"
-                , "property_featured"
-                , "property_value"
-                , "property_value_year"
-                , "property_area"
-                , "property_description"
-                , "property_notes"
-                , "property_amenities_unit"
-                , "property_amenities_community"
-                , "property_amenities_nearby"
-                , "property_latitude"
-                , "property_longitude"
-            ]
+            newPropertyUID = db.call('new_property_uid')['result'][0]['new_id']
+            key = {'property_uid': newPropertyUID}
+            print("Property Key: ", key)
 
-            newRequest = {}
-            newProperty = {}
+            # --------------- FUNCTION TEST ------------------
 
-            # print("Property Type: ", data.get("property_type"))
-            # print("Property Address: ", request.form.get('property_address'))
-
-            for field in fields:
-                # print("Field: ", field)
-                # print("Form Data: ", data.get(field))
-                newProperty[field] = data.get(field)
-                # print("New Property Field: ", newProperty[field])
-            # print("Current newProperty", newProperty, type(newProperty))
-
-            keys_to_remove = ["property_owner_id", "po_owner_percent"]
-            newRequest = {key: newProperty.pop(key) for key in keys_to_remove if key in newProperty}
-            # print("Current newProperty", newProperty, type(newProperty))
-            # print("Current newRequest", newRequest, type(newRequest))
+            function_test = processImage(key, payload)
+            print("\nFunction Test Return: ", function_test)
+            print("Payload after function: ", payload)
             
-            # newRequest['property_owner_id'] = request.form.get("property_owner_id")
-            # newRequest['po_owner_percent'] = request.form.get("po_owner_percent")
-            # print(newRequest)
-
-
-            # # GET NEW UID
-            print("Get New Property UID")
-            newRequestID = db.call('new_property_uid')['result'][0]['new_id']
-            newRequest['property_id'] = newRequestID
-            newProperty['property_uid'] = newRequestID
-            # print(newRequestID)
-
-            # Image Upload 
-            print("\nIn images")
-            images = []
-            i = 0
-            imageFiles = {}
-            favorite_image = data.get("img_favorite")
-            while True:
-                filename = f'img_{i}'  
-                print("Put image file into Filename: ", filename)               
-                file = request.files.get(filename)  # if File: puts file into files
-                # print("File:" , file)
-                s3Link = data.get(filename) # if S3 Link but filename into S3
-                # print("S3Link: ", s3Link)
-                if file:
-                    imageFiles[filename] = file
-                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                    print("Unique File Name: ", unique_filename)
-                    key = f'properties/{newRequestID}/{unique_filename}'
-                    # print("Key: ", key)
-                    # This line calls uploadImage to actually upload the file and create the S3Link
-                    image = uploadImage(file, key, '')
-                    # print("Image: ", image)
-                    images.append(image)
-
-                    if filename == favorite_image:
-                        # print("Favorite Image: ", filename, favorite_image)
-                        newProperty["property_favorite_image"] = image
-
-                elif s3Link:
-                    imageFiles[filename] = s3Link
-                    images.append(s3Link)
-
-                    if filename == favorite_image:
-                        newProperty["property_favorite_image"] = s3Link
-                else:
-                    break
-                i += 1
-                print("Images after loop: ", images)
-            
-            newProperty['property_images'] = json.dumps(images)  
-            print("Images to add to db: ", newProperty['property_images'])      
-
-
-            # print("New Property-Owner request: ", newRequest)
-            response = db.insert('property_owner', newRequest)
-            response['property_owner'] = "Added"
-            # print("\nNew Property-Owner Relationship Added")
-
-            # print("New Propterty request: ", newProperty, type(newProperty))
-            response = db.insert('properties', newProperty)
-            response['property_UID'] = newRequestID
-            response['images'] = newProperty['property_images']
-            # print("\nNew Prop÷erty Added")
+            # --------------- FUNCTION TEST END ------------------
 
         
-        
-        # Add Appliances (if provided)
-
-            # print("\nAppliances: ", data.get('appliances'), type(data.get('appliances')))
-        
+            # Add Appliances (if provided)
+            print("\nAppliances: ", payload.get('appliances'), type(payload.get('appliances')))
             try:
-                appliances = json.loads(data.get('appliances'))    
+                appliances = json.loads(payload.pop('appliances'))    
                 # appliances = "{\"appliances\":[\"050-000023\",\"050-000024\",\"050-000025\"]}"  
                 print("Appliance Data: ", appliances, type(appliances))
 
@@ -665,26 +561,209 @@ class Properties(Resource):
                             NewApplianceID = db.call('new_appliance_uid')['result'][0]['new_id']
                             newAppliance['appliance_uid'] = NewApplianceID
                             print(NewApplianceID)
-                            newAppliance['appliance_property_id'] = newRequestID
+                            newAppliance['appliance_property_id'] = newPropertyUID
                             newAppliance['appliance_type'] = appliance
                             add_appliance = db.insert('appliances', newAppliance)
+                            response['appliance data'] = "Inserted"
                             print(add_appliance)
                 else:
                     print("No appliances provided in the form.")
-
-
             except:
                 print(f"Add Appliance failed")
                 response['add_appliance_error'] = f"No Appliance Data Provided"
 
 
+            # Add Property Owner Info
+            newPropertyOwner = {}
+            newPropertyOwner['property_id'] = newPropertyUID
+            newPropertyOwner['property_owner_id'] = payload.pop("property_owner_id")
+            newPropertyOwner['po_owner_percent'] = payload.pop("po_owner_percent", 1)
+            print("newPropertyOwner Payload: ", newPropertyOwner)
+            response = db.insert('property_owner', newPropertyOwner)
+            response['property_owner'] = "Added"
+            print("\nNew Property-Owner Relationship Added")
+         
+
+            # Add Property Info
+            print("Add Property Payload: ", payload)    
+            payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
+            # payload.pop('property_listed')
+            response = db.insert('properties', payload)
+            response['property_UID'] = newPropertyUID
+            response['images'] = function_test
+            print("\nNew Property Added")
 
         return response
+
+
+    # def post(self):
+    #     print("\nIn add Property")
+    #     response = {}
+    #     appliances = {}
+
+    #     with connect() as db:
+    #         data = request.form
+    #         print("Incoming data: ", data)
+    #         fields = [
+    #             "property_owner_id"
+    #             , "po_owner_percent"
+    #             , 'property_available_to_rent'
+    #             , "property_active_date"
+    #             , 'property_address'
+    #             , "property_unit"
+    #             , "property_city"
+    #             , "property_state"
+    #             , "property_zip"
+    #             , "property_type"
+    #             , "property_num_beds"
+    #             , "property_num_baths"
+    #             , "property_area"
+    #             , "property_listed_rent"
+    #             , "property_deposit"
+    #             , "property_pets_allowed"
+    #             , "property_deposit_for_rent"
+    #             , "property_taxes"
+    #             , "property_mortgages"
+    #             , "property_insurance"
+    #             , "property_featured"
+    #             , "property_value"
+    #             , "property_value_year"
+    #             , "property_area"
+    #             , "property_description"
+    #             , "property_notes"
+    #             , "property_amenities_unit"
+    #             , "property_amenities_community"
+    #             , "property_amenities_nearby"
+    #             , "property_latitude"
+    #             , "property_longitude"
+    #         ]
+
+    #         newRequest = {}
+    #         newProperty = {}
+
+    #         # print("Property Type: ", data.get("property_type"))
+    #         # print("Property Address: ", request.form.get('property_address'))
+
+    #         for field in fields:
+    #             # print("Field: ", field)
+    #             # print("Form Data: ", data.get(field))
+    #             newProperty[field] = data.get(field)
+    #             # print("New Property Field: ", newProperty[field])
+    #         # print("Current newProperty", newProperty, type(newProperty))
+
+    #         keys_to_remove = ["property_owner_id", "po_owner_percent"]
+    #         newRequest = {key: newProperty.pop(key) for key in keys_to_remove if key in newProperty}
+    #         # print("Current newProperty", newProperty, type(newProperty))
+    #         # print("Current newRequest", newRequest, type(newRequest))
+            
+    #         # newRequest['property_owner_id'] = request.form.get("property_owner_id")
+    #         # newRequest['po_owner_percent'] = request.form.get("po_owner_percent")
+    #         # print(newRequest)
+
+
+    #         # # GET NEW UID
+    #         print("Get New Property UID")
+    #         newRequestID = db.call('new_property_uid')['result'][0]['new_id']
+    #         newRequest['property_id'] = newRequestID
+    #         newProperty['property_uid'] = newRequestID
+    #         # print(newRequestID)
+
+    #         # Image Upload 
+    #         print("\nIn images")
+    #         images = []
+    #         i = 0
+    #         imageFiles = {}
+    #         favorite_image = data.get("img_favorite")
+    #         while True:
+    #             filename = f'img_{i}'  
+    #             print("Put image file into Filename: ", filename)               
+    #             file = request.files.get(filename)  # if File: puts file into files
+    #             # print("File:" , file)
+    #             s3Link = data.get(filename) # if S3 Link but filename into S3
+    #             # print("S3Link: ", s3Link)
+    #             if file:
+    #                 imageFiles[filename] = file
+    #                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+    #                 print("Unique File Name: ", unique_filename)
+    #                 key = f'properties/{newRequestID}/{unique_filename}'
+    #                 # print("Key: ", key)
+    #                 # This line calls uploadImage to actually upload the file and create the S3Link
+    #                 image = uploadImage(file, key, '')
+    #                 # print("Image: ", image)
+    #                 images.append(image)
+
+    #                 if filename == favorite_image:
+    #                     # print("Favorite Image: ", filename, favorite_image)
+    #                     newProperty["property_favorite_image"] = image
+
+    #             elif s3Link:
+    #                 imageFiles[filename] = s3Link
+    #                 images.append(s3Link)
+
+    #                 if filename == favorite_image:
+    #                     newProperty["property_favorite_image"] = s3Link
+    #             else:
+    #                 break
+    #             i += 1
+    #             print("Images after loop: ", images)
+            
+    #         newProperty['property_images'] = json.dumps(images)  
+    #         print("Images to add to db: ", newProperty['property_images'])      
+
+
+    #         # print("New Property-Owner request: ", newRequest)
+    #         response = db.insert('property_owner', newRequest)
+    #         response['property_owner'] = "Added"
+    #         # print("\nNew Property-Owner Relationship Added")
+
+    #         # print("New Propterty request: ", newProperty, type(newProperty))
+    #         response = db.insert('properties', newProperty)
+    #         response['property_UID'] = newRequestID
+    #         response['images'] = newProperty['property_images']
+    #         # print("\nNew Prop÷erty Added")
+
+        
+        
+    #     # Add Appliances (if provided)
+
+    #         # print("\nAppliances: ", data.get('appliances'), type(data.get('appliances')))
+        
+    #         try:
+    #             appliances = json.loads(data.get('appliances'))    
+    #             # appliances = "{\"appliances\":[\"050-000023\",\"050-000024\",\"050-000025\"]}"  
+    #             print("Appliance Data: ", appliances, type(appliances))
+
+    #             if appliances:
+    #                     newAppliance = {}
+    #                     # appliances is now a list of strings
+    #                     for appliance in appliances:
+    #                         print(f"Appliance: {appliance}")
+    #                         # newRequestID = db.call('new_property_uid')['result'][0]['new_id']
+    #                         # print(newRequestID)
+    #                         NewApplianceID = db.call('new_appliance_uid')['result'][0]['new_id']
+    #                         newAppliance['appliance_uid'] = NewApplianceID
+    #                         print(NewApplianceID)
+    #                         newAppliance['appliance_property_id'] = newRequestID
+    #                         newAppliance['appliance_type'] = appliance
+    #                         add_appliance = db.insert('appliances', newAppliance)
+    #                         print(add_appliance)
+    #             else:
+    #                 print("No appliances provided in the form.")
+
+
+    #         except:
+    #             print(f"Add Appliance failed")
+    #             response['add_appliance_error'] = f"No Appliance Data Provided"
+
+
+
+    #     return response
     
     
     def put(self):
         print("\nIn Property PUT")
         response = {}
+
         payload = request.form.to_dict()
         print("Propoerty Update Payload: ", payload)
 
@@ -693,7 +772,7 @@ class Properties(Resource):
             print("No property_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        property_uid = payload.get('property_uid')
+        # property_uid = payload.get('property_uid')
         key = {'property_uid': payload.pop('property_uid')}
         print("Property Key: ", key)
 
@@ -702,7 +781,7 @@ class Properties(Resource):
 
         function_test = processImage(key, payload)
         print("\nFunction Test Return: ", function_test)
-
+        print("Payload after function: ", payload)
         
         # --------------- FUNCTION TEST END ------------------
 

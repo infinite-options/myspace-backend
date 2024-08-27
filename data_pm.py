@@ -121,7 +121,9 @@ def processImage(key, payload):
     # i = -1
     i = 0
     imageFiles = {}
-    favorite_image = payload.get("property_favorite_image")
+    # favorite_image = payload.get("property_favorite_image")
+    favorite_image = payload.get("property_favorite_image") or payload.pop("img_favorite")
+
     while True:
         filename = f'img_{i}'
         print("Put image file into Filename: ", filename) 
@@ -132,6 +134,7 @@ def processImage(key, payload):
         s3Link = payload.get(filename)
         print("S3Link: ", s3Link)
         if file:
+            payload.pop(f'img_{i}')
             print("In File if Statement")
             imageFiles[filename] = file
             unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
@@ -143,7 +146,9 @@ def processImage(key, payload):
             if filename == favorite_image:
                 payload["property_favorite_image"] = image
 
+
         elif s3Link:
+            payload.pop(f'img_{i}')
             imageFiles[filename] = s3Link
             images.append(s3Link)
 
@@ -239,34 +244,34 @@ def disconnect(conn):
 
 # Serialize JSON
 def serializeJSON(unserialized):
-    print("In serialized JSON: ", unserialized, type(unserialized))
+    # print("In serialized JSON: ", unserialized, type(unserialized))
     if type(unserialized) == list:
-        print("in list")
+        # print("in list")
         serialized = []
         for entry in unserialized:
-            print("entry: ", entry)
+            # print("entry: ", entry)
             serializedEntry = serializeJSON(entry)
             serialized.append(serializedEntry)
-        print("Serialized: ", serialized)
+        # print("Serialized: ", serialized)
         return serialized
     elif type(unserialized) == dict:
-        print("in dict")
+        # print("in dict")
         serialized = {}
         for entry in unserialized:
             serializedEntry = serializeJSON(unserialized[entry])
             serialized[entry] = serializedEntry
         return serialized
     elif type(unserialized) == datetime.datetime:
-        print("in date")
+        # print("in date")
         return str(unserialized)
     elif type(unserialized) == bytes:
-        print("in bytes")
+        # print("in bytes")
         return str(unserialized)
     elif type(unserialized) == Decimal:
-        print("in Decimal")
+        # print("in Decimal")
         return str(unserialized)
     else:
-        print("in else")
+        # print("in else")
         return unserialized
 
 
@@ -284,40 +289,40 @@ class DatabaseConnection:
         self.disconnect()
 
     def execute(self, sql, args=[], cmd='get'):
-        print("In execute.  SQL: ", sql)
-        print("In execute.  args: ",args)
-        print("In execute.  cmd: ",cmd)
+        # print("In execute.  SQL: ", sql)
+        # print("In execute.  args: ",args)
+        # print("In execute.  cmd: ",cmd)
         response = {}
         try:
             with self.conn.cursor() as cur:
-                print('IN EXECUTE')
+                # print('IN EXECUTE')
                 if len(args) == 0:
                     # print('execute', sql)
                     cur.execute(sql)
                 else:
                     cur.execute(sql, args)
                 formatted_sql = f"{sql} (args: {args})"
-                print(formatted_sql)
+                # print(formatted_sql)
                     
 
                 if 'get' in cmd:
-                    print('IN GET')
+                    # print('IN GET')
                     result = cur.fetchall()
-                    print("After result: ", result, type(result))
+                    # print("After result: ", result, type(result))
                     result = serializeJSON(result)
-                    print("After serialization: ", result)
-                    print('RESULT GET')
+                    # print("After serialization: ", result)
+                    # print('RESULT GET')
                     response['message'] = 'Successfully executed SQL query'
                     response['code'] = 200
                     response['result'] = result
-                    print('RESPONSE GET')
+                    # print('RESPONSE GET')
                 elif 'post' in cmd:
-                    print('IN POST')
+                    # print('IN POST')
                     self.conn.commit()
                     response['message'] = 'Successfully committed SQL query'
                     response['code'] = 200
                     response['change'] = str(cur.rowcount) + " rows affected"
-                    print('RESPONSE POST')
+                    # print('RESPONSE POST')
         except Exception as e:
             print('ERROR', e)
             response['message'] = 'Error occurred while executing SQL query'
