@@ -563,9 +563,8 @@ class Properties(Resource):
                             print(NewApplianceID)
                             newAppliance['appliance_property_id'] = newPropertyUID
                             newAppliance['appliance_type'] = appliance
-                            add_appliance = db.insert('appliances', newAppliance)
-                            response['appliance data'] = "Inserted"
-                            print(add_appliance)
+                            response['Add Appliance'] = db.insert('appliances', newAppliance)
+                            print(response['Add Appliance'])
                 else:
                     print("No appliances provided in the form.")
             except:
@@ -579,8 +578,7 @@ class Properties(Resource):
             newPropertyOwner['property_owner_id'] = payload.pop("property_owner_id")
             newPropertyOwner['po_owner_percent'] = payload.pop("po_owner_percent", 1)
             print("newPropertyOwner Payload: ", newPropertyOwner)
-            response = db.insert('property_owner', newPropertyOwner)
-            response['property_owner'] = "Added"
+            response['Add Owner'] = db.insert('property_owner', newPropertyOwner)
             print("\nNew Property-Owner Relationship Added")
          
 
@@ -588,7 +586,8 @@ class Properties(Resource):
             print("Add Property Payload: ", payload)    
             payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
             # payload.pop('property_listed')
-            response = db.insert('properties', payload)
+            payload["property_uid"] = newPropertyUID
+            response['Add Property'] = db.insert('properties', payload)
             response['property_UID'] = newPropertyUID
             response['images'] = function_test
             print("\nNew Property Added")

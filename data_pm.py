@@ -15,28 +15,6 @@ import ast
 s3 = boto3.client('s3')
 
 
-
-# def uploadImage(file, key, content):
-#     bucket = 'io-pm'
-#     contentType = ''
-
-#     if type(file) == StreamingBody:
-#         contentType = content
-
-#     if file:
-#         # print('if file', file, bucket, key)
-#         filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
-#         upload_file = s3.put_object(
-#             Bucket=bucket,
-#             Body=file.read(),
-#             Key=key,
-#             ACL='public-read',
-#             ContentType=contentType
-#         )
-
-#         return filename
-#     return None
-
 def deleteImage(key):
     bucket = 'io-pm'
     try:
@@ -59,9 +37,9 @@ def deleteImage(key):
 
 def uploadImage(file, key, content):
     print("\nIn Upload Image: ")
-    print("File: ", file)
-    print("Key: ", key)
-    print("Content: ", content)
+    # print("File: ", file)
+    # print("Key: ", key)
+    # print("Content: ", content)
     bucket = 'io-pm'
 
     if isinstance(file, FileStorage): 
@@ -72,8 +50,6 @@ def uploadImage(file, key, content):
         contentType = content_type if content_type else 'application/octet-stream'  # Fallback if MIME type is not detected
         print("In Upload Image contentType: ", contentType) # This returns jpeg, png, ect
 
-
-
     elif isinstance(file, StreamingBody):
         print("In Upload Image isInstance Streaming Body")
         file_content = file.read()
@@ -81,6 +57,7 @@ def uploadImage(file, key, content):
         print("In Upload Image contentType: ", contentType)
         # Set content type based on your logic or metadata
         # Example: contentType = 'image/jpeg' or other appropriate content type
+
 
     if file_content:
         # print("file_content: ", file_content )   # Unnecessary print statement.  Return hexedemical file info
@@ -97,8 +74,8 @@ def uploadImage(file, key, content):
         print("After Upload: ", upload_file)
         print("After Upload Status Code: ", upload_file['ResponseMetadata']['HTTPStatusCode'])
         print("Derived Filename: ", filename)
-
         return filename
+    
     return None
 
 # --------------- PROCESS IMAGES ------------------
