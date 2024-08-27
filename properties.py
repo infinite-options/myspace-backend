@@ -535,13 +535,12 @@ class Properties(Resource):
             key = {'property_uid': newPropertyUID}
             print("Property Key: ", key)
 
-            # --------------- FUNCTION TEST ------------------
+            # --------------- PROCESS IMAGES ------------------
 
-            function_test = processImage(key, payload)
-            print("\nFunction Test Return: ", function_test)
+            processImage(key, payload)
             print("Payload after function: ", payload)
             
-            # --------------- FUNCTION TEST END ------------------
+            # --------------- PROCESS IMAGES ------------------
 
         
             # Add Appliances (if provided)
@@ -589,7 +588,7 @@ class Properties(Resource):
             payload["property_uid"] = newPropertyUID
             response['Add Property'] = db.insert('properties', payload)
             response['property_UID'] = newPropertyUID
-            response['images'] = function_test
+            response['Images Added'] = payload['property_images']
             print("\nNew Property Added")
 
         return response
@@ -776,13 +775,12 @@ class Properties(Resource):
         print("Property Key: ", key)
 
 
-        # --------------- FUNCTION TEST ------------------
+        # --------------- PROCESS IMAGES ------------------
 
-        function_test = processImage(key, payload)
-        print("\nFunction Test Return: ", function_test)
+        processImage(key, payload)
         print("Payload after function: ", payload)
         
-        # --------------- FUNCTION TEST END ------------------
+        # --------------- PROCESS IMAGES ------------------
 
 
         # # Check if images already exist

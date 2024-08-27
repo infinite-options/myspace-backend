@@ -120,33 +120,14 @@ class Appliances(Resource):
 
         return response
     
-
     def post(self):
-        print("In POST Appliances")
+        print("In Appliances POST ")
         response = {}
 
         with connect() as db:
-            data = request.form
-            print("Received Data: ", data)
-            fields = [
-                'appliance_property_id',
-                'appliance_type',
-                'appliance_desc',
-                'appliance_url',
-                'appliance_images',
-                'appliance_favorite_image',
-                'appliance_documents',
-                'appliance_available',
-                'appliance_installed',
-                'appliance_model_num',
-                'appliance_purchased',
-                'appliance_serial_num',
-                'appliance_manufacturer',
-                'appliance_warranty_info',
-                'appliance_warranty_till',
-                'appliance_purchased_from',
-                'appliance_purchase_order'
-                    ]
+            payload = request.form.to_dict()
+            print("Appliance Add Payload: ", payload)
+           
             
             newAppliance = {}
 
@@ -218,6 +199,105 @@ class Appliances(Resource):
             response['images'] = newAppliance["appliance_images"]
 
         return response
+
+
+    # def post(self):
+    #     print("In POST Appliances")
+    #     response = {}
+
+    #     with connect() as db:
+    #         data = request.form
+    #         print("Received Data: ", data)
+    #         fields = [
+    #             'appliance_property_id',
+    #             'appliance_type',
+    #             'appliance_desc',
+    #             'appliance_url',
+    #             'appliance_images',
+    #             'appliance_favorite_image',
+    #             'appliance_documents',
+    #             'appliance_available',
+    #             'appliance_installed',
+    #             'appliance_model_num',
+    #             'appliance_purchased',
+    #             'appliance_serial_num',
+    #             'appliance_manufacturer',
+    #             'appliance_warranty_info',
+    #             'appliance_warranty_till',
+    #             'appliance_purchased_from',
+    #             'appliance_purchase_order'
+    #                 ]
+            
+    #         newAppliance = {}
+
+    #         # print("Property ID: ", data.get("appliance_property_id"))
+    #         # print("Appliance Type: ", request.form.get('appliance_type'))
+
+    #         for field in fields:
+    #             # print("Field: ", field)
+    #             # print("Form Data: ", data.get(field))
+    #             newAppliance[field] = data.get(field)
+    #             # print("New Appliance Field: ", newAppliance[field])
+    #         # print("Current newAppliance", newAppliance, type(newAppliance))
+
+
+    #         # GET NEW UID
+    #         print("Get New Appliance UID")
+    #         newRequestID = db.call('new_appliance_uid')['result'][0]['new_id']
+    #         newAppliance['appliance_uid'] = newRequestID
+    #         print(newAppliance['appliance_uid'])
+
+    #         # Image Upload 
+    #         print("\nIn images")
+    #         images = []
+    #         i = 0
+    #         imageFiles = {}
+    #         favorite_image = data.get("img_favorite")
+    #         print("Favorite Image: ", favorite_image)
+    #         while True:
+    #             filename = f'img_{i}'
+    #             print("Put image file into Filename: ", filename)           
+    #             file = request.files.get(filename)
+    #             print("File:" , file)
+    #             s3Link = data.get(filename)
+    #             print("S3Link: ", s3Link)
+    #             if file:
+    #                 imageFiles[filename] = file
+    #                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+    #                 print("unique_filename: ", unique_filename)
+    #                 key = f'appliance/{newRequestID}/{unique_filename}'
+    #                 # print("Key: ", key)
+    #                 # This line calls uploadImage to actually upload the file and create the S3Link
+    #                 image = uploadImage(file, key, '')
+    #                 print("Image: ", image)
+    #                 images.append(image)
+
+    #                 if filename == favorite_image:
+    #                     print("favorite image!")
+    #                     newAppliance["appliance_favorite_image"] = image
+
+    #             elif s3Link:
+    #                 imageFiles[filename] = s3Link
+    #                 images.append(s3Link)
+
+    #                 if filename == favorite_image:
+    #                     newAppliance["appliance_favorite_image"] = s3Link
+    #             else:
+    #                 break
+    #             i += 1
+    #             print("Images after loop: ", images)
+            
+    #         newAppliance["appliance_images"] = json.dumps(images)
+    #         print("Appliance Images to add to db: ", newAppliance["appliance_images"])        
+
+
+    #         print("New Appliance Object: ", newAppliance)
+    #         response = db.insert('appliances', newAppliance)
+    #         response['Appliance'] = "Added"
+    #         response['appliance_uid'] = newRequestID
+    #         response['images'] = newAppliance["appliance_images"]
+
+    #     return response
     
 
     def put(self):
