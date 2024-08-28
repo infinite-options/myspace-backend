@@ -111,8 +111,8 @@ def processImage(key, payload):
         s3Link = payload.get(filename)
         print("S3Link: ", s3Link)
         if file:
-            payload.pop(f'img_{i}')
             print("In File if Statement")
+            # payload.pop(f'img_{i}'  )
             imageFiles[filename] = file
             unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
             image_key = f'properties/{property_uid}/{unique_filename}'
