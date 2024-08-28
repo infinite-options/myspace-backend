@@ -106,6 +106,14 @@ def processImage(key, payload):
         payload_images = payload.get('maintenance_images')
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
+    
+    elif 'maintenance_quote_uid' in key:
+        print("Maintenance Key passed")
+        key_type = 'maintenance'
+        key_uid = key['maintenance_quote_uid']
+        payload_images = payload.get('maintenance_images')
+        payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
 
     else:
         print("No UID found in key")

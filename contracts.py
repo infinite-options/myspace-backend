@@ -164,6 +164,10 @@ class Contracts(Resource):
             current_documents =ast.literal_eval(payload.get('contract_documents'))
             print("Current images: ", current_documents, type(current_documents))
 
+        if payload.get('contract_documents_details') is not None:
+            documents_details = json.loads(payload.pop('contract_documents_details'))
+            print("documents_details: ", documents_details, type(documents_details))
+
         # Check if images are being added OR deleted
         documents = []
         i = 0
@@ -172,7 +176,7 @@ class Contracts(Resource):
         while True:
             filename = f'file_{i}'
             print("\nPut file into Filename: ", filename) 
-
+            
 
             file = request.files.get(filename)
             print("File:" , file)    
@@ -197,6 +201,7 @@ class Contracts(Resource):
                 docObject["link"] = document
                 docObject["filename"] = file.filename
                 docObject["type"] = file.content_type
+                docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
                 print("Doc Object: ", docObject)
 
                 documents.append(docObject)
