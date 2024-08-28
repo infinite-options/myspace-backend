@@ -99,10 +99,10 @@ def processImage(key, payload):
         payload_fav_images = payload.get("appliance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
 
-    elif 'maintenance_uid' in key:
+    elif 'maintenance_request_uid' in key:
         print("Maintenance Key passed")
         key_type = 'maintenance'
-        key_uid = key['maintenance_uid']
+        key_uid = key['maintenance_request_uid']
         payload_images = payload.get('maintenance_images')
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
