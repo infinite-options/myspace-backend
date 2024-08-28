@@ -82,24 +82,55 @@ def uploadImage(file, key, content):
 
 def processImage(key, payload):
     print("\nIn Process Image: ", payload)
-
     response = {}
-    property_uid = key['property_uid']
+
+    if 'property_uid' in key:
+        print("Property Key passed")
+        key_type = 'properties'
+        key_uid = key['property_uid']
+        payload_images = payload.get('property_images')
+        payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+    elif 'appliance_uid' in key:
+        print("Appliance Key passed")
+        key_type = 'appliances'
+        key_uid = key['appliance_uid']
+        payload_images = payload.get('appliance_images')
+        payload_fav_images = payload.get("appliance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+
+    elif 'maintenance_uid' in key:
+        print("Maintenance Key passed")
+        key_type = 'maintenance'
+        key_uid = key['maintenance_uid']
+        payload_images = payload.get('maintenance_images')
+        payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+
+    else:
+        print("No UID found in key")
+        return
+
+    payload.pop("img_favorite", None)
+    print("Past if statement")
    
     # Check if images already exist
     # Put current db images into current_images
     current_images = []
-    if payload.get('property_images') is not None:
-        current_images =ast.literal_eval(payload.get('property_images'))
+    print("here 0")
+    if payload_images is not None and payload_images != '':
+        print("Payload Images: ", payload_images)
+        current_images =ast.literal_eval(payload_images)
         print("Current images: ", current_images, type(current_images))
+    print("here 1")
 
     # Check if images are being added OR deleted
     images = []
     # i = -1
     i = 0
     imageFiles = {}
-    # favorite_image = payload.get("property_favorite_image")
-    favorite_image = payload.get("property_favorite_image") or payload.pop("img_favorite")
+
+    print("here 2")
 
     while True:
         filename = f'img_{i}'
@@ -115,22 +146,26 @@ def processImage(key, payload):
             # payload.pop(f'img_{i}'  )
             imageFiles[filename] = file
             unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-            image_key = f'properties/{property_uid}/{unique_filename}'
+            image_key = f'{key_type}/{key_uid}/{unique_filename}'
             # This calls the uploadImage function that generates the S3 link
             image = uploadImage(file, image_key, '')
             images.append(image)
 
-            if filename == favorite_image:
-                payload["property_favorite_image"] = image
+            if filename == payload_fav_images:
+                if key_type == 'properties': payload["property_favorite_image"] = image
+                if key_type == 'appliances': payload["appliance_favorite_image"] = image
+                if key_type == 'maintenance': payload["maintenance_favorite_image"] = image
 
 
         elif s3Link:
-            payload.pop(f'img_{i}')
+            # payload.pop(f'img_{i}')
             imageFiles[filename] = s3Link
             images.append(s3Link)
 
-            if filename == favorite_image:
-                payload["property_favorite_image"] = s3Link
+            if filename == payload_fav_images:
+                if key_type == 'properties': payload["property_favorite_image"] = s3Link
+                if key_type == 'appliances': payload["appliance_favorite_image"] = s3Link
+                if key_type == 'maintenance': payload["maintenance_favorite_image"] = s3Link
         else:
             break
         i += 1
@@ -138,7 +173,9 @@ def processImage(key, payload):
     print("Images after loop: ", images)
     if images != []:
         current_images.extend(images)
-        payload['property_images'] = json.dumps(current_images) 
+        if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
+        if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
 
     # Delete Images
     if payload.get('delete_images'):
@@ -165,7 +202,9 @@ def processImage(key, payload):
 
 
         print("\nCurrent Images in Function: ", current_images)
-        payload['property_images'] = json.dumps(current_images) 
+        if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
+        if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
 
         return payload
     # Write to Database
