@@ -118,7 +118,7 @@ def processImage(key, payload):
     # Put current db images into current_images
     current_images = []
     print("here 0")
-    if payload_images is not None and payload_images != '':
+    if payload_images is not None and payload_images != '' and payload_images != 'null':
         print("Payload Images: ", payload_images)
         current_images =ast.literal_eval(payload_images)
         print("Current images: ", current_images, type(current_images))
