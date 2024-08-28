@@ -3,104 +3,89 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img, uploadImage
-from data_pm import connect, uploadImage, deleteImage, s3
 import boto3
+from data_pm import connect, uploadImage, deleteImage, s3, processImage
+from datetime import date, timedelta, datetime
+from calendar import monthrange
 import json
-from datetime import date, datetime, timedelta
+import ast
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
-import ast
 
 
-# MAINTENANCE BY STATUS
-#                           TENANT      OWNER     PROPERTY MANAGER     
-# MAINTENANCE BY STATUS        Y           Y               Y
-# BY MONTH    X           X               X
-# BY YEAR     X           X               X
+
+# ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+
+# def allowed_file(filename):
+#     return '.' in filename and \
+#            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# def updateImages(imageFiles, maintenance_request_uid):
+#     content = []
+
+#     for filename in imageFiles:
+
+#         if type(imageFiles[filename]) == str:
+
+#             bucket = 'io-pm'
+#             key = imageFiles[filename].split('/io-pm/')[1]
+#             data = s3.get_object(
+#                 Bucket=bucket,
+#                 Key=key
+#             )
+#             imageFiles[filename] = data['Body']
+#             content.append(data['ContentType'])
+#         else:
+#             content.append('')
+
+#     s3Resource = boto3.resource('s3')
+#     bucket = s3Resource.Bucket('io-pm')
+#     bucket.objects.filter(
+#         Prefix=f'maintenanceRequests/{maintenance_request_uid}/').delete()
+#     images = []
+#     for i in range(len(imageFiles.keys())):
+
+#         filename = f'img_{i-1}'
+#         if i == 0:
+#             filename = 'img_cover'
+#         key = f'maintenanceRequests/{maintenance_request_uid}/{filename}'
+#         image = uploadImage(
+#             imageFiles[filename], key, content[i])
+
+#         images.append(image)
+#     return images
 
 
-# def get_new_maintenanceUID(conn):
-#     print("In new UID request")
-    
-#     with connect() as db:
-#         newMaintenanceQuery = db.execute("CALL space.new_request_uid;", "get", conn)
-#         if newMaintenanceQuery["code"] == 280:
-#             return newMaintenanceQuery["result"][0]["new_id"]
-#     return "Could not generate new property UID", 500
-
-ALLOWED_EXTENSIONS = {'txt', 'pdf'}
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def updateImages(imageFiles, maintenance_request_uid):
-    content = []
-
-    for filename in imageFiles:
-
-        if type(imageFiles[filename]) == str:
-
-            bucket = 'io-pm'
-            key = imageFiles[filename].split('/io-pm/')[1]
-            data = s3.get_object(
-                Bucket=bucket,
-                Key=key
-            )
-            imageFiles[filename] = data['Body']
-            content.append(data['ContentType'])
-        else:
-            content.append('')
-
-    s3Resource = boto3.resource('s3')
-    bucket = s3Resource.Bucket('io-pm')
-    bucket.objects.filter(
-        Prefix=f'maintenanceRequests/{maintenance_request_uid}/').delete()
-    images = []
-    for i in range(len(imageFiles.keys())):
-
-        filename = f'img_{i-1}'
-        if i == 0:
-            filename = 'img_cover'
-        key = f'maintenanceRequests/{maintenance_request_uid}/{filename}'
-        image = uploadImage(
-            imageFiles[filename], key, content[i])
-
-        images.append(image)
-    return images
-
-
-class MaintenanceByProperty(Resource):
-    def get(self, property_id):
-        print('in Maintenance By Property')
-        response = {}
+# class MaintenanceByProperty(Resource):
+#     def get(self, property_id):
+#         print('in Maintenance By Property')
+#         response = {}
         
-        # print("Property UID: ", property_id)
+#         # print("Property UID: ", property_id)
 
-        with connect() as db:
-            print("in connect loop")
-            maintenanceQuery = db.execute(""" 
-                    -- MAINTENANCE PROJECTS BY PROPERTY        
-                    SELECT -- *
-                        property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area
-                        , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by
-                        , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency
-                        , maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost
-                    FROM space.properties
-                    LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
-                    WHERE property_uid = \'""" + property_id + """\';
-                    """)
+#         with connect() as db:
+#             print("in connect loop")
+#             maintenanceQuery = db.execute(""" 
+#                     -- MAINTENANCE PROJECTS BY PROPERTY        
+#                     SELECT -- *
+#                         property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area
+#                         , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by
+#                         , maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency
+#                         , maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date, maintenance_callback_number, maintenance_estimated_cost
+#                     FROM space.properties
+#                     LEFT JOIN space.maintenanceRequests ON maintenance_property_id = property_uid
+#                     WHERE property_uid = \'""" + property_id + """\';
+#                     """)
             
 
-            # print("Query: ", maintenanceQuery)
-            response["MaintenanceProjects"] = maintenanceQuery
-            return response
+#             # print("Query: ", maintenanceQuery)
+#             response["MaintenanceProjects"] = maintenanceQuery
+#             return response
 
 
 class MaintenanceRequests(Resource):
     def get(self, uid):
-        print('in Maintenance Request')
+        print('in Maintenance Request', uid)
         response = {}
 
         print("UID: ", uid)
@@ -298,216 +283,261 @@ class MaintenanceRequests(Resource):
             return response
 
     def post(self):
-        print("In Maintenace Requests")
+        print("In Maintenace Requests POST")
         response = {}
+        newMaintenanceReq = {}
+        payload = request.form.to_dict()
+        print("Maintenance Request Add Payload: ", payload)
+
+        if payload.get('maintenance_request_uid'):
+            print("maintenance_request_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
+        
         with connect() as db:
-            data = request.form
-            fields = [
-                'maintenance_property_id'
-                , 'maintenance_title'
-                , 'maintenance_desc'
-                , 'maintenance_request_type'
-                , 'maintenance_request_created_by'
-                , 'maintenance_priority'
-                , 'maintenance_can_reschedule'
-                , 'maintenance_assigned_business'
-                , 'maintenance_assigned_worker'
-                , 'maintenance_scheduled_date'
-                , 'maintenance_scheduled_time'
-                , 'maintenance_frequency'
-                , 'maintenance_notes'
-                , 'maintenance_request_created_date'
-                , 'maintenance_request_closed_date'
-                , 'maintenance_request_adjustment_date'
-                , 'maintenance_callback_number'
-                , 'maintenance_estimated_cost'
-            ]
+            newMaintenanceReqUID = db.call('new_request_uid')['result'][0]['new_id']
+            key = {'maintenance_request_uid': newMaintenanceReqUID}
+            print("Maintenance Req Key: ", key)
+           
+           # --------------- PROCESS IMAGES ------------------
 
-            newRequest = {}
-            for field in fields:
-                newRequest[field] = data.get(field, None)
-                # print(field, " = ", newRequest[field])
-
-
-            # GET NEW UID
-            print("Get New Request UID")
-            newRequestID = db.call('new_request_uid')['result'][0]['new_id']
-            newRequest['maintenance_request_uid'] = newRequestID
-            print(newRequestID)
-
-
-            # Image Upload 
-            print("\nIn images")
-            images = []
-            i = 0
-            imageFiles = {}
-            favorite_image = data.get("img_favorite")
-            while True:
-                filename = f'img_{i}'  
-                print("Put image file into Filename: ", filename)               
-                file = request.files.get(filename)  # if File: puts file into files
-                # print("File:" , file)
-                s3Link = data.get(filename) # if S3 Link put filename into S3
-                # print("S3Link: ", s3Link)
-                if file:
-                    imageFiles[filename] = file
-                    unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                    print("Unique File Name: ", unique_filename)
-                    key = f'maintenanceRequests/{newRequestID}/{unique_filename}'
-                    # print("Key: ", key)
-                    # This line calls uploadImage to actually upload the file and create the S3Link
-                    image = uploadImage(file, key, '')
-                    # print("Image: ", image)
-                    images.append(image)
-
-                    if filename == favorite_image:
-                        # print("Favorite Image: ", filename, favorite_image)
-                        newRequest["maintenance_favorite_image"] = image
-
-                elif s3Link:
-                    imageFiles[filename] = s3Link
-                    images.append(s3Link)
-
-                    if filename == favorite_image:
-                        newRequest["maintenance_favorite_image"] = s3Link
-                else:
-                    break
-                i += 1
-                print("Images after loop: ", images)
+            processImage(key, payload)
+            print("Payload after function: ", payload)
             
-            newRequest['maintenance_images'] = json.dumps(images)  
-            print("Images to add to db: ", newRequest['maintenance_images'])   
-            newRequest['maintenance_request_status'] = 'NEW'   
+            # --------------- PROCESS IMAGES ------------------
 
 
-            # print("New Propterty request: ", newProperty, type(newProperty))
-            response = db.insert('maintenanceRequests', newRequest)
-            response['Maintenance_UID'] = newRequestID
-            response['images'] = newRequest['maintenance_images']
-            # print("\nNew Prop÷erty Added")
-            response['favorite images'] = newRequest['maintenance_favorite_image']
+            # Add Maintenance Requeste Info
+            print("Add Maintenance Req Payload: ", payload)  
 
+
+            payload["maintenance_request_uid"] = newMaintenanceReqUID  
+            response['Add Maintenance Req'] = db.insert('maintenanceRequests', payload)
+            response['maintenance_request_uid'] = newMaintenanceReqUID 
+            response['Maintenance Req Images Added'] = payload["maintenance_images"]
+            print("\nNew Maintenance Request Added")
 
         return response
+
+    # def post(self):
+    #     print("In Maintenace Requests")
+    #     response = {}
+    #     with connect() as db:
+    #         data = request.form
+    #         fields = [
+    #             'maintenance_property_id'
+    #             , 'maintenance_title'
+    #             , 'maintenance_desc'
+    #             , 'maintenance_request_type'
+    #             , 'maintenance_request_created_by'
+    #             , 'maintenance_priority'
+    #             , 'maintenance_can_reschedule'
+    #             , 'maintenance_assigned_business'
+    #             , 'maintenance_assigned_worker'
+    #             , 'maintenance_scheduled_date'
+    #             , 'maintenance_scheduled_time'
+    #             , 'maintenance_frequency'
+    #             , 'maintenance_notes'
+    #             , 'maintenance_request_created_date'
+    #             , 'maintenance_request_closed_date'
+    #             , 'maintenance_request_adjustment_date'
+    #             , 'maintenance_callback_number'
+    #             , 'maintenance_estimated_cost'
+    #         ]
+
+    #         newRequest = {}
+    #         for field in fields:
+    #             newRequest[field] = data.get(field, None)
+    #             # print(field, " = ", newRequest[field])
+
+
+    #         # GET NEW UID
+    #         print("Get New Request UID")
+    #         newRequestID = db.call('new_request_uid')['result'][0]['new_id']
+    #         newRequest['maintenance_request_uid'] = newRequestID
+    #         print(newRequestID)
+
+
+    #         # Image Upload 
+    #         print("\nIn images")
+    #         images = []
+    #         i = 0
+    #         imageFiles = {}
+    #         favorite_image = data.get("img_favorite")
+    #         while True:
+    #             filename = f'img_{i}'  
+    #             print("Put image file into Filename: ", filename)               
+    #             file = request.files.get(filename)  # if File: puts file into files
+    #             # print("File:" , file)
+    #             s3Link = data.get(filename) # if S3 Link put filename into S3
+    #             # print("S3Link: ", s3Link)
+    #             if file:
+    #                 imageFiles[filename] = file
+    #                 unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+    #                 print("Unique File Name: ", unique_filename)
+    #                 key = f'maintenanceRequests/{newRequestID}/{unique_filename}'
+    #                 # print("Key: ", key)
+    #                 # This line calls uploadImage to actually upload the file and create the S3Link
+    #                 image = uploadImage(file, key, '')
+    #                 # print("Image: ", image)
+    #                 images.append(image)
+
+    #                 if filename == favorite_image:
+    #                     # print("Favorite Image: ", filename, favorite_image)
+    #                     newRequest["maintenance_favorite_image"] = image
+
+    #             elif s3Link:
+    #                 imageFiles[filename] = s3Link
+    #                 images.append(s3Link)
+
+    #                 if filename == favorite_image:
+    #                     newRequest["maintenance_favorite_image"] = s3Link
+    #             else:
+    #                 break
+    #             i += 1
+    #             print("Images after loop: ", images)
+            
+    #         newRequest['maintenance_images'] = json.dumps(images)  
+    #         print("Images to add to db: ", newRequest['maintenance_images'])   
+    #         newRequest['maintenance_request_status'] = 'NEW'   
+
+
+    #         # print("New Propterty request: ", newProperty, type(newProperty))
+    #         response = db.insert('maintenanceRequests', newRequest)
+    #         response['Maintenance_UID'] = newRequestID
+    #         response['images'] = newRequest['maintenance_images']
+    #         # print("\nNew Prop÷erty Added")
+    #         response['favorite images'] = newRequest['maintenance_favorite_image']
+
+
+    #     return response
     
     def put(self):
-        print('in maintenanceRequests PUT')
+        print('in Maintenance Requests PUT')
         response = {}
-        response1 = {}
+        # response1 = {}
         payload = request.form.to_dict()
-        # print(payload)
+        print("Maintenance Request Update Payload: ", payload)
 
         # Verify uid has been included in the data
         if payload.get('maintenance_request_uid') is None:
             print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        maintenance_request_uid = payload.get('maintenance_request_uid')
-        keyr = {'maintenance_request_uid': payload.pop('maintenance_request_uid')}
-        # print("Key: ", key)
+        # maintenance_request_uid = payload.get('maintenance_request_uid')
+        key = {'maintenance_request_uid': payload.pop('maintenance_request_uid')}
+        print("Maintenance Request Key: ", key)
 
 
-        # Update Maintenance QUOTES if maintenance request status changes to COMPLETED
-        if payload.get('maintenance_request_status') == "COMPLETED":
-            id = payload.get('maintenance_request_uid')
-            with connect() as db:
-                quoteQuery = db.execute("""
-                                        SELECT maintenance_quote_uid, quote_status FROM space.maintenanceQuotes
-                                        WHERE quote_maintenance_request_id = \'""" + id + """\'
-                """)
-                response1 = quoteQuery
-                for quote in response1["result"]:
-                    if quote["quote_status"] == "SENT":
-                        quote["quote_status"] = "NOT ACCEPTED"
-                    elif quote["quote_status"] == "REQUESTED":
-                        quote["quote_status"] = "WITHDRAWN"
-                    keyq = {'maintenance_quote_uid': quote['maintenance_quote_uid']}
-                    maintenanceQuotes = {k: v for k, v in quote.items()}
+        # --------------- PROCESS IMAGES ------------------
 
-                    with connect() as db:
-                        response["quotes_update"] = db.update('maintenanceQuotes', keyq, maintenanceQuotes)
-
-
-        # Check if images already exist
-        # Put current db images into current images
-        current_images = []
-        if payload.get('maintenance_images') is not None:
-            current_images =ast.literal_eval(payload.get('maintenance_images'))
-            print("Current images: ", current_images, type(current_images))
-
-        # Check if images are being added OR deleted
-        images = []
-        # i = -1
-        i = 0
-        imageFiles = {}
-        favorite_image = payload.get("maintenance_favorite_image")
-        while True:
-            filename = f'img_{i}'
-            print("Put image file into Filename: ", filename) 
-            # if i == -1:
-            #     filename = 'img_cover'
-            file = request.files.get(filename)
-            print("File:" , file)            
-            s3Link = payload.get(filename)
-            print("S3Link: ", s3Link)
-            if file:
-                imageFiles[filename] = file
-                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                image_key = f'maintenanceRequests/{maintenance_request_uid}/{unique_filename}'
-                # This calls the uploadImage function that generates the S3 link
-                image = uploadImage(file, image_key, '')
-                images.append(image)
-
-                if filename == favorite_image:
-                    payload["maintenance_favorite_image"] = image
-
-            elif s3Link:
-                imageFiles[filename] = s3Link
-                images.append(s3Link)
-
-                if filename == favorite_image:
-                    payload["maintenance_favorite_image"] = s3Link
-            else:
-                break
-            i += 1
+        processImage(key, payload)
+        print("Payload after function: ", payload)
         
-        print("Images after loop: ", images)
-        if images != []:
-            current_images.extend(images)
-            payload['maintenance_images'] = json.dumps(current_images) 
+        # --------------- PROCESS IMAGES ------------------
 
-        # Delete Images
-        if payload.get('delete_images'):
-            delete_images = ast.literal_eval(payload.get('delete_images'))
-            del payload['delete_images']
-            print(delete_images, type(delete_images), len(delete_images))
-            for image in delete_images:
-                print("Image to Delete: ", image, type(image))
-                # Delete from db list assuming it is in db list
-                try:
-                    current_images.remove(image)
-                except:
-                    print("Image not in lsit")
 
-                #  Delete from S3 Bucket
-                try:
-                    delete_key = image.split('io-pm/', 1)[1]
-                    print("Delete key", delete_key)
-                    deleteImage(delete_key)
-                except: 
-                    print("could not delete from S3")
+        # # Update Maintenance QUOTES if maintenance request status changes to COMPLETED
+        # if payload.get('maintenance_request_status') == "COMPLETED":
+        #     id = payload.get('maintenance_request_uid')
+        #     with connect() as db:
+        #         quoteQuery = db.execute("""
+        #                                 SELECT maintenance_quote_uid, quote_status FROM space.maintenanceQuotes
+        #                                 WHERE quote_maintenance_request_id = \'""" + id + """\'
+        #         """)
+        #         response1 = quoteQuery
+        #         for quote in response1["result"]:
+        #             if quote["quote_status"] == "SENT":
+        #                 quote["quote_status"] = "NOT ACCEPTED"
+        #             elif quote["quote_status"] == "REQUESTED":
+        #                 quote["quote_status"] = "WITHDRAWN"
+        #             keyq = {'maintenance_quote_uid': quote['maintenance_quote_uid']}
+        #             maintenanceQuotes = {k: v for k, v in quote.items()}
+
+        #             with connect() as db:
+        #                 response["quotes_update"] = db.update('maintenanceQuotes', keyq, maintenanceQuotes)
+
+
+        # # Check if images already exist
+        # # Put current db images into current images
+        # current_images = []
+        # if payload.get('maintenance_images') is not None:
+        #     current_images =ast.literal_eval(payload.get('maintenance_images'))
+        #     print("Current images: ", current_images, type(current_images))
+
+        # # Check if images are being added OR deleted
+        # images = []
+        # # i = -1
+        # i = 0
+        # imageFiles = {}
+        # favorite_image = payload.get("maintenance_favorite_image")
+        # while True:
+        #     filename = f'img_{i}'
+        #     print("Put image file into Filename: ", filename) 
+        #     # if i == -1:
+        #     #     filename = 'img_cover'
+        #     file = request.files.get(filename)
+        #     print("File:" , file)            
+        #     s3Link = payload.get(filename)
+        #     print("S3Link: ", s3Link)
+        #     if file:
+        #         imageFiles[filename] = file
+        #         unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+        #         image_key = f'maintenanceRequests/{maintenance_request_uid}/{unique_filename}'
+        #         # This calls the uploadImage function that generates the S3 link
+        #         image = uploadImage(file, image_key, '')
+        #         images.append(image)
+
+        #         if filename == favorite_image:
+        #             payload["maintenance_favorite_image"] = image
+
+        #     elif s3Link:
+        #         imageFiles[filename] = s3Link
+        #         images.append(s3Link)
+
+        #         if filename == favorite_image:
+        #             payload["maintenance_favorite_image"] = s3Link
+        #     else:
+        #         break
+        #     i += 1
+        
+        # print("Images after loop: ", images)
+        # if images != []:
+        #     current_images.extend(images)
+        #     payload['maintenance_images'] = json.dumps(current_images) 
+
+        # # Delete Images
+        # if payload.get('delete_images'):
+        #     delete_images = ast.literal_eval(payload.get('delete_images'))
+        #     del payload['delete_images']
+        #     print(delete_images, type(delete_images), len(delete_images))
+        #     for image in delete_images:
+        #         print("Image to Delete: ", image, type(image))
+        #         # Delete from db list assuming it is in db list
+        #         try:
+        #             current_images.remove(image)
+        #         except:
+        #             print("Image not in lsit")
+
+        #         #  Delete from S3 Bucket
+        #         try:
+        #             delete_key = image.split('io-pm/', 1)[1]
+        #             print("Delete key", delete_key)
+        #             deleteImage(delete_key)
+        #         except: 
+        #             print("could not delete from S3")
             
-            print("Updated List of Images: ", current_images)
+        #     print("Updated List of Images: ", current_images)
 
-            print("Current Images: ", current_images)
-            payload['maintenance_images'] = json.dumps(current_images)  
+        #     print("Current Images: ", current_images)
+        #     payload['maintenance_images'] = json.dumps(current_images)  
 
 
         # Write to Database
         with connect() as db:
-            print("Checking Inputs: ", keyr, payload)
-            response["request_update"] = db.update('maintenanceRequests', keyr, payload)
+            print("Checking Inputs: ", key, payload)
+            response["request_update"] = db.update('maintenanceRequests', key, payload)
             print("Response:" , response)
+
         return response
 
 
@@ -721,182 +751,253 @@ class MaintenanceQuotes(Resource):
         return response
 
     def post(self):
-        response = []
-        payload = request.form
-        quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
-        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
-        # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
-        quote_pm_notes = payload["quote_pm_notes"]
-        today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
+        print("In Maintenace Quotes POST")
+        response = {}
+        newMaintenanceQuotes = {}
+        payload = request.form.to_dict()
+        print("Maintenance Quotes Add Payload: ", payload)
+
+        if payload.get('maintenance_quote_uid'):
+            print("maintenance_quote_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
+        
         with connect() as db:
-            for quote_business_id in quote_maintenance_contacts:
-                # print("Business ID: ", quote_business_id)
-                quote = {}
-                quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
-                quote["quote_business_id"] = quote_business_id
-                quote["quote_maintenance_request_id"] = quote_maintenance_request_id
-                quote["quote_status"] = "REQUESTED"
-                quote["quote_pm_notes"] = quote_pm_notes
-                quote["quote_created_date"] = today
+            newMaintenanceQuoteUID = db.call('space.new_quote_uid')['result'][0]['new_id']
+            key = {'maintenance_request_uid': newMaintenanceQuoteUID}
+            print("Maintenance Req Key: ", key)
+           
+           # --------------- PROCESS IMAGES ------------------
 
-                images = []
-                i = 0  # Start index from 0 for img_0
-                while True:
-                    print("In while loop")
-                    if i == 0:
-                        filename = 'img_cover'
-                    else:
-                        filename = f'img_{i - 1}'  # Adjust the filename for img_0, img_1, ...
-                    file = request.files.get(filename)
-                    if file:
-                        key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
-                        image = uploadImage(file, key, '')
-                        images.append(image)
-                    else:
-                        break
-                    i += 1
+            processImage(key, payload)
+            print("Payload after function: ", payload)
+            
+            # --------------- PROCESS IMAGES ------------------
 
-                quote["quote_maintenance_images"] = json.dumps(images)
-                query_response = db.insert('maintenanceQuotes', quote)
-                response.append(query_response)
+
+            # Add Maintenance Requeste Info
+            print("Add Maintenance Quote Payload: ", payload)  
+
+
+            payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
+            response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
+            response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
+            response['Maintenance Quote Images Added'] = payload["maintenance_images"]
+            print("\nNew Maintenance Quote Added")
 
         return response
+    # def post(self):
+    #     response = []
+    #     payload = request.form
+    #     quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
+    #     quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
+    #     # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
+    #     quote_pm_notes = payload["quote_pm_notes"]
+    #     today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
+    #     with connect() as db:
+    #         for quote_business_id in quote_maintenance_contacts:
+    #             # print("Business ID: ", quote_business_id)
+    #             quote = {}
+    #             quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
+    #             quote["quote_business_id"] = quote_business_id
+    #             quote["quote_maintenance_request_id"] = quote_maintenance_request_id
+    #             quote["quote_status"] = "REQUESTED"
+    #             quote["quote_pm_notes"] = quote_pm_notes
+    #             quote["quote_created_date"] = today
+
+    #             images = []
+    #             i = 0  # Start index from 0 for img_0
+    #             while True:
+    #                 print("In while loop")
+    #                 if i == 0:
+    #                     filename = 'img_cover'
+    #                 else:
+    #                     filename = f'img_{i - 1}'  # Adjust the filename for img_0, img_1, ...
+    #                 file = request.files.get(filename)
+    #                 if file:
+    #                     key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
+    #                     image = uploadImage(file, key, '')
+    #                     images.append(image)
+    #                 else:
+    #                     break
+    #                 i += 1
+
+    #             quote["quote_maintenance_images"] = json.dumps(images)
+    #             query_response = db.insert('maintenanceQuotes', quote)
+    #             response.append(query_response)
+
+    #     return response
 
     def put(self):
-        print('in MaintenanceQuotes')
+        print('in Maintenance Quotes PUT')
         response = {}
-        newDocument = {}
-        payload = request.form
-        print("payload: ", payload)
-        if payload.get('maintenance_quote_uid') is None:
+        # response1 = {}
+        payload = request.form.to_dict()
+        print("Maintenance Quotes Update Payload: ", payload)
+
+        # Verify uid has been included in the data
+        if payload.get('maintenance_quotes_uid') is None:
+            print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
-        print("Key: ", key)
-        quote = {k: v for k, v in payload.items()}
-        print("KV Pairs: ", quote)
+        
+        # maintenance_request_uid = payload.get('maintenance_request_uid')
+        key = {'maintenance_quote_uid': payload.pop('maintenance_quote_uid')}
+        print("Maintenance Quote Key: ", key)
 
+
+        # --------------- PROCESS IMAGES ------------------
+
+        processImage(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS IMAGES ------------------
+
+
+        # Write to Database
         with connect() as db:
-            query = db.select('maintenanceQuotes', key)
-        try:
-            quote_from_db = query.get('result')[0]
-            images = quote_from_db.get("quote_maintenance_images")
-            images = ast.literal_eval(images) if images else []  # convert to list of URLs
-            print('type: ', type(images))
-            print(f'previously saved images: {images}')
-        except IndexError as e:
-            print(e)
-            raise BadRequest("Request failed, no such Maintenance Quote in the database.")
-
-        s3_i = len(images) if len(images) else 0
-
-        img_cover_file = request.files.get('img_cover')
-        if img_cover_file:
-            S3key_cover = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/img_cover'
-            print("S3 Key for img_cover: ", S3key_cover)
-            image_cover = uploadImage(img_cover_file, S3key_cover, '')
-            images.append(image_cover)
-
-        i = 0
-
-        # WHILE WHAT IS TRUE?
-        while True:
-            print("In while loop")
-            filename = f'img_{i}'
-            s3_filename = f'img_{s3_i}'
-            # print("Filename: ", filename)
-            file = request.files.get(filename)
-            # print("File: ", file)
-            if file:
-                S3key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{s3_filename}'
-                print("S3 Key: ", S3key)
-                image = uploadImage(file, S3key, '')
-                images.append(image)
-            else:
-                break
-            i += 1
-            s3_i += 1
-
-        print("Images: ",images)
-        quote["quote_maintenance_images"] = json.dumps(images)
-
-        qd_files = request.files.getlist('qd_files')
-        quote_id = payload.get('maintenance_quote_uid')
-
-        with connect() as db:
-            print("In actual PUT")
-            response = db.update('maintenanceQuotes', key, quote)
-
-        if payload.get("quote_maintenance_request_id") is not None and payload.get("quote_status") == "COMPLETED":
-            with connect() as db:
-                qmr_id = payload.get("quote_maintenance_request_id")
-                quoteQuery = db.execute("""
-                                SELECT maintenance_quote_uid FROM space.maintenanceQuotes WHERE quote_maintenance_request_id = \'""" + qmr_id + """\'
-                """)
-                quotelist = []
-                for i in range(len(quoteQuery["result"])):
-                    quotelist.append(quoteQuery["result"][i]["maintenance_quote_uid"])
-                quotelist.remove(quote["maintenance_quote_uid"])
-                for x in quotelist:
-                    key = {'maintenance_quote_uid': x}
-                    payload = {'quote_status': "NOT ACCEPTED"}
-                    quoteUpdate = db.update("maintenanceQuotes",key,payload)
-                    print(quoteUpdate)
-                    response["quoteUpdate"] = quoteUpdate
-
-        if qd_files:
-            for key in qd_files:
-                print("key", key)
-                file = key
-                print("file", file)
-                # file_info = files_details[detailsIndex]
-                if file and allowed_file(file.filename):
-                    key = f'quotes/{quote_id}/{file.filename}'
-                    print("key", key)
-                    s3_link = uploadImage(file, key, '')
-                    docObject = {}
-                    # Ensure qd_link is initialized as a list if it's not already
-                    if 'qd_link' not in newDocument:
-                        newDocument['qd_link'] = []
-
-                    # Append the new s3_link to the list
-                    newDocument['qd_link'].append(s3_link)
-                    docObject["filename"] = file.filename
-
-            newDocument['qd_link'] = json.dumps(newDocument['qd_link'])
-            with connect() as db:
-                fields = [
-                    'qd_type',
-                    'qd_created_date',
-                    'qd_name',
-                    'qd_shared',
-                    'qd_description'
-                ]
-                # print("Document Type: ", data.get("document_type"))
-
-                # newDocument['owner_uid']
-                for field in fields:
-                    if payload.get(field) is not None:
-                        newDocument[field] = payload.get(field)
-                newDocument['qd_quote_id'] = quote["maintenance_quote_uid"]
-                if newDocument['qd_quote_id'].startswith('900-'):
-
-                    new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
-                    newDocument['qd_uid'] = new_doc_id
-
-                    # sql = f"""UPDATE space.ownerProfileInfo
-                    #             SET owner_documents = JSON_ARRAY_APPEND(
-                    #                 IFNULL(owner_documents, JSON_ARRAY()),
-                    #                 '$',
-                    #                 "{newDocument}"
-                    #             )
-                    #             WHERE owner_uid = \'""" + owner_id + """\';"""
-                    # print(sql)
-                    # response = db.execute(sql, cmd='post')
-                    response['documents'] = db.insert('quoteDocuments', newDocument)
-                else:
-                    response['error'] = "Please enter the quote id in the correct format"
+            print("Checking Inputs: ", key, payload)
+            response["request_update"] = db.update('maintenanceQuotes', key, payload)
+            print("Response:" , response)
 
         return response
+
+
+
+
+    # def put(self):
+    #     print('in MaintenanceQuotes')
+    #     response = {}
+    #     newDocument = {}
+    #     payload = request.form
+    #     print("payload: ", payload)
+    #     if payload.get('maintenance_quote_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'maintenance_quote_uid': payload['maintenance_quote_uid']}
+    #     print("Key: ", key)
+    #     quote = {k: v for k, v in payload.items()}
+    #     print("KV Pairs: ", quote)
+
+    #     with connect() as db:
+    #         query = db.select('maintenanceQuotes', key)
+    #     try:
+    #         quote_from_db = query.get('result')[0]
+    #         images = quote_from_db.get("quote_maintenance_images")
+    #         images = ast.literal_eval(images) if images else []  # convert to list of URLs
+    #         print('type: ', type(images))
+    #         print(f'previously saved images: {images}')
+    #     except IndexError as e:
+    #         print(e)
+    #         raise BadRequest("Request failed, no such Maintenance Quote in the database.")
+
+    #     s3_i = len(images) if len(images) else 0
+
+    #     img_cover_file = request.files.get('img_cover')
+    #     if img_cover_file:
+    #         S3key_cover = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/img_cover'
+    #         print("S3 Key for img_cover: ", S3key_cover)
+    #         image_cover = uploadImage(img_cover_file, S3key_cover, '')
+    #         images.append(image_cover)
+
+    #     i = 0
+
+    #     # WHILE WHAT IS TRUE?
+    #     while True:
+    #         print("In while loop")
+    #         filename = f'img_{i}'
+    #         s3_filename = f'img_{s3_i}'
+    #         # print("Filename: ", filename)
+    #         file = request.files.get(filename)
+    #         # print("File: ", file)
+    #         if file:
+    #             S3key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{s3_filename}'
+    #             print("S3 Key: ", S3key)
+    #             image = uploadImage(file, S3key, '')
+    #             images.append(image)
+    #         else:
+    #             break
+    #         i += 1
+    #         s3_i += 1
+
+    #     print("Images: ",images)
+    #     quote["quote_maintenance_images"] = json.dumps(images)
+
+    #     qd_files = request.files.getlist('qd_files')
+    #     quote_id = payload.get('maintenance_quote_uid')
+
+    #     with connect() as db:
+    #         print("In actual PUT")
+    #         response = db.update('maintenanceQuotes', key, quote)
+
+    #     if payload.get("quote_maintenance_request_id") is not None and payload.get("quote_status") == "COMPLETED":
+    #         with connect() as db:
+    #             qmr_id = payload.get("quote_maintenance_request_id")
+    #             quoteQuery = db.execute("""
+    #                             SELECT maintenance_quote_uid FROM space.maintenanceQuotes WHERE quote_maintenance_request_id = \'""" + qmr_id + """\'
+    #             """)
+    #             quotelist = []
+    #             for i in range(len(quoteQuery["result"])):
+    #                 quotelist.append(quoteQuery["result"][i]["maintenance_quote_uid"])
+    #             quotelist.remove(quote["maintenance_quote_uid"])
+    #             for x in quotelist:
+    #                 key = {'maintenance_quote_uid': x}
+    #                 payload = {'quote_status': "NOT ACCEPTED"}
+    #                 quoteUpdate = db.update("maintenanceQuotes",key,payload)
+    #                 print(quoteUpdate)
+    #                 response["quoteUpdate"] = quoteUpdate
+
+    #     if qd_files:
+    #         for key in qd_files:
+    #             print("key", key)
+    #             file = key
+    #             print("file", file)
+    #             # file_info = files_details[detailsIndex]
+    #             if file and allowed_file(file.filename):
+    #                 key = f'quotes/{quote_id}/{file.filename}'
+    #                 print("key", key)
+    #                 s3_link = uploadImage(file, key, '')
+    #                 docObject = {}
+    #                 # Ensure qd_link is initialized as a list if it's not already
+    #                 if 'qd_link' not in newDocument:
+    #                     newDocument['qd_link'] = []
+
+    #                 # Append the new s3_link to the list
+    #                 newDocument['qd_link'].append(s3_link)
+    #                 docObject["filename"] = file.filename
+
+    #         newDocument['qd_link'] = json.dumps(newDocument['qd_link'])
+    #         with connect() as db:
+    #             fields = [
+    #                 'qd_type',
+    #                 'qd_created_date',
+    #                 'qd_name',
+    #                 'qd_shared',
+    #                 'qd_description'
+    #             ]
+    #             # print("Document Type: ", data.get("document_type"))
+
+    #             # newDocument['owner_uid']
+    #             for field in fields:
+    #                 if payload.get(field) is not None:
+    #                     newDocument[field] = payload.get(field)
+    #             newDocument['qd_quote_id'] = quote["maintenance_quote_uid"]
+    #             if newDocument['qd_quote_id'].startswith('900-'):
+
+    #                 new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
+    #                 newDocument['qd_uid'] = new_doc_id
+
+    #                 # sql = f"""UPDATE space.ownerProfileInfo
+    #                 #             SET owner_documents = JSON_ARRAY_APPEND(
+    #                 #                 IFNULL(owner_documents, JSON_ARRAY()),
+    #                 #                 '$',
+    #                 #                 "{newDocument}"
+    #                 #             )
+    #                 #             WHERE owner_uid = \'""" + owner_id + """\';"""
+    #                 # print(sql)
+    #                 # response = db.execute(sql, cmd='post')
+    #                 response['documents'] = db.insert('quoteDocuments', newDocument)
+    #             else:
+    #                 response['error'] = "Please enter the quote id in the correct format"
+
+    #     return response
 
 
 class MaintenanceQuotesByUid(Resource):

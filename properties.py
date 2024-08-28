@@ -523,7 +523,7 @@ class Properties(Resource):
         response = {}
         appliances = {}
         payload = request.form.to_dict()
-        print("Propoerty Add Payload: ", payload)
+        print("Property Add Payload: ", payload)
 
         # Verify uid has NOT been included in the data
         if payload.get('property_uid'):

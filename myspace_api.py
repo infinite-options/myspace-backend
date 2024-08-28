@@ -25,7 +25,7 @@ from documents import OwnerDocuments, TenantDocuments, QuoteDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
-from maintenance import MaintenanceStatus, MaintenanceByProperty, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
+from maintenance import MaintenanceStatus, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from cron import PeriodicPurchases_CLASS # , ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, LateFees_CRON
 from contacts import Contacts
 from contracts import Contracts
