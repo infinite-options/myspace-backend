@@ -842,7 +842,7 @@ class MaintenanceQuotes(Resource):
         print("Maintenance Quotes Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('maintenance_quotes_uid') is None:
+        if payload.get('maintenance_quote_uid') is None:
             print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
