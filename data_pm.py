@@ -134,7 +134,6 @@ def processImage(key, payload):
 
     # Check if images are being added OR deleted
     images = []
-    # i = -1
     i = 0
     imageFiles = {}
 
@@ -143,20 +142,26 @@ def processImage(key, payload):
     while True:
         filename = f'img_{i}'
         print("Put image file into Filename: ", filename) 
-        # if i == -1:
-        #     filename = 'img_cover'
         file = request.files.get(filename)
         print("File:" , file)            
         s3Link = payload.get(filename)
         print("S3Link: ", s3Link)
+
         if file:
             print("In File if Statement")
-            # payload.pop(f'img_{i}'  )
             imageFiles[filename] = file
             unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
             image_key = f'{key_type}/{key_uid}/{unique_filename}'
             # This calls the uploadImage function that generates the S3 link
             image = uploadImage(file, image_key, '')
+            
+            
+            
+            
+            
+            
+            
+            
             images.append(image)
 
             if filename == payload_fav_images:
@@ -206,21 +211,140 @@ def processImage(key, payload):
             except: 
                 print("could not delete from S3")
         
-        print("Updated List of Images: ", current_images)
-
-
         print("\nCurrent Images in Function: ", current_images)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
 
         return payload
-    # Write to Database
-    # with connect() as db:
-    #     print("Checking Inputs: ", key, payload)
-    #     response['property_info'] = db.update('properties', key, payload)
-    #     # print("Response:" , response)
-    # return response
+
+
+
+# --------------- PROCESS DOCUMENT ------------------
+
+def processDocument(key, payload):
+    print("\nIn Process Image: ", payload)
+    response = {}
+
+    if 'contract_uid' in key:
+        print("Contract Key passed")
+        key_type = 'contracts'
+        key_uid = key['contract_uid']
+        payload_documents = payload.get('contract_documents', None)
+        payload_document_details = payload.pop('contract_documents_details', None)
+        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+    else:
+        print("No UID found in key")
+        return
+    
+    # payload.pop("img_favorite", None)
+    print("Past if statement")
+
+
+    # Check if files already exist
+    # Put current db files into current_documents
+    current_documents = []
+    print("here 0")
+    if payload_documents is not None and payload_documents != '' and payload_documents != 'null':
+        print("Payload Documents: ", payload_documents)
+        current_documents =ast.literal_eval(payload_documents)
+        print("Current documents: ", current_documents, type(current_documents))
+    print("here 1")
+
+    if payload_document_details is not None and payload_document_details != '' and payload_document_details != 'null':
+        documents_details = json.loads(payload_document_details)
+        print("documents_details: ", documents_details, type(documents_details))
+    print("here 1a")
+
+    # Check if documents are being added OR deleted
+    documents = []
+    i = 0
+    documentFiles = {}
+
+    print("here 2")
+    
+    while True:
+        filename = f'file_{i}'
+        print("\nPut file into Filename: ", filename) 
+        file = request.files.get(filename)
+        print("File:" , file)    
+        s3Link = payload.get(filename)
+        print("S3Link: ", s3Link)
+
+
+        if file:
+            print("In File if Statement")
+            documentFiles[filename] = file
+            unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+            doc_key = f'{key_type}/{key_uid}/{unique_filename}'
+            # This calls the uploadImage function that generates the S3 link
+            document = uploadImage(file, doc_key, '')  # This returns the document http link
+            print("Document after upload: ", document)
+
+            docObject = {}
+            docObject["link"] = document
+            docObject["filename"] = file.filename
+            docObject["type"] = file.content_type
+            docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
+            print("Doc Object: ", docObject)
+
+            documents.append(docObject)
+
+            
+
+
+        
+        
+        
+        elif s3Link:
+            documentFiles[filename] = s3Link
+            documents.append(s3Link)
+
+            
+
+        
+        
+        
+        else:
+            break
+        i += 1
+    
+    print("Documents after loop: ", documents)
+    if documents != []:
+        current_documents.extend(documents)
+        if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents) 
+
+
+
+    # Delete Images
+    if payload.get('delete_documents'):
+        delete_documents = ast.literal_eval(payload.get('delete_documents'))
+        del payload['delete_documents']
+        print(delete_documents, type(delete_documents), len(delete_documents))
+        for document in delete_documents:
+            print("Document to Delete: ", document, type(document))
+            # Delete from db list assuming it is in db list
+            try:
+                current_documents.remove(document)
+            except:
+                print("Document not in list")
+
+            #  Delete from S3 Bucket
+            try:
+                delete_key = document.split('io-pm/', 1)[1]
+                print("Delete key", delete_key)
+                deleteImage(delete_key)
+            except: 
+                print("could not delete from S3")
+        
+        print("\nCurrent Images in Function: ", current_documents)
+        if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
+        
+
+
+        return payload
+
 
 
 # --------------- DATABASE CONFIGUATION ------------------

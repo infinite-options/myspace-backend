@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, uploadImage, deleteImage, s3
+from data_pm import connect, uploadImage, deleteImage, s3, processDocument
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -153,101 +153,109 @@ class Contracts(Resource):
             print("No contract_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        contract_uid = payload.get('contract_uid')
+        # contract_uid = payload.get('contract_uid')
         key = {'contract_uid': payload.pop('contract_uid')}
         print("Contract Key: ", key)
+
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
    
-        # Check if files already exist
-        # Put current db files into current_documents
-        current_documents = []
-        if payload.get('contract_documents') is not None:
-            current_documents =ast.literal_eval(payload.get('contract_documents'))
-            print("Current images: ", current_documents, type(current_documents))
+        # # Check if files already exist
+        # # Put current db files into current_documents
+        # current_documents = []
+        # if payload.get('contract_documents') is not None:
+        #     current_documents =ast.literal_eval(payload.get('contract_documents'))
+        #     print("Current images: ", current_documents, type(current_documents))
 
-        if payload.get('contract_documents_details') is not None:
-            documents_details = json.loads(payload.pop('contract_documents_details'))
-            print("documents_details: ", documents_details, type(documents_details))
+        # if payload.get('contract_documents_details') is not None:
+        #     documents_details = json.loads(payload.pop('contract_documents_details'))
+        #     print("documents_details: ", documents_details, type(documents_details))
 
-        # Check if images are being added OR deleted
-        documents = []
-        i = 0
-        documentFiles = {}
+        # # Check if images are being added OR deleted
+        # documents = []
+        # i = 0
+        # documentFiles = {}
         
-        while True:
-            filename = f'file_{i}'
-            print("\nPut file into Filename: ", filename) 
+        # while True:
+        #     filename = f'file_{i}'
+        #     print("\nPut file into Filename: ", filename) 
             
 
-            file = request.files.get(filename)
-            print("File:" , file)    
-            # print("Filename:", file.filename)
-            # print("File Type:", file.content_type) 
+        #     file = request.files.get(filename)
+        #     print("File:" , file)    
+        #     # print("Filename:", file.filename)
+        #     # print("File Type:", file.content_type) 
 
         
-            s3Link = payload.get(filename)
-            print("S3Link: ", s3Link)
+        #     s3Link = payload.get(filename)
+        #     print("S3Link: ", s3Link)
 
 
-            if file:
-                print("In File if Statement")
-                documentFiles[filename] = file
-                unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                image_key = f'contracts/{contract_uid}/{unique_filename}'
-                # This calls the uploadImage function that generates the S3 link
-                document = uploadImage(file, image_key, '')  # This returns the document http link
-                print("Document after upload: ", document)
+        #     if file:
+        #         print("In File if Statement")
+        #         documentFiles[filename] = file
+        #         unique_filename = filename + "_" + datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+        #         image_key = f'contracts/{contract_uid}/{unique_filename}'
+        #         # This calls the uploadImage function that generates the S3 link
+        #         document = uploadImage(file, image_key, '')  # This returns the document http link
+        #         print("Document after upload: ", document)
 
-                docObject = {}
-                docObject["link"] = document
-                docObject["filename"] = file.filename
-                docObject["type"] = file.content_type
-                docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
-                print("Doc Object: ", docObject)
+        #         docObject = {}
+        #         docObject["link"] = document
+        #         docObject["filename"] = file.filename
+        #         docObject["type"] = file.content_type
+        #         docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
+        #         print("Doc Object: ", docObject)
 
-                documents.append(docObject)
+        #         documents.append(docObject)
 
                 
 
 
-            elif s3Link:
-                documentFiles[filename] = s3Link
-                documents.append(s3Link)
+        #     elif s3Link:
+        #         documentFiles[filename] = s3Link
+        #         documents.append(s3Link)
 
                 
 
-            else:
-                break
-            i += 1
+        #     else:
+        #         break
+        #     i += 1
         
-        print("Documents after loop: ", documents)
-        if documents != []:
-            current_documents.extend(documents)
-            payload['contract_documents'] = json.dumps(current_documents) 
+        # print("Documents after loop: ", documents)
+        # if documents != []:
+        #     current_documents.extend(documents)
+        #     payload['contract_documents'] = json.dumps(current_documents) 
 
-        # Delete Images
-        if payload.get('delete_documents'):
-            delete_documents = ast.literal_eval(payload.get('delete_documents'))
-            del payload['delete_documents']
-            print(delete_documents, type(delete_documents), len(delete_documents))
-            for document in delete_documents:
-                print("Document to Delete: ", document, type(document))
-                # Delete from db list assuming it is in db list
-                try:
-                    current_documents.remove(document)
-                except:
-                    print("Document not in list")
+        # # Delete Images
+        # if payload.get('delete_documents'):
+        #     delete_documents = ast.literal_eval(payload.get('delete_documents'))
+        #     del payload['delete_documents']
+        #     print(delete_documents, type(delete_documents), len(delete_documents))
+        #     for document in delete_documents:
+        #         print("Document to Delete: ", document, type(document))
+        #         # Delete from db list assuming it is in db list
+        #         try:
+        #             current_documents.remove(document)
+        #         except:
+        #             print("Document not in list")
 
-                #  Delete from S3 Bucket
-                try:
-                    delete_key = document.split('io-pm/', 1)[1]
-                    print("Delete key", delete_key)
-                    deleteImage(delete_key)
-                except: 
-                    print("could not delete from S3")
+        #         #  Delete from S3 Bucket
+        #         try:
+        #             delete_key = document.split('io-pm/', 1)[1]
+        #             print("Delete key", delete_key)
+        #             deleteImage(delete_key)
+        #         except: 
+        #             print("could not delete from S3")
             
-            print("Updated List of Images: ", current_documents)
+        #     print("Updated List of Images: ", current_documents)
 
-            payload['contract_documents'] = json.dumps(current_documents) 
+        #     payload['contract_documents'] = json.dumps(current_documents) 
 
         # Write to Database
         with connect() as db:
