@@ -90,6 +90,7 @@ def processImage(key, payload):
         key_uid = key['property_uid']
         payload_images = payload.get('property_images')
         payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        
 
     elif 'appliance_uid' in key:
         print("Appliance Key passed")
@@ -120,6 +121,7 @@ def processImage(key, payload):
         return
 
     payload.pop("img_favorite", None)
+    payload_delete_images = payload.pop('delete_images', None)
     print("Past if statement")
    
     # Check if images already exist
@@ -191,9 +193,8 @@ def processImage(key, payload):
         if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
 
     # Delete Images
-    if payload.get('delete_images'):
-        delete_images = ast.literal_eval(payload.get('delete_images'))
-        del payload['delete_images']
+    if payload_delete_images:
+        delete_images = ast.literal_eval(payload_delete_images)
         print(delete_images, type(delete_images), len(delete_images))
         for image in delete_images:
             print("Image to Delete: ", image, type(image))
@@ -234,7 +235,7 @@ def processDocument(key, payload):
         payload_document_details = payload.pop('contract_documents_details', None)
         # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
-    if 'tenant_uid' in key:
+    elif 'tenant_uid' in key:
         print("Tenant Key passed")
         key_type = 'tenant'
         key_uid = key['tenant_uid']
@@ -247,6 +248,7 @@ def processDocument(key, payload):
         return
     
     # payload.pop("img_favorite", None)
+    payload_delete_documents = payload.pop('delete_documents', None)
     print("Past if statement")
 
 
@@ -326,9 +328,9 @@ def processDocument(key, payload):
 
 
     # Delete Images
-    if payload.get('delete_documents'):
-        delete_documents = ast.literal_eval(payload.get('delete_documents'))
-        del payload['delete_documents']
+    if payload_delete_documents:
+        print("In document delete")
+        delete_documents = ast.literal_eval(payload_delete_documents)
         print(delete_documents, type(delete_documents), len(delete_documents))
         for document in delete_documents:
             print("Document to Delete: ", document, type(document))
@@ -349,7 +351,7 @@ def processDocument(key, payload):
         print("\nCurrent Images in Function: ", current_documents)
         if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
         
-
+     
 
         return payload
 

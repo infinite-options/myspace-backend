@@ -141,17 +141,17 @@ class MaintenanceRequests(Resource):
                 mapped_items = {k: {'maintenance_color': v, 'maintenance_items': []} for k, v in
                                 status_colors.items()}
                 
-                print("Mapped Items: ", mapped_items)
+                # print("Mapped Items: ", mapped_items)
 
                 response = maintenanceRequests
-                print("\nQuery response: ", response)
+                # print("\nQuery response: ", response)
 
                 for record in response['result']:
-                    print("\nRecord: ", record)
+                    # print("\nRecord: ", record)
                     status = record.get('maintenance_status')
-                    print("\nStatus: ", status)
+                    # print("\nStatus: ", status)
                     mapped_items[status]['maintenance_items'].append(record)
-                    print("\nMapped Item: ", mapped_items)
+                    # print("\nMapped Item: ", mapped_items)
 
                 response['result'] = mapped_items
                 return response
