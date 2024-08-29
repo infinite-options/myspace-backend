@@ -780,7 +780,8 @@ class MaintenanceQuotes(Resource):
             # Add Maintenance Requeste Info
             print("Add Maintenance Quote Payload: ", payload)  
 
-
+            payload["quote_status"] = "REQUESTED"
+            payload["quote_requested_date"] = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
             payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
             response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
             response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
