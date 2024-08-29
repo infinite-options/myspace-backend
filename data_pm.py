@@ -113,7 +113,7 @@ def processImage(key, payload):
         key_type = 'maintenance'
         key_uid = key['maintenance_quote_uid']
         payload_images = payload.get('quote_maintenance_images', None)
-        # payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
 
     else:
@@ -121,10 +121,10 @@ def processImage(key, payload):
         return
     
 
-    print("key_type: ", key_type)
-    print("key_uid: ", key_uid)
-    print("payload_images: ", payload_images)
-    print("payload_fav_images: ", payload_fav_images)
+    # print("key_type: ", key_type)
+    # print("key_uid: ", key_uid)
+    # print("payload_images: ", payload_images)
+    # print("payload_fav_images: ", payload_fav_images)
 
     payload.pop("img_favorite", None)
     payload_delete_images = payload.pop('delete_images', None)
