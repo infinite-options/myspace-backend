@@ -225,6 +225,8 @@ def processImage(key, payload):
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
+
+    print("Payload before return: ", payload)
     return payload
 
 
