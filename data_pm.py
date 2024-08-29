@@ -112,8 +112,8 @@ def processImage(key, payload):
         print("Maintenance Quote Key passed")
         key_type = 'maintenance'
         key_uid = key['maintenance_quote_uid']
-        payload_images = payload.get('maintenance_images', None)
-        payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        payload_images = payload.get('quote_maintenance_images', None)
+        # payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
 
     else:
