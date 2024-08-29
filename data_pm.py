@@ -102,7 +102,7 @@ def processImage(key, payload):
 
     elif 'maintenance_request_uid' in key:
         print("Maintenance Request Key passed")
-        key_type = 'maintenance'
+        key_type = 'maintenance request'
         key_uid = key['maintenance_request_uid']
         payload_images = payload.get('maintenance_images', None)
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
@@ -110,7 +110,7 @@ def processImage(key, payload):
     
     elif 'maintenance_quote_uid' in key:
         print("Maintenance Quote Key passed")
-        key_type = 'maintenance'
+        key_type = 'maintenance quote'
         key_uid = key['maintenance_quote_uid']
         payload_images = payload.get('quote_maintenance_images', None)
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
@@ -175,7 +175,7 @@ def processImage(key, payload):
             if filename == payload_fav_images:
                 if key_type == 'properties': payload["property_favorite_image"] = image
                 if key_type == 'appliances': payload["appliance_favorite_image"] = image
-                if key_type == 'maintenance': payload["maintenance_favorite_image"] = image
+                if key_type == 'maintenance request': payload["maintenance_favorite_image"] = image
 
 
         elif s3Link:
@@ -186,7 +186,7 @@ def processImage(key, payload):
             if filename == payload_fav_images:
                 if key_type == 'properties': payload["property_favorite_image"] = s3Link
                 if key_type == 'appliances': payload["appliance_favorite_image"] = s3Link
-                if key_type == 'maintenance': payload["maintenance_favorite_image"] = s3Link
+                if key_type == 'maintenance request': payload["maintenance_favorite_image"] = s3Link
         else:
             break
         i += 1
@@ -196,7 +196,8 @@ def processImage(key, payload):
         current_images.extend(images)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-        if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
     # Delete Images
     if payload_delete_images:
@@ -221,7 +222,8 @@ def processImage(key, payload):
         print("\nCurrent Images in Function: ", current_images)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-        if key_type == 'maintenance': payload['maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
         return payload
 
