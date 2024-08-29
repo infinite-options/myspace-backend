@@ -27,7 +27,7 @@ def deleteImage(key):
         print("After Delete Status Code: ", delete_file['ResponseMetadata']['HTTPStatusCode'])
         print(f"Deleted existing file {key} from bucket {bucket}")
         return True
-    except ClientError as e:
+    except s3.exceptions.ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchKey':
             print(f"File {key} does not exist in bucket {bucket}")
         else:
@@ -232,6 +232,14 @@ def processDocument(key, payload):
         key_uid = key['contract_uid']
         payload_documents = payload.get('contract_documents', None)
         payload_document_details = payload.pop('contract_documents_details', None)
+        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+    if 'tenant_uid' in key:
+        print("Tenant Key passed")
+        key_type = 'tenant'
+        key_uid = key['tenant_uid']
+        payload_documents = payload.get('tenant_documents', None)
+        payload_document_details = payload.pop('tenant_documents_details', None)
         # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
     else:

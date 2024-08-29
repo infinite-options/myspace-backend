@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
-from data_pm import connect, deleteImage, uploadImage, s3
+from data_pm import connect, deleteImage, uploadImage, s3, processDocument
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -477,9 +477,10 @@ class Profile(Resource):
         return response
 
     def put(self):
+        print("\nIn Profile PUT")
         response = {}
         payload = request.form.to_dict()
-        print("Profile Payload: ", payload)
+        print("Profile Update Payload: ", payload)
         
 
         if payload.get('business_uid'):
@@ -512,6 +513,7 @@ class Profile(Resource):
             key = {'tenant_uid': payload.pop('tenant_uid')}
             print("Tenant Key: ", key)
 
+
             file = request.files.get("tenant_photo_url")
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
@@ -526,6 +528,14 @@ class Profile(Resource):
                         print(f"Error deleting file {key1}: {e}")
 
                 payload["tenant_photo_url"] = uploadImage(file, key1, '')
+
+
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            # processDocument(key, payload)
+            # print("Payload after function: ", payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
 
 
             # Check if documents are being added OR deleted

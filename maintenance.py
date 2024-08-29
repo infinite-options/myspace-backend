@@ -101,6 +101,7 @@ class MaintenanceRequests(Resource):
                         CASE 
 							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
+                            WHEN maintenance_request_status = "MORE-INFO"						THEN "PROCESSING"
                             WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                             -- maintenance_request_status, quote_status
