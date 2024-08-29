@@ -14,11 +14,6 @@ import ast
 
 
 
-# OVERVIEW
-#           TENANT      OWNER     PROPERTY MANAGER     
-# BY MONTH    X           X               X
-# BY YEAR     X           X               X
-
 def clean_json_data(data):
     # print(data)
     for field, value in data.items():
@@ -39,29 +34,29 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # class OwnerProfile(Resource):
-    def post(self):
-        response = {}
-        owner_profile = request.form.to_dict()
-        with connect() as db:
-            owner_profile["owner_uid"] = db.call('space.new_owner_uid')['result'][0]['new_id']
-            file = request.files.get("owner_photo")
-            if file:
-                key = f'ownerProfileInfo/{owner_profile["owner_uid"]}/owner_photo'
-                owner_profile["owner_photo_url"] = uploadImage(file, key, '')
-            response = db.insert('ownerProfileInfo', owner_profile)
-            response["owner_uid"] = owner_profile["owner_uid"]
-        return response
+    # def post(self):
+    #     response = {}
+    #     owner_profile = request.form.to_dict()
+    #     with connect() as db:
+    #         owner_profile["owner_uid"] = db.call('space.new_owner_uid')['result'][0]['new_id']
+    #         file = request.files.get("owner_photo")
+    #         if file:
+    #             key = f'ownerProfileInfo/{owner_profile["owner_uid"]}/owner_photo'
+    #             owner_profile["owner_photo_url"] = uploadImage(file, key, '')
+    #         response = db.insert('ownerProfileInfo', owner_profile)
+    #         response["owner_uid"] = owner_profile["owner_uid"]
+    #     return response
 
-    def put(self):
-        print('in Owner Profile')
-        response = {}
-        payload = request.get_json()
-        if payload.get('owner_uid') is None:
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'owner_uid': payload.pop('owner_uid')}
-        with connect() as db:
-            response = db.update('ownerProfileInfo', key, payload)
-        return response
+    # def put(self):
+    #     print('in Owner Profile')
+    #     response = {}
+    #     payload = request.get_json()
+    #     if payload.get('owner_uid') is None:
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'owner_uid': payload.pop('owner_uid')}
+    #     with connect() as db:
+    #         response = db.update('ownerProfileInfo', key, payload)
+    #     return response
 
 # class OwnerProfileByOwnerUid(Resource):
 #     # decorators = [jwt_required()]
@@ -508,8 +503,8 @@ class Profile(Resource):
         
         # Profile Picture is Unique to Profile 
         if payload.get('tenant_uid'):
-            tenant_uid = payload.get('tenant_uid')
             print("In Tenant")
+            # tenant_uid = payload.get('tenant_uid')
             key = {'tenant_uid': payload.pop('tenant_uid')}
             print("Tenant Key: ", key)
 
@@ -532,95 +527,95 @@ class Profile(Resource):
 
             # --------------- PROCESS DOCUMENTS ------------------
 
-            # processDocument(key, payload)
-            # print("Payload after function: ", payload)
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
             
             # --------------- PROCESS DOCUMENTS ------------------
 
 
-            # Check if documents are being added OR deleted
-            current_docs = payload.get('tenant_documents')
-            add_docs = payload.get('tenant_documents_details') 
-            del_docs = payload.get('deleted_documents')
-            print("Current Documents: ", current_docs, type(current_docs))
-            print("Documents to Add: ", add_docs, type(add_docs))
-            print("Documents to Del: ", del_docs, type(del_docs))
+            # # Check if documents are being added OR deleted
+            # current_docs = payload.get('tenant_documents')
+            # add_docs = payload.get('tenant_documents_details') 
+            # del_docs = payload.get('deleted_documents')
+            # print("Current Documents: ", current_docs, type(current_docs))
+            # print("Documents to Add: ", add_docs, type(add_docs))
+            # print("Documents to Del: ", del_docs, type(del_docs))
 
 
-            # Code requires that FrontEnd always passes in tenant_documents whenever adding or deleting
-            # if add_docs is not None or del_docs is not None:    
-            if current_docs is not None:    
-                # Store Existing Documents
-                tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
-                print("Tenant Docs: ", tenant_docs)
+            # # Code requires that FrontEnd always passes in tenant_documents whenever adding or deleting
+            # # if add_docs is not None or del_docs is not None:    
+            # if current_docs is not None:    
+            #     # Store Existing Documents
+            #     tenant_docs = json.loads(payload.get('tenant_documents', '[]'))
+            #     print("Tenant Docs: ", tenant_docs)
 
 
-                # Check if documents are being added
-                if add_docs is not None:
+            #     # Check if documents are being added
+            #     if add_docs is not None:
                         
-                        json_add_docs = json.loads(add_docs)     
-                        print("Document Details: ", json_add_docs)           
-                        del payload['tenant_documents_details']
+            #             json_add_docs = json.loads(add_docs)     
+            #             print("Document Details: ", json_add_docs)           
+            #             del payload['tenant_documents_details']
 
-                        files = request.files
+            #             files = request.files
 
-                        if files:
-                            print("In tenant files: ", files)
-                            detailsIndex = 0
-                            for fileKey in files:
-                                file = files[fileKey]
-                            # for file in files:
-                                file_info = json_add_docs[detailsIndex]
+            #             if files:
+            #                 print("In tenant files: ", files)
+            #                 detailsIndex = 0
+            #                 for fileKey in files:
+            #                     file = files[fileKey]
+            #                 # for file in files:
+            #                     file_info = json_add_docs[detailsIndex]
 
-                                if file and allowed_file(file.filename):
-                                    s3key = f'tenants/{tenant_uid}/{file.filename}'
-                                    print("S3 Key: ", s3key)
-                                    s3_link = uploadImage(file, s3key, '')
-                                    # s3_link = 'doc_link' # to test locally
-                                    docObject = {}
-                                    docObject["link"] = s3_link
-                                    docObject["filename"] = file.filename
-                                    docObject["type"] = file_info["fileType"]
-                                    tenant_docs.append(docObject)
-                                detailsIndex += 1
+            #                     if file and allowed_file(file.filename):
+            #                         s3key = f'tenants/{tenant_uid}/{file.filename}'
+            #                         print("S3 Key: ", s3key)
+            #                         s3_link = uploadImage(file, s3key, '')
+            #                         # s3_link = 'doc_link' # to test locally
+            #                         docObject = {}
+            #                         docObject["link"] = s3_link
+            #                         docObject["filename"] = file.filename
+            #                         docObject["type"] = file_info["fileType"]
+            #                         tenant_docs.append(docObject)
+            #                     detailsIndex += 1
 
-                            payload['tenant_documents'] = json.dumps(tenant_docs)
+            #                 payload['tenant_documents'] = json.dumps(tenant_docs)
 
 
                 
 
-                # Check if documents are being deleted
-                if del_docs is not None:
+            #     # Check if documents are being deleted
+            #     if del_docs is not None:
                 
-                    # delete documents from s3
-                    print("In Delete")              
-                    del payload['deleted_documents']
-                    deleted_docs = []
+            #         # delete documents from s3
+            #         print("In Delete")              
+            #         del payload['deleted_documents']
+            #         deleted_docs = []
                     
-                    if del_docs is not None and isinstance(del_docs, str):
-                        try:                
-                            deleted_docs = ast.literal_eval(del_docs)                                
-                        except (ValueError, SyntaxError) as e:
-                            print(f"Error parsing the deleted_docs string: {e}")
+            #         if del_docs is not None and isinstance(del_docs, str):
+            #             try:                
+            #                 deleted_docs = ast.literal_eval(del_docs)                                
+            #             except (ValueError, SyntaxError) as e:
+            #                 print(f"Error parsing the deleted_docs string: {e}")
                             
                     
-                    s3Client = boto3.client('s3')
+            #         s3Client = boto3.client('s3')
 
-                    response = {'s3_delete_responses': []}
-                    if(deleted_docs):
-                        try:                
-                            objects_to_delete = []
-                            for doc in deleted_docs:                    
-                                docKey = "tenants/" + doc.split("tenants/")[-1]
-                                objects_to_delete.append(docKey)               
+            #         response = {'s3_delete_responses': []}
+            #         if(deleted_docs):
+            #             try:                
+            #                 objects_to_delete = []
+            #                 for doc in deleted_docs:                    
+            #                     docKey = "tenants/" + doc.split("tenants/")[-1]
+            #                     objects_to_delete.append(docKey)               
 
-                            for obj_key in objects_to_delete:                    
-                                delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
-                                response['s3_delete_responses'].append({obj_key: delete_response})
+            #                 for obj_key in objects_to_delete:                    
+            #                     delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
+            #                     response['s3_delete_responses'].append({obj_key: delete_response})
 
-                        except Exception as e:
-                            print(f"Deletion from s3 failed: {str(e)}")
-                            response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
+            #             except Exception as e:
+            #                 print(f"Deletion from s3 failed: {str(e)}")
+            #                 response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
                     
 
 
@@ -633,10 +628,6 @@ class Profile(Resource):
             with connect() as db:
                 response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
             print("Response:" , response)
-
-
-
-
 
 
         if payload.get('owner_uid'):

@@ -225,7 +225,7 @@ def processImage(key, payload):
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
-        return payload
+    return payload
 
 
 
@@ -243,9 +243,25 @@ def processDocument(key, payload):
         payload_document_details = payload.pop('contract_documents_details', None)
         # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
+    elif 'lease_uid' in key:
+        print("Lease Key passed")
+        key_type = 'leases'
+        key_uid = key['lease_uid']
+        payload_documents = payload.get('lease_documents', None)
+        payload_document_details = payload.pop('lease_documents_details', None)
+        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
+    elif 'maintenance_quote_uid' in key:
+        print("Quote Key passed")
+        key_type = 'quotes'
+        key_uid = key['maintenance_quote_uid']
+        payload_documents = payload.get('quote_documents', None)
+        payload_document_details = payload.pop('quote_documents_details', None)
+        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
     elif 'tenant_uid' in key:
         print("Tenant Key passed")
-        key_type = 'tenant'
+        key_type = 'tenants'
         key_uid = key['tenant_uid']
         payload_documents = payload.get('tenant_documents', None)
         payload_document_details = payload.pop('tenant_documents_details', None)
@@ -254,6 +270,11 @@ def processDocument(key, payload):
     else:
         print("No UID found in key")
         return
+
+    print("key_type: ", key_type)
+    print("key_uid: ", key_uid)
+    print("payload_documents: ", payload_documents)
+    print("payload_document_details: ", payload_document_details)
     
     # payload.pop("img_favorite", None)
     payload_delete_documents = payload.pop('delete_documents', None)
@@ -332,6 +353,9 @@ def processDocument(key, payload):
     if documents != []:
         current_documents.extend(documents)
         if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents) 
+        if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents) 
+        if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents) 
+        if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents) 
 
 
 
@@ -358,10 +382,13 @@ def processDocument(key, payload):
         
         print("\nCurrent Images in Function: ", current_documents)
         if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
+        if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
+        if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
+        if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
         
      
-
-        return payload
+    print("Payload before return: ", payload)
+    return payload
 
 
 
