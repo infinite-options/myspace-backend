@@ -154,7 +154,7 @@ class Appliances(Resource):
             payload["appliance_uid"] = newApplianceUID  
             response['Add Appliance'] = db.insert('appliances', payload)
             response['appliance_UID'] = newApplianceUID 
-            response['Appliance Images Added'] = payload["appliance_images"]
+            response['Appliance Images Added'] = payload.get('appliance_images', "None")
             print("\nNew Appliance Added")
 
         return response

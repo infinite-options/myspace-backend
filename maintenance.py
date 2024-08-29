@@ -766,8 +766,8 @@ class MaintenanceQuotes(Resource):
         
         with connect() as db:
             newMaintenanceQuoteUID = db.call('space.new_quote_uid')['result'][0]['new_id']
-            key = {'maintenance_request_uid': newMaintenanceQuoteUID}
-            print("Maintenance Req Key: ", key)
+            key = {'maintenance_quote_uid': newMaintenanceQuoteUID}
+            print("Maintenance Quote Key: ", key)
            
            # --------------- PROCESS IMAGES ------------------
 
@@ -784,7 +784,7 @@ class MaintenanceQuotes(Resource):
             payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
             response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
             response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
-            response['Maintenance Quote Images Added'] = payload["maintenance_images"]
+            response['Maintenance Quote Images Added'] = payload.get('maintenance_images', "None")
             print("\nNew Maintenance Quote Added")
 
         return response

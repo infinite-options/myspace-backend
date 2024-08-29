@@ -101,7 +101,7 @@ def processImage(key, payload):
 
 
     elif 'maintenance_request_uid' in key:
-        print("Maintenance Key passed")
+        print("Maintenance Request Key passed")
         key_type = 'maintenance'
         key_uid = key['maintenance_request_uid']
         payload_images = payload.get('maintenance_images', None)
@@ -109,7 +109,7 @@ def processImage(key, payload):
 
     
     elif 'maintenance_quote_uid' in key:
-        print("Maintenance Key passed")
+        print("Maintenance Quote Key passed")
         key_type = 'maintenance'
         key_uid = key['maintenance_quote_uid']
         payload_images = payload.get('maintenance_images', None)
@@ -119,6 +119,12 @@ def processImage(key, payload):
     else:
         print("No UID found in key")
         return
+    
+
+    print("key_type: ", key_type)
+    print("key_uid: ", key_uid)
+    print("payload_images: ", payload_images)
+    print("payload_fav_images: ", payload_fav_images)
 
     payload.pop("img_favorite", None)
     payload_delete_images = payload.pop('delete_images', None)
