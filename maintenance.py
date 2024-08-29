@@ -159,7 +159,6 @@ class MaintenanceRequests(Resource):
             response["maintenanceRequests"] = maintenanceRequests
             return response
 
-
         elif uid[:3] == '350':
             print("In Tenant ID")
             
@@ -707,10 +706,6 @@ class MaintenanceQuotes(Resource):
                                             -- WHERE quote_business_id = '600-000256';
                                             """)
                     response["maintenanceQuotes"] = businessQuery
-
-
-
-
 
 
         elif uid[:3] == '350':

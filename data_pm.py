@@ -88,7 +88,7 @@ def processImage(key, payload):
         print("Property Key passed")
         key_type = 'properties'
         key_uid = key['property_uid']
-        payload_images = payload.get('property_images')
+        payload_images = payload.get('property_images', None)
         payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
         
 
@@ -96,7 +96,7 @@ def processImage(key, payload):
         print("Appliance Key passed")
         key_type = 'appliances'
         key_uid = key['appliance_uid']
-        payload_images = payload.get('appliance_images')
+        payload_images = payload.get('appliance_images', None)
         payload_fav_images = payload.get("appliance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
 
@@ -104,7 +104,7 @@ def processImage(key, payload):
         print("Maintenance Key passed")
         key_type = 'maintenance'
         key_uid = key['maintenance_request_uid']
-        payload_images = payload.get('maintenance_images')
+        payload_images = payload.get('maintenance_images', None)
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
     
@@ -112,7 +112,7 @@ def processImage(key, payload):
         print("Maintenance Key passed")
         key_type = 'maintenance'
         key_uid = key['maintenance_quote_uid']
-        payload_images = payload.get('maintenance_images')
+        payload_images = payload.get('maintenance_images', None)
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
 

@@ -588,7 +588,8 @@ class Properties(Resource):
             payload["property_uid"] = newPropertyUID
             response['Add Property'] = db.insert('properties', payload)
             response['property_UID'] = newPropertyUID
-            response['Images Added'] = payload['property_images']
+            response['Images Added'] = payload.get('property_images', "None")
+
             print("\nNew Property Added")
 
         return response
