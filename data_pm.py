@@ -332,11 +332,16 @@ def processDocument(key, payload):
             document = uploadImage(file, doc_key, '')  # This returns the document http link
             print("Document after upload: ", document)
 
+            # print("docObject: ", file)
+            # print("docObject: ", file.mimetype)
+            # print("docObject: ", file.filename)
+            # print("docObject: ", documents_details[i]['contentType'])
+
             docObject = {}
             docObject["link"] = document
             docObject["filename"] = file.filename
-            docObject["type"] = file.contentType
-            docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
+            docObject["contentType"] = documents_details[i]['contentType']
+            docObject["fileType"] = file.mimetype
             print("Doc Object: ", docObject)
 
             documents.append(docObject)
