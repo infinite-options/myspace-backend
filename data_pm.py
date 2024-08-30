@@ -270,6 +270,14 @@ def processDocument(key, payload):
         payload_document_details = payload.pop('tenant_documents_details', None)
         # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
+    elif 'business_uid' in key:
+        print("Tenant Key passed")
+        key_type = 'business'
+        key_uid = key['business_uid']
+        payload_documents = payload.get('business_documents', None)
+        payload_document_details = payload.pop('business_documents_details', None)
+        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+
     else:
         print("No UID found in key")
         return
@@ -359,6 +367,7 @@ def processDocument(key, payload):
         if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents) 
         if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents) 
         if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents) 
+        if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
 
 
 
@@ -388,6 +397,7 @@ def processDocument(key, payload):
     if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
     if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
     if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
+    if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
         
      
     print("Payload before return: ", payload)

@@ -477,7 +477,7 @@ class Profile(Resource):
         payload = request.form.to_dict()
         print("Profile Update Payload: ", payload)
         
-
+        # Profile Picture is Unique to Profile 
         if payload.get('business_uid'):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url"}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
@@ -497,11 +497,20 @@ class Profile(Resource):
 
                 filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
             print("business")
+
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
+
+
             with connect() as db:
                 response = db.update('businessProfileInfo', key, filtered_payload)
         
         
-        # Profile Picture is Unique to Profile 
+        
         if payload.get('tenant_uid'):
             print("In Tenant")
             # tenant_uid = payload.get('tenant_uid')
@@ -513,7 +522,7 @@ class Profile(Resource):
             if file:
                 key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
                 
-                try:
+                try:    
                     deleteImage(key1)
                     print(f"Deleted existing file {key1}")
                 except s3.exceptions.ClientError as e:
