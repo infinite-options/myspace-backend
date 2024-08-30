@@ -1261,7 +1261,7 @@ class MaintenanceStatus(Resource):
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
                                 , CASE
-                                    WHEN space.m_details.quote_status = "REQUESTED"                                                      		THEN "REQUESTED"
+                                    WHEN space.m_details.quote_status IN ("REQUESTED", "MORE INFO")                                        		THEN "REQUESTED"
                                     WHEN space.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
                                     WHEN space.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
                                     WHEN space.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
