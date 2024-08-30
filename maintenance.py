@@ -765,28 +765,33 @@ class MaintenanceQuotes(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newMaintenanceQuoteUID = db.call('space.new_quote_uid')['result'][0]['new_id']
-            key = {'maintenance_quote_uid': newMaintenanceQuoteUID}
-            print("Maintenance Quote Key: ", key)
-           
-           # --------------- PROCESS IMAGES ------------------
+            print("Maintenance Businesses: ", payload.get('quote_business_id').split(','), type(payload.get('quote_business_id').split(',')))
+            maint_businesses = payload.get('quote_business_id').split(',')
 
-            processImage(key, payload)
-            print("Payload after function: ", payload)
+            for quote_business_id in maint_businesses:
+                payload["quote_business_id"] = quote_business_id
+                newMaintenanceQuoteUID = db.call('space.new_quote_uid')['result'][0]['new_id']
+                key = {'maintenance_quote_uid': newMaintenanceQuoteUID}
+                print("Maintenance Quote Key: ", key)
             
             # --------------- PROCESS IMAGES ------------------
 
+                processImage(key, payload)
+                print("Payload after function: ", payload)
+                
+                # --------------- PROCESS IMAGES ------------------
 
-            # Add Maintenance Requeste Info
-            print("Add Maintenance Quote Payload: ", payload)  
 
-            payload["quote_status"] = "REQUESTED"
-            payload["quote_requested_date"] = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
-            payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
-            response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
-            response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
-            response['Maintenance Quote Images Added'] = payload.get('maintenance_images', "None")
-            print("\nNew Maintenance Quote Added")
+                # Add Maintenance Requeste Info
+                print("Add Maintenance Quote Payload: ", payload)  
+
+                payload["quote_status"] = "REQUESTED"
+                payload["quote_requested_date"] = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
+                payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
+                response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
+                response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
+                response['Maintenance Quote Images Added'] = payload.get('maintenance_images', "None")
+                print("\nNew Maintenance Quote Added")
 
         return response
     # def post(self):
