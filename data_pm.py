@@ -327,7 +327,7 @@ def processDocument(key, payload):
             docObject = {}
             docObject["link"] = document
             docObject["filename"] = file.filename
-            docObject["type"] = file.content_type
+            docObject["type"] = file.contentType
             docObject["fileType"] = next((doc['fileType'] for doc in documents_details if doc['fileIndex'] == i), None)
             print("Doc Object: ", docObject)
 
