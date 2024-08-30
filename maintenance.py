@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 import boto3
-from data_pm import connect, uploadImage, deleteImage, s3, processImage
+from data_pm import connect, uploadImage, deleteImage, s3, processImage, processDocument
 from datetime import date, timedelta, datetime
 from calendar import monthrange
 import json
@@ -320,7 +320,7 @@ class MaintenanceRequests(Resource):
             payload["maintenance_request_uid"] = newMaintenanceReqUID  
             response['Add Maintenance Req'] = db.insert('maintenanceRequests', payload)
             response['maintenance_request_uid'] = newMaintenanceReqUID 
-            response['Maintenance Req Images Added'] = payload["maintenance_images"]
+            response['Maintenance Req Images Added'] = payload.get('maintenance_images', "None")
             print("\nNew Maintenance Request Added")
 
         return response
@@ -854,6 +854,14 @@ class MaintenanceQuotes(Resource):
         print("Payload after function: ", payload)
         
         # --------------- PROCESS IMAGES ------------------
+
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
 
 
         # Write to Database
