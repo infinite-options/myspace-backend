@@ -88,7 +88,7 @@ def processImage(key, payload):
         print("Property Key passed")
         key_type = 'properties'
         key_uid = key['property_uid']
-        payload_images = payload.get('property_images', None)
+        payload_images = payload.get('property_images', None)  # Current Images
         payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
         
 
@@ -104,7 +104,7 @@ def processImage(key, payload):
         print("Maintenance Request Key passed")
         key_type = 'maintenance request'
         key_uid = key['maintenance_request_uid']
-        payload_images = payload.get('maintenance_images', None)  # Current Images
+        payload_images = payload.get('maintenance_images', None)  
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
     
@@ -121,10 +121,10 @@ def processImage(key, payload):
         return
     
 
-    # print("key_type: ", key_type)
-    # print("key_uid: ", key_uid)
-    # print("payload_images: ", payload_images)
-    # print("payload_fav_images: ", payload_fav_images)
+    print("key_type: ", key_type)
+    print("key_uid: ", key_uid)
+    print("payload_images: ", payload_images)
+    print("payload_fav_images: ", payload_fav_images)
 
     payload.pop("img_favorite", None)
     payload_delete_images = payload.pop('delete_images', None)  # Images to Delete
@@ -232,18 +232,18 @@ def processImage(key, payload):
 
 
 
-# --------------- PROCESS DOCUMENT ------------------
+# --------------- PROCESS DOCUMENTS ------------------
 
 def processDocument(key, payload):
-    print("\nIn Process Image: ", payload)
+    print("\nIn Process Documents: ", payload)
     response = {}
 
     if 'contract_uid' in key:
         print("Contract Key passed")
         key_type = 'contracts'
         key_uid = key['contract_uid']
-        payload_documents = payload.get('contract_documents', None)
-        payload_document_details = payload.pop('contract_documents_details', None)
+        payload_documents = payload.get('contract_documents', None)                     # Current Documents
+        payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
         # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
     elif 'lease_uid' in key:

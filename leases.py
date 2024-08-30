@@ -493,7 +493,7 @@ class LeaseApplication(Resource):
             for fees in json_object:
                 # print("Fees: ", fees)
                 new_leaseFees = {}
-                new_leaseFees["fees_lease_id"] = lease_uid
+                new_leaseFees["fees_lease_id"] = key['lease_uid']
 
                 # print("here 1")
                 for item in fields_leaseFees:
