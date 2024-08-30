@@ -104,7 +104,7 @@ def processImage(key, payload):
         print("Maintenance Request Key passed")
         key_type = 'maintenance request'
         key_uid = key['maintenance_request_uid']
-        payload_images = payload.get('maintenance_images', None)
+        payload_images = payload.get('maintenance_images', None)  # Current Images
         payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
 
     
@@ -127,7 +127,7 @@ def processImage(key, payload):
     # print("payload_fav_images: ", payload_fav_images)
 
     payload.pop("img_favorite", None)
-    payload_delete_images = payload.pop('delete_images', None)
+    payload_delete_images = payload.pop('delete_images', None)  # Images to Delete
     print("Past if statement")
    
     # Check if images already exist
@@ -147,6 +147,7 @@ def processImage(key, payload):
 
     print("here 2")
 
+    # ADD Images
     while True:
         filename = f'img_{i}'
         print("Put image file into Filename: ", filename) 
@@ -219,11 +220,11 @@ def processImage(key, payload):
             except: 
                 print("could not delete from S3")
         
-        print("\nCurrent Images in Function: ", current_images)
-        if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
-        if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-        if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
-        if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
+    print("\nCurrent Images in Function: ", current_images)
+    if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
+    if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+    if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
+    if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
 
     print("Payload before return: ", payload)
@@ -361,7 +362,7 @@ def processDocument(key, payload):
 
 
 
-    # Delete Images
+    # Delete Documents
     if payload_delete_documents:
         print("In document delete")
         delete_documents = ast.literal_eval(payload_delete_documents)
@@ -382,11 +383,11 @@ def processDocument(key, payload):
             except: 
                 print("could not delete from S3")
         
-        print("\nCurrent Images in Function: ", current_documents)
-        if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
-        if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
-        if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
-        if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
+    print("\nCurrent Images in Function: ", current_documents)
+    if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
+    if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
+    if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
+    if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
         
      
     print("Payload before return: ", payload)
