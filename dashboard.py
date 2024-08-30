@@ -60,7 +60,7 @@ class Dashboard(Resource):
                             FROM (
                                 SELECT *
                                 , CASE
-                                        WHEN quote_status = "REQUESTED"                                 THEN "REQUESTED"
+                                        WHEN quote_status IN ("REQUESTED", "MORE INFO")                 THEN "REQUESTED"
                                         WHEN quote_status = "SENT" 	                                    THEN "SUBMITTED"
                                         WHEN quote_status IN ("ACCEPTED", "SCHEDULE")                   THEN "ACCEPTED"
                                         WHEN quote_status IN ("SCHEDULED" , "RESCHEDULE")               THEN "SCHEDULED"
