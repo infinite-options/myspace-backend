@@ -756,7 +756,7 @@ class MaintenanceQuotes(Resource):
     def post(self):
         print("In Maintenace Quotes POST")
         response = {}
-        newMaintenanceQuotes = {}
+        
         payload = request.form.to_dict()
         print("Maintenance Quotes Add Payload: ", payload)
 
@@ -767,14 +767,19 @@ class MaintenanceQuotes(Resource):
         with connect() as db:
             print("Maintenance Businesses: ", payload.get('quote_business_id').split(','), type(payload.get('quote_business_id').split(',')))
             maint_businesses = payload.get('quote_business_id').split(',')
+            maintenance_images_og = payload.get('quote_maintenance_images', None)
+            print("OG Maintenance Images: ", maintenance_images_og)
 
             for quote_business_id in maint_businesses:
                 payload["quote_business_id"] = quote_business_id
+                payload["quote_maintenance_images"] = maintenance_images_og
+                print('payload["maintenance_quote_uid"] before Process Images: ', payload["quote_maintenance_images"])
+                print('payload["maintenance_quote_uid"] before Process Images: ', payload)
                 newMaintenanceQuoteUID = db.call('space.new_quote_uid')['result'][0]['new_id']
                 key = {'maintenance_quote_uid': newMaintenanceQuoteUID}
                 print("Maintenance Quote Key: ", key)
             
-            # --------------- PROCESS IMAGES ------------------
+                # --------------- PROCESS IMAGES ------------------
 
                 processImage(key, payload)
                 print("Payload after function: ", payload)

@@ -289,172 +289,85 @@ class LeaseApplication(Resource):
         print("In Lease Application POST")
         response = {}
 
-        # data = request.form
-        # print("data as received",data)
-        data = request.form.to_dict()
-        # print("data for to dict",data)
+        payload = request.form.to_dict()
+        print("Lease Add Payload: ", payload)
 
-        # Store tenant and property uids as separate variables - Need to modify this for multiple tenants
-        if 'tenant_uid' in data and data['tenant_uid']!="":
-            print("TENANT_ID",data['tenant_uid'])
-            tenant_uid = data.get('tenant_uid')
-            property_uid = data.get('lease_property_id')
-            print(tenant_uid)
-            # del data['tenant_uid']
+        if payload.get('lease_uid'):
+            print("lease_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
+        
+        if payload.get('tenant_uid') is None or payload['tenant_uid']=="" :
+            print("No tenant_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        
+        with connect() as db: 
+
+            # Get New Lease UID    
+            lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
+            key = {'lease_uid': lease_uid}
+            print("Contract Key: ", key)
+
+
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
             
-            with connect() as db:
-
-                # Verify that there is not already an active lease application
-                response = db.execute("""
-                            SELECT * From space.leases
-                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
-                            WHERE lt_tenant_id = \'""" + tenant_uid + """\' 
-                            AND lease_property_id = \'""" + property_uid + """\'
-                            AND lease_status in ('NEW','PROCESSING');
-                            """)
-                if len(response['result']) != 0:
-                    return ("Tenant Request for this Property is already Active, Please wait for the PM to respond.")
-                else:
-
-                    # New Application
-                    ApplicationStatus = data.get('lease_status')
-
-                    response = {}
-                    fields = ["lease_property_id", "lease_start", "lease_end", "lease_end_notice_period", "lease_status", "lease_assigned_contacts",
-                              "lease_documents", "lease_early_end_date", "lease_renew_status", "move_out_date","lease_move_in_date",
-                              "lease_effective_date", "lease_application_date", "lease_docuSign", "lease_actual_rent"]
-                    fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts"
-                                         , "lease_documents"]
-                    fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
-                                        "perDay_late_fee", "late_fee"]
-                   
-                    print("Data before if statement: ",data)
-
-                    # Insert data into leases table
-                    newLease = {}
-                        
-                    # Get New Lease UID    
-                    lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
-                    newLease['lease_uid'] = lease_uid
-                    response['lease_uid'] = lease_uid
-                    print("\nNew Lease UID: ", lease_uid)   
+            # --------------- PROCESS DOCUMENTS ------------------
 
 
-
-                    # Put Incoming Data in Correct Fields
-                    for field in fields:
-                        print("field", field)
-                        if field in data:
-                            newLease[field] = data[field]
-                            print("new_lease field", newLease[field])
-                    for field in fields_with_lists:
-                        print("field list", field)
-                        if data.get(field) is None:
-                            print(field,"Is None")
-                            newLease[field] = '[]'
-                        else: 
-                            newLease[field] = data[field]
-                            print("new_lease field list", newLease[field])
-                    print("new_lease", newLease)
-                    
+            # Insert data into leaseFees table
+            lease_fees = payload.pop('lease_fees', None)
+            print("lease_fees in data: ", lease_fees)
+            if lease_fees != None:
+                json_object = json.loads(lease_fees)
+                # print("lease fees json_object", json_object)
+                for fees in json_object:
+                    # print("fees",fees)
+                    new_leaseFees = {}
+                    new_leaseFees["fees_lease_id"] = lease_uid
+                    for item in payload.get('fields_leaseFees'):
+                        if item in fees:
+                            new_leaseFees[item] = fees[item]
+                    response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
 
+        
+            # Insert data into lease-Tenants table
+            print("Tenants: ", payload.get('tenant_uid').split(','), type(payload.get('tenant_uid').split(',')))
+            tenants = payload.pop('tenant_uid').split(',')
 
+            tenant_responsibiity = str(1/len(tenants))
+            for tenant_uid in tenants:
+                print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
+                ltQuery = (""" 
+                    INSERT INTO space.lease_tenant
+                    SET lt_lease_id = \'""" + lease_uid + """\'
+                        , lt_tenant_id = \'""" + tenant_uid + """\'
+                        , lt_responsibility = \'""" + tenant_responsibiity + """\';
+                    """)
+                print("Made it to here")
+                response = db.execute(ltQuery, [], 'post')
+                print("Added tenant: ", response)
+            print("Data inserted into space.lease_tenant")
+            
 
+            # Verify LIST variables are not empty
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents"]
+            for field in fields_with_lists:
+                print("field list", field)
+                if payload.get(field) is None:
+                    print(field,"Is None")
+                    payload[field] = '[]' 
 
-                    # Initializes lease_docs for POST
-                    lease_docs = []  
+            # Actual Insert Statement
+            print("About to insert: ", payload)
+            response["lease"] = db.insert('leases', payload)
+            print("Data inserted into space.leases", response)
 
-                    
-                    if data.get("lease_documents") and request.files:
-                        print("Documents attached")
-                        docInfo = json.loads(data["lease_documents"])
-                        print("Currently in lease_documents: ", type(docInfo), docInfo)
-                        print("Type: ", docInfo[0]["type"])
-                    
-                    
-                    
-                        # Insert documents into Correct Fields
-                        dateKey = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                        print(dateKey)
-                        
-                        files = request.files
-                        print("files", files)
-                        # files_details = json.loads(data.get('lease_documents_details'))
-                        if files:
-                            detailsIndex = 0
-                            for key in files:
-                                # print("key", key)
-                                file = files[key]
-                                # print("file", file)
-                    
-                                if file and allowed_file(file.filename):
-                                    key = f'leases/{lease_uid}/{dateKey}/{file.filename}'
-                                    # print("key", key)
-                                    s3_link = uploadImage(file, key, '')
-                                    docObject = {}
-                                    docObject["link"] = s3_link
-                                    docObject["filename"] = file.filename
-                                    docObject["type"] = docInfo[detailsIndex]["type"]
-                                    # docObject["type"] = file_info["fileType"]
-                                    lease_docs.append(docObject)
-                                detailsIndex += 1
-
-                            newLease['lease_documents'] = json.dumps(lease_docs)
-                            print("\nLease Docs: ", newLease['lease_documents'])
-
-
-                    # Actual Insert Statement
-                    print("About to insert: ", newLease)
-                    response["lease"] = db.insert('leases', newLease)
-                    # print("Data inserted into space.leases", response)
-
-                    
-                    # I don't think this works
-                    # Insert data into leaseFees table
-                    if "lease_fees" in data:
-                        # print("lease_fees in data")
-                        json_object = json.loads(data["lease_fees"])
-                        # print("lease fees json_object", json_object)
-                        for fees in json_object:
-                            # print("fees",fees)
-                            new_leaseFees = {}
-                            new_leaseFees["fees_lease_id"] = lease_uid
-                            for item in fields_leaseFees:
-                                if item in fees:
-                                    new_leaseFees[item] = fees[item]
-                            response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
-
-                    
-                    # Insert data into lease-Tenants table
-                    tenant_responsibiity = str(1)      # Change this when we get multiple tenants
-
-                    # with connect() as db:
-                    print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
-                    # print("Made it to here")
-                    ltQuery = (""" 
-                            INSERT INTO space.lease_tenant
-                            SET lt_lease_id = \'""" + lease_uid + """\'
-                                , lt_tenant_id = \'""" + tenant_uid + """\'
-                                , lt_responsibility = \'""" + tenant_responsibiity + """\';
-                            """)
-                    response["lease_tenant"] = db.execute(ltQuery, [], 'post')
-                    response["tenant_id"] = tenant_uid
-                    response["property_id"] = property_uid
-
-                    # print(ltQuery)
-                    # print("Data inserted into space.lease_tenant")
-
-                # key = {'lease_uid': data.pop('lease_uid')}
-                # print(key)
-
-                response["lease_status"] = ApplicationStatus
-
-
-
-        else:
-            response['error'] = "Please Enter a correct tenant_id. Database was not updated"
         return response
+
+
 	
     def put(self):
         print("\nIn Lease Application PUT")
