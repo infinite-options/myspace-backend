@@ -546,7 +546,9 @@ class DatabaseConnection:
         response = {}
         try:
             sql = f'SELECT {cols} FROM {tables}'
+            # print(sql)
             for i, key in enumerate(where.keys()):
+                # print(i, key)
                 if i == 0:
                     sql += ' WHERE '
                 if exact_match:
@@ -578,32 +580,32 @@ class DatabaseConnection:
         return response
 
     def update(self, table, primaryKey, object):
-        print("\nIn Update: ", table, primaryKey, object)
+        # print("\nIn Update: ", table, primaryKey, object)
         response = {}
         try:
             sql = f'UPDATE {table} SET '
-            print("SQL :", sql)
-            print(object.keys())
+            # print("SQL :", sql)
+            # print(object.keys())
             for i, key in enumerate(object.keys()):
-                print("update here 0 ", key)
+                # print("update here 0 ", key)
                 sql += f'{key} = %({key})s'
                 # print("sql: ", sql)
                 if i != len(object.keys()) - 1:
                     sql += ', '
             sql += f' WHERE '
-            print("Updated SQL: ", sql)
-            print("Primary Key: ", primaryKey, type(primaryKey))
+            # print("Updated SQL: ", sql)
+            # print("Primary Key: ", primaryKey, type(primaryKey))
             for i, key in enumerate(primaryKey.keys()):
-                print("update here 1")
+                # print("update here 1")
                 sql += f'{key} = %({key})s'
                 object[key] = primaryKey[key]
-                print("update here 2", key, primaryKey[key])
+                # print("update here 2", key, primaryKey[key])
                 if i != len(primaryKey.keys()) - 1:
-                    print("update here 3")
+                    # print("update here 3")
                     sql += ' AND '
             print("SQL Query: ", sql, object)
             response = self.execute(sql, object, 'post')
-            print("Response: ", response)
+            # print("Response: ", response)
         except Exception as e:
             print(e)
         return response
