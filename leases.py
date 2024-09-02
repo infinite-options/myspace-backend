@@ -318,45 +318,52 @@ class LeaseApplication(Resource):
 
             # Insert data into leaseFees table
             lease_fees = payload.pop('lease_fees', None)
-            print("lease_fees in data: ", lease_fees)
+            # print("lease_fees in data: ", lease_fees)
             if lease_fees != None:
                 json_object = json.loads(lease_fees)
                 # print("lease fees json_object", json_object)
                 for fees in json_object:
                     # print("fees",fees)
                     new_leaseFees = {}
+                    # Get new leaseFees_uid
+                    new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
                     new_leaseFees["fees_lease_id"] = lease_uid
-                    for item in payload.get('fields_leaseFees'):
-                        if item in fees:
-                            new_leaseFees[item] = fees[item]
+                    for item in fees:
+                        # print("Item: ", item)
+                    # for item in payload.get('fields_leaseFees'):
+                        # if item in fees:
+                        new_leaseFees[item] = fees[item]
+                        # print(new_leaseFees[item])
+                    # print("Payload: ", new_leaseFees)
                     response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                    # print("response: ", response["lease_fees"])
 
 
         
             # Insert data into lease-Tenants table
-            print("Tenants: ", payload.get('tenant_uid').split(','), type(payload.get('tenant_uid').split(',')))
+            # print("Tenants: ", payload.get('tenant_uid').split(','), type(payload.get('tenant_uid').split(',')))
             tenants = payload.pop('tenant_uid').split(',')
 
             tenant_responsibiity = str(1/len(tenants))
             for tenant_uid in tenants:
-                print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
+                # print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
                 ltQuery = (""" 
                     INSERT INTO space.lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
                         , lt_tenant_id = \'""" + tenant_uid + """\'
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
                     """)
-                print("Made it to here")
+                # print("Made it to here")
                 response = db.execute(ltQuery, [], 'post')
-                print("Added tenant: ", response)
-            print("Data inserted into space.lease_tenant")
+                # print("Added tenant: ", response)
+            # print("Data inserted into space.lease_tenant")
             
 
             # Verify LIST variables are not empty
             fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents"]
             for field in fields_with_lists:
                 print("field list", field)
-                if payload.get(field) is None:
+                if payload.get(field) in [None, '', 'undefined']:
                     print(field,"Is None")
                     payload[field] = '[]' 
 
