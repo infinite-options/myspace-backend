@@ -4,9 +4,12 @@ from data_pm import connect, uploadImage
 from werkzeug.exceptions import BadRequest
 
 class Employee(Resource):
+    # print("Hello Employee")
     def post(self):
+        # print("In Employee")
         response = {}
         employee = request.form.to_dict()
+        # print("Form data received: ", employee)
         with connect() as db:
             employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
             file = request.files.get("employee_photo")
@@ -15,6 +18,7 @@ class Employee(Resource):
                 employee["employee_photo_url"] = uploadImage(file, key, '')
             response = db.insert('employees', employee)
             response["employee_uid"] = employee["employee_uid"]
+        # print(response)
         return response
 
     def get(self, user_id):

@@ -2,7 +2,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+
 from data_pm import connect, uploadImage, s3
 import boto3
 import json

@@ -3,7 +3,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# from data import connect, disconnect, execute, helper_upload_img, helper_icon_img
+
 from data_pm import connect, deleteImage, uploadImage, s3, processDocument
 import boto3
 import json
@@ -438,99 +438,6 @@ class LeaseApplication(Resource):
                         response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
 
-
-
-        # CHECK DOCUMENTS
-        # Check if documents are being added OR deleted
-        # current_docs = payload.get('lease_documents')
-        # add_docs = payload.get('lease_documents_details') 
-        # del_docs = payload.get('deleted_documents')
-        # print("Current Documents: ", current_docs, type(current_docs))
-        # print("Documents to Add: ", add_docs, type(add_docs))
-        # print("Documents to Del: ", del_docs, type(del_docs))
-
-
-        # THIS MAY NEED TO CHANGE GIVEN NEW APPROACH TO ONLY PASS IN INFO IF CHANGED
-        # Code requires that FrontEnd always passes in lease_documents whenever adding or deleting
-        # if add_docs is not None or del_docs is not None:    
-        # if current_docs is not None:    
-        #     # Store Existing Documents
-        #     lease_docs = json.loads(payload.get('lease_documents', '[]'))
-        #     print("Lease Application Docs: ", lease_docs)
-
-
-        #     # Check if documents are being added
-        #     if add_docs is not None:
-            
-        #             json_add_docs = json.loads(add_docs)     
-        #             print("Document Details: ", json_add_docs)           
-        #             del payload['lease_documents_details']
-
-        #             files = request.files
-
-        #             if files:
-        #                 print("In Lease Application files: ", files)
-        #                 detailsIndex = 0
-        #                 for fileKey in files:
-        #                     file = files[fileKey]
-        #                 # for file in files:
-        #                     file_info = json_add_docs[detailsIndex]
-
-        #                     if file and allowed_file(file.filename):
-        #                         s3key = f'leases/{lease_uid}/{file.filename}'
-        #                         print("S3 Key: ", s3key)
-        #                         s3_link = uploadImage(file, s3key, '')
-        #                         # s3_link = 'doc_link' # to test locally
-        #                         docObject = {}
-        #                         docObject["link"] = s3_link
-        #                         docObject["filename"] = file.filename
-        #                         docObject["type"] = file_info["fileType"]
-        #                         lease_docs.append(docObject)
-        #                     detailsIndex += 1
-
-        #                 payload['lease_documents'] = json.dumps(lease_docs)
-
-
-        #     # Check if documents are being deleted
-        #     if del_docs is not None:
-            
-        #         # delete documents from s3
-        #         print("In Delete")              
-        #         del payload['deleted_documents']
-        #         deleted_docs = []
-                
-        #         if del_docs is not None and isinstance(del_docs, str):
-        #             try:                
-        #                 deleted_docs = ast.literal_eval(del_docs)                                
-        #             except (ValueError, SyntaxError) as e:
-        #                 print(f"Error parsing the deleted_docs string: {e}")
-                        
-                
-        #         s3Client = boto3.client('s3')
-
-        #         response = {'s3_delete_responses': []}
-        #         if(deleted_docs):
-        #             try:                
-        #                 objects_to_delete = []
-        #                 for doc in deleted_docs:                    
-        #                     docKey = "leases/" + doc.split("leases/")[-1]
-        #                     objects_to_delete.append(docKey)               
-
-        #                 for obj_key in objects_to_delete:                    
-        #                     delete_response = s3Client.delete_object(Bucket='io-pm', Key=f'{obj_key}')
-        #                     response['s3_delete_responses'].append({obj_key: delete_response})
-
-        #             except Exception as e:
-        #                 print(f"Deletion from s3 failed: {str(e)}")
-        #                 response['s3_delete_error'] = f"Deletion from s3 failed: {str(e)}"
-                
-        # Store Fees in a Separate Variable and POP from payload
-
-
-        # Update File List in Database        
-        # print("leases")
-        # print("key: ", key )
-        # print("payload: ", payload)
 
         with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)

@@ -1822,15 +1822,6 @@ def LateFees_CRON(self):
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
-# New APIs, uses connect() and disconnect()
-# Create new api template URL
-# api.add_resource(TemplateApi, '/api/v2/templateapi')
-
-# Run on below IP address and port
-# Make sure port number is unused (i.e. don't use numbers 0-1023)
-
-# GET requests
-
 
 # Dashboard Queries
 
@@ -1845,9 +1836,9 @@ api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
 api.add_resource(NewPayments, '/makePayment')
 # api.add_resource(Payments, '/makePayment')  # Original endpoint
-
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
+
 
 
 # Maintenance Endpoints
@@ -1858,16 +1849,16 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 
 
 
-
+api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
 api.add_resource(Rents, '/rents/<string:uid>')
 api.add_resource(RentDetails, '/rentDetails/<string:uid>')
 
-api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
+
 
 
 # appliances
 api.add_resource(Appliances, '/appliances', '/appliances/<string:uid>')
-api.add_resource(Appliances_SB, '/appliancesSB')
+# api.add_resource(Appliances_SB, '/appliancesSB')
 # api.add_resource(RemoveAppliance, "/RemoveAppliance")
 
 
