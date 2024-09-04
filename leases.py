@@ -12,7 +12,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 # from datetime import date, datetime, timedelta
 # from dateutil.relativedelta import relativedelta
-# import calendar
+import calendar
 from werkzeug.exceptions import BadRequest
 import ast
 
@@ -387,7 +387,7 @@ class LeaseApplication(Resource):
             print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        # lease_uid = payload.get('lease_uid')
+        lease_uid = payload.get('lease_uid')
         key = {'lease_uid': payload.pop('lease_uid')}
         print("Lease Key: ", key)
 
@@ -441,12 +441,12 @@ class LeaseApplication(Resource):
 
         with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)
-            # print("Response:" , response)
+            print("Response:" , response)
        
 
         # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
         if payload.get('lease_status') == 'ACTIVE':
-            # print("Lease Status Changed to: ", payload.get('lease_status'), lease_uid)
+            print("Lease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
 
         # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
@@ -474,30 +474,87 @@ class LeaseApplication(Resource):
                 # print("Lease Fees: ", fees) 
 
                 for fee in fees['result']:
+                    # Calculate how much rent to Charge
+                    # Calculate when NEXT Rent is naturally due
+                    #   Find the next rent posting date
+                    #   Calc rent due date if today or is after due date push to next month (or next cycle)
+                    #   If today is before rent is due, calc number of days until natural posting
+                    # 1. Pro Rate Rent
+                    # If today after or equal day rent would normally post:
+                    #    Then post pro-rated rent and next months rent at the same time
+                    # If today is  before rent would normally post:
+                    #    Just post pro-rated rent
+
+                    print("\nNow calculating for: ", fee['fee_name'])
+                    if fee['fee_name'] == 'Rent':
+                        avail_to_pay = fee.get('available_topay') or 10
+                        due_by = fee['due_by']
+
+                        today = datetime.today()
+                        today = datetime(2024, 12, 1)
+                        due_date = datetime(today.year, today.month, due_by)
+                        print("Due Date: ", due_date)
+
+
+                        # Calculate due date taking December into account
+                        print("Today: ", today, "vs Due Date: ", due_date)
+                        if today < due_date:
+                            print("Before due date")
+                            
+                        else:
+                            print("After due date")
+                            # Calculate the next month
+                            if today.month == 12:
+                                # If the current month is December, set the due date to January of the next year
+                                due_date = datetime(today.year + 1, 1, due_by)
+                            else:
+                                # For any other month, increment the month and keep the year the same
+                                due_date = datetime(today.year, today.month + 1, due_by)
+                            print("Modified Due Date: ", due_date)
+                      
+                            
+                        pro_rate_days = (due_date - today).days
+                        print("ProRate days: ", pro_rate_days)
+
+                        # Get the current year and month
+                        current_year = today.year
+                        current_month = today.month
+
+                        # Get the number of days in the current month
+                        days_in_month = calendar.monthrange(current_year, current_month)[1]
+                        pro_rate_amt = round((float(fee['charge'])/days_in_month * pro_rate_days),2)
+                        print("Pro-Rated rent is: ", pro_rate_amt)
+
+
+                        if pro_rate_days < avail_to_pay:
+                            print("Also post regular cycle rent (ie 2 cycles)")
+                            
+                        else: 
+                            print("Only post pro-rate rent")
+                            
+
+
+                    
+                    # print(today)
+                    # print('avail_to_pay: ', avail_to_pay, type(avail_to_pay))
+                    # print('due_by: ', due_by, type(due_by))
+
                     # print("Current Fee: ", fee)
+                
+                    # due_date = datetime(today.year, today.month, due_by)
+                    # print("Rent due date:  ", due_date, type(due_date))
+
+                    # due_date = datetime(today.year, today.month + 1, due_by)
+                    # print("Rent due date:  ", due_date, type(due_date))
+
+                    # # available_topay_date = due_date - timedelta(10)
+                    # available_topay_date = due_date - timedelta(days = int(avail_to_pay))
+                    # print("Rent due date:  ", available_topay_date, type(available_topay_date))
+
                     # print(fee['fee_name'])
                     manager = fee['contract_business_id']
                     owner = fee['property_owner_id']
                     tenant = fee['lt_tenant_id']
-
-
-                    # {'leaseFees_uid': '370-000680', 
-                    #  'fees_lease_id': '300-000308', 
-                    #  'fee_name': 'Rent', 
-                    #  'fee_type': '$', 
-                    #  'charge': '1000.00', 
-                    #  'frequency': 'Monthly', 
-                    #  'available_topay': 10, 
-                    #  'due_by': 1, 'late_by': 3, 
-                    #  'late_fee': '100', 
-                    #  'perDay_late_fee': '20.00', 
-                    #  'due_by_date': None, 
-                    #  'lease_property_id': '200-000357', 
-                    #  'contract_business_id': '600-000314', 
-                    #  'property_owner_id': '110-000373', 
-                    #  'lt_tenant_id': '350-000222'}
-
-                    
 
 
                     # Common JSON Object Attributes
