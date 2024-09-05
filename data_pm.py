@@ -407,14 +407,18 @@ def processDocument(key, payload):
         # Delete Documents
         if payload_delete_documents:
             print("In document delete")
+            print("Document to delete before ast: ", payload_delete_documents, type( payload_delete_documents))
             delete_documents = ast.literal_eval(payload_delete_documents)
-            print(delete_documents, type(delete_documents), len(delete_documents))
+            print("After ast: ", delete_documents, type(delete_documents), len(delete_documents))
             for document in delete_documents:
                 print("Document to Delete: ", document, type(document))
+                print("Payload Doc:", current_documents, type(current_documents))
+                print("Current documents before deletion:", [doc['link'] for doc in current_documents])
                 # Delete from db list assuming it is in db list
                 try:
                     # current_documents.remove(document)
-                    current_documents = [doc for doc in payload_documents if doc['link'] not in document]
+                    # current_documents = [doc for doc in payload_documents if doc['link'] not in document]
+                    current_documents = [doc for doc in current_documents if doc['link'] != document]
                 except:
                     print("Document not in list")
 
