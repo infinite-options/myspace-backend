@@ -244,11 +244,20 @@ def processDocument(key, payload):
             key_type = 'contracts'
             key_uid = key['contract_uid']
             payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
-            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            payload_delete_string = payload.pop('delete_documents', None)                # Documents to Delete
+            payload_delete_documents = json.loads(payload_delete_string)
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('contract_documents', db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """))                     # Current Documents
+                payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'])
+                print("3: ", payload_query['result'][0])
+                print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
+                payload_string = payload_query['result'][0]['contract_documents']
+                # payload_documents = json.loads(payload_documents['result'][0]['contract_documents'])
+                payload_documents = json.loads(payload_string)
             else:
                 return payload
+            
 
         elif 'lease_uid' in key:
             print("Lease Key passed")
@@ -257,7 +266,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('lease_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('lease_documents', db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+                payload_documents = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                payload_documents = json.loads(payload_documents['result'][0]['lease_documents'])
             else:
                 return payload
 
@@ -290,7 +300,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('business_documents', db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+                payload_documents = payload.get('business_documents', json.loads(db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)['result'][0]['contract_documents']) )                   # Current Documents
+                                                                
             else:
                 return payload
 
@@ -298,11 +309,11 @@ def processDocument(key, payload):
             print("No UID found in key")
             return
 
-        print("key_type: ", key_type)
-        print("key_uid: ", key_uid)
-        print("payload_documents: ", payload_documents)                     # Current Documents
-        print("payload_documents: ", payload_delete_documents)              # Documents to Delete
-        print("payload_document_details: ", payload_document_details)       # New Documents    
+        print("key_type: ", key_type, type(key_type))
+        print("key_uid: ", key_uid, type(key_uid))
+        print("payload_documents: ", payload_documents, type(payload_documents))                            # Current Documents
+        print("payload_documents delete: ", payload_delete_documents, type(payload_delete_documents))       # Documents to Delete
+        print("payload_document_details: ", payload_document_details, type(payload_document_details))       # New Documents    
         
         print("Verified Add or Delete Documents in Payload")
 
