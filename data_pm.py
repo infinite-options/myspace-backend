@@ -236,6 +236,7 @@ def processImage(key, payload):
 
 def processDocument(key, payload):
     print("\nIn Process Documents: ", payload)
+    print("Key Passed into processDocuments: ", key)
     response = {}
     with connect() as db:
 
@@ -291,7 +292,7 @@ def processDocument(key, payload):
                 return payload
 
         elif 'business_uid' in key:
-            print("Tenant Key passed")
+            print("Business Key passed")
             key_type = 'business'
             key_uid = key['business_uid']
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents

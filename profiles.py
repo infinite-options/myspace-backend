@@ -283,9 +283,13 @@ class Profile(Resource):
         
         # Profile Picture is Unique to Profile 
         if payload.get('business_uid'):
-            valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details'}
+            print("In Business")  # Need valid-columns since business can be updated with employee
+            valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            print("Filtered Payload: ", filtered_payload)
             key = {'business_uid': filtered_payload.pop('business_uid')}
+            print("Business Key: ", key)
+
             file = request.files.get("business_photo")
             if file:
                 key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
