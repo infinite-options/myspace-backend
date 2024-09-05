@@ -244,17 +244,19 @@ def processDocument(key, payload):
             key_type = 'contracts'
             key_uid = key['contract_uid']
             payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
-            payload_delete_string = payload.pop('delete_documents', None)                # Documents to Delete
-            payload_delete_documents = json.loads(payload_delete_string)
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            # payload_delete_string = payload.pop('delete_documents', None)                # Documents to Delete
+            # payload_delete_documents = json.loads(payload_delete_string)
             if payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Current Documents
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'])
                 print("3: ", payload_query['result'][0])
                 print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
-                payload_string = payload_query['result'][0]['contract_documents']
-                # payload_documents = json.loads(payload_documents['result'][0]['contract_documents'])
-                payload_documents = json.loads(payload_string)
+                # payload_string = payload_query['result'][0]['contract_documents']
+                # # payload_documents = json.loads(payload_documents['result'][0]['contract_documents'])
+                # payload_documents = json.loads(payload_string)
+                payload_documents = payload_query['result'][0]['contract_documents']
             else:
                 return payload
             
