@@ -413,7 +413,8 @@ def processDocument(key, payload):
                 print("Document to Delete: ", document, type(document))
                 # Delete from db list assuming it is in db list
                 try:
-                    current_documents.remove(document)
+                    # current_documents.remove(document)
+                    current_documents = [doc for doc in payload_documents if doc['link'] not in document]
                 except:
                     print("Document not in list")
 
