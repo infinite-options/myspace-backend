@@ -594,9 +594,6 @@ class Properties(Resource):
 
         return response
 
-
-    
-    
     
     def put(self):
         print("\nIn Property PUT")

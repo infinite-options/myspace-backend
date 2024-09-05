@@ -237,176 +237,191 @@ def processImage(key, payload):
 def processDocument(key, payload):
     print("\nIn Process Documents: ", payload)
     response = {}
+    with connect() as db:
 
-    if 'contract_uid' in key:
-        print("Contract Key passed")
-        key_type = 'contracts'
-        key_uid = key['contract_uid']
-        payload_documents = payload.get('contract_documents', None)                     # Current Documents
-        payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
-        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        if 'contract_uid' in key:
+            print("Contract Key passed")
+            key_type = 'contracts'
+            key_uid = key['contract_uid']
+            payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_document_details != None or payload_delete_documents != None:
+                payload_documents = payload.get('contract_documents', db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """))                     # Current Documents
+            else:
+                return payload
 
-    elif 'lease_uid' in key:
-        print("Lease Key passed")
-        key_type = 'leases'
-        key_uid = key['lease_uid']
-        payload_documents = payload.get('lease_documents', None)
-        payload_document_details = payload.pop('lease_documents_details', None)
-        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        elif 'lease_uid' in key:
+            print("Lease Key passed")
+            key_type = 'leases'
+            key_uid = key['lease_uid']
+            payload_document_details = payload.pop('lease_documents_details', None)         # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_document_details != None or payload_delete_documents != None:
+                payload_documents = payload.get('lease_documents', db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+            else:
+                return payload
 
-    elif 'maintenance_quote_uid' in key:
-        print("Quote Key passed")
-        key_type = 'quotes'
-        key_uid = key['maintenance_quote_uid']
-        payload_documents = payload.get('quote_documents', None)
-        payload_document_details = payload.pop('quote_documents_details', None)
-        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        elif 'maintenance_quote_uid' in key:
+            print("Quote Key passed")
+            key_type = 'quotes'
+            key_uid = key['maintenance_quote_uid']
+            payload_document_details = payload.pop('quote_documents_details', None)         # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_document_details != None or payload_delete_documents != None:
+                payload_documents = payload.get('quote_documents', db.execute(""" SELECT quote_documents FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+            else:
+                return payload
 
-    elif 'tenant_uid' in key:
-        print("Tenant Key passed")
-        key_type = 'tenants'
-        key_uid = key['tenant_uid']
-        payload_documents = payload.get('tenant_documents', None)
-        payload_document_details = payload.pop('tenant_documents_details', None)
-        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        elif 'tenant_uid' in key:
+            print("Tenant Key passed")
+            key_type = 'tenants'
+            key_uid = key['tenant_uid']
+            payload_document_details = payload.pop('tenant_documents_details', None)         # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_document_details != None or payload_delete_documents != None:
+                payload_documents = payload.get('tenant_documents', db.execute(""" SELECT quote_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+            else:
+                return payload
 
-    elif 'business_uid' in key:
-        print("Tenant Key passed")
-        key_type = 'business'
-        key_uid = key['business_uid']
-        payload_documents = payload.get('business_documents', None)
-        payload_document_details = payload.pop('business_documents_details', None)
-        # payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+        elif 'business_uid' in key:
+            print("Tenant Key passed")
+            key_type = 'business'
+            key_uid = key['business_uid']
+            payload_document_details = payload.pop('business_documents_details', None)         # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_document_details != None or payload_delete_documents != None:
+                payload_documents = payload.get('business_documents', db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+            else:
+                return payload
 
-    else:
-        print("No UID found in key")
-        return
-
-    print("key_type: ", key_type)
-    print("key_uid: ", key_uid)
-    print("payload_documents: ", payload_documents)
-    print("payload_document_details: ", payload_document_details)
-    
-    # payload.pop("img_favorite", None)
-    payload_delete_documents = payload.pop('delete_documents', None)
-    print("Past if statement")
-
-
-    # Check if files already exist
-    # Put current db files into current_documents
-    current_documents = []
-    print("here 0")
-    if payload_documents is not None and payload_documents != '' and payload_documents != 'null':
-        print("Payload Documents: ", payload_documents)
-        current_documents =ast.literal_eval(payload_documents)
-        print("Current documents: ", current_documents, type(current_documents))
-    print("here 1")
-
-    if payload_document_details is not None and payload_document_details != '' and payload_document_details != 'null':
-        documents_details = json.loads(payload_document_details)
-        print("documents_details: ", documents_details, type(documents_details))
-    print("here 1a")
-
-    # Check if documents are being added OR deleted
-    documents = []
-    i = 0
-    documentFiles = {}
-
-    print("here 2")
-    
-    while True:
-        filename = f'file_{i}'
-        print("\nPut file into Filename: ", filename) 
-        file = request.files.get(filename)
-        print("File:" , file)    
-        s3Link = payload.get(filename)
-        print("S3Link: ", s3Link)
-
-
-        if file:
-            print("In File if Statement")
-            documentFiles[filename] = file
-            unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-            doc_key = f'{key_type}/{key_uid}/{unique_filename}'
-            # This calls the uploadImage function that generates the S3 link
-            document = uploadImage(file, doc_key, '')  # This returns the document http link
-            print("Document after upload: ", document)
-
-            print("docObject: ", file)
-            print("docObject: ", file.mimetype)
-            print("docObject: ", file.filename)
-            print("docObject: ", documents_details[i]['contentType'])
-
-            docObject = {}
-            docObject["link"] = document
-            docObject["filename"] = file.filename
-            docObject["contentType"] = documents_details[i]['contentType']
-            docObject["fileType"] = file.mimetype
-            print("Doc Object: ", docObject)
-
-            documents.append(docObject)
-
-            
-
-
-        
-        
-        
-        elif s3Link:
-            documentFiles[filename] = s3Link
-            documents.append(s3Link)
-
-            
-
-        
-        
-        
         else:
-            break
-        i += 1
-    
-    print("Documents after loop: ", documents)
-    if documents != []:
-        current_documents.extend(documents)
-        if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents) 
-        if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents) 
-        if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents) 
-        if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents) 
+            print("No UID found in key")
+            return
+
+        print("key_type: ", key_type)
+        print("key_uid: ", key_uid)
+        print("payload_documents: ", payload_documents)                     # Current Documents
+        print("payload_documents: ", payload_delete_documents)              # Documents to Delete
+        print("payload_document_details: ", payload_document_details)       # New Documents    
+        
+        print("Verified Add or Delete Documents in Payload")
+
+
+        # Check if files already exist
+        # Put current db files into current_documents
+        current_documents = []
+        print("here 0")
+        if payload_documents is not None and payload_documents != '' and payload_documents != 'null':
+            print("Payload Documents: ", payload_documents)
+            current_documents =ast.literal_eval(payload_documents)
+            print("Current documents: ", current_documents, type(current_documents))
+        print("here 1")
+
+        if payload_document_details is not None and payload_document_details != '' and payload_document_details != 'null':
+            documents_details = json.loads(payload_document_details)
+            print("documents_details: ", documents_details, type(documents_details))
+        print("here 1a")
+
+        # Check if documents are being added OR deleted
+        documents = []
+        i = 0
+        documentFiles = {}
+
+        print("here 2 - About to Add Documents")
+        
+        while True:
+            filename = f'file_{i}'
+            print("\nPut file into Filename: ", filename) 
+            file = request.files.get(filename)
+            print("File:" , file)    
+            s3Link = payload.get(filename)
+            print("S3Link: ", s3Link)
+
+
+            if file:
+                print("In File if Statement")
+                documentFiles[filename] = file
+                unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                doc_key = f'{key_type}/{key_uid}/{unique_filename}'
+                # This calls the uploadImage function that generates the S3 link
+                document = uploadImage(file, doc_key, '')  # This returns the document http link
+                print("Document after upload: ", document)
+
+                print("docObject: ", file)
+                print("docObject: ", file.mimetype)
+                print("docObject: ", file.filename)
+                print("docObject: ", documents_details[i]['contentType'])
+
+                docObject = {}
+                docObject["link"] = document
+                docObject["filename"] = file.filename
+                docObject["contentType"] = documents_details[i]['contentType']
+                docObject["fileType"] = file.mimetype
+                print("Doc Object: ", docObject)
+
+                documents.append(docObject)
+
+                
+
+
+            
+            
+            
+            elif s3Link:
+                documentFiles[filename] = s3Link
+                documents.append(s3Link)
+
+                
+
+            
+            
+            
+            else:
+                break
+            i += 1
+        
+        print("Documents after loop: ", documents)
+        if documents != []:
+            current_documents.extend(documents)
+            # if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents) 
+            # if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents) 
+            # if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents) 
+            # if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents) 
+            # if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
+
+
+
+        # Delete Documents
+        if payload_delete_documents:
+            print("In document delete")
+            delete_documents = ast.literal_eval(payload_delete_documents)
+            print(delete_documents, type(delete_documents), len(delete_documents))
+            for document in delete_documents:
+                print("Document to Delete: ", document, type(document))
+                # Delete from db list assuming it is in db list
+                try:
+                    current_documents.remove(document)
+                except:
+                    print("Document not in list")
+
+                #  Delete from S3 Bucket
+                try:
+                    delete_key = document.split('io-pm/', 1)[1]
+                    print("Delete key", delete_key)
+                    deleteImage(delete_key)
+                except: 
+                    print("could not delete from S3")
+            
+        print("\nCurrent Images in Function: ", current_documents)
+        if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
+        if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
+        if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
+        if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
         if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
-
-
-
-    # Delete Documents
-    if payload_delete_documents:
-        print("In document delete")
-        delete_documents = ast.literal_eval(payload_delete_documents)
-        print(delete_documents, type(delete_documents), len(delete_documents))
-        for document in delete_documents:
-            print("Document to Delete: ", document, type(document))
-            # Delete from db list assuming it is in db list
-            try:
-                current_documents.remove(document)
-            except:
-                print("Document not in list")
-
-            #  Delete from S3 Bucket
-            try:
-                delete_key = document.split('io-pm/', 1)[1]
-                print("Delete key", delete_key)
-                deleteImage(delete_key)
-            except: 
-                print("could not delete from S3")
+            
         
-    print("\nCurrent Images in Function: ", current_documents)
-    if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
-    if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
-    if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
-    if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
-    if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
-        
-     
-    print("Payload before return: ", payload)
-    return payload
+        print("Payload before return: ", payload)
+        return payload
 
 
 

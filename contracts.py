@@ -153,7 +153,7 @@ class Contracts(Resource):
 
 
         # --------------- PROCESS DOCUMENTS ------------------
-
+        
         processDocument(key, payload)
         print("Payload after function: ", payload)
         
