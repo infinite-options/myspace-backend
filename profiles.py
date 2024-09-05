@@ -314,7 +314,6 @@ class Profile(Resource):
                 response = db.update('businessProfileInfo', key, filtered_payload)
         
         
-        
         if payload.get('tenant_uid'):
             print("In Tenant")
             # tenant_uid = payload.get('tenant_uid')

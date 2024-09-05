@@ -285,7 +285,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('tenant_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT quote_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
+                payload_query = db.execute(""" SELECT tenant_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
                 payload_documents = payload_query['result'][0]['tenant_documents']
             else:
                 return payload
@@ -297,7 +297,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
+                payload_query = db.execute(""" SELECT business_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
                 payload_documents = payload_query['result'][0]['business_documents']                                          
             else:
                 return payload
