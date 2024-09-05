@@ -245,17 +245,10 @@ def processDocument(key, payload):
             key_uid = key['contract_uid']
             payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            # payload_delete_string = payload.pop('delete_documents', None)                # Documents to Delete
-            # payload_delete_documents = json.loads(payload_delete_string)
             if payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'])
-                print("3: ", payload_query['result'][0])
-                print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
-                # payload_string = payload_query['result'][0]['contract_documents']
-                # # payload_documents = json.loads(payload_documents['result'][0]['contract_documents'])
-                # payload_documents = json.loads(payload_string)
+                # print("1: ", payload_query)
+                # print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
                 payload_documents = payload_query['result'][0]['contract_documents']
             else:
                 return payload
@@ -268,8 +261,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('lease_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                payload_documents = json.loads(payload_documents['result'][0]['lease_documents'])
+                payload_query = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                payload_documents = payload_query['result'][0]['lease_documents']
             else:
                 return payload
 
@@ -280,7 +273,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('quote_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('quote_documents', db.execute(""" SELECT quote_documents FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+                payload_query =  db.execute(""" SELECT quote_documents FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)                # Current Documents
+                payload_documents = payload_query['result'][0]['quote_documents']
             else:
                 return payload
 
@@ -291,7 +285,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('tenant_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('tenant_documents', db.execute(""" SELECT quote_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """))                   # Current Documents
+                payload_query = db.execute(""" SELECT quote_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
+                payload_documents = payload_query['result'][0]['tenant_documents']
             else:
                 return payload
 
@@ -302,8 +297,8 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_document_details != None or payload_delete_documents != None:
-                payload_documents = payload.get('business_documents', json.loads(db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)['result'][0]['contract_documents']) )                   # Current Documents
-                                                                
+                payload_query = db.execute(""" SELECT quote_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
+                payload_documents = payload_query['result'][0]['business_documents']                                          
             else:
                 return payload
 
@@ -406,18 +401,16 @@ def processDocument(key, payload):
 
         # Delete Documents
         if payload_delete_documents:
-            print("In document delete")
-            print("Document to delete before ast: ", payload_delete_documents, type( payload_delete_documents))
+            print("In document delete: ", payload_delete_documents, type( payload_delete_documents))
             delete_documents = ast.literal_eval(payload_delete_documents)
             print("After ast: ", delete_documents, type(delete_documents), len(delete_documents))
             for document in delete_documents:
-                print("Document to Delete: ", document, type(document))
-                print("Payload Doc:", current_documents, type(current_documents))
-                print("Current documents before deletion:", [doc['link'] for doc in current_documents])
+                # print("Document to Delete: ", document, type(document))
+                # print("Payload Doc:", current_documents, type(current_documents))
+                # print("Current documents before deletion:", [doc['link'] for doc in current_documents])
+
                 # Delete from db list assuming it is in db list
                 try:
-                    # current_documents.remove(document)
-                    # current_documents = [doc for doc in payload_documents if doc['link'] not in document]
                     current_documents = [doc for doc in current_documents if doc['link'] != document]
                 except:
                     print("Document not in list")
