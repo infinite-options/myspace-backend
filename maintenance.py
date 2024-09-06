@@ -255,8 +255,6 @@ class MaintenanceRequests(Resource):
 
         return response
 
-    
-    
     def put(self):
         print('in Maintenance Requests PUT')
         response = {}
@@ -543,7 +541,6 @@ class MaintenanceQuotes(Resource):
                 print("\nNew Maintenance Quote Added")
 
         return response
-    
 
     def put(self):
         print('in Maintenance Quotes PUT')
