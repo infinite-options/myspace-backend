@@ -20,11 +20,13 @@ class Utilities(Resource):
         response = {}
         payload = request.form.to_dict()
         print(payload)
-        if payload.get('property_uid') is None:
+        if payload.get('property_uid') in {None, '', 'null'}:
+            print("No property_uid")
             raise BadRequest("Request failed, no UID in payload.")
         key = {'property_uid': payload.pop('property_uid')}
 
-        if payload.get('property_utility') is None:
+        if payload.get('property_utility') in {None, '', 'null'}:
+            print("No property_utility")
             raise BadRequest("No Utilities in payload.")
         else:
             keyUtility = {'property_utility': payload.pop('property_utility')}
@@ -66,7 +68,8 @@ class Utilities(Resource):
         # print("Utility Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('property_uid') is None:
+        if payload.get('property_uid') in {None, '', 'null'}:
+            print("No property_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
         key = {'property_uid': payload.pop('property_uid')}
@@ -75,7 +78,8 @@ class Utilities(Resource):
 
 
         # Getting data from FrontEnd
-        if payload.get('property_utility') is None:
+        if payload.get('property_utility') in {None, '', 'null'}:
+            print("No property_utility")
             raise BadRequest("No Utilities in payload.")
         
         else:

@@ -143,7 +143,7 @@ class Contracts(Resource):
         print("Contract Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('contract_uid') is None:
+        if payload.get('contract_uid') in {None, '', 'null'}:
             print("No contract_uid")
             raise BadRequest("Request failed, no UID in payload.")
         

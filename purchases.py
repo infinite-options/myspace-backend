@@ -388,7 +388,8 @@ class Bills(Resource):
 
         payload = request.form
         
-        if payload.get('bill_uid') is None:
+        if payload.get('bill_uid') in {None, '', 'null'}:
+            print("No bill_uid")
             raise BadRequest("Request failed, no UID in payload.")
         key = {'bill_uid': payload['bill_uid']}
         print("Key: ", key)
@@ -476,7 +477,8 @@ class AddExpense(Resource):
     def put(self):
         print('in purchases')
         payload = request.form
-        if payload.get('purchase_uid') is None:
+        if payload.get('purchase_uid') in {None, '', 'null'}:
+            print("No purchase_uid")
             raise BadRequest("Request failed, no UID in payload.")
         key = {'purchase_uid': payload['purchase_uid']}
         print("Key: ", key)
@@ -539,7 +541,8 @@ class AddRevenue(Resource):
     def put(self):
         print('in purchases')
         payload = request.form
-        if payload.get('purchase_uid') is None:
+        if payload.get('purchase_uid') in {None, '', 'null'}:
+            print("No purchase_uid")
             raise BadRequest("Request failed, no UID in payload.")
         key = {'purchase_uid': payload['purchase_uid']}
         print("Key: ", key)

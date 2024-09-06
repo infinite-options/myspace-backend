@@ -8,7 +8,7 @@ class StatusUpdate(Resource):
     def put(self):
         payload = request.get_json()
         response = {}
-        if payload.get('maintenance_quote_uid') is not None:
+        if payload.get('maintenance_quote_uid'):
             if payload.get('quote_status') == 'REQUESTED':
                 with connect() as db:
                     maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
@@ -36,7 +36,7 @@ class StatusUpdate(Resource):
                                        {'maintenance_quote_uid': payload.get('maintenance_quote_uid')},
                                        {'quote_status': payload.get('quote_status')})
 
-        elif payload.get('maintenance_request_uid') is not None:
+        elif payload.get('maintenance_request_uid'):
             if payload.get('maintenance_request_status') == 'CANCELLED':
                 with connect() as db:
                     maintenance_request_uid = payload.get('maintenance_request_uid')

@@ -12,7 +12,7 @@
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
-from appliances import Appliances, RemoveAppliance, Appliances_SB
+from appliances import Appliances, RemoveAppliance
 from rents import Rents, RentDetails
 from payments import Payments, PaymentOwner, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
 from properties import Properties
@@ -451,7 +451,8 @@ class Announcements(Resource):
         print("In Announcements PUT")
         response = {}
         payload = request.get_json()
-        if payload.get('announcement_uid') is None:
+        if payload.get('announcement_uid') in {None, '', 'null'}:
+            print("No announcement_uid")
             raise BadRequest("Request failed, no UID in payload.")
         # print("Announcement Payload: ", payload)
 

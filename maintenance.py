@@ -263,7 +263,7 @@ class MaintenanceRequests(Resource):
         print("Maintenance Request Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('maintenance_request_uid') is None:
+        if payload.get('maintenance_request_uid') in {None, '', 'null'}:
             print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
@@ -550,7 +550,7 @@ class MaintenanceQuotes(Resource):
         print("Maintenance Quotes Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('maintenance_quote_uid') is None:
+        if payload.get('maintenance_quote_uid') in {None, '', 'null'}:
             print("No maintenance_uid")
             raise BadRequest("Request failed, no UID in payload.")
         

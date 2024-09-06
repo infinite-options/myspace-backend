@@ -421,7 +421,8 @@ class Payments(Resource):
             payload = request.get_json()
             # print(payload)
 
-            if payload.get('pay_purchase_id') is None:
+            if payload.get('pay_purchase_id') in {None, '', 'null'}:
+                print("No pay_purchase_id")
                 raise BadRequest("Request failed, no UID in payload.")
         
             payload_purchase_uid = {'purchase_uid': payload.pop('pay_purchase_id')}
@@ -854,7 +855,8 @@ class PaymentMethod(Resource):
                         i += 1
 
             else:
-                if payload.get('paymentMethod_uid') is None:
+                if payload.get('paymentMethod_uid') in {None, '', 'null'}:
+                    print("No paymentMethod_uid")
                     raise BadRequest("Request failed, no UID in payload.")
                 key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
                 query_response = db.update('paymentMethods', key, payload)

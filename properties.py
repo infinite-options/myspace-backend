@@ -603,7 +603,7 @@ class Properties(Resource):
         print("Propoerty Update Payload: ", payload)
 
         # Verify uid has been included in the data
-        if payload.get('property_uid') is None:
+        if payload.get('property_uid') in {None, '', 'null'}:
             print("No property_uid")
             raise BadRequest("Request failed, no UID in payload.")
         

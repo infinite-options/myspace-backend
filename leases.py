@@ -296,7 +296,7 @@ class LeaseApplication(Resource):
             print("lease_uid found.  Please call PUT endpoint")
             raise BadRequest("Request failed, UID found in payload.")
         
-        if payload.get('tenant_uid') is None or payload['tenant_uid']=="" :
+        if payload.get('tenant_uid') in {None, '', 'null'}:
             print("No tenant_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
@@ -383,7 +383,7 @@ class LeaseApplication(Resource):
         # print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
-        if payload.get('lease_uid') is None:
+        if payload.get('lease_uid') in {None, '', 'null'}:
             print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
