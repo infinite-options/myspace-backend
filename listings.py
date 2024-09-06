@@ -31,6 +31,10 @@ class Listings (Resource):
                         ON contract_property_id = property_uid
                         WHERE property_available_to_rent = 1 ) AS p
                     LEFT JOIN ( 
+                        SELECT * FROM space.u_details                                                 
+                        ) AS u                                       
+                    ON utility_property_id = property_uid
+                    LEFT JOIN ( 
                         SELECT * FROM space.leases 
                         -- WHERE lease_status = "ACTIVE"
                         WHERE lease_status = "ACTIVE" AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
