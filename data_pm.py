@@ -274,10 +274,11 @@ def processDocument(key, payload):
             print("Contract Key passed")
             key_type = 'contracts'
             key_uid = key['contract_uid']
-            payload_document_details = payload.pop('contract_documents_details', None)      # New Documents
-            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            if payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Current Documents
+            payload_changed_documents = payload.pop('contract_documents', None)             # Current Documents     (if there is a change in a current document)
+            payload_document_details = payload.pop('contract_documents_details', None)      # New Documents         (if there are New documents being added)
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete   (if documents are being deleted)
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
+                payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Get Current Documents from db
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
                 payload_documents = payload_query['result'][0]['contract_documents']
@@ -289,9 +290,10 @@ def processDocument(key, payload):
             print("Lease Key passed")
             key_type = 'leases'
             key_uid = key['lease_uid']
+            payload_changed_documents = payload.pop('lease_documents', None)                # Current Documents     (if there is a change in a current document)
             payload_document_details = payload.pop('lease_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            if payload_document_details != None or payload_delete_documents != None:
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
                 payload_documents = payload_query['result'][0]['lease_documents']
             else:
@@ -301,9 +303,10 @@ def processDocument(key, payload):
             print("Quote Key passed")
             key_type = 'quotes'
             key_uid = key['maintenance_quote_uid']
+            payload_changed_documents = payload.pop('quote_documents', None)                # Current Documents     (if there is a change in a current document)
             payload_document_details = payload.pop('quote_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            if payload_document_details != None or payload_delete_documents != None:
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query =  db.execute(""" SELECT quote_documents FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)                # Current Documents
                 payload_documents = payload_query['result'][0]['quote_documents']
             else:
@@ -313,9 +316,10 @@ def processDocument(key, payload):
             print("Tenant Key passed")
             key_type = 'tenants'
             key_uid = key['tenant_uid']
+            payload_changed_documents = payload.pop('tenant_documents', None)                # Current Documents     (if there is a change in a current document)
             payload_document_details = payload.pop('tenant_documents_details', None)         # New Documents
-            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            if payload_document_details != None or payload_delete_documents != None:
+            payload_delete_documents = payload.pop('delete_documents', None)                     # Documents to Delete
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT tenant_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
                 payload_documents = payload_query['result'][0]['tenant_documents']
             else:
@@ -325,9 +329,10 @@ def processDocument(key, payload):
             print("Business Key passed")
             key_type = 'business'
             key_uid = key['business_uid']
+            payload_changed_documents = payload.pop('business_documents', None)                # Current Documents     (if there is a change in a current document)
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents
-            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
-            if payload_document_details != None or payload_delete_documents != None:
+            payload_delete_documents = payload.pop('delete_documents', None)                   # Documents to Delete
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT business_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
                 payload_documents = payload_query['result'][0]['business_documents']                                          
             else:
@@ -337,37 +342,58 @@ def processDocument(key, payload):
             print("No UID found in key")
             return
 
-        print("key_type: ", key_type, type(key_type))
+        print("\nkey_type: ", key_type, type(key_type))
         print("key_uid: ", key_uid, type(key_uid))
         print("payload_documents: ", payload_documents, type(payload_documents))                            # Current Documents
+        print("payload_changed_documents: ", payload_changed_documents, type(payload_changed_documents))    # Documents being Changed
+        print("payload_document_details: ", payload_document_details, type(payload_document_details))       # New Documents  
         print("payload_documents delete: ", payload_delete_documents, type(payload_delete_documents))       # Documents to Delete
-        print("payload_document_details: ", payload_document_details, type(payload_document_details))       # New Documents    
         
         print("Verified Add or Delete Documents in Payload")
 
 
-        # Check if files already exist
         # Put current db files into current_documents
         current_documents = []
-        print("here 0")
-        if payload_documents is not None and payload_documents != '' and payload_documents != 'null':
+        print("\nAbout to process CURRENT documents in database;")
+        if payload_documents not in {None, '', 'null'}:
             print("Payload Documents: ", payload_documents)
             current_documents =ast.literal_eval(payload_documents)
             print("Current documents: ", current_documents, type(current_documents))
-        print("here 1")
+        print("processed current documents")
+
+
+        # Replace current_document details with changed_document details
+        print("\nAbout to process CHANGED documents in database;")
+        # [{"link":"https://s3-us-west-1.amazonaws.com/io-pm/contracts/010-000001/file_0_20240827021719Z","type":"application/pdf","filename":"Sample Document 5.pdf"}]
+        # Get Changed documents in a list
+        if payload_changed_documents not in {None, '', 'null'}:
+            changed_documents = json.loads(payload_changed_documents)
+            print("changed_documents: ", changed_documents, type(changed_documents))
+
+            list2_dict = {doc['link']: doc for doc in changed_documents}
+
+            # Iterate through list1 and replace matching documents based on 'link'
+            current_documents = [list2_dict.get(doc['link'], doc) for doc in current_documents]
+
+            # Print the final list
+            print(current_documents)
+
+        print("processed changed documents")
+        
 
         # Put New Document Details into document_details
-        if payload_document_details is not None and payload_document_details != '' and payload_document_details != 'null':
+        print("\nAbout to process NEW documents in database;")
+        if payload_document_details not in {None, '', 'null'}:
             documents_details = json.loads(payload_document_details)
             print("documents_details: ", documents_details, type(documents_details))
-        print("here 1a")
+        print("processed new documents")
 
-        # Check if documents are being added OR deleted
+        # Initialize documents
         documents = []
         i = 0
         documentFiles = {}
 
-        print("here 2 - About to Add Documents")
+        print("here 2 - About to process ADDED Documents")
         
         # ADD Documents
         while True:
@@ -420,7 +446,10 @@ def processDocument(key, payload):
             # if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents) 
             # if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
 
+        print("processed ADDED documents")
+
         # Delete Documents
+        print("\nAbout to process DELETED documents in database;")
         if payload_delete_documents:
             print("In document delete: ", payload_delete_documents, type( payload_delete_documents))
             delete_documents = ast.literal_eval(payload_delete_documents)
@@ -443,6 +472,7 @@ def processDocument(key, payload):
                     deleteImage(delete_key)
                 except: 
                     print("could not delete from S3")
+        print("processed DELETED documents")
             
         print("\nCurrent Images in Function: ", current_documents, type(current_documents))
         # print("Key Type: ", key_type)
