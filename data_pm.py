@@ -280,8 +280,10 @@ def processDocument(key, payload):
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT contract_documents FROM space.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Get Current Documents from db
                 # print("1: ", payload_query)
-                # print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
-                payload_documents = payload_query['result'][0]['contract_documents']
+                # print("2: ", payload_query['result'], type(payload_query['result']))
+                # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                # if payload_query['result']: print("4: ", payload_query['result'][0]['contract_documents'], type(payload_query['result'][0]['contract_documents']))
+                payload_documents = payload_query['result'][0]['contract_documents'] if payload_query['result'] else "None"
             else:
                 return payload
             
@@ -295,7 +297,11 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                payload_documents = payload_query['result'][0]['lease_documents']
+                # print("1: ", payload_query)
+                # print("2: ", payload_query['result'], type(payload_query['result']))
+                # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                # if payload_query['result']: print("4: ", payload_query['result'][0]['lease_documents'], type(payload_query['result'][0]['lease_documents']))
+                payload_documents = payload_query['result'][0]['lease_documents'] if payload_query['result'] else "None"
             else:
                 return payload
 
@@ -308,7 +314,7 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query =  db.execute(""" SELECT quote_documents FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)                # Current Documents
-                payload_documents = payload_query['result'][0]['quote_documents']
+                payload_documents = payload_query['result'][0]['quote_documents'] if payload_query['result'] else "None"
             else:
                 return payload
 
@@ -321,7 +327,7 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                     # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT tenant_documents FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
-                payload_documents = payload_query['result'][0]['tenant_documents']
+                payload_documents = payload_query['result'][0]['tenant_documents'] if payload_query['result'] else "None"
             else:
                 return payload
 
@@ -334,7 +340,7 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                   # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT business_documents FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
-                payload_documents = payload_query['result'][0]['business_documents']                                          
+                payload_documents = payload_query['result'][0]['business_documents'] if payload_query['result'] else "None"                                          
             else:
                 return payload
 
@@ -370,13 +376,13 @@ def processDocument(key, payload):
             changed_documents = json.loads(payload_changed_documents)
             print("changed_documents: ", changed_documents, type(changed_documents))
 
-            list2_dict = {doc['link']: doc for doc in changed_documents}
-
-            # Iterate through list1 and replace matching documents based on 'link'
-            current_documents = [list2_dict.get(doc['link'], doc) for doc in current_documents]
-
-            # Print the final list
-            print(current_documents)
+            try:
+                list2_dict = {doc['link']: doc for doc in changed_documents}
+                current_documents = [list2_dict.get(doc['link'], doc) for doc in current_documents]
+                print(current_documents)
+            except:
+                print("No Current Documents")
+            
 
         print("processed changed documents")
         
