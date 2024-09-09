@@ -95,7 +95,7 @@ def processImage(key, payload):
                 payload_query = db.execute(""" SELECT property_images FROM space.properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['property_images'], type(payload_query['result'][0]['property_images']))
-                payload_images = payload_query['result'][0]['property_images']  # Current Images
+                payload_images = payload_query['result'][0]['property_images'] if payload_query['result'] else "None"  # Current Images
                 payload_fav_images = payload.get("property_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
             else:
                 return payload
@@ -109,7 +109,7 @@ def processImage(key, payload):
                 payload_query = db.execute(""" SELECT appliance_images FROM space.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Images
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['appliance_images'], type(payload_query['result'][0]['appliance_images']))
-                payload_images = payload_query['result'][0]['appliance_images']  # Current Images
+                payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else "None"  # Current Images
                 payload_fav_images = payload.get("appliance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
             else:
                 return payload
@@ -123,7 +123,7 @@ def processImage(key, payload):
                 payload_query = db.execute(""" SELECT maintenance_images FROM space.maintenanceRequests WHERE maintenance_request_uid = \'""" + key_uid + """\'; """)     # Current Images
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['maintenance_images'], type(payload_query['result'][0]['maintenance_images']))
-                payload_images = payload_query['result'][0]['maintenance_images']  # Current Images
+                payload_images = payload_query['result'][0]['maintenance_images'] if payload_query['result'] else "None"  # Current Images
                 payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
             else:
                 return payload
@@ -138,7 +138,7 @@ def processImage(key, payload):
                 payload_query = db.execute(""" SELECT quote_maintenance_images FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)     # Current Images
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['quote_maintenance_images'], type(payload_query['result'][0]['quote_maintenance_images']))
-                payload_images = payload_query['result'][0]['quote_maintenance_images']  # Current Images
+                payload_images = payload_query['result'][0]['quote_maintenance_images'] if payload_query['result'] else "None"  # Current Images
                 # payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
             else:
                 return payload
@@ -148,7 +148,7 @@ def processImage(key, payload):
             return
         
 
-        print("key_type: ", key_type, type(key_type))
+        print("\nkey_type: ", key_type, type(key_type))
         print("key_uid: ", key_uid, type(key_uid))
         print("payload_images: ", payload_images, type(payload_images))
         print("payload_images delete: ", payload_delete_images, type(payload_delete_images))       # Documents to Delete
@@ -160,19 +160,19 @@ def processImage(key, payload):
         # Check if images already exist
         # Put current db images into current_images
         current_images = []
-        print("here 0")
-        if payload_images is not None and payload_images != '' and payload_images != 'null':
+        print("\nAbout to process CURRENT imagess in database;")
+        if payload_images not in {None, '', 'null'}:
             print("Payload Images: ", payload_images)
             current_images =ast.literal_eval(payload_images)
             print("Current images: ", current_images, type(current_images))
-        print("here 1")
+        print("processed current imagess")
 
         # Check if images are being added OR deleted
         images = []
         i = 0
         imageFiles = {}
 
-        print("here 2 - About to Add Images")
+        print("here 2 - About to process ADDED Images")
 
         # ADD Images
         while True:
@@ -224,8 +224,12 @@ def processImage(key, payload):
             # if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
             # if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
             # if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
+        
+        print("processed ADDED documents")
+
 
         # Delete Images
+        print("\nAbout to process DELETED images in database;")
         if payload_delete_images:
             print("In image delete: ", payload_delete_images, type( payload_delete_images))
             delete_images = ast.literal_eval(payload_delete_images)
@@ -248,6 +252,7 @@ def processImage(key, payload):
                     deleteImage(delete_key)
                 except: 
                     print("could not delete from S3")
+        print("processed DELETED documents")
             
         print("\nCurrent Images in Function: ", current_images, type(current_images))
         # print("Key Type: ", key_type)
@@ -453,6 +458,7 @@ def processDocument(key, payload):
             # if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
 
         print("processed ADDED documents")
+
 
         # Delete Documents
         print("\nAbout to process DELETED documents in database;")
