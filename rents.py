@@ -201,7 +201,7 @@ class RentDetails(Resource):
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year, "-", purchase_uid)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
-                                , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , pur_property_id, purchase_type, pur_notes, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
@@ -250,6 +250,7 @@ class RentDetails(Resource):
                                     pur_property_id
                                     , purchase_uid
                                     , purchase_type
+                                    , pur_notes
                                     , pur_due_date
                                     , SUM(pur_amount_due) AS pur_amount_due
                                     , MIN(pur_status_value) AS pur_status_value
@@ -274,7 +275,7 @@ class RentDetails(Resource):
                                     SELECT  *
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
-                                        AND purchase_type = "Rent"
+                                        -- AND purchase_type = "Rent"
                                 ) AS ppr
                                 LEFT JOIN (
                                     SELECT  pur_description AS lf_purchase_uid
@@ -307,7 +308,7 @@ class RentDetails(Resource):
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year, "-", purchase_uid)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
-                                , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , pur_property_id, purchase_type, pur_notes, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
@@ -356,6 +357,7 @@ class RentDetails(Resource):
                                     pur_property_id
                                     , purchase_uid
                                     , purchase_type
+                                    , pur_notes
                                     , pur_due_date
                                     , SUM(pur_amount_due) AS pur_amount_due
                                     , MIN(pur_status_value) AS pur_status_value
@@ -380,7 +382,7 @@ class RentDetails(Resource):
                                     SELECT  *
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
-                                        AND purchase_type = "Rent"
+                                        -- AND purchase_type = "Rent"
                                 ) AS ppr
                                 LEFT JOIN (
                                     SELECT  pur_description AS lf_purchase_uid
@@ -412,7 +414,7 @@ class RentDetails(Resource):
                                 IF(ISNULL(cf_month), CONCAT(property_uid, "-VACANT"), CONCAT(property_uid, "-", cf_month, "-", cf_year, "-", purchase_uid)) AS rent_detail_index
                                 , property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_favorite_image
                                 , owner_uid, contract_uid, contract_status, business_uid, lease_uid, lease_start, lease_end, lease_status, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , rent_status
-                                , pur_property_id, purchase_type, pur_due_date, pur_amount_due
+                                , pur_property_id, purchase_type, pur_notes, pur_due_date, pur_amount_due
                                 , latest_date, total_paid, amt_remaining
                                 , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
                                 , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
@@ -467,6 +469,7 @@ class RentDetails(Resource):
                                     , MIN(pur_status_value) AS pur_status_value
                                     , purchase_status
                                     , pur_description
+                                    , pur_notes
                                     , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
@@ -486,7 +489,7 @@ class RentDetails(Resource):
                                     SELECT  *
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
-                                        AND purchase_type = "Rent"
+                                        -- AND purchase_type = "Rent"
                                 ) AS ppr
                                 LEFT JOIN (
                                     SELECT  pur_description AS lf_purchase_uid
