@@ -402,6 +402,7 @@ def processDocument(key, payload):
         # Initialize documents
         documents = []
         i = 0
+        j = 0
         documentFiles = {}
 
         print("About to process ADDED Documents")
@@ -413,7 +414,7 @@ def processDocument(key, payload):
             file = request.files.get(filename)
             print("File:" , file)    
             s3Link = payload.get(filename)
-            print("S3Link: ", s3Link)
+            print("S3Link: ", s3Link, type(s3Link))
 
             if file:
                 print("In File if Statement")
@@ -427,21 +428,23 @@ def processDocument(key, payload):
                 print("docObject: ", file)
                 print("docObject: ", file.mimetype)
                 print("docObject: ", file.filename)
-                print("docObject: ", documents_details[i]['contentType'])
+                print("docObject: ", documents_details[j]['contentType'])
 
                 docObject = {}
                 docObject["link"] = document
                 docObject["filename"] = file.filename
-                docObject["contentType"] = documents_details[i]['contentType']
+                docObject["contentType"] = documents_details[j]['contentType']
                 docObject["fileType"] = file.mimetype
                 print("Doc Object: ", docObject)
 
                 documents.append(docObject)
 
+                j += 1
 
             elif s3Link:
-                documentFiles[filename] = s3Link
-                documents.append(s3Link)
+                documents.append(json.loads(s3Link))
+                # print("S3 Documents: ", documents )
+                s3Link = payload.pop(filename)
 
             
             else:
