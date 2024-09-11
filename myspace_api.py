@@ -21,7 +21,7 @@ from cashflow import CashflowByOwner
 from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised
 from employees import Employee, EmployeeVerification
 from profiles import Profile, BusinessProfile, BusinessProfileList
-from documents import OwnerDocuments, TenantDocuments, QuoteDocuments
+from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
@@ -2282,7 +2282,7 @@ api.add_resource(Employee, '/employee','/employee/<string:user_id>')
 api.add_resource(EmployeeVerification, '/employeeVerification')
 api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
-api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
+# api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
 api.add_resource(Documents, '/documents','/documents/<string:user_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>', '/leaseDetails')
 api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')

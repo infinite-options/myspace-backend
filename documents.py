@@ -148,95 +148,95 @@ class TenantDocuments(Resource):
             return response
 
 
-class QuoteDocuments(Resource):
-    # decorators = [jwt_required()]
+# class QuoteDocuments(Resource):
+#     # decorators = [jwt_required()]
 
-    def get(self, quote_id):
-        print('in Owner Documents')
-        response = {} 
+#     def get(self, quote_id):
+#         print('in Owner Documents')
+#         response = {} 
 
-        with connect() as db:
-            print("in connect loop")
-            quoteQuery = db.execute(""" 
-            SELECT * From space.quoteDocuments 
-            WHERE qd_quote_id = \'""" + quote_id + """\';
-            """)
+#         with connect() as db:
+#             print("in connect loop")
+#             quoteQuery = db.execute(""" 
+#             SELECT * From space.quoteDocuments 
+#             WHERE qd_quote_id = \'""" + quote_id + """\';
+#             """)
 
-        response["Documents"] = quoteQuery
-        return response
+#         response["Documents"] = quoteQuery
+#         return response
 
-    def post(self):
-        print('in OwnerDocuments')
-        newDocument = {}
-        response = {}
-        data = request.form
+#     def post(self):
+#         print('in OwnerDocuments')
+#         newDocument = {}
+#         response = {}
+#         data = request.form
 
-        qd_files = request.files
-        quote_id = data.get('qd_quote_id')
-        if qd_files:
-            detailsIndex = 0
-            for key in qd_files:
-                print("key", key)
-                file = qd_files[key]
-                print("file", file)
-                # file_info = files_details[detailsIndex]
-                if file and allowed_file(file.filename):
-                    key = f'quotes/{quote_id}/{file.filename}'
-                    print("key", key)
-                    s3_link = uploadImage(file, key, '')
-                    docObject = {}
+#         qd_files = request.files
+#         quote_id = data.get('qd_quote_id')
+#         if qd_files:
+#             detailsIndex = 0
+#             for key in qd_files:
+#                 print("key", key)
+#                 file = qd_files[key]
+#                 print("file", file)
+#                 # file_info = files_details[detailsIndex]
+#                 if file and allowed_file(file.filename):
+#                     key = f'quotes/{quote_id}/{file.filename}'
+#                     print("key", key)
+#                     s3_link = uploadImage(file, key, '')
+#                     docObject = {}
                     
-                    newDocument['qd_link'] = s3_link
-                    docObject["filename"] = file.filename
+#                     newDocument['qd_link'] = s3_link
+#                     docObject["filename"] = file.filename
                     
         
-                detailsIndex += 1
+#                 detailsIndex += 1
 
-            # upload to s3
-            # file = request.files.get(filename)
-            # print("File: ", file)
-
-
-            # link = uploadImage(file, key, '')
-            # print(link)
+#             # upload to s3
+#             # file = request.files.get(filename)
+#             # print("File: ", file)
 
 
-        with connect() as db:
-            data = request.form
-            fields = [
-                'qd_quote_id',
-                'qd_type',
-                'qd_created_date',
-                'qd_name',
-                'qd_shared',
-                'qd_description'
-            ]
-            # print("Document Type: ", data.get("document_type"))
+#             # link = uploadImage(file, key, '')
+#             # print(link)
 
-            # newDocument['owner_uid']
-            for field in fields:
-                if data.get(field) is not None:
-                    newDocument[field] = data.get(field)
-            if newDocument['qd_quote_id'].startswith('900-'):
 
-                new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
-                newDocument['qd_uid'] = new_doc_id
+#         with connect() as db:
+#             data = request.form
+#             fields = [
+#                 'qd_quote_id',
+#                 'qd_type',
+#                 'qd_created_date',
+#                 'qd_name',
+#                 'qd_shared',
+#                 'qd_description'
+#             ]
+#             # print("Document Type: ", data.get("document_type"))
+
+#             # newDocument['owner_uid']
+#             for field in fields:
+#                 if data.get(field) is not None:
+#                     newDocument[field] = data.get(field)
+#             if newDocument['qd_quote_id'].startswith('900-'):
+
+#                 new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
+#                 newDocument['qd_uid'] = new_doc_id
                
 
-                # sql = f"""UPDATE space.ownerProfileInfo
-                #             SET owner_documents = JSON_ARRAY_APPEND(
-                #                 IFNULL(owner_documents, JSON_ARRAY()),
-                #                 '$',
-                #                 "{newDocument}"
-                #             )
-                #             WHERE owner_uid = \'""" + owner_id + """\';"""
-                # print(sql)
-                # response = db.execute(sql, cmd='post')
-                response = db.insert('quoteDocuments', newDocument)
-            else:
-                response['error'] = "Please enter the quote id in the correct format"
+#                 # sql = f"""UPDATE space.ownerProfileInfo
+#                 #             SET owner_documents = JSON_ARRAY_APPEND(
+#                 #                 IFNULL(owner_documents, JSON_ARRAY()),
+#                 #                 '$',
+#                 #                 "{newDocument}"
+#                 #             )
+#                 #             WHERE owner_uid = \'""" + owner_id + """\';"""
+#                 # print(sql)
+#                 # response = db.execute(sql, cmd='post')
+#                 response = db.insert('quoteDocuments', newDocument)
+#             else:
+#                 response['error'] = "Please enter the quote id in the correct format"
 
-        return response
+#         return response
 
 
 class Documents(Resource):
