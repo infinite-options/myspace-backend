@@ -944,8 +944,18 @@ class MonthlyRentPurchase_CLASS(Resource):
                             , lease_property_id, lease_start, lease_end, lease_status, lease_early_end_date, lease_renew_status
                             -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
                             ,  CASE 
-                                WHEN frequency = 'Monthly' THEN 
-                                    DATE_FORMAT(DATE_ADD(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), INTERVAL 1 MONTH), '%m-%d-%Y')
+                                WHEN frequency = 'Monthly' 
+                                AND CURDATE() >= DATE_ADD(LAST_DAY(CURDATE() - INTERVAL 1 MONTH), INTERVAL 1 DAY) 
+                                AND CURDATE() >= DATE_ADD(LAST_DAY(CURDATE() - INTERVAL 1 MONTH), INTERVAL (due_by - available_topay) DAY)
+                                AND CURDATE() <= STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d') 
+                                THEN 
+                                    DATE_FORMAT(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d'), '%m-%d-%Y')
+                                
+                                -- If today's date is past the due_by date, return next month's due date
+                                WHEN frequency = 'Monthly'
+                                AND CURDATE() > STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d')
+                                THEN
+                                    DATE_FORMAT(DATE_ADD(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d'), INTERVAL 1 MONTH), '%m-%d-%Y')
                                 WHEN frequency = 'Weekly' THEN 
                                     DATE_FORMAT(DATE_ADD(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), INTERVAL 1 WEEK), '%m-%d-%Y')
                                 WHEN frequency = 'BiWeekly' THEN 
@@ -965,7 +975,10 @@ class MonthlyRentPurchase_CLASS(Resource):
                             AND contract_status = 'ACTIVE'
                         ORDER BY leaseFees_uid -- frequency;
                         ) AS r
-                        LEFT JOIN space.purchases ON lease_property_id=pur_property_id AND lt_tenant_id = pur_payer AND fee_name = purchase_type AND next_due_date = pur_due_date
+                        LEFT JOIN space.purchases ON lease_property_id=pur_property_id 
+                            AND lt_tenant_id = pur_payer 
+                            AND fee_name = purchase_type 
+                            AND next_due_date = pur_due_date
                         """)
 
                 for i in range(len(response['result'])):
@@ -1043,7 +1056,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                     # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
                     print(i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], "Rent Due: ", due_date.date(), "Rent Posts: ", due_date.date() - timedelta(days=payable), "    days_for_rent: ", days_for_rent, "   payable: ", payable, "    Rent posts in: ",  days_for_rent - payable)
-                    if days_for_rent <= payable + (0) and response['result'][i]['purchase_uid'] != None:  # Remove/Change number to get query to run and return data
+                    if days_for_rent <= payable + (0) and response['result'][i]['purchase_uid'] == None:  # Remove/Change number to get query to run and return data
 
                     # IF Changing the dates manually
                     # if days_for_rent >= 0:  # Remove/Change number to get query to run and return data
