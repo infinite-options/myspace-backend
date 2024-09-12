@@ -582,6 +582,7 @@ class Properties(Resource):
          
 
             # Add Property Info
+            payload['property_images'] = payload.get('property_images', '[]')
             print("Add Property Payload: ", payload)    
             payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
             # payload.pop('property_listed')
