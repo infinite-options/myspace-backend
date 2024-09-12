@@ -481,7 +481,7 @@ class MaintenanceQuotes(Resource):
                 # --------------- PROCESS IMAGES ------------------
 
 
-                # Add Maintenance Requeste Info
+                # Add Maintenance Request Info
                 print("Add Maintenance Quote Payload: ", payload)  
 
                 payload["quote_status"] = "REQUESTED"

@@ -562,6 +562,8 @@ class Properties(Resource):
                             print(NewApplianceID)
                             newAppliance['appliance_property_id'] = newPropertyUID
                             newAppliance['appliance_type'] = appliance
+                            newAppliance['appliance_images'] = '[]'
+                            newAppliance['appliance_documents'] = '[]'
                             response['Add Appliance'] = db.insert('appliances', newAppliance)
                             print(response['Add Appliance'])
                 else:
@@ -582,7 +584,7 @@ class Properties(Resource):
          
 
             # Add Property Info
-            payload['property_images'] = payload.get('property_images', '[]')
+            payload['property_images'] = '[]' if payload.get('property_images') in {None, '', 'null'} else payload.get('property_images', '[]')
             print("Add Property Payload: ", payload)    
             payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
             # payload.pop('property_listed')

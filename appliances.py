@@ -62,9 +62,10 @@ class Appliances(Resource):
             # --------------- PROCESS IMAGES ------------------
 
 
-            # Add Property Info
+            # Add Appliance Info
+            payload['appliance_images'] = '[]' if payload.get('appliance_images') in {None, '', 'null'} else payload.get('appliance_images', '[]')
+            payload['appliance_documents'] = '[]' if payload.get('appliance_documents') in {None, '', 'null'} else payload.get('appliance_documents', '[]')
             print("Add Appliance Payload: ", payload)  
-
 
             payload["appliance_uid"] = newApplianceUID  
             response['Add Appliance'] = db.insert('appliances', payload)
