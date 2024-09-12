@@ -244,6 +244,7 @@ class MaintenanceRequests(Resource):
 
             # Add Maintenance Request Info
             payload['maintenance_request_status'] = 'NEW'  
+            payload['maintenance_images'] = '[]' if payload.get('maintenance_images') in {None, '', 'null'} else payload.get('maintenance_images', '[]')
             print("Add Maintenance Req Payload: ", payload)  
 
 
@@ -482,6 +483,8 @@ class MaintenanceQuotes(Resource):
 
 
                 # Add Maintenance Request Info
+                payload['quote_maintenance_images'] = '[]' if payload.get('quote_maintenance_images') in {None, '', 'null'} else payload.get('quote_maintenance_images', '[]')
+                payload['quote_documents'] = '[]' if payload.get('quote_documents') in {None, '', 'null'} else payload.get('quote_documents', '[]')
                 print("Add Maintenance Quote Payload: ", payload)  
 
                 payload["quote_status"] = "REQUESTED"
@@ -489,7 +492,7 @@ class MaintenanceQuotes(Resource):
                 payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
                 response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
                 response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
-                response['Maintenance Quote Images Added'] = payload.get('maintenance_images', "None")
+                response['Maintenance Quote Images Added'] = payload.get('quote_maintenance_images', "None")
                 print("\nNew Maintenance Quote Added")
 
         return response

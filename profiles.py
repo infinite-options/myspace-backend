@@ -213,6 +213,7 @@ class Profile(Resource):
                 if file:
                     key = f'ownerProfileInfo/{profile_info["owner_uid"]}/owner_photo'
                     profile_info["owner_photo_url"] = uploadImage(file, key, '')
+                profile_info['owner_documents'] = '[]' if profile_info.get('owner_documents') in {None, '', 'null'} else profile_info.get('owner_documents', '[]')
                 response = db.insert('ownerProfileInfo', profile_info)
                 response["owner_uid"] = profile_info["owner_uid"]
             elif tenant:
@@ -242,6 +243,7 @@ class Profile(Resource):
                 if file:
                     key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
                     profile_info["business_photo_url"] = uploadImage(file, key, '')
+                profile_info['business_documents'] = '[]' if profile_info.get('business_documents') in {None, '', 'null'} else profile_info.get('business_documents', '[]')
                 response = db.insert('businessProfileInfo', profile_info)
                 # response["business_uid"] = profile_info["business_uid"]
 
