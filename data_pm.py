@@ -139,7 +139,7 @@ def processImage(key, payload):
                 # print("1: ", payload_query)
                 # print("4: ", payload_query['result'][0]['quote_maintenance_images'], type(payload_query['result'][0]['quote_maintenance_images']))
                 payload_images = payload_query['result'][0]['quote_maintenance_images'] if payload_query['result'] else None  # Current Images
-                # payload_fav_images = payload.get("maintenance_favorite_image") or payload.get("img_favorite")   # (PUT & POST)
+                payload_fav_images = None
             else:
                 return payload
 
