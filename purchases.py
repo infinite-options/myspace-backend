@@ -131,7 +131,7 @@ class Bills(Resource):
             pur_ids = []
             split_num = len(bill_property_id)
             # print(split_num)
-            split_bill_amount = round(int(bill_amount)/split_num,2)
+            split_bill_amount = round(float(bill_amount)/split_num,2)
 
             for data_dict in bill_property_id:
                 for key, value in data_dict.items():
@@ -352,6 +352,7 @@ class Bills(Resource):
                     
                     # print(queryResponse['code'])
                     if (queryResponse['code'] == 200):
+                        print("In append function")
                         pur_ids.append(new_purchase_uid)
 
 
