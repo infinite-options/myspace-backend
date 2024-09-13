@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-from data_pm import connect, uploadImage, s3
+from data_pm import connect, uploadImage, s3, processImage, processDocument
 import boto3
 import json
 # from datetime import date, datetime, timedelta
@@ -67,89 +67,57 @@ class Bills(Resource):
             return response
     
     def post(self):
-        print("In Add Bill")
+        print("In Add Bill POST")
         response = {}
+        response['message'] = []
+        payload = request.form.to_dict()
+        print("Maintenance Quotes Add Payload: ", payload)
+
+        if payload.get('bill_uid'):
+            print("bill_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
 
         with connect() as db:
-            response['message'] = []
-            data = request.form
-            # print(data)
+            newBillUID = db.call('space.new_bill_uid')['result'][0]['new_id']
+            key = {'bill_uid': newBillUID}
+            print("Bill Key: ", key)
 
-            #  Get New Bill UID
-            new_bill_uid = db.call('space.new_bill_uid')['result'][0]['new_id']
-            # print(new_bill_uid)
+            # --------------- PROCESS IMAGES ------------------
 
-
-            # Set Variables from JSON OBJECT
-            bill_description = data["bill_description"]
-            # print("bill_description: ", bill_description, type(bill_description))
-            bill_amount = data["bill_amount"]
-            bill_created_by = data["bill_created_by"]
-            bill_utility_type = data["bill_utility_type"]
-            bill_split = data["bill_split"]
-            # bill_property_id = data["bill_property_id"]
-            bill_property_id = json.loads(data["bill_property_id"])
-            print("property_id is ", bill_property_id)
-            #bill_docs = json.loads(data["bill_docs"])
-            bill_maintenance_quote_id  = data["bill_maintenance_quote_id"]
-            bill_maintenance_request_id  = data["bill_maintenance_request_id"]
-            bill_notes = data["bill_notes"]
-            # print("bill_notes: ", bill_notes, type(bill_notes))
-            #, bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
-            #, bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
-            # bill_property_id = \'""" + str(bill_property_id) + """\'
-            files = request.files
-            bill_documents = []
-            if files:
-                detailsIndex = 0
-                for key in files:
-                    file = files[key]
-                    print("file",file)
-                    # file_info = files_details[detailsIndex]
-                    # print("FILE DETAILS")
-                    # print(file_info)
-                    if file and allowed_file(file.filename):
-                        key = f'bills/{new_bill_uid}/{file.filename}'
-                        s3_link = uploadImage(file, key, '')
-                        docObject = {}
-                        docObject["link"] = s3_link
-                        docObject["filename"] = file.filename
-                        # docObject["type"] = file_info["fileType"]
-                        bill_documents.append(docObject)
-                    detailsIndex += 1
-                bill_docs = json.dumps(bill_documents)
-                # print("bill_docs",bill_docs)
-                # updated_contract['contract_documents'] = json.dumps(contract_docs)
-                # print(updated_contract['contract_documents'])
-            else:
-                bill_docs = json.dumps('[]')
-                # print("bill_docs", bill_docs)
-
-            billQuery = (""" 
-                    -- CREATE NEW BILL
-                    INSERT INTO space.bills
-                    SET bill_uid = \'""" + new_bill_uid + """\'
-                    , bill_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                    , bill_description = \'""" + bill_description + """\'
-                    , bill_amount = \'""" + str(bill_amount) + """\'
-                    , bill_created_by = \'""" + bill_created_by + """\'
-                    , bill_utility_type = \'""" + bill_utility_type + """\'
-                    , bill_split = \'""" + bill_split + """\'
-                    , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
-                    , bill_docs = \'""" + bill_docs + """\'
-                    , bill_notes = \'""" + bill_notes + """\'
-                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\'  
-                    , bill_maintenance_request_id = \'""" + bill_maintenance_request_id + """\';        
-                    """)
-
-            # print("Query: ", billQuery)
-            response = db.execute(billQuery, [], 'post')
-            # print("Query out", response["code"])
-            response["bill_uid"] = new_bill_uid
-
-            # Works to this point
+            processImage(key, payload)
+            print("Payload after function: ", payload)
             
-            # print("made it here", bill_property_id)
+            # --------------- PROCESS IMAGES ------------------
+
+            # bill_property_id = json.loads(payload["bill_property_id"])
+            # print("property_id is ", bill_property_id)                  
+
+            # Add BillInfo
+            
+            payload['bill_images'] = '[]' if payload.get('bill_images') in {None, '', 'null'} else payload.get('bill_images', '[]')
+            print("Add Bill Payload: ", payload) 
+
+            payload["bill_uid"] = newBillUID  
+            response['Add Bill'] = db.insert('bills', payload)
+            response['maibill_uidtenance_request_uid'] = newBillUID 
+            response['Bill Images Added'] = payload.get('bill_images', "None")
+            print("\nNew Bill Added")
+            
+            # Works to this point
+
+            # Split the bill across multiple properties
+            bill_property_id = json.loads(payload["bill_property_id"])
+            print("property_id is ", bill_property_id)
+            bill_amount = payload["bill_amount"]
+            bill_created_by = payload["bill_created_by"]
+            bill_utility_type = payload["bill_utility_type"]
+            bill_split = payload["bill_split"]
+            bill_property_id = json.loads(payload["bill_property_id"])
+            print("property_id is ", bill_property_id)
+            bill_maintenance_quote_id  = payload["bill_maintenance_quote_id"]
+            bill_maintenance_request_id  = payload["bill_maintenance_request_id"]
+            bill_notes = payload["bill_notes"]
+
             pur_ids = []
             split_num = len(bill_property_id)
             # print(split_num)
@@ -160,6 +128,7 @@ class Bills(Resource):
                     # print(f"{key}: {value}")
                     # print(value)
                     pur_property_id = value
+                    bill_utility_type = payload.get('bill_utility_type')
                     print("Input to Find Responsible Party Query:  ", pur_property_id, bill_utility_type)
 
                     # Find Responsible Party:  For each property ID and utility, identify the responsible party
