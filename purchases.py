@@ -80,6 +80,7 @@ class Bills(Resource):
         with connect() as db:
             newBillUID = db.call('space.new_bill_uid')['result'][0]['new_id']
             key = {'bill_uid': newBillUID}
+            new_bill_uid = newBillUID
             print("Bill Key: ", key)
 
             # --------------- PROCESS IMAGES ------------------
@@ -88,6 +89,14 @@ class Bills(Resource):
             print("Payload after function: ", payload)
             
             # --------------- PROCESS IMAGES ------------------
+
+
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
 
             # bill_property_id = json.loads(payload["bill_property_id"])
             # print("property_id is ", bill_property_id)                  
@@ -110,6 +119,7 @@ class Bills(Resource):
             print("property_id is ", bill_property_id)
             bill_amount = payload["bill_amount"]
             bill_created_by = payload["bill_created_by"]
+            bill_description = payload["bill_description"]
             bill_utility_type = payload["bill_utility_type"]
             bill_split = payload["bill_split"]
             bill_property_id = json.loads(payload["bill_property_id"])
