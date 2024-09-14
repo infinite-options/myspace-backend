@@ -107,6 +107,7 @@ class Bills(Resource):
             print("Add Bill Payload: ", payload) 
 
             payload["bill_uid"] = newBillUID  
+            payload["bill_timestamp"] = datetime.today().date().strftime("%m-%d-%Y")
             response['Add Bill'] = db.insert('bills', payload)
             response['maibill_uidtenance_request_uid'] = newBillUID 
             response['Bill Images Added'] = payload.get('bill_images', "None")

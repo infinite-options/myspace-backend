@@ -520,10 +520,11 @@ def processDocument(key, payload):
                     print("could not delete from S3")
         print("processed DELETED documents")
             
-        print("\nCurrent Images in Function: ", current_documents, type(current_documents))
+        print("\nCurrent Documents in Function: ", current_documents, type(current_documents))
         # print("Key Type: ", key_type)
         if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
         if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
+        if key_type == 'bills': payload['bill_documents'] = json.dumps(current_documents) 
         if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
         if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
         if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 
