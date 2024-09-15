@@ -98,7 +98,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('property_images', None))
                 payload_images = payload_query['result'][0]['property_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite")   # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
 
@@ -114,7 +114,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('appliance_images', None))
                 payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("appliance_favorite_image") or payload.pop("img_favorite")   # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
             
@@ -130,7 +130,8 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('bill_images', None))
                 payload_images = payload_query['result'][0]['bill_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.pop("img_favorite") if payload.get("img_favorite") else None  # (PUT & POST)
+                # payload_fav_images = payload.pop("img_favorite") if payload.get("img_favorite") else None  # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
 
@@ -146,7 +147,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('maintenance_images', None))
                 payload_images = payload_query['result'][0]['maintenance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("maintenance_favorite_image") or payload.pop("img_favorite")   # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
 
@@ -163,7 +164,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('quote_maintenance_images', None))
                 payload_images = payload_query['result'][0]['quote_maintenance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.pop("img_favorite") if payload.get("img_favorite") else None  # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
 
