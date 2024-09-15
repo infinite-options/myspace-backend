@@ -93,8 +93,8 @@ def processImage(key, payload):
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New property images are passed in as img_0, img_1.  No Image attributes are passed in
                 payload_query = db.execute(""" SELECT property_images FROM space.properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
-                # print("1: ", payload_query)
-                # print("4: ", payload_query['result'][0]['property_images'], type(payload_query['result'][0]['property_images']))
+                print("1: ", payload_query)
+                print("4: ", payload_query['result'][0]['property_images'], type(payload_query['result'][0]['property_images']))
                 payload_images = payload_query['result'][0]['property_images'] if payload_query['result'] else None  # Current Images
                 payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite")   # (PUT & POST)
             else:
@@ -114,7 +114,7 @@ def processImage(key, payload):
             else:
                 return payload
             
-        if 'bill_uid' in key:
+        elif 'bill_uid' in key:
             print("Bill Key passed")
             key_type = 'bills'
             key_uid = key['bill_uid']
