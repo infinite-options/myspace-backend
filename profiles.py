@@ -305,8 +305,8 @@ class Profile(Resource):
                     else:
                         print(f"Error deleting file {key1}: {e}")
 
-                payload["business_photo_url"] = uploadImage(file, key1, '')
-            print("business")
+                filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
+            print("business photo: ", filtered_payload["business_photo_url"] )
 
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -317,6 +317,7 @@ class Profile(Resource):
 
 
             with connect() as db:
+                print("Checking Inputs: ", key, filtered_payload)
                 response = db.update('businessProfileInfo', key, filtered_payload)
         
         
