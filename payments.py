@@ -103,7 +103,8 @@ class NewPayments(Resource):
                 pur_status_value = "0"
                 # print("Amount Reamining: ", amt_remaining, type(amt_remaining))
                 if amt_remaining <= 0: 
-                    if pur_due_date >= datetime.now():
+                    print("Date Check: ", pur_due_date, datetime.now())
+                    if pur_due_date.date() == datetime.now().date():
                         purchase_status = "PAID"
                         pur_status_value = "5"
                     else: 
