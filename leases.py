@@ -487,7 +487,7 @@ class LeaseApplication(Resource):
                     # Common JSON Object Attributes
                     newRequest = {}
                     
-                    newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+                    newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
                     newRequest['pur_property_id'] = fee['lease_property_id']
                     newRequest['purchase_type'] = fee['fee_name']
                     newRequest['pur_cf_type'] = "revenue"
@@ -516,7 +516,7 @@ class LeaseApplication(Resource):
                         today = datetime.today()
                         # today = datetime(2024, 8, 25)  # For testing purposes
                         due_date = datetime(today.year, today.month, due_by)
-                        # print("Due Date: ", due_date)
+                        print("Due Date: ", due_date)
 
                         # Calculate due date taking December into account
                         print("Today: ", today, "vs Due Date: ", due_date)
@@ -669,12 +669,12 @@ class LeaseApplication(Resource):
 
 
 
-
+                        # POST NEXT MONTHS RENT.  Is this necessary if the CRON job checks if next month rent is due?
                         if pro_rate_days < avail_to_pay:
                             print("Also post regular cycle rent (ie 2 cycles)")
 
                             newRequest['pur_amount_due'] = fee['charge']
-                            newRequest['pur_due_date'] = due_date
+                            newRequest['pur_due_date'] = due_date.strftime("%m-%d-%Y")
                             newRequest['pur_description'] = f"First Month {fee['fee_name']}"
 
                             # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -686,7 +686,7 @@ class LeaseApplication(Resource):
                             newRequest['pur_receiver'] = manager
                             newRequest['pur_payer'] = tenant
                             newRequest['pur_initiator'] = manager
-                            newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                            
                             
                             # print(newRequest)
                             # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -703,8 +703,8 @@ class LeaseApplication(Resource):
                             newRequest['pur_payer'] = manager
                             newRequest['pur_initiator'] = manager
                             # newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                            newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                                        
+                            # newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                            newRequest['pur_due_date'] = (due_date + timedelta(days=15)).strftime("%m-%d-%Y")
 
                             newRequest['pur_group'] = grouping
                             newRequest['pur_late_fee'] = 0
@@ -787,8 +787,9 @@ class LeaseApplication(Resource):
                                     newPMRequest['pur_initiator'] = manager
                                     
 
-                                    newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                    
+                                    # newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                                    newPMRequest['pur_due_date'] = (due_date + timedelta(days=15)).strftime("%m-%d-%Y")
+
                                     # print(newPMRequest)
                                     db.insert('purchases', newPMRequest)
                             
