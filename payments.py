@@ -7,7 +7,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from data_pm import connect, uploadImage, s3
 import boto3
 import json
-import pytz
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
@@ -105,7 +104,7 @@ class NewPayments(Resource):
                 # print("Amount Reamining: ", amt_remaining, type(amt_remaining))
                 if amt_remaining <= 0: 
                     print("Date Check: ", pur_due_date, datetime.now())
-                    if pur_due_date.date() >= datetime.now(pytz.timezone('America/Los_Angeles')).date():
+                    if pur_due_date.date() >= datetime.now().date():
                         purchase_status = "PAID"
                         pur_status_value = "5"
                     else: 
