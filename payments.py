@@ -3,7 +3,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-
+# newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
 from data_pm import connect, uploadImage, s3
 import boto3
 import json
@@ -61,10 +61,10 @@ class NewPayments(Resource):
                             , payment_notes = \'""" + data['payment_notes'] + """\'
                             , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                             , payment_type = \'""" + data['payment_type'] + """\'
-                            , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                            , payment_date = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 8 HOUR), '%m-%d-%Y %H:%i')
                             , paid_by = \'""" + data['paid_by'] + """\'
                             , payment_intent = \'""" + data['payment_intent'] + """\'
-                            , payment_method = \'""" + data['payment_method'] + """\';     
+                            , payment_method = \'""" + data['payment_method'] + """\';  
                         """)
 
                 # print("Item Payment Query: ", paymentQuery)
@@ -229,7 +229,7 @@ class NewPayments(Resource):
                                 , payment_notes = \'""" + data['payment_notes'] + """\'
                                 , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                                 , payment_type = \'""" + data['payment_type'] + """\'
-                                , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , payment_date = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 8 HOUR), '%m-%d-%Y %H:%i')
                                 , paid_by = \'""" + data['paid_by'] + """\'
                                 , payment_intent = \'""" + data['payment_intent'] + """\'
                                 , payment_method = \'""" + data['payment_method'] + """\';     
@@ -283,7 +283,7 @@ class NewPayments(Resource):
                                 , payment_notes = \'""" + data['payment_notes'] + """\'
                                 , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                                 , payment_type = \'""" + data['payment_type'] + """\'
-                                , payment_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , payment_date = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 8 HOUR), '%m-%d-%Y %H:%i')
                                 , paid_by = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , payment_intent = \'""" + data['payment_intent'] + """\'
                                 , payment_method = \'""" + data['payment_method'] + """\';     
