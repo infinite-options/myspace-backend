@@ -105,7 +105,7 @@ class NewPayments(Resource):
                 # print("Amount Reamining: ", amt_remaining, type(amt_remaining))
                 if amt_remaining <= 0: 
                     print("Date Check: ", pur_due_date, datetime.now())
-                    if pur_due_date.date() >= datetime.now(pytz.timezone('America/Los_Angeles')):
+                    if pur_due_date.date() >= datetime.now(pytz.timezone('America/Los_Angeles')).date():
                         purchase_status = "PAID"
                         pur_status_value = "5"
                     else: 
