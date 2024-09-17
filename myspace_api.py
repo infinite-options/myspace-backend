@@ -436,7 +436,7 @@ class Announcements(Resource):
                         user_email = user_query['result'][0]['email']
                         sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
                     if payload["announcement_type"][j] == "Text":
-                        continue
+                        # continue
                         newRequest['Text'] = "1"
                         user_phone = user_query['result'][0]['phone_number']
                         msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
