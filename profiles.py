@@ -306,7 +306,7 @@ class Profile(Resource):
                         print(f"Error deleting file {key1}: {e}")
 
                 filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
-            print("business photo: ", filtered_payload["business_photo_url"] )
+                # print("business photo: ", filtered_payload["business_photo_url"] )
 
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -317,7 +317,7 @@ class Profile(Resource):
 
 
             with connect() as db:
-                print("Checking Inputs: ", key, filtered_payload)
+                # print("Checking Inputs: ", key, filtered_payload)
                 response = db.update('businessProfileInfo', key, filtered_payload)
         
         
@@ -326,7 +326,6 @@ class Profile(Resource):
             # tenant_uid = payload.get('tenant_uid')
             key = {'tenant_uid': payload.pop('tenant_uid')}
             print("Tenant Key: ", key)
-
 
             file = request.files.get("tenant_photo_url")
             if file:
@@ -353,19 +352,21 @@ class Profile(Resource):
 
 
             # Update File List in Database        
-            print("tenant")
-            print("key: ", key )
-            print("payload: ", payload)
+            # print("tenant")
+            # print("key: ", key )
+            # print("payload: ", payload)
 
             with connect() as db:
+                # print("Checking Inputs: ", key, payload)
                 response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
-            print("Response:" , response)
+                # print("Response:" , response)
 
 
         if payload.get('owner_uid'):
             # print("In Owner")
             key = {'owner_uid': payload.pop('owner_uid')}
             # print("Owner Key: ", key)
+
             file = request.files.get("owner_photo_url")
             if file:
                 key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
@@ -380,17 +381,22 @@ class Profile(Resource):
                         print(f"Error deleting file {key1}: {e}")
 
                 payload["owner_photo_url"] = uploadImage(file, key1, '')
-            # print("owner")
-            # print("Owner Payload: ", payload)
+                # print("Owner Payload: ", payload)
+
             with connect() as db:
+                # print("Checking Inputs: ", key, filtered_payload)
                 response = db.update('ownerProfileInfo', key, payload)
-            # print(response)
+                # print(response)
 
         
         if payload.get('employee_uid'):
+            # print("In Employee")
             valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            print("Filtered Payload: ", filtered_payload)
             key = {'employee_uid': filtered_payload.pop('employee_uid')}
+            # print("Employee Key: ", key)
+
             file = request.files.get("employee_photo_url")
             if file:
                 key1 = f'employees/{key["employee_uid"]}/employee_photo'
@@ -405,8 +411,11 @@ class Profile(Resource):
                         print(f"Error deleting file {key1}: {e}")
 
                 filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
-            print("employee")
+                # print("employee photo: ", filtered_payload["employee_photo_url"] )
+            
+            
             with connect() as db:
+                # print("Checking Inputs: ", key, filtered_payload)
                 response = db.update('employees', key, filtered_payload)
 
         # else:
