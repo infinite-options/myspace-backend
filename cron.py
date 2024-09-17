@@ -1259,7 +1259,8 @@ class RentPurchase_CLASS(Resource):
                         newRequest = {}
                         newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
-                        newRequest['pur_timestamp'] = datetime.date.today()
+                        # newRequest['pur_timestamp'] = datetime.date.today()
+                        newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
                         newRequest['pur_property_id'] = response['result'][i]['lease_property_id']
                         newRequest['purchase_type'] = "RENT"
                         newRequest['pur_cf_type'] = "REVENUE"
@@ -1319,7 +1320,8 @@ def RentPurchase(self):
                     newRequest = {}
                     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                     newRequest['purchase_uid'] = newRequestID
-                    newRequest['pur_timestamp'] = datetime.date.today()
+                    # newRequest['pur_timestamp'] = datetime.date.today()
+                    newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
                     newRequest['pur_property_id'] = response['result'][i]['lease_property_id']
                     newRequest['purchase_type'] = "RENT"
                     newRequest['pur_cf_type'] = "REVENUE"
@@ -1362,7 +1364,8 @@ def newPurchase(linked_bill_id, pur_property_id, payer, receiver, purchase_type,
         }
         print('newPurchase', newPurchase)
         newPurchaseID = db.call('new_purchase_uid')['result'][0]['new_id']
-        newPurchase['pur_timestamp'] = datetime.now()
+        # newPurchase['pur_timestamp'] = datetime.now()
+        newPurchase['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
         newPurchase['purchase_uid'] = newPurchaseID
         newPurchase['purchase_status'] = 'UNPAID'
         due_date = date(next_payment.year, next_payment.month, next_payment.day) + relativedelta(months=1)
@@ -3722,8 +3725,8 @@ class MonthlyRent_CLASS(Resource):
                     print("New Purchase ID: ", newRequestID)
                     newRequest['purchase_uid'] = newRequestID
 
-                    print(datetime.date.today())
-                    newRequest['pur_timestamp'] = str(datetime.date.today())
+                    # newRequest['pur_timestamp'] = str(datetime.date.today())
+                    newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
                     print(newRequest['pur_timestamp'])
                     newRequest['pur_property_id'] = response['monthlyRents']['result'][i]['lease_property_id']
                     newRequest['purchase_type'] = "RENT"
