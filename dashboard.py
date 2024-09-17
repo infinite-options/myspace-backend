@@ -1002,15 +1002,58 @@ class Dashboard(Resource):
                     
                     maintenance = db.execute("""
                             -- TENENT MAINTENANCE TICKETS
-                            SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
-                                p.business_name, p.business_phone_number, p.business_email,
-                                mr.*
-                            FROM space.maintenanceRequests mr
-                                LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
-                                LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
-                            -- WHERE tenant_uid = '350-000162';
-                            WHERE tenant_uid = \'""" + user_id + """\';
+                            SELECT -- *,
+                                lt_tenant_id -- , maintenance_request_status
+                                , CASE
+                                    WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
+                                    WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
+                                    ELSE maintenance_request_status
+                                END AS maintenance_status
+                                , COUNT(maintenance_request_status) AS num
+                            FROM space.maintenanceRequests
+                            LEFT JOIN (
+                                SELECT * 
+                                FROM space.leases 
+                                WHERE lease_status = 'ACTIVE'
+                                ) AS l ON lease_property_id = maintenance_property_id
+                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                            LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
+                            -- WHERE lt_tenant_id = '350-000005'
+                            WHERE lt_tenant_id = \'""" + user_id + """\'
+                            GROUP BY maintenance_request_status;
                             """)
                     response["maintenanceRequests"] = maintenance
+
+
+                    maintenanceQuery = db.execute(""" 
+                            -- MAINTENANCE STATUS BY TENANT
+                            SELECT * 
+                                , CASE
+                                    WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
+                                    WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
+                                    ELSE maintenance_request_status
+                                END AS maintenance_status
+                                -- , COUNT(maintenance_request_status) AS num
+                            FROM space.maintenanceRequests
+                            LEFT JOIN (
+                                SELECT * 
+                                FROM space.leases 
+                                WHERE lease_status = 'ACTIVE'
+                                ) AS l ON lease_property_id = maintenance_property_id
+                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                            LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
+                            -- WHERE lt_tenant_id = '350-000005'
+                            WHERE lt_tenant_id = \'""" + user_id + """\'
+                            -- GROUP BY maintenance_request_status;
+                            """)
+
+                    # print("Query: ", maintenanceQuery)
+                    response["MaintenanceStatus"] = maintenanceQuery
+
+
+
+
+
+
 
                 return response
