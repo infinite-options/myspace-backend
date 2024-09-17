@@ -440,12 +440,15 @@ class Announcements(Resource):
                                         -- WHERE b.business_uid = '600-000005';
                                         WHERE b.business_uid = \'""" + receivers[i] + """\';
                                         """)                                        
+                # print("Notifications allowed: ", user_query['result'][0]['notifications'], type( user_query['result'][0]['notifications']))
                 for j in range(len(payload["announcement_type"])):
                     if payload["announcement_type"][j] == "Email":
                         newRequest['Email'] = "1"
                         user_email = user_query['result'][0]['email']
                         sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
-                    if payload["announcement_type"][j] == "Text":
+                    
+                    if payload["announcement_type"][j] == "Text" and user_query['result'][0]['notifications'] == 'true':
+                        # print("sending Text")
                         # continue
                         newRequest['Text'] = "1"
                         user_phone = user_query['result'][0]['phone_number']
