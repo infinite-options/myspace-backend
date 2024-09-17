@@ -284,11 +284,15 @@ def SendEmail_CRON(self):
 
 
 def Send_Twilio_SMS(message, phone_number):
+    # print("In Twilio: ", message, phone_number)
     items = {}
     numbers = phone_number
     message = message
     numbers = list(set(numbers.split(',')))
+    # print("TWILIO_ACCOUNT_SID: ", TWILIO_ACCOUNT_SID)
+    # print("TWILIO_AUTH_TOKEN: ", TWILIO_AUTH_TOKEN)
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    # print("Client Info: ", client)
     for destination in numbers:
         message = client.messages.create(
             body=message,
@@ -368,9 +372,9 @@ class Announcements(Resource):
         return response
 
     def post(self, user_id):
-        print("In Announcements POST")
+        print("In Announcements POST ", user_id)
         payload = request.get_json()
-        # print("Post Announcement Payload: ", payload)
+        print("Post Announcement Payload: ", payload)
         manager_id = user_id
         if isinstance(payload["announcement_receiver"], list):
             receivers = payload["announcement_receiver"]
@@ -412,22 +416,28 @@ class Announcements(Resource):
                 if(receivers[i][:3] == '350'):                    
                     user_query = db.execute(""" 
                                         -- Find the user details
-                                        SELECT tenant_email as email, tenant_phone_number as phone_number 
+                                        SELECT tenant_email as email, tenant_phone_number as phone_number, notifications
                                         FROM space.tenantProfileInfo AS t
+                                        LEFT JOIN space.users ON tenant_user_id = user_uid
+                                        -- WHERE t.tenant_uid = '350-000005';
                                         WHERE t.tenant_uid = \'""" + receivers[i] + """\';
                                         """)                    
                 elif(receivers[i][:3] == '110'):                                        
                     user_query = db.execute(""" 
                                         -- Find the user details
-                                        SELECT owner_email as email, owner_phone_number as phone_number 
+                                        SELECT owner_email as email, owner_phone_number as phone_number, notifications
                                         FROM space.ownerProfileInfo AS o
+                                        LEFT JOIN space.users ON owner_user_id = user_uid
+                                        -- WHERE o.owner_uid = '110-000005';
                                         WHERE o.owner_uid = \'""" + receivers[i] + """\';
                                         """)
                 elif(receivers[i][:3] == '600'):                                        
                     user_query = db.execute(""" 
                                         -- Find the user details
-                                        SELECT business_email as email, business_phone_number as phone_number
+                                        SELECT business_email as email, business_phone_number as phone_number, notifications
                                         FROM space.businessProfileInfo AS b
+                                        LEFT JOIN space.users ON business_user_id = user_uid
+                                        -- WHERE b.business_uid = '600-000005';
                                         WHERE b.business_uid = \'""" + receivers[i] + """\';
                                         """)                                        
                 for j in range(len(payload["announcement_type"])):
@@ -440,6 +450,7 @@ class Announcements(Resource):
                         newRequest['Text'] = "1"
                         user_phone = user_query['result'][0]['phone_number']
                         msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+                        # print("Before Twilio Call: ", msg, user_phone)
                         Send_Twilio_SMS(msg, user_phone)
                     # if payload["announcement_type"][j] == "App":
                     #     newRequest['App'] = "1"
