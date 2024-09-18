@@ -575,8 +575,25 @@ class Properties(Resource):
 
             # Add Property Owner Info
             newPropertyOwner = {}
+            if str(payload.get("property_owner_id", "")[:3]) == "100":
+                property_user_id = payload.pop("property_owner_id")
+
+                findOwnerIdQuery = db.execute(""" 
+                            -- MAINTENANCE STATUS BY TENANT
+                            SELECT owner_uid
+                            FROM space.ownerProfileInfo
+                            -- WHERE owner_user_id = "100-000007"
+                            WHERE owner_user_id = \'""" + property_user_id + """\' 
+                            """)
+                # print("findOwnerIdQuery: ", findOwnerIdQuery)
+                property_owner_id  = findOwnerIdQuery['result'][0]['owner_uid']
+            else:
+                property_owner_id = payload.pop("property_owner_id")
+            # print("Property Owner ID: ", property_owner_id)
+                
+
             newPropertyOwner['property_id'] = newPropertyUID
-            newPropertyOwner['property_owner_id'] = payload.pop("property_owner_id")
+            newPropertyOwner['property_owner_id'] = property_owner_id
             newPropertyOwner['po_owner_percent'] = payload.pop("po_owner_percent", 1)
             print("newPropertyOwner Payload: ", newPropertyOwner)
             response['Add Owner'] = db.insert('property_owner', newPropertyOwner)
