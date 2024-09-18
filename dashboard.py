@@ -905,7 +905,7 @@ class Dashboard(Resource):
                 leaseQuery = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l
+                        FROM space.leases
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN (
@@ -925,10 +925,8 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = \'""" + user_id + """\'
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
-                        -- WHERE tenants LIKE "%350-000040%"
-                        
-                        ;
-                        """)
+                        -- WHERE tenants LIKE "%350-000007%"
+                        ; """)
                 response["leaseDetails"] = leaseQuery
                 
 
