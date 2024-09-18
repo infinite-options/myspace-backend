@@ -374,17 +374,20 @@ class Announcements(Resource):
     def post(self, user_id):
         print("In Announcements POST ", user_id)
         payload = request.get_json()
-        print("Post Announcement Payload: ", payload)
+        # print("Post Announcement Payload: ", payload)
         manager_id = user_id
+        # print("Manager ID: ", manager_id)
         if isinstance(payload["announcement_receiver"], list):
             receivers = payload["announcement_receiver"]
         else:
-            receivers = [payload["announcement_receiver"]]        
+            receivers = [payload["announcement_receiver"]]  
+        # print("Receivers: ", receivers)
 
         if isinstance(payload["announcement_properties"], list):
             properties = payload["announcement_properties"]
         else:
-            properties = [payload["announcement_properties"]]        
+            properties = [payload["announcement_properties"]]
+        # print("Properties: ", properties)
 
         receiverPropertiesMap = {}
 
@@ -412,6 +415,7 @@ class Announcements(Resource):
                 newRequest['announcement_date'] = current_datetime
                 # print("Announcement Date: ", newRequest['announcement_date'])
 
+                #  Get Receiver email
                 user_query = None                    
                 if(receivers[i][:3] == '350'):                    
                     user_query = db.execute(""" 
@@ -442,6 +446,7 @@ class Announcements(Resource):
                                         """)                                        
                 # print("Notifications allowed: ", user_query['result'][0]['notifications'], type( user_query['result'][0]['notifications']))
                 for j in range(len(payload["announcement_type"])):
+                    # print("Announcement Type: ", payload["announcement_type"][j])
                     if payload["announcement_type"][j] == "Email":
                         newRequest['Email'] = "1"
                         user_email = user_query['result'][0]['email']
@@ -454,13 +459,18 @@ class Announcements(Resource):
                         user_phone = user_query['result'][0]['phone_number']
                         msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
                         # print("Before Twilio Call: ", msg, user_phone)
-                        Send_Twilio_SMS(msg, user_phone)
-                    # if payload["announcement_type"][j] == "App":
+                        try:
+                            Send_Twilio_SMS(msg, user_phone)
+                            text_msg = "Text Sent"
+                        except:
+                            print("Phone Number may not be valid")
+                            text_msg = "Phone Number may not be valid"
+                        # if payload["announcement_type"][j] == "App":
                     #     newRequest['App'] = "1"
                 newRequest['App'] = "1"                
                 response = db.insert('announcements', newRequest)
 
-        return response                
+        return [response  , text_msg]              
 
     def put(self):
         print("In Announcements PUT")
