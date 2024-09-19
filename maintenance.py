@@ -573,7 +573,7 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
                             SELECT -- *
-                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                                 , sum(bill_amount) AS bill_amount
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
@@ -854,7 +854,7 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
                             SELECT -- *
-                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                                 , sum(bill_amount) AS bill_amount
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id
@@ -933,7 +933,7 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN space.properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
                             SELECT -- *
-                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                                bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                                 , sum(bill_amount) AS bill_amount
                             FROM space.bills
                             GROUP BY bill_maintenance_quote_id

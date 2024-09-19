@@ -1159,7 +1159,7 @@ class CashflowSimplified(Resource):
                         , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining, cf_month, cf_year
                         , property_uid
                         , property_address, property_unit, property_city, property_state, property_zip
-                        , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_docs, bill_maintenance_quote_id, bill_notes
+                        , bill_uid, bill_timestamp, bill_created_by, bill_description, bill_amount, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                     FROM space.pp_details
                     LEFT JOIN space.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
                     WHERE -- receiver_profile_uid = '110-000003'
