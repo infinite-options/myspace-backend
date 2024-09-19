@@ -409,13 +409,13 @@ class LeaseApplication(Resource):
 
             json_string = temp_fees['lease_fees']
             json_object = json.loads(json_string)
-            # print("lease fees json_object", json_object)
+            print("lease fees json_object", json_object)
             for fees in json_object:
                 # print("Fees: ", fees)
                 new_leaseFees = {}
                 new_leaseFees["fees_lease_id"] = key['lease_uid']
 
-                # print("here 1")
+                print("here 1")
                 for item in fields_leaseFees:
                     if item in fees:
                         # print("here 2", item)
