@@ -489,6 +489,8 @@ class LeaseApplication(Resource):
                     
                     newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
                     newRequest['pur_property_id'] = fee['lease_property_id']
+                    newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
+
                     newRequest['purchase_type'] = fee['fee_name']
                     newRequest['pur_cf_type'] = "revenue"
                     # newRequest['pur_amount_due'] = fee['charge']
@@ -639,6 +641,8 @@ class LeaseApplication(Resource):
                                 
                                 newPMRequest['pur_timestamp'] = newRequest['pur_timestamp']
                                 newPMRequest['pur_property_id'] = newRequest['pur_property_id']
+                                newPMRequest['pur_leaseFees_id'] = newRequest['pur_leaseFees_id']
+
                                 newPMRequest['purchase_status'] = newRequest['purchase_status']
                                 newPMRequest['pur_status_value'] = newRequest['pur_status_value']
                                 newPMRequest['purchase_date'] = newRequest['purchase_date']

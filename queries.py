@@ -2,6 +2,33 @@
 from data_pm import connect, uploadImage, s3
 
 
+
+def UnpaidRents():
+    print("In Unpaid Rents Query FUNCTION CALL")
+
+    try:
+        # Run query to find rents of ACTIVE leases
+        with connect() as db:    
+            response = db.execute("""
+                    -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
+                    SELECT *
+						, DATE_FORMAT(DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), INTERVAL pur_late_by DAY), '%m-%d-%Y') AS late_by_date
+					FROM space.purchases
+					LEFT JOIN space.contracts ON contract_property_id = pur_property_id
+					LEFT JOIN space.property_owner ON property_id = pur_property_id
+					WHERE purchase_type = "RENT" AND
+						  contract_status = "ACTIVE" AND
+                          DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), INTERVAL pur_late_by DAY) < CURDATE() AND
+						  (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
+						  SUBSTRING(pur_payer, 1, 3) = '350';
+                    """)
+            # print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in UnpaidRents Query ")
+
+
 def NextDueDate():
     print("In NextDueDate Query FUNCTION CALL")
 
