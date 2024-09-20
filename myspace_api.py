@@ -18,7 +18,7 @@ from payments import Payments, PaymentOwner, NewPayments, PaymentStatus, Payment
 from properties import Properties
 from transactions import AllTransactions
 from cashflow import CashflowByOwner
-from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised
+from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised, PaymentVerification
 from employees import Employee, EmployeeVerification
 from profiles import Profile, BusinessProfile, BusinessProfileList
 from documents import OwnerDocuments, TenantDocuments
@@ -1789,6 +1789,8 @@ api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
 # api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:type>')
 # api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:month>/<string:year>')
 api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>')
+api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>')
+
 
 
 api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
