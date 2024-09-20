@@ -1014,7 +1014,8 @@ class Dashboard(Resource):
                     maintenance = db.execute("""
                             -- TENENT MAINTENANCE TICKETS
                             SELECT -- *,
-                                lt_tenant_id -- , maintenance_request_status
+                                lt_tenant_id
+                                , lease_property_id -- , maintenance_request_status
                                 , CASE
                                     WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
                                     WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
@@ -1029,9 +1030,9 @@ class Dashboard(Resource):
                                 ) AS l ON lease_property_id = maintenance_property_id
                             LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
                             LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
-                            -- WHERE lt_tenant_id = '350-000005'
+                            -- WHERE lt_tenant_id = '350-000007'
                             WHERE lt_tenant_id = \'""" + user_id + """\'
-                            GROUP BY maintenance_request_status;
+                            GROUP BY maintenance_request_status, lease_property_id;
                             """)
                     response["maintenanceRequestsNew"] = maintenance
 
