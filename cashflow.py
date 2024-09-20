@@ -1377,6 +1377,8 @@ class CashflowRevised(Resource):
 
         with connect() as db:
 
+            cashflow = CashflowQuery(user_id)
+
             if user_id[:3] == '110':
                 print("In Owner Cashflow")
             
@@ -1523,7 +1525,7 @@ class CashflowRevised(Resource):
 
 class PaymentVerification(Resource):
     def get(self, user_id):
-        print("In Payment Verification")
+        print("In Payment Verification GET")
 
         with connect() as db:
             print("in connect loop")
@@ -1541,3 +1543,160 @@ class PaymentVerification(Resource):
                     WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
                     """)
         return cashflow
+    
+
+    # def put(self):
+    #     print("In Payment Verification PUT")
+
+    #     with connect() as db:
+    #         print("in connect loop")
+    #         cashflow = db.execute("""                            
+    #                 -- VERIFY PAYMENTS FROM TENANTS TO PM
+    #                 SELECT purchases.*, payments.*, cp.total_paid
+    #                 FROM space.payments
+    #                 LEFT JOIN (
+    #                     SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
+    #                     FROM space.payments
+    #                     GROUP BY payment_intent, payment_date
+    #                     ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
+    #                 LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
+    #                 -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
+    #                 WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
+    #                 """)
+    #     return cashflow
+    
+
+class CashflowTransactions(Resource):
+    def get(self, user_id):
+        print("In Cashflow Transactions")
+
+        response = {}
+        property = {}
+        pur_group = {}
+
+
+        response["Cashflow Transactions"] = CashflowQuery(user_id)
+
+        if user_id[:3] == '600':
+            print("In PM Cashflow")
+            with connect() as db:
+
+                property = db.execute("""                            
+                        -- PROPERTY MANAGEMENT REPORT 1
+                        -- BY PROPERTY BY MONTH BY CF_TYPE
+                        SELECT -- *,
+                            -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description
+                            pur_receiver, pur_initiator, pur_payer , pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
+                            , cf_month, cf_month_num, cf_year, purchase_type
+                            -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                            -- , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                            -- , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                            -- , property_uid, property_available_to_rent, property_active_date
+                            , property_address, property_unit, property_city, property_state, property_zip
+                            -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image
+                            , property_id, property_owner_id, po_owner_percent
+                            -- , owner_uid, owner_user_id
+                            , owner_first_name, owner_last_name, owner_phone_number, owner_email
+                            -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url
+                            -- , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                            -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                            -- , lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees
+                            -- , lt_lease_id, lt_tenant_id, lt_responsibility
+                            -- , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                            -- , IF(pur_receiver = '600-000003', "revenue", "expense") AS pur_cf_type
+                            , IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense") AS pur_cf_type
+                            , SUM(pur_amount_due) AS pur_amount_due_total
+                            , SUM(total_paid) AS total_paid_total
+                            , JSON_ARRAYAGG(
+                                JSON_OBJECT(
+                                    'purchase_uid', purchase_uid,
+                                    'pur_receiver', pur_receiver,
+                                    'pur_payer', pur_payer,
+                                    'purchase_status', purchase_status,
+                                    'purchase_type', purchase_type,
+                                    'pur_notes', pur_notes,
+                                    'pur_description', pur_description,
+                                    'pur_amount_due',  pur_amount_due,
+                                    'total_paid', total_paid,
+                                    'cf_month', cf_month,
+                                    'cf_month_num', cf_month_num,
+                                    'cf_year', cf_year,
+                                    -- 'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
+                                    'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
+                                )
+                            ) AS transactions
+                        FROM space.pp_details
+                        -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                        WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\') 
+                            -- AND cf_month = "July"
+                            -- AND pur_property_id = "200-000002"
+                            -- AND property_address = '5400 E. Williams Blvd'
+                        GROUP BY purchase_type, pur_cf_type, pur_receiver, cf_month, cf_year, pur_property_id
+                        """)
+                
+                response["Profit"] = property
+                
+                print("In between")
+
+                pur_group = db.execute("""                            
+                        SELECT -- *,
+                        -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_notes, pur_description, 
+                        -- pur_receiver, pur_initiator, pur_payer, 
+                        pur_group -- , pay_purchase_id, latest_date, total_paid, payment_status, amt_remaining
+                        -- CASE 
+                        --     WHEN COUNT(*) = SUM(CASE WHEN purchase_status = 'UNPAID' THEN 1 ELSE 0 END) THEN 'RED'
+                        --     WHEN COUNT(*) = 0 THEN 'GREEN'
+                        --     ELSE 'YELLOW'
+                        -- END AS status_check
+                        , cf_month, cf_month_num, cf_year
+                        -- , receiver_user_id, receiver_profile_uid, receiver_user_type, receiver_user_name, receiver_user_phone, receiver_user_email
+                        -- , initiator_user_id, initiator_profile_uid, initiator_user_type, initiator_user_name, initiator_user_phone, initiator_user_email
+                        -- , payer_user_id, payer_profile_uid, payer_user_type, payer_user_name, payer_user_phone, payer_user_email
+                        -- , property_uid, property_available_to_rent, property_active_date
+                        , property_address, property_unit, property_city, property_state, property_zip
+                        -- , property_longitude, property_latitude, property_type, property_num_beds, property_num_baths, property_value, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent, property_images, property_taxes, property_mortgages, property_insurance, property_featured, property_description, property_notes, property_amenities_unit, property_amenities_community, property_amenities_nearby, property_favorite_image
+                        , property_id, property_owner_id, po_owner_percent
+                        -- , owner_uid, owner_user_id
+                        , owner_first_name, owner_last_name, owner_phone_number, owner_email
+                        -- , owner_ein_number, owner_ssn, owner_address, owner_unit, owner_city, owner_state, owner_zip, owner_photo_url
+                        -- , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
+                        -- , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_documents, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                        -- , lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, lease_docuSign, lease_actual_rent, leaseFees_uid, fees_lease_id, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees
+                        -- , lt_lease_id, lt_tenant_id, lt_responsibility
+                        -- , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
+                        -- , IF(pur_receiver = '600-000003', "revenue", "expense") AS pur_cf_type
+                        , IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense") AS pur_cf_type
+                        , SUM(pur_amount_due) AS pur_amount_due_total_original
+                        , SUM(if(LEFT(pur_payer,3) = '110', - pur_amount_due, pur_amount_due)) AS pur_amount_due_total
+                        , SUM(total_paid) AS total_paid_total_original
+                        , SUM(if(LEFT(pur_payer,3) = '110', - total_paid, total_paid)) AS total_paid_total 
+                        , JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'purchase_uid', purchase_uid,
+                                'pur_receiver', pur_receiver,
+                                'pur_payer', pur_payer,
+                                'purchase_status', purchase_status,
+                                'purchase_type', purchase_type,
+                                'pur_notes', pur_notes,
+                                'pur_description', pur_description,
+                                'pur_amount_due',  pur_amount_due,
+                                'total_paid', total_paid,
+                                'cf_month', cf_month,
+                                'cf_month_num', cf_month_num,
+                                'cf_year', cf_year,
+                                -- 'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
+                                'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
+                            )
+                        ) AS transactions
+                    FROM space.pp_details
+                    -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003') 
+                    WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\') 
+                        -- AND cf_month = "January"
+                        -- AND pur_property_id = "200-000002"
+                    GROUP BY pur_group
+                        """)
+                
+                response["Transactions"] = pur_group
+
+        return response
+

@@ -866,8 +866,6 @@ class PaymentMethod(Resource):
 
         return response
 
-
-
     def get(self, user_id):
         print('in PaymentMethod GET')
         with connect() as db:
