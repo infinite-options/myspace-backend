@@ -66,7 +66,7 @@ def CashflowQuery(user_id):
                         FROM space.pp_details
                         -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003') -- AND cf_month = 'JANUARY' AND cf_year = '2024'
                         -- WHERE (pur_receiver = '350-000003' OR pur_payer = '350-000003') -- AND cf_month = 'JANUARY' AND cf_year = '2024'
-                        -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                        -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003') -- AND cf_month = 'SEPTEMBER' AND cf_year = '2024'
                         WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
                         GROUP BY cf_month, cf_year, pur_cf_type, purchase_type, property_uid 
                         ORDER BY cf_month_num, property_uid
