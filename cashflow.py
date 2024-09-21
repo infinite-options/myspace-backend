@@ -1377,8 +1377,6 @@ class CashflowRevised(Resource):
 
         with connect() as db:
 
-            cashflow = CashflowQuery(user_id)
-
             if user_id[:3] == '110':
                 print("In Owner Cashflow")
             
@@ -1390,7 +1388,7 @@ class CashflowRevised(Resource):
             elif user_id[:3] == '350':
                 print("In Tenant Cashflow")
             
-                print("OWNER Cashflow by Year, by Month, by CF Type, by Purchase Category")
+                print("Tenant Cashflow by Year, by Month, by CF Type, by Purchase Category")
 
                 cashflow = CashflowQuery(user_id)
                 
@@ -1530,8 +1528,7 @@ class PaymentVerification(Resource):
         with connect() as db:
             print("in connect loop")
             cashflow = db.execute("""                            
-                    -- VERIFY PAYMENTS FROM TENANTS TO PM
-                    SELECT purchases.*, payments.*, cp.total_paid
+                    SELECT payments.*, cp.total_paid, purchases.*
                     FROM space.payments
                     LEFT JOIN (
                         SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
@@ -1540,7 +1537,7 @@ class PaymentVerification(Resource):
                         ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
                     LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
                     -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
-                    WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
+                    WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
                     """)
         return cashflow
     
