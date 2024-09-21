@@ -1545,25 +1545,30 @@ class PaymentVerification(Resource):
         return cashflow
     
 
-    # def put(self):
-    #     print("In Payment Verification PUT")
+    def put(self):
+        print("In Payment Verification PUT")
+        response = {}
 
-    #     with connect() as db:
-    #         print("in connect loop")
-    #         cashflow = db.execute("""                            
-    #                 -- VERIFY PAYMENTS FROM TENANTS TO PM
-    #                 SELECT purchases.*, payments.*, cp.total_paid
-    #                 FROM space.payments
-    #                 LEFT JOIN (
-    #                     SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
-    #                     FROM space.payments
-    #                     GROUP BY payment_intent, payment_date
-    #                     ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
-    #                 LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-    #                 -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
-    #                 WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
-    #                 """)
-    #     return cashflow
+        payload = request.form.to_dict()
+        print("Profile Update Payload: ", payload)
+
+         # Verify uid has been included in the data
+        if payload.get('payment_uid') in {None, '', 'null'}:
+            print("No payment_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        
+        # payment_uid = payload.get('payment_uid')
+        key = {'payment_uid': payload.pop('payment_uid')}
+        print("Payment Key: ", key) 
+
+         # Write to Database
+        with connect() as db:
+            print("Checking Inputs: ", key, payload)
+            response['payment_info'] = db.update('payments', key, payload)
+            print("Response:" , response)
+            
+        return response
+
     
 
 class CashflowTransactions(Resource):
