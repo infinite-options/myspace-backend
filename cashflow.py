@@ -1548,6 +1548,7 @@ class PaymentVerification(Resource):
     def put(self):
         print("In Payment Verification PUT")
         response = {}
+        update_counter = 0
 
         payload = request.form.to_dict()
         print("Profile Update Payload: ", payload)
@@ -1557,15 +1558,24 @@ class PaymentVerification(Resource):
             print("No payment_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
-        # payment_uid = payload.get('payment_uid')
-        key = {'payment_uid': payload.pop('payment_uid')}
-        print("Payment Key: ", key) 
+        payment_uids = json.loads(payload.pop('payment_uid'))
+        # payment_uids = payload.pop('payment_uid')
+        print("Payment UIDs received: ", payment_uids, type(payment_uids))
+        
+        for payment_uid in payment_uids:
+        
+            # payment_uid = payload.get('payment_uid')
+            key = {'payment_uid': payment_uid}
+            print("Payment Key: ", key) 
 
-         # Write to Database
-        with connect() as db:
-            print("Checking Inputs: ", key, payload)
-            response['payment_info'] = db.update('payments', key, payload)
-            print("Response:" , response)
+            # Write to Database
+            with connect() as db:
+                print("Checking Inputs: ", key, payload)
+                response['payment_info'] = db.update('payments', key, payload)
+                update_counter = update_counter + 1
+                print("Response:" , response)
+        
+        response['updates'] = update_counter
             
         return response
 
