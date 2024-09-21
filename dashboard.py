@@ -980,12 +980,11 @@ class Dashboard(Resource):
                 moneyPaid = db.execute("""
                     -- MONEY PAID
                     SELECT * FROM space.pp_status
-                    WHERE payment_status != 'UNPAID' 
-                        -- AND pur_payer = '600-000003' 
-                        AND pur_payer = \'""" + user_id + """\'
+                    -- WHERE pur_payer = '350-000007';
+                    WHERE pur_payer = \'""" + user_id + """\'
                     """)
                 # print("Query: ", paidStatus)
-                response["MoneyPaid"] = moneyPaid
+                response["tenantPayments"] = moneyPaid
 
                 if len(property['result']) > 0 and property['result'][0]['property_uid']:
                     announcements = db.execute("""
@@ -1058,7 +1057,7 @@ class Dashboard(Resource):
                             """)
 
                     # print("Query: ", maintenanceQuery)
-                    response["MaintenanceStatus"] = maintenanceQuery
+                    response["maintenanceStatus"] = maintenanceQuery
 
 
 
