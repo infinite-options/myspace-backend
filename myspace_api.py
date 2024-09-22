@@ -832,8 +832,8 @@ class LateFees_CLASS(Resource):
                                     newRequest['pur_receiver'] = manager
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
-                                    newRequest['purchase_type'] = "Management - Late Fees"
-                                    newRequest['pur_notes'] = fee['fee_name']
+                                    newRequest['purchase_type'] = "Management"
+                                    newRequest['pur_notes'] = "Late Fee"
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)
@@ -1115,8 +1115,8 @@ def LateFees_CRON(Resource):
                                     newRequest['pur_receiver'] = manager
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
-                                    newRequest['purchase_type'] = "Management - Late Fees"
-                                    newRequest['pur_notes'] = fee['fee_name']
+                                    newRequest['purchase_type'] = "Management"
+                                    newRequest['pur_notes'] = "Late Fee"
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)
@@ -1796,7 +1796,7 @@ api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
 # api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:month>/<string:year>')
 api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>')
 api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>', '/paymentVerification')
-api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>')
+api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<string:filter>')
 
 
 
