@@ -500,7 +500,7 @@ class LeaseApplication(Resource):
                     newRequest['pur_property_id'] = fee['lease_property_id']
                     newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
 
-                    newRequest['purchase_type'] = fee['fee_name']
+                    newRequest['purchase_type'] = fee['fee_type']
                     newRequest['pur_cf_type'] = "revenue"
                     # newRequest['pur_amount_due'] = fee['charge']
                     newRequest['purchase_status'] = "UNPAID"
