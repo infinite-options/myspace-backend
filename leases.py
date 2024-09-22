@@ -399,30 +399,43 @@ class LeaseApplication(Resource):
         
         # --------------- PROCESS DOCUMENTS ------------------
 
-        # POST TO LEASE FEES.  Need to post Lease Fees into Lease Fees Table
-        if "lease_fees" in payload:
-            # print("lease_fees in data", payload['lease_fees'])
-            fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
-                                        "perDay_late_fee", "late_fee"]
-            temp_fees = {'lease_fees': payload.pop('lease_fees')}
-            # print("Temp: ", temp_fees)
+        with connect() as db: 
 
-            json_string = temp_fees['lease_fees']
-            json_object = json.loads(json_string)
-            print("lease fees json_object", json_object)
-            for fees in json_object:
-                # print("Fees: ", fees)
-                new_leaseFees = {}
-                new_leaseFees["fees_lease_id"] = key['lease_uid']
+            # DEL FEES
+            if "delete_fees" in payload:
+                json_object = json.loads(payload.pop('delete_fees'))
+                print("delete lease fees json_object", json_object)
+                for delete_uid in json_object:
+                    print("Fee to delete: ", delete_uid)
 
-                print("here 1")
-                for item in fields_leaseFees:
-                    if item in fees:
-                        # print("here 2", item)
-                        new_leaseFees[item] = fees[item]
-                # print("Lease Fee to input: ", new_leaseFees)
+                    response["delete_fees"] = db.delete(""" 
+                            DELETE FROM leaseFees
+                            WHERE leaseFees_uid = \'""" + delete_uid + """\'
+                            """)
 
-                with connect() as db: 
+            # POST TO LEASE FEES.  Need to post Lease Fees into Lease Fees Table
+            if "lease_fees" in payload:
+                print("lease_fees in data", payload['lease_fees'])
+                fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
+                                            "perDay_late_fee", "late_fee"]
+                temp_fees = {'lease_fees': payload.pop('lease_fees')}
+                print("Temp: ", temp_fees)
+
+                json_string = temp_fees['lease_fees']
+                json_object = json.loads(json_string)
+                # print("lease fees json_object", json_object)
+                for fees in json_object:
+                    # print("Fees: ", fees)
+                    new_leaseFees = {}
+                    new_leaseFees["fees_lease_id"] = key['lease_uid']
+
+                    print("here 1")
+                    for item in fields_leaseFees:
+                        if item in fees:
+                            # print("here 2", item)
+                            new_leaseFees[item] = fees[item]
+                    # print("Lease Fee to input: ", new_leaseFees)
+ 
                     # FOR FEE UPDATE
                     if 'leaseFees_uid' in fees:  
                         # print("In IF Statment ", fees['leaseFees_uid']) 
@@ -438,22 +451,18 @@ class LeaseApplication(Resource):
                         response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
 
-
-        with connect() as db:
             response['lease_docs'] = db.update('leases', key, payload)
             print("Response:" , response)
        
 
-        # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
-        if payload.get('lease_status') == 'ACTIVE':
-            print("\nLease Status Changed to: ", payload.get('lease_status'), lease_uid)
+            # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
+            if payload.get('lease_status') == 'ACTIVE':
+                print("\nLease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
 
-        # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
-        # CONSIDER ADDING FULL FIRST MONTHS RENT AND NEXT MONTHS PARTIAL RENT IF THERE IS A WAY TO AVOID DUPLICATE CHARGES
+            # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
+            # CONSIDER ADDING FULL FIRST MONTHS RENT AND NEXT MONTHS PARTIAL RENT IF THERE IS A WAY TO AVOID DUPLICATE CHARGES
 
-            
-            with connect() as db:
 
                 # READ THE LEASE FEES
                 # INSERT EACH LEASE FEE INTO PURCHASES TABLE
