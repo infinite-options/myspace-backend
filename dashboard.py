@@ -977,14 +977,17 @@ class Dashboard(Resource):
 
 
                 # MONIES PAID
-                moneyPaid = db.execute("""
-                    -- MONEY PAID
-                    SELECT * FROM space.pp_status
-                    -- WHERE pur_payer = '350-000007';
-                    WHERE pur_payer = \'""" + user_id + """\'
+                transactions = db.execute("""
+                     -- All Cashflow Transactions
+                        SELECT *
+                        FROM space.pp_status
+                        -- WHERE pur_receiver = '600-000003'  OR pur_payer = '600-000003'
+                        WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
+                            -- AND cf_month = DATE_FORMAT(NOW(), '%M')
+                            -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
                     """)
                 # print("Query: ", paidStatus)
-                response["tenantPayments"] = moneyPaid
+                response["tenantTransactions"] = transactions
 
                 if len(property['result']) > 0 and property['result'][0]['property_uid']:
                     announcements = db.execute("""

@@ -1921,7 +1921,7 @@ class CashflowTransactions(Resource):
             if filter == 'all':
                 print("In PM Cashflow All")
             
-                response["revenue"] = db.execute("""                          
+                response = db.execute("""                          
                         -- Cashflow by PURCHASE TYPE and PROPERTY
                         SELECT *
                         FROM space.pp_status
@@ -1930,8 +1930,6 @@ class CashflowTransactions(Resource):
                             -- AND cf_month = DATE_FORMAT(NOW(), '%M')
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
                     """)
-
-
 
         return response
 
