@@ -470,7 +470,7 @@ class LeaseApplication(Resource):
                         WHERE fees_lease_id = \'""" + lease_uid + """\'
                             AND contract_status = 'ACTIVE';
                         """)
-                # print("Lease Fees: ", fees) 
+                print("Lease Fees: ", fees) 
 
 
                 # PROCESS EACH LEASE FEE
