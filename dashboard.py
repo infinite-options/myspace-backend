@@ -10,6 +10,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
+from queries import CashflowQuery, DashboardCashflowQuery
+
 class Dashboard(Resource):
     def get(self, user_id):
         print('in Dashboard ', user_id)
@@ -137,6 +139,12 @@ class Dashboard(Resource):
                 with connect() as db:
                     print("in Manager dashboard")
                     print("in connect loop")
+
+
+                    # CASHFLOW
+                    # print("Query: ", cashFlow)
+                    response["CashflowStatus"] = DashboardCashflowQuery(user_id)
+
 
                     # PROFITABILITY
                     response["Profitability"] = {}
@@ -279,37 +287,37 @@ class Dashboard(Resource):
                     # HAPPINESS MATRIX - VACANCY
 
                     vacancy = db.execute(""" 
-                        SELECT 
-                            property_owner_id as owner_uid,
-                            COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
-                            COUNT(*) AS total_properties,
-                            cast(COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END)*-100/COUNT(*) as decimal) as vacancy_perc
-                        FROM (
-                            SELECT *,
-                                CASE
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
-                                    ELSE 'VACANT'
-                                END AS rent_status
-                            FROM (
-                                SELECT *
-                                FROM space.property_owner
-                                LEFT JOIN space.properties ON property_uid = property_id
-                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
-                                LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
-                                WHERE contract_business_id = \'""" + user_id + """\'
-                            ) AS o
-                            LEFT JOIN (
-                                SELECT *
-                                FROM space.pp_status 
-                                WHERE (purchase_type = 'RENT' OR ISNULL(purchase_type))
-                                    AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
-                                    AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
-                            ) as r
-                            ON pur_property_id = property_id
-                            GROUP BY property_id
-                        ) AS rs
-                        GROUP BY property_owner_id;
+                                SELECT 
+                                    property_owner_id as owner_uid,
+                                    COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END) as vacancy_num, 
+                                    COUNT(*) AS total_properties,
+                                    cast(COUNT(CASE WHEN rent_status = 'VACANT' THEN 1 END)*-100/COUNT(*) as decimal) as vacancy_perc
+                                FROM (
+                                    SELECT *,
+                                        CASE
+                                            WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
+                                            WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                            ELSE 'VACANT'
+                                        END AS rent_status
+                                    FROM (
+                                        SELECT *
+                                        FROM space.property_owner
+                                        LEFT JOIN space.properties ON property_uid = property_id
+                                        LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE') AS l ON property_uid = lease_property_id
+                                        LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_uid
+                                        WHERE contract_business_id = \'""" + user_id + """\'
+                                    ) AS o
+                                    LEFT JOIN (
+                                        SELECT *
+                                        FROM space.pp_status 
+                                        WHERE (purchase_type = 'RENT' OR ISNULL(purchase_type))
+                                            AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
+                                            AND (cf_year = DATE_FORMAT(NOW(), '%Y') OR ISNULL(cf_year))
+                                    ) as r
+                                    ON pur_property_id = property_id
+                                    GROUP BY property_id
+                                ) AS rs
+                                GROUP BY property_owner_id;
                                 """)
 
                     response["HappinessMatrix"]["vacancy"] = vacancy
@@ -879,22 +887,22 @@ class Dashboard(Resource):
                 response["RentStatus"] = rentQuery
 
 
-                cashFlow = db.execute(""" 
-                            -- CASHFLOW FOR A PARTICULAR OWNER
-                            SELECT pur_receiver, pur_payer
-                                , SUM(pur_amount_due) AS pur_amount_due
-                                , SUM(total_paid) AS total_paid
-                                , cf_month, cf_month_num, cf_year
-                                , pur_cf_type
-                            FROM space.pp_details
-                            -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
-                            WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
-                            GROUP BY cf_month, cf_year, pur_cf_type
-                            ORDER BY cf_month_num, property_uid
-                            """)
+                # cashFlow = db.execute(""" 
+                #             -- CASHFLOW FOR A PARTICULAR OWNER
+                #             SELECT pur_receiver, pur_payer
+                #                 , SUM(pur_amount_due) AS pur_amount_due
+                #                 , SUM(total_paid) AS total_paid
+                #                 , cf_month, cf_month_num, cf_year
+                #                 , pur_cf_type
+                #             FROM space.pp_details
+                #             -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
+                #             WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+                #             GROUP BY cf_month, cf_year, pur_cf_type
+                #             ORDER BY cf_month_num, property_uid
+                #             """)
 
                 # print("Query: ", cashFlow)
-                response["CashflowStatus"] = cashFlow
+                response["CashflowStatus"] = DashboardCashflowQuery(user_id)
 
                 return response
 

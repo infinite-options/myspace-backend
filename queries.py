@@ -1,13 +1,35 @@
 # from flask import request
 from data_pm import connect, uploadImage, s3
 
-# def TestFunction(user_id):
-#     print("In TestFunction Query FUNCTION CALL", user_id)
-
-#     return
 
 
-# def Cashflow():
+def DashboardCashflowQuery(user_id):
+    print("In DashboardCashflowQuery FUNCTION CALL")
+
+    try:
+        # Run query to find rents of ACTIVE leases
+        with connect() as db:    
+            response = db.execute("""
+                    -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
+                    SELECT pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS pur_amount_due
+                        , SUM(total_paid) AS total_paid
+                        , cf_month, cf_month_num, cf_year
+                        , pur_cf_type
+                    FROM space.pp_details
+                    -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
+                    -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                    WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+                    GROUP BY cf_month, cf_year, pur_cf_type
+                    ORDER BY cf_month_num, property_uid
+                    """)
+            # print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in UnpaidRents Query ")
+
+
 def CashflowQuery(user_id):
     print("In Cashflow Query FUNCTION CALL", user_id)
 
@@ -79,8 +101,6 @@ def CashflowQuery(user_id):
         return response
     except:
         print("Error in Cashflow Query ")
-
-
 
 
 def UnpaidRents():
