@@ -35,7 +35,8 @@ class Dashboard(Resource):
             if business_type == "MAINTENANCE":
                 with connect() as db:
                     print("in maintenance dashboard")
-                    currentActivity = db.execute(""" 
+
+                    response["currentActivities"] = db.execute(""" 
                             -- CURRENT ACTIVITY FOR GRAPH AND TABLE
                             SELECT -- *,
                                 quote_business_id
@@ -81,10 +82,8 @@ class Dashboard(Resource):
                             ORDER BY maintenance_status;
                             """)
 
-                    # print("Query: ", maintenanceQuery)
-                    response["CurrentActivities"] = currentActivity
 
-                    workOrders = db.execute(""" 
+                    response["workOrders"] = db.execute(""" 
                             -- WORK ORDERS
                             SELECT *
                             FROM (
@@ -102,11 +101,8 @@ class Dashboard(Resource):
                             ORDER BY maintenance_status;
                             """)
 
-                    # print("Query: ", workOrders)
-                    response["WorkOrders"] = workOrders
 
-
-                    currentQuotes = db.execute(""" 
+                    response["currentQuotes"] = db.execute(""" 
                             -- CURRENT QUOTES
                             SELECT m_details.*
                                 , property_uid
@@ -132,8 +128,6 @@ class Dashboard(Resource):
                                 AND quote_status IN ("ACCEPTED", "SCHEDULE", "SCHEDULED" , "RESCHEDULE", "FINISHED", "COMPLETED");
                             """)
 
-                    # print("Query: ", workOrders)
-                    response["CurrentQuotes"] = currentQuotes
 
                     return response
             elif business_type == "MANAGEMENT":
