@@ -130,6 +130,7 @@ class Dashboard(Resource):
 
 
                     return response
+                
             elif business_type == "MANAGEMENT":
                 with connect() as db:
                     print("in Manager dashboard")
@@ -178,8 +179,8 @@ class Dashboard(Resource):
 
 
                     # HAPPINESS MATRIX - VACANCY AND CASHFLOW
-                    response["HappinessMatrix"] = {}
-                    matrix = db.execute("""
+                    # response["HappinessMatrix"] = {}
+                    response["HappinessMatrix"]["matrix_data"] = db.execute("""
                                 -- CASHFLOW ENDPOINT REWRITE TO INCLUDE BOTH VACANCY AND CASHFLOW
                                 SELECT * 
                                     FROM (
@@ -266,10 +267,6 @@ class Dashboard(Resource):
                                     GROUP BY property_owner_id
                                     ) AS v on cf.owner_uid = v.property_owner_id;
         	                    """)
-
-                    response["HappinessMatrix"]["matrix_data"] = matrix
-
-                    # print("Complete Profitability")
 
                     
                     # HAPPINESS MATRIX - VACANCY
@@ -723,6 +720,7 @@ class Dashboard(Resource):
 
 
                     return response
+            
             else:
                 print("No business_type Match")
                 return("Business Type is not a valid option")
