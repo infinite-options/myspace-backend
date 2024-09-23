@@ -766,13 +766,13 @@ class Dashboard(Resource):
 
 
                 response["announcements_received"] = db.execute("""
-                        -- TENENT ANNOUNCEMENTS
+                        -- ANNOUNCEMENTS RECEIVED
                         SELECT * FROM announcements
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
                         """)
                 
                 response["announcements_sent"] = db.execute("""
-                        -- TENENT ANNOUNCEMENTS
+                        -- ANNOUNCEMENTS SENT
                         SELECT * FROM announcements
                         WHERE announcement_sender LIKE '%""" + user_id + """%'
                         """)
