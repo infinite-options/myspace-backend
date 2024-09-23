@@ -16,6 +16,7 @@ class Dashboard(Resource):
     def get(self, user_id):
         print('in Dashboard ', user_id)
         response = {}
+
         if user_id.startswith("600"):
             business_type = ""
             print('in Get Business Contacts')
@@ -764,12 +765,17 @@ class Dashboard(Resource):
                 response["CashflowStatus"] = DashboardCashflowQuery(user_id)
 
 
-                response["announcements"] = db.execute("""
+                response["announcements_received"] = db.execute("""
                         -- TENENT ANNOUNCEMENTS
                         SELECT * FROM announcements
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
-                        -- AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
-                        -- AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
+                        """)
+                
+                response["announcements_sent"] = db.execute("""
+                        -- TENENT ANNOUNCEMENTS
+                        SELECT * FROM announcements
+                        WHERE announcement_sender LIKE '%""" + user_id + """%'
+                        """)
 
 
                 response["MaintenanceStatus"] = db.execute(""" 
