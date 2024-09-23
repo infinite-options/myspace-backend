@@ -760,7 +760,19 @@ class Dashboard(Resource):
         elif user_id.startswith("110"):
             with connect() as db:
                 # print("in owner dashboard")
-                maintenanceQuery = db.execute(""" 
+
+                response["CashflowStatus"] = DashboardCashflowQuery(user_id)
+
+
+                response["announcements"] = db.execute("""
+                        -- TENENT ANNOUNCEMENTS
+                        SELECT * FROM announcements
+                        WHERE announcement_receiver LIKE '%""" + user_id + """%'
+                        -- AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
+                        -- AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
+
+
+                response["MaintenanceStatus"] = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER
                         SELECT -- * 
                             property_owner_id
@@ -776,10 +788,8 @@ class Dashboard(Resource):
                         GROUP BY maintenance_request_status;
                         """)
 
-                # print("Query: ", maintenanceQuery)
-                response["MaintenanceStatus"] = maintenanceQuery
 
-                leaseQuery = db.execute(""" 
+                response["LeaseStatus"] = db.execute(""" 
                             -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
                             SELECT lease_end_month
                                 , lease_end_num
@@ -818,10 +828,8 @@ class Dashboard(Resource):
                             ORDER BY lease_end_num ASC
                         """)
 
-                # print("Query: ", leaseQuery)
-                response["LeaseStatus"] = leaseQuery
 
-                rentQuery = db.execute(""" 
+                response["RentStatus"] = db.execute(""" 
                             -- PROPERTY RENT STATUS FOR DASHBOARD
                             SELECT 
                                 rent_status
@@ -883,32 +891,30 @@ class Dashboard(Resource):
                             GROUP BY rent_status;
                         """)
 
-                # print("Query: ", rentQuery)
-                response["RentStatus"] = rentQuery
-
-
-                # cashFlow = db.execute(""" 
-                #             -- CASHFLOW FOR A PARTICULAR OWNER
-                #             SELECT pur_receiver, pur_payer
-                #                 , SUM(pur_amount_due) AS pur_amount_due
-                #                 , SUM(total_paid) AS total_paid
-                #                 , cf_month, cf_month_num, cf_year
-                #                 , pur_cf_type
-                #             FROM space.pp_details
-                #             -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
-                #             WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
-                #             GROUP BY cf_month, cf_year, pur_cf_type
-                #             ORDER BY cf_month_num, property_uid
-                #             """)
-
-                # print("Query: ", cashFlow)
-                response["CashflowStatus"] = DashboardCashflowQuery(user_id)
-
                 return response
 
         elif user_id.startswith("350"):
             with connect() as db:
-                leaseQuery = db.execute(""" 
+
+                response["announcements"] = db.execute("""
+                        -- TENENT ANNOUNCEMENTS
+                        SELECT * FROM announcements
+                        WHERE announcement_receiver LIKE '%""" + user_id + """%'
+                    """)
+
+
+                response["tenantTransactions"] = db.execute("""
+                        -- All Cashflow Transactions
+                        SELECT *
+                        FROM space.pp_status
+                        -- WHERE pur_receiver = '350-000003'  OR pur_payer = '350-000003'
+                        WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
+                            -- AND cf_month = DATE_FORMAT(NOW(), '%M')
+                            -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
+                    """)
+
+
+                response["leaseDetails"] = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
                         FROM space.leases
@@ -933,10 +939,9 @@ class Dashboard(Resource):
                         WHERE tenants LIKE '%""" + user_id + """%'
                         -- WHERE tenants LIKE "%350-000007%"
                         ; """)
-                response["leaseDetails"] = leaseQuery
-                
 
-                property = db.execute("""
+
+                response["property"] = db.execute("""
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
                         SELECT -- *
@@ -968,107 +973,73 @@ class Dashboard(Resource):
                         GROUP BY lease_uid
                         ORDER BY lease_status;
                         """)
-                response["property"] = property
-
-                # print(property['result'][0]['property_uid'])
-                data = property['result']
-                # print(data)
-                
-
-               # Extract property_uid values
-                property_uids = [item['property_uid'] for item in data]
-
-                # Print the property_uids in parentheses
-                # print("(" + ", ".join(property_uids) + ")")
 
 
 
 
-                # MONIES PAID
-                transactions = db.execute("""
-                     -- All Cashflow Transactions
-                        SELECT *
-                        FROM space.pp_status
-                        -- WHERE pur_receiver = '600-000003'  OR pur_payer = '600-000003'
-                        WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
-                            -- AND cf_month = DATE_FORMAT(NOW(), '%M')
-                            -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
-                    """)
-                # print("Query: ", paidStatus)
-                response["tenantTransactions"] = transactions
-
-                if len(property['result']) > 0 and property['result'][0]['property_uid']:
-                    announcements = db.execute("""
-                        -- TENENT ANNOUNCEMENTS
-                        SELECT * FROM announcements
-                        WHERE announcement_receiver LIKE '%""" + user_id + """%'
-                        -- AND (announcement_mode = 'Tenants' OR announcement_mode = 'Properties')
-                        -- AND announcement_properties LIKE  '%""" + property['result'][0]['property_uid'] + """%' """)
-                    response["announcements"] = announcements
+                # # IF TENANT HAS AN ACTIVE LEASE
+                # if len(property['result']) > 0 and property['result'][0]['property_uid']:
                     
-                    maintenance = db.execute("""
-                            -- TENENT MAINTENANCE TICKETS
-                            SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
-                                p.business_name, p.business_phone_number, p.business_email,
-                                mr.*
-                            FROM space.maintenanceRequests mr
-                                LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
-                                LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
-                            -- WHERE tenant_uid = '350-000162';
-                            WHERE tenant_uid = \'""" + user_id + """\';
-                            """)
-                    response["maintenanceRequests"] = maintenance
-
-                    maintenance = db.execute("""
-                            -- TENENT MAINTENANCE TICKETS
-                            SELECT -- *,
-                                lt_tenant_id
-                                , lease_property_id -- , maintenance_request_status
-                                , CASE
-                                    WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
-                                    WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
-                                    ELSE maintenance_request_status
-                                END AS maintenance_status
-                                , COUNT(maintenance_request_status) AS num
-                            FROM space.maintenanceRequests
-                            LEFT JOIN (
-                                SELECT * 
-                                FROM space.leases 
-                                WHERE lease_status = 'ACTIVE'
-                                ) AS l ON lease_property_id = maintenance_property_id
-                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
-                            LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
-                            -- WHERE lt_tenant_id = '350-000007'
-                            WHERE lt_tenant_id = \'""" + user_id + """\'
-                            GROUP BY maintenance_request_status, lease_property_id;
-                            """)
-                    response["maintenanceRequestsNew"] = maintenance
+                    
+                response["maintenanceRequests"] = db.execute("""
+                        -- TENENT MAINTENANCE TICKETS
+                        SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
+                            p.business_name, p.business_phone_number, p.business_email,
+                            mr.*
+                        FROM space.maintenanceRequests mr
+                            LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
+                            LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
+                        -- WHERE tenant_uid = '350-000162';
+                        WHERE tenant_uid = \'""" + user_id + """\';
+                        """)
 
 
-                    maintenanceQuery = db.execute(""" 
-                            -- MAINTENANCE STATUS BY TENANT
+                response["maintenanceRequestsNew"] = db.execute("""
+                        -- TENENT MAINTENANCE TICKETS
+                        SELECT -- *,
+                            lt_tenant_id
+                            , lease_property_id -- , maintenance_request_status
+                            , CASE
+                                WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
+                                WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
+                                ELSE maintenance_request_status
+                            END AS maintenance_status
+                            , COUNT(maintenance_request_status) AS num
+                        FROM space.maintenanceRequests
+                        LEFT JOIN (
                             SELECT * 
-                                , CASE
-                                    WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
-                                    WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
-                                    ELSE maintenance_request_status
-                                END AS maintenance_status
-                                -- , COUNT(maintenance_request_status) AS num
-                            FROM space.maintenanceRequests
-                            LEFT JOIN (
-                                SELECT * 
-                                FROM space.leases 
-                                WHERE lease_status = 'ACTIVE'
-                                ) AS l ON lease_property_id = maintenance_property_id
-                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
-                            LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
-                            -- WHERE lt_tenant_id = '350-000005'
-                            WHERE lt_tenant_id = \'""" + user_id + """\'
-                            -- GROUP BY maintenance_request_status;
-                            """)
+                            FROM space.leases 
+                            WHERE lease_status = 'ACTIVE'
+                            ) AS l ON lease_property_id = maintenance_property_id
+                        LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                        LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
+                        -- WHERE lt_tenant_id = '350-000007'
+                        WHERE lt_tenant_id = \'""" + user_id + """\'
+                        GROUP BY maintenance_request_status, lease_property_id;
+                        """)
 
-                    # print("Query: ", maintenanceQuery)
-                    response["maintenanceStatus"] = maintenanceQuery
+
+                response["maintenanceStatus"] = db.execute(""" 
+                        -- MAINTENANCE STATUS BY TENANT
+                        SELECT * 
+                            , CASE
+                                WHEN maintenance_request_status = 'NEW' THEN 'NEW REQUEST'
+                                WHEN maintenance_request_status = 'INFO' THEN 'INFO REQUESTED'
+                                ELSE maintenance_request_status
+                            END AS maintenance_status
+                            -- , COUNT(maintenance_request_status) AS num
+                        FROM space.maintenanceRequests
+                        LEFT JOIN (
+                            SELECT * 
+                            FROM space.leases 
+                            WHERE lease_status = 'ACTIVE'
+                            ) AS l ON lease_property_id = maintenance_property_id
+                        LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id
+                        LEFT JOIN space.businessProfileInfo ON business_uid = maintenance_assigned_business
+                        -- WHERE lt_tenant_id = '350-000005'
+                        WHERE lt_tenant_id = \'""" + user_id + """\'
+                        -- GROUP BY maintenance_request_status;
+                        """)
 
 
 
