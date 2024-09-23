@@ -1533,11 +1533,12 @@ class PaymentVerification(Resource):
                     LEFT JOIN (
                         SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
                         FROM space.payments
+                        WHERE paid_by LIKE '350%'
                         GROUP BY payment_intent, payment_date
                         ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
                     LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
                     -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
-                    WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
+                    WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
                         AND payment_verify = 'Unverified'
                     """)
         return cashflow
@@ -1922,14 +1923,15 @@ class CashflowTransactions(Resource):
                 print("In PM Cashflow All")
             
                 response = db.execute("""                          
-                        -- Cashflow by PURCHASE TYPE and PROPERTY
+                        -- All Cashflow Transactions
                         SELECT *
                         FROM space.pp_status
                         -- WHERE pur_receiver = '600-000003'  OR pur_payer = '600-000003'
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
+                              AND purchase_date >= DATE_FORMAT(NOW() - INTERVAL 1 YEAR, '%Y-01-01')
                             -- AND cf_month = DATE_FORMAT(NOW(), '%M')
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
-                    """)
+                                            """)
 
         return response
 
