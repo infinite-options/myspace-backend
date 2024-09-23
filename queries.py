@@ -16,12 +16,12 @@ def DashboardCashflowQuery(user_id):
                         , SUM(total_paid) AS total_paid
                         , cf_month, cf_month_num, cf_year
                         , pur_cf_type
-                    FROM space.pp_details
+                    FROM space.pp_status
                     -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
                     -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
                     WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
                     GROUP BY cf_month, cf_year, pur_cf_type
-                    ORDER BY cf_month_num, property_uid
+                    ORDER BY cf_month_num
                     """)
             # print("Function Query Complete")
             # print("This is the Function response: ", response)

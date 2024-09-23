@@ -762,23 +762,24 @@ class Dashboard(Resource):
             with connect() as db:
                 # print("in owner dashboard")
 
-                response["CashflowStatus"] = DashboardCashflowQuery(user_id)
+                response["cashflowStatus"] = DashboardCashflowQuery(user_id)
 
 
-                response["announcements_received"] = db.execute("""
+                response["announcementsReceived"] = db.execute("""
                         -- ANNOUNCEMENTS RECEIVED
                         SELECT * FROM announcements
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
                         """)
                 
-                response["announcements_sent"] = db.execute("""
+                
+                response["announcementsSent"] = db.execute("""
                         -- ANNOUNCEMENTS SENT
                         SELECT * FROM announcements
                         WHERE announcement_sender LIKE '%""" + user_id + """%'
                         """)
 
 
-                response["MaintenanceStatus"] = db.execute(""" 
+                response["maintenanceStatus"] = db.execute(""" 
                         -- MAINTENANCE STATUS BY OWNER
                         SELECT -- * 
                             property_owner_id
@@ -795,7 +796,7 @@ class Dashboard(Resource):
                         """)
 
 
-                response["LeaseStatus"] = db.execute(""" 
+                response["leaseStatus"] = db.execute(""" 
                             -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
                             SELECT lease_end_month
                                 , lease_end_num
@@ -835,7 +836,7 @@ class Dashboard(Resource):
                         """)
 
 
-                response["RentStatus"] = db.execute(""" 
+                response["rentStatus"] = db.execute(""" 
                             -- PROPERTY RENT STATUS FOR DASHBOARD
                             SELECT 
                                 rent_status
@@ -902,11 +903,19 @@ class Dashboard(Resource):
         elif user_id.startswith("350"):
             with connect() as db:
 
-                response["announcements"] = db.execute("""
-                        -- TENENT ANNOUNCEMENTS
+                
+                response["announcementsReceived"] = db.execute("""
+                        -- ANNOUNCEMENTS RECEIVED
                         SELECT * FROM announcements
                         WHERE announcement_receiver LIKE '%""" + user_id + """%'
-                    """)
+                        """)
+                
+                
+                response["announcementsSent"] = db.execute("""
+                        -- ANNOUNCEMENTS SENT
+                        SELECT * FROM announcements
+                        WHERE announcement_sender LIKE '%""" + user_id + """%'
+                        """)
 
 
                 response["tenantTransactions"] = db.execute("""
@@ -979,13 +988,7 @@ class Dashboard(Resource):
                         GROUP BY lease_uid
                         ORDER BY lease_status;
                         """)
-
-
-
-
-                # # IF TENANT HAS AN ACTIVE LEASE
-                # if len(property['result']) > 0 and property['result'][0]['property_uid']:
-                    
+                   
                     
                 response["maintenanceRequests"] = db.execute("""
                         -- TENENT MAINTENANCE TICKETS
