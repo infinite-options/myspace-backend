@@ -139,19 +139,18 @@ class Dashboard(Resource):
             elif business_type == "MANAGEMENT":
                 with connect() as db:
                     print("in Manager dashboard")
-                    print("in connect loop")
 
 
                     # CASHFLOW
                     # print("Query: ", cashFlow)
-                    response["CashflowStatus"] = DashboardCashflowQuery(user_id)
+                    response["cashflowStatus"] = DashboardCashflowQuery(user_id)
 
 
                     # PROFITABILITY
                     response["Profitability"] = {}
 
                     # PROFITABLITY REVENUE
-                    revenue = db.execute(""" 
+                    response["Profitability"]["revenue"] = db.execute(""" 
                                 -- MONEY TO BE RECEIVED
                                 SELECT -- *,
                                     -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_description, pur_notes, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, 
@@ -166,11 +165,9 @@ class Dashboard(Resource):
                                     AND pur_receiver = \'""" + user_id + """\'
                                 """)
 
-                    response["Profitability"]["revenue"] = revenue
-                
                     
                     # PROFITABLITY EXPENSE
-                    expense = db.execute("""
+                    response["Profitability"]["expense"] = db.execute("""
                                 -- MONEY TO BE PAID
                                 SELECT -- *,
                                     -- purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_description, pur_notes, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, pur_receiver, pur_initiator, 
@@ -184,10 +181,6 @@ class Dashboard(Resource):
                                     -- AND pur_payer = '600-000003'
                                     AND pur_payer = \'""" + user_id + """\'
         	                    """)
-
-                    response["Profitability"]["expense"] = expense
-
-                    # print("Complete Profitability")
 
 
                     # HAPPINESS MATRIX - VACANCY AND CASHFLOW
@@ -520,7 +513,7 @@ class Dashboard(Resource):
                     print("Complete Happiness Matrix")
 
                     # MAINTENANCE     
-                    maintenanceQuery = db.execute(""" 
+                    response["maintenanceStatus"] = db.execute(""" 
                             -- MAINTENANCE STATUS BY MANAGER
                             SELECT contract_business_id
                                 , maintenance_status
@@ -593,13 +586,9 @@ class Dashboard(Resource):
                             GROUP BY maintenance_status;
                             """)
 
-                    print("Complete Maintenance Status")
-
-                    # print("Query: ", maintenanceQuery)
-                    response["MaintenanceStatus"] = maintenanceQuery
 
                     # LEASES
-                    leaseQuery = db.execute("""
+                    response["leaseStatus"] = db.execute("""
                             -- LEASE EXPRIATION BY MONTH FOR OWNER AND PM
                             SELECT lease_end_month
                                 , lease_end_num
@@ -638,13 +627,9 @@ class Dashboard(Resource):
                             ORDER BY lease_end_num ASC
                             """)
 
-                    print("Complete Lease Status")
-
-                    # print("lease Query: ", leaseQuery)
-                    response["LeaseStatus"] = leaseQuery
 
                     # RENT STATUS
-                    rentQuery = db.execute(""" 
+                    response["rentStatus"] = db.execute(""" 
                             -- PROPERTY RENT STATUS FOR DASHBOARD
                             SELECT 
                                 rent_status
@@ -705,15 +690,11 @@ class Dashboard(Resource):
                                 ) AS rs
                             GROUP BY rent_status;
                             """)
-                    print("Complete Rent Status")
 
-                    # print("rent Query: ", rentQuery)
-                    response["RentStatus"] = rentQuery
-                    # print(response)
                     
                     # PROPERTY LIST
-                    print("In Property List")
-                    propertyQuery = db.execute("""
+                    # print("In Property List")
+                    response["properties"] = db.execute("""
                             SELECT -- *,
                                 property_uid, property_address, property_unit
                             FROM space.contracts
@@ -723,13 +704,10 @@ class Dashboard(Resource):
                                 contract_status = 'ACTIVE';
                         """)
 
-                    # print("Property List: ", propertyQuery)
-                    response["Properties"] = propertyQuery
-                    # print(response)
 
                     # NEW PM REQUESTS
-                    print("In New PM Requests")
-                    contractsQuery = db.execute("""
+                    # print("In New PM Requests")
+                    response["newPMRequests"] = db.execute("""
                             -- NEW PROPERTIES FOR MANAGER
                             SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
                             FROM space.o_details
@@ -749,14 +727,11 @@ class Dashboard(Resource):
                             WHERE contract_business_id = \'""" + user_id + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                         """)
 
-                    # print("PM Request Query: ", contractsQuery)
-                    response["NewPMRequests"] = contractsQuery
-                    # print(response)
 
                     return response
             else:
-                print("No Match")
-                return("Not a valid option")
+                print("No business_type Match")
+                return("Business Type is not a valid option")
 
         elif user_id.startswith("110"):
             with connect() as db:
