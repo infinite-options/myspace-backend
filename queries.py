@@ -69,26 +69,47 @@ def AnnouncementSenderQuery(user_id):
         print("Error in AnnouncementSenderQuery Query ")
 
 
-
 def DashboardCashflowQuery(user_id):
-    print("In DashboardCashflowQuery FUNCTION CALL")
+    # print("In DashboardCashflowQuery FUNCTION CALL")
 
     try:
         # Run query to find rents of ACTIVE leases
         with connect() as db:    
+            # response = db.execute("""
+            #         -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
+            #         SELECT pur_receiver, pur_payer
+            #             , SUM(pur_amount_due) AS pur_amount_due
+            #             , SUM(total_paid) AS total_paid
+            #             , cf_month, cf_month_num, cf_year
+            #             , pur_cf_type
+            #         FROM space.pp_status
+            #         -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
+            #         -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+            #         WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+            #         GROUP BY cf_month, cf_year, pur_cf_type
+            #         ORDER BY cf_month_num
+            #         """)
             response = db.execute("""
                     -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
-                    SELECT pur_receiver, pur_payer
-                        , SUM(pur_amount_due) AS pur_amount_due
-                        , SUM(total_paid) AS total_paid
-                        , cf_month, cf_month_num, cf_year
-                        , pur_cf_type
+                    SELECT -- *,
+                        IF(pur_receiver = \'""" + user_id + """\', \'""" + user_id + """\', "") AS pur_receiver,
+                        IF(pur_receiver = \'""" + user_id + """\', "", "") AS pur_payer,
+                        SUM(pur_amount_due) AS pur_amount_due, SUM(total_paid) AS total_paid,
+                        cf_month, cf_month_num, cf_year,
+                        IF(pur_receiver = \'""" + user_id + """\', 'revenue', "") AS pur_cf_type
                     FROM space.pp_status
-                    -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
-                    -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
-                    WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
-                    GROUP BY cf_month, cf_year, pur_cf_type
-                    ORDER BY cf_month_num
+                    WHERE pur_receiver = \'""" + user_id + """\'
+                    GROUP BY cf_month
+                    UNION
+                    SELECT -- *,
+                        IF(pur_payer = \'""" + user_id + """\', "", "") AS pur_receiver,
+                        IF(pur_payer = \'""" + user_id + """\', \'""" + user_id + """\', "") AS pur_payer,
+                        SUM(pur_amount_due) AS pur_amount_due, SUM(total_paid) AS total_paid,
+                        cf_month, cf_month_num, cf_year,
+                        IF(pur_payer = \'""" + user_id + """\', 'expense', "") AS pur_cf_type
+                    FROM space.pp_status
+                    WHERE pur_payer = \'""" + user_id + """\'
+                    GROUP BY cf_month
                     """)
             # print("Function Query Complete")
             # print("This is the Function response: ", response)
