@@ -891,6 +891,18 @@ class Dashboard(Resource):
                             GROUP BY rent_status;
                         """)
 
+
+                response["properties"] = db.execute(""" 
+                            -- PROPERTY LIST FOR DASHBOARD
+                            SELECT -- *,
+                                property_owner_id,
+                                property_address
+                            FROM space.property_owner
+                            LEFT JOIN space.properties ON property_id = property_uid
+                            -- WHERE property_owner_id = "110-000003"
+                            WHERE property_owner_id = \'""" + user_id + """\';
+                        """)
+
                 return response
 
         elif user_id.startswith("350"):
