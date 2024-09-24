@@ -1924,11 +1924,15 @@ class CashflowTransactions(Resource):
             
                 response = db.execute("""                          
                         -- All Cashflow Transactions
-                        SELECT *
+                        SELECT *,
+                            property_address, property_unit
+                            , property_owner_id
                         FROM space.pp_status
-                        WHERE pur_receiver = '350-000007'  OR pur_payer = '350-000007'
+                        LEFT JOIN properties ON pur_property_id = property_uid
+                        LEFT JOIN property_owner ON pur_property_id = property_id
+                        -- WHERE pur_receiver = '350-000007'  OR pur_payer = '350-000007'
                         -- WHERE pur_receiver = '600-000003'  OR pur_payer = '600-000003'
-                        -- WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
+                        WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
                             AND STR_TO_DATE(purchase_date, '%m-%d-%Y') >= DATE_FORMAT(NOW() - INTERVAL 1 YEAR, '%Y-01-01')
                             -- AND cf_month = DATE_FORMAT(NOW(), '%M')
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')

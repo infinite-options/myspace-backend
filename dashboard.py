@@ -896,6 +896,7 @@ class Dashboard(Resource):
                             -- PROPERTY LIST FOR DASHBOARD
                             SELECT -- *,
                                 property_owner_id,
+                                property_uid,
                                 property_address
                             FROM space.property_owner
                             LEFT JOIN space.properties ON property_id = property_uid
