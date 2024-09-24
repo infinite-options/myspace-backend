@@ -483,27 +483,38 @@ class Announcements(Resource):
         print("In Announcements PUT")
         response = {}
         payload = request.get_json()
-        if payload.get('announcement_uid') in {None, '', 'null'}:
-            print("No announcement_uid")
-            raise BadRequest("Request failed, no UID in payload.")
-        # print("Announcement Payload: ", payload)
+        print("Announcement Payload: ", payload, type(payload))
 
-        # Get the current date and time
-        current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
-    
-        # Insert or update the "announcement_read" key with the current date and time
-        payload['announcement_read'] = current_datetime
+        if 'announcement_uid' in payload and payload['announcement_uid']:
 
+            # payload.get('announcement_uid')
 
-        i = 0
-        for each in payload['announcement_uid']:
-            # print("current uid: ", each)
-            key = {'announcement_uid': each}
-            # print("Annoucement Key: ", key)
-            with connect() as db:
-                response = db.update('announcements', key, payload)
-                i = i + 1
-        response["rows affected"] = i
+            # Get the current date and time
+            current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
+        
+            # Insert or update the "announcement_read" key with the current date and time
+            payload['announcement_read'] = current_datetime
+
+            i = 0
+            for each in payload['announcement_uid']:
+
+                if each in {None, '', 'null'}:
+                    print("No announcement_uid")
+                    # raise BadRequest("Request failed, no UID in payload.")
+                    response["bad data"] = "TRUE"
+            
+                else:
+                    print("current uid: ", each)
+                    key = {'announcement_uid': each}
+                    print("Annoucement Key: ", key)
+                    with connect() as db:
+                        response = db.update('announcements', key, payload)
+                        i = i + 1
+                    response["rows affected"] = i
+
+        else:
+            response['msg'] = 'No UID in payload'
+
         return response
     
 class LeaseExpiringNotify(Resource):
@@ -1789,9 +1800,9 @@ api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
-api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
-api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
-api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
+# api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
+# api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
+# api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
 # api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:type>')
 # api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:month>/<string:year>')
 api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>')
