@@ -3,6 +3,73 @@ from data_pm import connect, uploadImage, s3
 
 
 
+def AnnouncementReceiverQuery(user_id):
+    print("In AnnouncementReceiverQuery FUNCTION CALL")
+
+    try:
+        # Run query to find Announcements Received
+        with connect() as db:    
+            response = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS receiver_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS receiver_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS receiver_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS receiver_photo_url
+                    , CASE
+                            WHEN a.announcement_receiver LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_receiver LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                      END AS receiver_role
+                    FROM space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    WHERE announcement_sender = \'""" + user_id + """\';
+                    """)
+            # print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in AnnouncementReceiverQuery Query ")
+
+
+def AnnouncementSenderQuery(user_id):
+    print("In AnnouncementSenderQuery FUNCTION CALL")
+
+    try:
+        # Run query to find Announcements Received
+        with connect() as db:    
+            response = db.execute("""
+                    SELECT 
+                        a.*,
+                        COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS sender_first_name,
+                        COALESCE(c.owner_last_name,  d.tenant_last_name) AS sender_last_name,
+                        COALESCE(b.business_phone_number, c.owner_phone_number, d.tenant_phone_number) AS sender_phone_number,
+                        COALESCE(b.business_photo_url, c.owner_photo_url, d.tenant_photo_url) AS sender_photo_url
+                        , CASE
+                            WHEN a.announcement_sender LIKE '600%' THEN 'Business'
+                            WHEN a.announcement_sender LIKE '350%' THEN 'Tenant'
+                            WHEN a.announcement_sender LIKE '110%' THEN 'Owner'
+                            ELSE 'Unknown'
+                        END AS sender_role
+                    FROM 
+                        space.announcements a
+                    LEFT JOIN space.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                    LEFT JOIN space.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                    LEFT JOIN space.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                    WHERE 
+                        announcement_receiver = \'""" + user_id + """\';
+                    """)
+            # print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in AnnouncementSenderQuery Query ")
+
+
+
 def DashboardCashflowQuery(user_id):
     print("In DashboardCashflowQuery FUNCTION CALL")
 
@@ -27,7 +94,7 @@ def DashboardCashflowQuery(user_id):
             # print("This is the Function response: ", response)
         return response
     except:
-        print("Error in UnpaidRents Query ")
+        print("Error in DashboardCashflowQuery Query ")
 
 
 def CashflowQuery(user_id):

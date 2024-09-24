@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
-from queries import CashflowQuery, DashboardCashflowQuery
+from queries import CashflowQuery, DashboardCashflowQuery, AnnouncementReceiverQuery, AnnouncementSenderQuery
 
 class Dashboard(Resource):
     def get(self, user_id):
@@ -192,11 +192,11 @@ class Dashboard(Resource):
                                         -- , l.*
                                         , COUNT(contract_property_id) AS total_properties
                                         , COUNT(contract_property_id) - COUNT(lease_status) AS vacancy_num
-                                        , (COUNT(contract_property_id) - COUNT(lease_status))/COUNT(contract_property_id) AS vacancy_perc
+                                        , ROUND((COUNT(contract_property_id) - COUNT(lease_status))/COUNT(contract_property_id)*100, 0) AS vacancy_perc
                                         , SUM(pur_amount_due) AS expected_cashflow
                                         , SUM(total_paid) AS actual_cashflow
-                                        , SUM(pur_amount_due) - SUM(total_paid)  AS delta_cashflow
-                                        , (SUM(pur_amount_due) - SUM(total_paid) )/SUM(pur_amount_due) AS percent_delta_cashflow
+                                        , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - SUM(total_paid), 0)  AS delta_cashflow
+                                        , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - SUM(total_paid) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
                                         -- , pp.*
                                     FROM space.contracts
                                     LEFT JOIN property_owner ON contract_property_id = property_id
@@ -766,18 +766,10 @@ class Dashboard(Resource):
                 response["cashflowStatus"] = DashboardCashflowQuery(user_id)
 
 
-                response["announcementsReceived"] = db.execute("""
-                        -- ANNOUNCEMENTS RECEIVED
-                        SELECT * FROM announcements
-                        WHERE announcement_receiver LIKE '%""" + user_id + """%'
-                        """)
+                response["announcementsReceived"] = AnnouncementSenderQuery(user_id)
                 
                 
-                response["announcementsSent"] = db.execute("""
-                        -- ANNOUNCEMENTS SENT
-                        SELECT * FROM announcements
-                        WHERE announcement_sender LIKE '%""" + user_id + """%'
-                        """)
+                response["announcementsSent"] = AnnouncementReceiverQuery(user_id)
 
 
                 response["maintenanceStatus"] = db.execute(""" 
@@ -905,18 +897,10 @@ class Dashboard(Resource):
             with connect() as db:
 
                 
-                response["announcementsReceived"] = db.execute("""
-                        -- ANNOUNCEMENTS RECEIVED
-                        SELECT * FROM announcements
-                        WHERE announcement_receiver LIKE '%""" + user_id + """%'
-                        """)
+                response["announcementsReceived"] = AnnouncementSenderQuery(user_id)
                 
                 
-                response["announcementsSent"] = db.execute("""
-                        -- ANNOUNCEMENTS SENT
-                        SELECT * FROM announcements
-                        WHERE announcement_sender LIKE '%""" + user_id + """%'
-                        """)
+                response["announcementsSent"] = AnnouncementReceiverQuery(user_id)
 
 
                 response["tenantTransactions"] = db.execute("""
