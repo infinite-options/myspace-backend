@@ -1949,10 +1949,8 @@ class CashflowTransactions(Resource):
                             pur_property_id, purchase_type, -- pur_description, pur_notes, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, 
                             pur_receiver, pur_initiator, pur_payer, -- pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, pur_leaseFees_id, pay_purchase_id, latest_date, total_paid, verified, payment_status, amt_remaining, 
                             cf_month, cf_month_num, cf_year,
-                            -- IF(pur_receiver = "600-000003", SUM(pur_amount_due), "") AS expected,
-                            -- IF(pur_receiver = "600-000003", SUM(total_paid), "") AS actual 
-                            IF(pur_receiver = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
-                            IF(pur_receiver = \'""" + user_id + """\', SUM(total_paid), "") AS actual 
+                            IF(pur_receiver = "600-000003", SUM(pur_amount_due), "") AS expected,
+                            IF(pur_receiver = "600-000003", SUM(total_paid), "") AS actual 
                             , JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'purchase_uid', purchase_uid,
@@ -1967,23 +1965,22 @@ class CashflowTransactions(Resource):
                                     'cf_month', cf_month,
                                     'cf_month_num', cf_month_num,
                                     'cf_year', cf_year,
-                                    -- 'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
-                                    'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
+                                    'payment_ids', payment_ids,
+                                    'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
+                                    -- 'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
                                 )
                             ) AS transactions
+                            , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
                         FROM space.pp_status
-                        -- WHERE pur_receiver = "600-000003" -- AND pur_property_id LIKE '200-000034'
-                        WHERE pur_receiver = \'""" + user_id + """\'
+                        WHERE pur_receiver = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         GROUP BY cf_month, cf_year, purchase_type, pur_property_id
                         UNION
                         SELECT -- *,
                             pur_property_id, purchase_type, 
                             pur_receiver, pur_initiator, pur_payer,
                             cf_month, cf_month_num, cf_year,
-                            -- IF(pur_payer = "600-000003", SUM(pur_amount_due), "") AS expected,
-                            -- IF(pur_payer = "600-000003", SUM(total_paid), "") AS actual
-                            IF(pur_payer = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
-                            IF(pur_payer = \'""" + user_id + """\', SUM(total_paid), "") AS actual  
+                            IF(pur_payer = "600-000003", SUM(pur_amount_due), "") AS expected,
+                            IF(pur_payer = "600-000003", SUM(total_paid), "") AS actual 
                             , JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'purchase_uid', purchase_uid,
@@ -1998,13 +1995,14 @@ class CashflowTransactions(Resource):
                                     'cf_month', cf_month,
                                     'cf_month_num', cf_month_num,
                                     'cf_year', cf_year,
-                                    -- 'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
-                                    'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
+                                    'payment_ids', payment_ids,
+                                    'pur_cf_type', IF(pur_receiver = '600-000003', "revenue", "expense")
+                                    -- 'pur_cf_type', IF(pur_receiver = \'""" + user_id + """\', "revenue", "expense")
                                 )
                             ) AS transactions
+                            , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
                         FROM space.pp_status
-                        -- WHERE pur_payer = "600-000003" -- AND pur_property_id LIKE '200-000034'
-                        WHERE pur_payer = \'""" + user_id + """\'
+                        WHERE pur_payer = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         GROUP BY cf_month, cf_year, purchase_type, pur_property_id
                         ) AS t
                         """)
