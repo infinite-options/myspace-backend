@@ -153,9 +153,9 @@ class Dashboard(Resource):
                                         , COUNT(contract_property_id) - COUNT(lease_status) AS vacancy_num
                                         , ROUND((COUNT(contract_property_id) - COUNT(lease_status))/COUNT(contract_property_id)*100, 0) AS vacancy_perc
                                         , SUM(pur_amount_due) AS expected_cashflow
-                                        , SUM(total_paid) AS actual_cashflow
-                                        , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - SUM(total_paid), 0)  AS delta_cashflow
-                                        , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - SUM(total_paid) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
+                                        , if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) AS actual_cashflow
+                                        , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)), 0)  AS delta_cashflow
+                                        , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
                                         -- , pp.*
                                     FROM space.contracts
                                     LEFT JOIN property_owner ON contract_property_id = property_id
@@ -165,13 +165,14 @@ class Dashboard(Resource):
                                         FROM space.leases 
                                         WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON contract_property_id = lease_property_id
                                     LEFT JOIN (SELECT pur_property_id
-                                        , SUM(pur_amount_due) AS pur_amount_due
-                                        , SUM(total_paid) AS total_paid
-                                        FROM space.pp_status
-                                        WHERE pur_payer LIKE "350%"
-                                        GROUP BY pur_property_id) AS pp ON pur_property_id = contract_property_id
+                                        , SUM(if(pur_receiver LIKE "110%", pur_amount_due, -pur_amount_due)) AS pur_amount_due
+                                        , SUM(if(pur_receiver LIKE "110%", total_paid, -total_paid)) AS total_paid
+                                        , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
+                                    FROM space.pp_status
+                                    WHERE pur_payer LIKE "110%" OR pur_receiver LIKE "110%"
+                                    GROUP BY pur_property_id) AS pp ON pur_property_id = contract_property_id
                                     LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
-                                    -- WHERE contract_business_id = '600-000003'
+                                    -- WHERE contract_business_id = '600-000011'
                                     WHERE contract_business_id = \'""" + user_id + """\'
                                         AND contract_status = 'ACTIVE'
                                     GROUP BY property_owner_id

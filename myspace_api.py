@@ -1198,6 +1198,8 @@ class MonthlyRentPurchase_CLASS(Resource):
             headers = ["Fee Num", "Lease Fee", "Property", "Due Date", "Available to Pay Date", "Today", "Rent Due", "Purchase ID"]
             print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
 
+            print(len(response['result']), range(len(response['result'])))
+
             for i in range(len(response['result'])):
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
@@ -1432,11 +1434,12 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                                 # For each fee, post to purchases table
 
-                    
+                print("completed line")     
 
-            response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,
-                        'rows affected': f'{numCronPurchases}',
-                    'code': 200}
+            print("completed for loop")
+            # response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' , 'rows affected': f'{numCronPurchases}','code': 200}
+            response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,'code': 200}
+            print(response)
             
             try:
                 print(CronPostings)
@@ -1475,9 +1478,11 @@ def MonthlyRentPurchase_CRON(Resource):
 
         numCronPurchases = 0
         CronPostings = ["Fee Num  Lease Fee   Property    Due Date       Available to Pay Date   Today   Rent Due   Purchase ID"]        
+        
+        # Determine ACTIVE LEASES and LEASE FEES
         response = NextDueDate()
         # print("\nACTIVE Leases from NextDueDate: ", response)
-        print(range(len(response['result'])))
+        # print(range(len(response['result'])))
 
         try:
 
@@ -1718,7 +1723,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                                 # For each fee, post to purchases table
 
-                    
+                  
 
             response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,
                         'rows affected': f'{numCronPurchases}',
