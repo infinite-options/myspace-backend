@@ -1948,7 +1948,7 @@ class CashflowTransactions(Resource):
                             -- purchase_uid, pur_timestamp, 
                             pur_property_id, property_owner_id, property_address, property_unit, purchase_type, -- pur_description, pur_notes, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_status_value, 
                             pur_receiver, pur_initiator, pur_payer, -- pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, pur_leaseFees_id, pay_purchase_id, latest_date, total_paid, verified, payment_status, amt_remaining, 
-                            cf_month, cf_month_num, cf_year,
+                            pur_group, cf_month, cf_month_num, cf_year,
                             -- IF(pur_receiver = "600-000003", SUM(pur_amount_due), "") AS expected,
                             -- IF(pur_receiver = "600-000003", SUM(total_paid), "") AS actual 
                             IF(pur_receiver = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
@@ -1964,6 +1964,8 @@ class CashflowTransactions(Resource):
                                     'pur_description', pur_description,
                                     'pur_amount_due',  pur_amount_due,
                                     'total_paid', total_paid,
+                                    'pur_group', pur_group,
+                                    'pur_leaseFees_id', pur_leaseFees_id,
                                     'cf_month', cf_month,
                                     'cf_month_num', cf_month_num,
                                     'cf_year', cf_year,
@@ -1978,12 +1980,12 @@ class CashflowTransactions(Resource):
                         LEFT JOIN space.property_owner ON pur_property_id = property_id
                         -- WHERE pur_receiver = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         WHERE pur_receiver = \'""" + user_id + """\'
-                        GROUP BY cf_month, cf_year, purchase_type, pur_property_id
+                        GROUP BY cf_month, cf_year, purchase_type, pur_property_id, pur_group
                         UNION
                         SELECT -- *,
                             pur_property_id, property_owner_id, property_address, property_unit, purchase_type, 
                             pur_receiver, pur_initiator, pur_payer,
-                            cf_month, cf_month_num, cf_year,
+                            pur_group, cf_month, cf_month_num, cf_year,
                             -- IF(pur_payer = "600-000003", SUM(pur_amount_due), "") AS expected,
                             -- IF(pur_payer = "600-000003", SUM(total_paid), "") AS actual 
                             IF(pur_payer = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
@@ -1999,6 +2001,8 @@ class CashflowTransactions(Resource):
                                     'pur_description', pur_description,
                                     'pur_amount_due',  pur_amount_due,
                                     'total_paid', total_paid,
+                                    'pur_group', pur_group,
+                                    'pur_leaseFees_id', pur_leaseFees_id,
                                     'cf_month', cf_month,
                                     'cf_month_num', cf_month_num,
                                     'cf_year', cf_year,
@@ -2013,7 +2017,7 @@ class CashflowTransactions(Resource):
                         LEFT JOIN space.property_owner ON pur_property_id = property_id
                         -- WHERE pur_payer = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         WHERE pur_payer = \'""" + user_id + """\'
-                        GROUP BY cf_month, cf_year, purchase_type, pur_property_id
+                        GROUP BY cf_month, cf_year, purchase_type, pur_property_id, pur_group
                         ) AS t
                         """)
 
