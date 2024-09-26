@@ -1953,6 +1953,7 @@ class CashflowTransactions(Resource):
                             -- IF(pur_receiver = "600-000003", SUM(total_paid), "") AS actual 
                             IF(pur_receiver = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
                             IF(pur_receiver = \'""" + user_id + """\', SUM(total_paid), "") AS actual 
+                            , purchase_status, payment_status, verified
                             , JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'purchase_uid', purchase_uid,
@@ -1990,6 +1991,7 @@ class CashflowTransactions(Resource):
                             -- IF(pur_payer = "600-000003", SUM(total_paid), "") AS actual 
                             IF(pur_payer = \'""" + user_id + """\', SUM(pur_amount_due), "") AS expected,
                             IF(pur_payer = \'""" + user_id + """\', SUM(total_paid), "") AS actual
+                            , purchase_status, payment_status, verified
                             , JSON_ARRAYAGG(
                                 JSON_OBJECT(
                                     'purchase_uid', purchase_uid,
