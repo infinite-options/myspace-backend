@@ -1198,9 +1198,10 @@ class MonthlyRentPurchase_CLASS(Resource):
             headers = ["Fee Num", "Lease Fee", "Property", "Due Date", "Available to Pay Date", "Today", "Rent Due", "Purchase ID"]
             print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
 
-            print(len(response['result']), range(len(response['result'])))
+            # print(len(response['result']), range(len(response['result'])))
 
             for i in range(len(response['result'])):
+                # print(response['result'][i])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
                 # Check if available_topay is NONE
@@ -1225,12 +1226,14 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                 # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
                 next_due_date = datetime.strptime(response['result'][i]['next_due_date'],'%m-%d-%Y')
-                postdate = next_due_date - timedelta(days=payable)
-                pm_due_date = next_due_date + relativedelta(days=15)
-
                 # print("Rent due: ", next_due_date, type(next_due_date))
-                # print("Available to Post x days ahead: ", payable)
+                postdate = next_due_date - timedelta(days=payable)
                 # print("Post Date: ", postdate, type(postdate))
+                pm_due_date = next_due_date + relativedelta(days=15)
+                # print("PM Due Date: ", pm_due_date, type(pm_due_date))
+                
+                # print("Available to Post x days ahead: ", payable)
+                
                 # print("Already posted? ", response['result'][i]['purchase_uid'])
 
                 # Lease Fee Number, Lease Fee, Property, Due Date, Available to Pay Date, Today, Rent Due, Purchase ID
@@ -1434,15 +1437,15 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                                 # For each fee, post to purchases table
 
-                print("completed line")     
+                # print("completed line")     
 
             print("completed for loop")
             # response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' , 'rows affected': f'{numCronPurchases}','code': 200}
             response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,'code': 200}
-            print(response)
+            # print(response)
             
             try:
-                print(CronPostings)
+                # print(CronPostings)
                 recipient = "pmarathay@gmail.com"
                 subject = f"MySpace Monthly Rent CRON JOB for {dt} Completed "
                 body = f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n" + "\n".join(CronPostings)

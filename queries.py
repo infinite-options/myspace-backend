@@ -256,13 +256,12 @@ def NextDueDate():
                                             ELSE 
                                                 DATE_ADD(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d'), INTERVAL 3 MONTH)
                                         END
-                                    WHEN frequency = 'Semi-Annually' THEN 
-                                        CASE 
-                                            WHEN CURDATE() <= STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d') THEN 
-                                                STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d')
-                                            ELSE 
-                                                DATE_ADD(STR_TO_DATE(CONCAT(YEAR(NOW()), '-', MONTH(NOW()), '-', due_by), '%Y-%m-%d'), INTERVAL 6 MONTH)
-                                        END
+                                        
+                                    WHEN frequency = 'Semi-Annually' THEN
+                                        IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
+                                            STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
+                                            DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y'), INTERVAL 6 MONTH)    
+                                        )
                                     WHEN frequency = 'Annually' THEN
                                         IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
                                             STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
@@ -271,7 +270,7 @@ def NextDueDate():
                                     WHEN frequency = 'Weekly' THEN 
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
                                     WHEN frequency = 'Bi-Weekly' THEN
-                                        DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y'), INTERVAL (FLOOR(DATEDIFF(CURDATE(), STR_TO_DATE(due_by_date, '%m-%d-%Y')) / 14) + 1) * 14 DAY)
+                                        DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
                                 END, '%m-%d-%Y') AS next_due_date
                         FROM (
                             SELECT * FROM space.leases WHERE lease_status = 'ACTIVE'
