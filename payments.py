@@ -300,160 +300,160 @@ class NewPayments(Resource):
         return data 
     
 
-class Payments(Resource):
-    def post(self):
-        print("In Make Payment")
-        response = {}
-        with connect() as db:
-            data = request.get_json(force=True)
-            # print(data)
+# class Payments(Resource):
+#     def post(self):
+#         print("In Make Payment")
+#         response = {}
+#         with connect() as db:
+#             data = request.get_json(force=True)
+#             # print(data)
 
-            fields = [
-                'pay_purchase_id'
-                , 'pay_amount'
-                , 'payment_notes'
-                , 'pay_charge_id'
-                , 'payment_type'
-                , 'payment_date'
-                , 'payment_verify'
-                , 'paid_by'
-                , 'payment_intent'
-                , 'payment_method'
-                , 'payment_date_cleared'
-                , 'payment_client_secret'
-            ]
+#             fields = [
+#                 'pay_purchase_id'
+#                 , 'pay_amount'
+#                 , 'payment_notes'
+#                 , 'pay_charge_id'
+#                 , 'payment_type'
+#                 , 'payment_date'
+#                 , 'payment_verify'
+#                 , 'paid_by'
+#                 , 'payment_intent'
+#                 , 'payment_method'
+#                 , 'payment_date_cleared'
+#                 , 'payment_client_secret'
+#             ]
 
-            # PUTS JSON DATA INTO EACH FIELD
-            newRequest = {}
-            for field in fields:
-                newRequest[field] = data.get(field)
-                # print(field, " = ", newRequest[field])
+#             # PUTS JSON DATA INTO EACH FIELD
+#             newRequest = {}
+#             for field in fields:
+#                 newRequest[field] = data.get(field)
+#                 # print(field, " = ", newRequest[field])
 
 
-            # GET NEW UID
-            # print("Get New Request UID")
-            newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
-            newRequest['payment_uid'] = newRequestID
-            # print(newRequestID)
+#             # GET NEW UID
+#             # print("Get New Request UID")
+#             newRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+#             newRequest['payment_uid'] = newRequestID
+#             # print(newRequestID)
 
-            # SET TRANSACTION DATE TO NOW
-            newRequest['payment_date'] = date.today()
-            newRequest['payment_verify'] = "Unverified"
+#             # SET TRANSACTION DATE TO NOW
+#             newRequest['payment_date'] = date.today()
+#             newRequest['payment_verify'] = "Unverified"
 
-            # INSERT DATA INTO PAYMENTS TABLE
-            # print(newRequest)
-            response['Payment_Insert'] = db.insert('payments', newRequest)
-            response['Payments_UID'] = newRequestID
-            # print(response)
+#             # INSERT DATA INTO PAYMENTS TABLE
+#             # print(newRequest)
+#             response['Payment_Insert'] = db.insert('payments', newRequest)
+#             response['Payments_UID'] = newRequestID
+#             # print(response)
 
-            # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
-            amt_due = db.execute("""
-                        -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
-                        SELECT -- *,
-                            amt_remaining
-                        FROM space.pp_status
-                        WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
-                        """)
-            # print(amt_due)
-            # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
+#             # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
+#             amt_due = db.execute("""
+#                         -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+#                         SELECT -- *,
+#                             amt_remaining
+#                         FROM space.pp_status
+#                         WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+#                         """)
+#             # print(amt_due)
+#             # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
 
-            purchase_status = "UNPAID"
-            print(type(amt_due['result'][0]['amt_remaining']))
-            if float(amt_due['result'][0]['amt_remaining']) <= 0: 
-                purchase_status = "PAID"
-                # print(purchase_status)
+#             purchase_status = "UNPAID"
+#             print(type(amt_due['result'][0]['amt_remaining']))
+#             if float(amt_due['result'][0]['amt_remaining']) <= 0: 
+#                 purchase_status = "PAID"
+#                 # print(purchase_status)
 
-                # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
-                payload = {'purchase_status': purchase_status}
-                key = {'purchase_uid': newRequest['pay_purchase_id']}
-                # print(key, payload)
+#                 # payload = {'purchase_uid': newRequest['pay_purchase_id'], 'purchase_status': purchase_status}
+#                 payload = {'purchase_status': purchase_status}
+#                 key = {'purchase_uid': newRequest['pay_purchase_id']}
+#                 # print(key, payload)
 
                 
-                # response['b'] = db.update('purchases', key, purchase_status)
-                response['purchase_table_update'] = db.update('purchases', key, payload)
-                response['purchase_status'] = purchase_status
+#                 # response['b'] = db.update('purchases', key, purchase_status)
+#                 response['purchase_table_update'] = db.update('purchases', key, payload)
+#                 response['purchase_status'] = purchase_status
 
-            else:
-                response['purchase_status'] = 'UNPAID'
+#             else:
+#                 response['purchase_status'] = 'UNPAID'
 
 
-            # # DETERMINE PURCHASE STATUS
+#             # # DETERMINE PURCHASE STATUS
 
-            # # DETERMINE AMOUNT DUE
-            # # print("Purchase ID: ", newRequest['pay_purchase_id'])
-            # amt_due = db.execute("""
-            #         -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
-            #         SELECT -- *,
-            #             pur_amount_due
-            #         FROM space.purchases
-            #         WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
-            #         """)
-            # # print("Amount Due: ", amt_due['result'][0]['pur_amount_due'])
+#             # # DETERMINE AMOUNT DUE
+#             # # print("Purchase ID: ", newRequest['pay_purchase_id'])
+#             # amt_due = db.execute("""
+#             #         -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+#             #         SELECT -- *,
+#             #             pur_amount_due
+#             #         FROM space.purchases
+#             #         WHERE purchase_uid = \'""" + newRequest['pay_purchase_id'] + """\';
+#             #         """)
+#             # # print("Amount Due: ", amt_due['result'][0]['pur_amount_due'])
 
-            # # DETERMINE HOW MUCH WAS PAID BEFORE
-            # purchase_status = "Payment Error"
+#             # # DETERMINE HOW MUCH WAS PAID BEFORE
+#             # purchase_status = "Payment Error"
 
-            # # print(type(newRequest['pay_amount']))
-            # # print(type(amt_due['result'][0]['pur_amount_due']))
+#             # # print(type(newRequest['pay_amount']))
+#             # # print(type(amt_due['result'][0]['pur_amount_due']))
 
-            # if newRequest['pay_amount'] >= float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PAID"
-            # elif newRequest['pay_amount'] < float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PARTIALLY PAID"
+#             # if newRequest['pay_amount'] >= float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PAID"
+#             # elif newRequest['pay_amount'] < float(amt_due['result'][0]['pur_amount_due']): purchase_status = "PARTIALLY PAID"
             
-            # # print(purchase_status)
-            # # print(newRequest['pay_purchase_id'])
+#             # # print(purchase_status)
+#             # # print(newRequest['pay_purchase_id'])
 
-            # # purRequest = {}
-            # # purRequest['purchase_status'] = purchase_status
-            # # pur_response = db.insert('purchases', purRequest)
+#             # # purRequest = {}
+#             # # purRequest['purchase_status'] = purchase_status
+#             # # pur_response = db.insert('purchases', purRequest)
 
-            # key = {'purchase_uid': newRequest['pay_purchase_id']}
-            # # print(key)
-            # payload = {'purchase_status': purchase_status}
-            # # print(payload)
-            # response['Purchase_Status_Update'] = db.update('purchases', key, payload)
-            # response['Purchase_Status'] = purchase_status
+#             # key = {'purchase_uid': newRequest['pay_purchase_id']}
+#             # # print(key)
+#             # payload = {'purchase_status': purchase_status}
+#             # # print(payload)
+#             # response['Purchase_Status_Update'] = db.update('purchases', key, payload)
+#             # response['Purchase_Status'] = purchase_status
 
-        return response  
+#         return response  
 
 
-    def put(self):
-        print('in Update Payment Status')
-        with connect() as db:
-            payload = request.get_json()
-            # print(payload)
+#     def put(self):
+#         print('in Update Payment Status')
+#         with connect() as db:
+#             payload = request.get_json()
+#             # print(payload)
 
-            if payload.get('pay_purchase_id') in {None, '', 'null'}:
-                print("No pay_purchase_id")
-                raise BadRequest("Request failed, no UID in payload.")
+#             if payload.get('pay_purchase_id') in {None, '', 'null'}:
+#                 print("No pay_purchase_id")
+#                 raise BadRequest("Request failed, no UID in payload.")
         
-            payload_purchase_uid = {'purchase_uid': payload.pop('pay_purchase_id')}
-            # print(payload_purchase_uid)
-            purchase_uid = payload_purchase_uid['purchase_uid']
-            # print(purchase_uid)
+#             payload_purchase_uid = {'purchase_uid': payload.pop('pay_purchase_id')}
+#             # print(payload_purchase_uid)
+#             purchase_uid = payload_purchase_uid['purchase_uid']
+#             # print(purchase_uid)
 
 
-            # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
-            amt_due = db.execute("""
-                        -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
-                        SELECT -- *,
-                            amt_remaining
-                        FROM space.pp_status
-                        WHERE purchase_uid = \'""" + purchase_uid + """\';
-                        """)
-            # print(amt_due)
-            # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
+#             # DETERMINE WHAT VALUE TO INSERT INTO purchase-status (UNPAID, PAID, PARTIALLY PAID)
+#             amt_due = db.execute("""
+#                         -- CHECK HOW MUCH IS SUPPOSED TO BE PAID
+#                         SELECT -- *,
+#                             amt_remaining
+#                         FROM space.pp_status
+#                         WHERE purchase_uid = \'""" + purchase_uid + """\';
+#                         """)
+#             # print(amt_due)
+#             # print("Amount Due: ", amt_due['result'][0]['amt_remaining'])
 
-            purchase_status = "UNPAID"
-            # print(type(amt_due['result'][0]['amt_remaining']))
-            if float(amt_due['result'][0]['amt_remaining']) <= 0: purchase_status = "PAID"
-            # print(purchase_status)
+#             purchase_status = "UNPAID"
+#             # print(type(amt_due['result'][0]['amt_remaining']))
+#             if float(amt_due['result'][0]['amt_remaining']) <= 0: purchase_status = "PAID"
+#             # print(purchase_status)
 
-            payload = {'purchase_uid': '400-000531', 'purchase_status': purchase_status}
+#             payload = {'purchase_uid': '400-000531', 'purchase_status': purchase_status}
 
             
-            response = db.update('purchases', payload_purchase_uid, payload)
-            response['purchase_status'] = purchase_status
-        return response
+#             response = db.update('purchases', payload_purchase_uid, payload)
+#             response['purchase_status'] = purchase_status
+#         return response
 
 
 class PaymentStatus(Resource):
@@ -740,71 +740,71 @@ class PaymentStatus(Resource):
             return response
 
 
-class PaymentOwner(Resource):
+# class PaymentOwner(Resource):
             
-    # decorators = [jwt_required()]
+#     # decorators = [jwt_required()]
 
-    def get(self, user_id, owner_id):
-        print('in PaymentStatus')
-        response = {}
+#     def get(self, user_id, owner_id):
+#         print('in PaymentStatus')
+#         response = {}
 
-        # print("User ID: ", user_id)
+#         # print("User ID: ", user_id)
 
-        with connect() as db:
-            # print("in connect loop")
+#         with connect() as db:
+#             # print("in connect loop")
 
-            # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
-            if (user_id[0:3] == '600', owner_id[0:3] == '110'):
-                print("In Manager Owner Payable Rents")
-                moneyPayable = db.execute("""
-                -- MONEY PAYABLE
-                SELECT *
-                FROM space.pp_details AS ppd
-                LEFT JOIN (
-                    SELECT 
-                        payment_status AS ps
-                        , pur_group AS pg
-                        , pur_payer AS pp
-                        , CONCAT(pur_group, " ", payment_status) AS pgps
-                    FROM space.pp_status 
-                    WHERE LEFT(pur_payer, 3) = '350'
-                ) AS pps ON ppd.pur_group = pps.pg
-                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
-                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
-                    -- AND ppd.pur_payer = '600-000003'
-                    -- AND ppd.property_owner_id = '110-000003'
-                    AND pur_payer = \'""" + user_id + """\'
-                    AND ppd.property_owner_id = \'""" + owner_id + """\'
-                UNION    
-                -- MONEY TO BE PAID
-                SELECT *
-                FROM space.pp_details AS ppd
-                LEFT JOIN (
-                    SELECT 
-                        payment_status AS ps
-                        , pur_group AS pg
-                        , pur_payer AS pp
-                        , CONCAT(pur_group, " ", payment_status) AS pgps                       
-                    FROM space.pp_status 
-                    WHERE LEFT(pur_payer, 3) = '350'
-                ) AS pps ON ppd.pur_group = pps.pg
-                WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
-                    AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
-                    AND LEFT(ppd.pur_payer, 3) != '350' 
-                    -- AND ppd.pur_receiver = '600-000003'
-                    -- AND ppd.property_owner_id = '110-000003'
-                    AND ppd.pur_receiver = \'""" + user_id + """\'
-                    AND ppd.property_owner_id = \'""" + owner_id + """\'
-                -- ORDER BY cf_year, cf_month
-                ORDER BY STR_TO_DATE(CONCAT('1 ', cf_month, ' ', cf_year), '%d %M %Y') DESC, pgps;
-                """)
-            else:
-                print("Not a Valid Case")
+#             # ACCOUNTS PAYABLE (ASSOCIATED RENTS HAVE BEEN PAID)
+#             if (user_id[0:3] == '600', owner_id[0:3] == '110'):
+#                 print("In Manager Owner Payable Rents")
+#                 moneyPayable = db.execute("""
+#                 -- MONEY PAYABLE
+#                 SELECT *
+#                 FROM space.pp_details AS ppd
+#                 LEFT JOIN (
+#                     SELECT 
+#                         payment_status AS ps
+#                         , pur_group AS pg
+#                         , pur_payer AS pp
+#                         , CONCAT(pur_group, " ", payment_status) AS pgps
+#                     FROM space.pp_status 
+#                     WHERE LEFT(pur_payer, 3) = '350'
+#                 ) AS pps ON ppd.pur_group = pps.pg
+#                 WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+#                     AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+#                     -- AND ppd.pur_payer = '600-000003'
+#                     -- AND ppd.property_owner_id = '110-000003'
+#                     AND pur_payer = \'""" + user_id + """\'
+#                     AND ppd.property_owner_id = \'""" + owner_id + """\'
+#                 UNION    
+#                 -- MONEY TO BE PAID
+#                 SELECT *
+#                 FROM space.pp_details AS ppd
+#                 LEFT JOIN (
+#                     SELECT 
+#                         payment_status AS ps
+#                         , pur_group AS pg
+#                         , pur_payer AS pp
+#                         , CONCAT(pur_group, " ", payment_status) AS pgps                       
+#                     FROM space.pp_status 
+#                     WHERE LEFT(pur_payer, 3) = '350'
+#                 ) AS pps ON ppd.pur_group = pps.pg
+#                 WHERE ppd.payment_status IN ('UNPAID','PARTIALLY PAID')
+#                     AND ps IN ('PAID','PARTIALLY PAID','PAID LATE')
+#                     AND LEFT(ppd.pur_payer, 3) != '350' 
+#                     -- AND ppd.pur_receiver = '600-000003'
+#                     -- AND ppd.property_owner_id = '110-000003'
+#                     AND ppd.pur_receiver = \'""" + user_id + """\'
+#                     AND ppd.property_owner_id = \'""" + owner_id + """\'
+#                 -- ORDER BY cf_year, cf_month
+#                 ORDER BY STR_TO_DATE(CONCAT('1 ', cf_month, ' ', cf_year), '%d %M %Y') DESC, pgps;
+#                 """)
+#             else:
+#                 print("Not a Valid Case")
 
-            # print("Query: ", paidStatus)
-            response["OwnerMoneyPayable"] = moneyPayable
+#             # print("Query: ", paidStatus)
+#             response["OwnerMoneyPayable"] = moneyPayable
 
-            return response
+#             return response
 
 class PaymentMethod(Resource):
     def post(self):
@@ -894,72 +894,72 @@ class PaymentMethod(Resource):
 
         return response
 
-class RequestPayment(Resource):
-    def post(self):
-        print('in Request Payment')
-        with connect() as db:
-            data = request.get_json()
+# class RequestPayment(Resource):
+#     def post(self):
+#         print('in Request Payment')
+#         with connect() as db:
+#             data = request.get_json()
 
-            new_bill_uid = db.call('space.new_bill_uid')['result'][0]['new_id']
-            bill_description = data["bill_description"]
-            bill_amount = data["bill_amount"]
-            bill_created_by = data["bill_created_by"]
-            bill_utility_type = data["bill_utility_type"]
-            bill_split = data["bill_split"]
-            bill_property_id = data["bill_property_id"]
-            bill_docs = data["bill_docs"]
-            bill_maintenance_quote_id = data["bill_maintenance_quote_id"]
-            bill_notes = data["bill_notes"]
+#             new_bill_uid = db.call('space.new_bill_uid')['result'][0]['new_id']
+#             bill_description = data["bill_description"]
+#             bill_amount = data["bill_amount"]
+#             bill_created_by = data["bill_created_by"]
+#             bill_utility_type = data["bill_utility_type"]
+#             bill_split = data["bill_split"]
+#             bill_property_id = data["bill_property_id"]
+#             bill_docs = data["bill_docs"]
+#             bill_maintenance_quote_id = data["bill_maintenance_quote_id"]
+#             bill_notes = data["bill_notes"]
 
-            billQuery = (""" 
-                    -- CREATE NEW BILL
-                    INSERT INTO space.bills
-                    SET bill_uid = \'""" + new_bill_uid + """\'
-                    , bill_timestamp = CURRENT_TIMESTAMP()
-                    , bill_description = \'""" + bill_description + """\'
-                    , bill_amount = \'""" + str(bill_amount) + """\'
-                    , bill_created_by = \'""" + bill_created_by + """\'
-                    , bill_utility_type = \'""" + bill_utility_type + """\'
-                    , bill_split = \'""" + bill_split + """\'
-                    , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
-                    , bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
-                    , bill_notes = \'""" + bill_description + """\'
-                    , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
-                    """)
+#             billQuery = (""" 
+#                     -- CREATE NEW BILL
+#                     INSERT INTO space.bills
+#                     SET bill_uid = \'""" + new_bill_uid + """\'
+#                     , bill_timestamp = CURRENT_TIMESTAMP()
+#                     , bill_description = \'""" + bill_description + """\'
+#                     , bill_amount = \'""" + str(bill_amount) + """\'
+#                     , bill_created_by = \'""" + bill_created_by + """\'
+#                     , bill_utility_type = \'""" + bill_utility_type + """\'
+#                     , bill_split = \'""" + bill_split + """\'
+#                     , bill_property_id = \'""" + json.dumps(bill_property_id, sort_keys=False) + """\'
+#                     , bill_docs = \'""" + json.dumps(bill_docs, sort_keys=False) + """\'
+#                     , bill_notes = \'""" + bill_description + """\'
+#                     , bill_maintenance_quote_id = \'""" + bill_maintenance_quote_id + """\';          
+#                     """)
 
-            response = db.execute(billQuery, [], 'post')
+#             response = db.execute(billQuery, [], 'post')
 
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-            purchase_uid = newRequestID
+#             newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+#             purchase_uid = newRequestID
 
-            pur_payer_st = db.select('property_owner', {'property_id': data["bill_property_id"]})
-            pur_payer = pur_payer_st.get('result')[0]['property_owner_id']
+#             pur_payer_st = db.select('property_owner', {'property_id': data["bill_property_id"]})
+#             pur_payer = pur_payer_st.get('result')[0]['property_owner_id']
 
-            maintenance_request_id_st = db.select('maintenanceQuotes', {'maintenance_quote_uid': bill_maintenance_quote_id})
-            quote_maintenance_request_id = maintenance_request_id_st.get('result')[0]['quote_maintenance_request_id']
-            quote_maintenance_close_dt = db.select('maintenanceRequests', {'maintenance_request_uid': quote_maintenance_request_id})
-            quote_close_date = quote_maintenance_close_dt.get('result')[0]['maintenance_request_closed_date']
+#             maintenance_request_id_st = db.select('maintenanceQuotes', {'maintenance_quote_uid': bill_maintenance_quote_id})
+#             quote_maintenance_request_id = maintenance_request_id_st.get('result')[0]['quote_maintenance_request_id']
+#             quote_maintenance_close_dt = db.select('maintenanceRequests', {'maintenance_request_uid': quote_maintenance_request_id})
+#             quote_close_date = quote_maintenance_close_dt.get('result')[0]['maintenance_request_closed_date']
 
-            purchaseQuery = (""" 
-                                    INSERT INTO space.purchases
-                                    SET purchase_uid = \'""" + purchase_uid + """\'
-                                        , pur_timestamp = CURRENT_TIMESTAMP()
-                                        , pur_property_id = \'""" + bill_property_id + """\'
-                                        , purchase_type = "MAINTENANCE"
-                                        , pur_cf_type = "expense"
-                                        , pur_bill_id = \'""" + new_bill_uid + """\'
-                                        , purchase_date = \'""" + quote_close_date + """\'
-                                        , pur_due_date = DATE_ADD(LAST_DAY(CURRENT_DATE()), INTERVAL 30 DAY)
-                                        , pur_amount_due = \'""" + str(bill_amount) + """\'
-                                        , purchase_status = "UNPAID"
-                                        , pur_notes = "AUTO CREATED WHEN MAINTENANCE WAS COMPLETED"
-                                        , pur_description = "AUTO CREATED WHEN MAINTENANCE WAS COMPLETED"
-                                        , pur_receiver = \'""" + bill_created_by + """\'
-                                        , pur_payer = \'""" + pur_payer + """\'
-                                        , pur_initiator = \'""" + bill_created_by + """\';
-                                    """)
+#             purchaseQuery = (""" 
+#                                     INSERT INTO space.purchases
+#                                     SET purchase_uid = \'""" + purchase_uid + """\'
+#                                         , pur_timestamp = CURRENT_TIMESTAMP()
+#                                         , pur_property_id = \'""" + bill_property_id + """\'
+#                                         , purchase_type = "MAINTENANCE"
+#                                         , pur_cf_type = "expense"
+#                                         , pur_bill_id = \'""" + new_bill_uid + """\'
+#                                         , purchase_date = \'""" + quote_close_date + """\'
+#                                         , pur_due_date = DATE_ADD(LAST_DAY(CURRENT_DATE()), INTERVAL 30 DAY)
+#                                         , pur_amount_due = \'""" + str(bill_amount) + """\'
+#                                         , purchase_status = "UNPAID"
+#                                         , pur_notes = "AUTO CREATED WHEN MAINTENANCE WAS COMPLETED"
+#                                         , pur_description = "AUTO CREATED WHEN MAINTENANCE WAS COMPLETED"
+#                                         , pur_receiver = \'""" + bill_created_by + """\'
+#                                         , pur_payer = \'""" + pur_payer + """\'
+#                                         , pur_initiator = \'""" + bill_created_by + """\';
+#                                     """)
 
-            # print("Query: ", purchaseQuery)
-            queryResponse = db.execute(purchaseQuery, [], 'post')
+#             # print("Query: ", purchaseQuery)
+#             queryResponse = db.execute(purchaseQuery, [], 'post')
 
-        return queryResponse
+#         return queryResponse

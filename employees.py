@@ -5,22 +5,6 @@ from werkzeug.exceptions import BadRequest
 
 class Employee(Resource):
     # print("Hello Employee")
-    def post(self):
-        # print("In Employee")
-        response = {}
-        employee = request.form.to_dict()
-        # print("Form data received: ", employee)
-        with connect() as db:
-            employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
-            file = request.files.get("employee_photo")
-            if file:
-                key = f'employees/{employee["employee_uid"]}/employee_photo'
-                employee["employee_photo_url"] = uploadImage(file, key, '')
-            response = db.insert('employees', employee)
-            response["employee_uid"] = employee["employee_uid"]
-        # print(response)
-        return response
-
     def get(self, user_id):
         response = {}
         if user_id[:3] == '120':
@@ -42,6 +26,24 @@ class Employee(Resource):
                 response["employee"] = empQuery
 
         return response
+
+    def post(self):
+        # print("In Employee")
+        response = {}
+        employee = request.form.to_dict()
+        # print("Form data received: ", employee)
+        with connect() as db:
+            employee["employee_uid"] = db.call('space.new_employee_uid')['result'][0]['new_id']
+            file = request.files.get("employee_photo")
+            if file:
+                key = f'employees/{employee["employee_uid"]}/employee_photo'
+                employee["employee_photo_url"] = uploadImage(file, key, '')
+            response = db.insert('employees', employee)
+            response["employee_uid"] = employee["employee_uid"]
+        # print(response)
+        return response
+
+
 
 class EmployeeVerification(Resource):
     def put(self):

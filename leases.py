@@ -257,7 +257,7 @@ class LeaseApplication(Resource):
     # CHECK IF TENANT HAS APPLIED TO THIS PROPERTY BEFORE
     def get(self, tenant_id, property_id):
         print("In Lease Application GET")
-        print(tenant_id, property_id)
+        # print(tenant_id, property_id)
         response = {}
 
         with connect() as db:
@@ -269,14 +269,13 @@ class LeaseApplication(Resource):
                     LEFT JOIN space.leases ON lt_lease_id = lease_uid
                     WHERE lt_tenant_id = \'""" + tenant_id + """\' AND lease_property_id = \'""" + property_id + """\';
                     """)
-            print(leaseQuery)
-            print(leaseQuery['code'])
-            print(len(leaseQuery['result']))
-            
+            # print(leaseQuery)
+            # print(leaseQuery['code'])
+            # print(len(leaseQuery['result']))
 
             if leaseQuery['code'] == 200 and int(len(leaseQuery['result']) > 0):
                 # return("Tenant has already applied")
-                print(leaseQuery['result'][0]['lt_lease_id'])
+                # print(leaseQuery['result'][0]['lt_lease_id'])
                 return(leaseQuery['result'][0]['lt_lease_id'])
 
         return ("New Application")
@@ -330,8 +329,6 @@ class LeaseApplication(Resource):
                     new_leaseFees["fees_lease_id"] = lease_uid
                     for item in fees:
                         # print("Item: ", item)
-                    # for item in payload.get('fields_leaseFees'):
-                        # if item in fees:
                         new_leaseFees[item] = fees[item]
                         # print(new_leaseFees[item])
                     # print("Payload: ", new_leaseFees)

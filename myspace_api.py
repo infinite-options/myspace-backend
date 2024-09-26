@@ -14,7 +14,7 @@
 from dashboard import Dashboard
 from appliances import Appliances, RemoveAppliance
 from rents import Rents, RentDetails
-from payments import Payments, PaymentOwner, NewPayments, PaymentStatus, PaymentMethod, RequestPayment
+from payments import NewPayments, PaymentStatus, PaymentMethod #, Payments, PaymentOwner, RequestPayment
 from properties import Properties
 from transactions import AllTransactions
 # from cashflow import CashflowByOwner
@@ -22,7 +22,7 @@ from transactions import AllTransactions
 from cashflow import PaymentVerification, CashflowTransactions
 from employees import Employee, EmployeeVerification
 from profiles import Profile, BusinessProfile, BusinessProfileList
-from documents import OwnerDocuments, TenantDocuments
+# from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
 from purchases import Bills, AddExpense, AddRevenue, RentPurchase
@@ -1774,12 +1774,13 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 
 
 # Payment Endpoints
+api.add_resource(stripe_key, "/stripe_key/<string:desc>")
+api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
-api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
 api.add_resource(NewPayments, '/makePayment')
 # api.add_resource(Payments, '/makePayment')  # Original endpoint
-api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
-api.add_resource(stripe_key, "/stripe_key/<string:desc>")
+# api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
+# api.add_resource(RequestPayment, '/requestPayment')
 
 
 
@@ -1838,8 +1839,8 @@ api.add_resource(BusinessProfile, '/businessProfile')
 
 api.add_resource(Employee, '/employee','/employee/<string:user_id>')
 api.add_resource(EmployeeVerification, '/employeeVerification')
-api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
-api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
+# api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
+# api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
 api.add_resource(Documents, '/documents','/documents/<string:user_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>', '/leaseDetails')
@@ -1848,7 +1849,7 @@ api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<stri
 
 api.add_resource(Contacts, '/contacts/<string:uid>')
 api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
-api.add_resource(RequestPayment, '/requestPayment')
+
 
 api.add_resource(List, '/lists')
 api.add_resource(Listings, '/listings/<string:tenant_id>')
