@@ -21,7 +21,7 @@ from transactions import AllTransactions
 # from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised, 
 from cashflow import PaymentVerification, CashflowTransactions
 from employees import Employee, EmployeeVerification
-from profiles import Profile, BusinessProfile, BusinessProfileList
+from profiles import Profile, BusinessProfile #, BusinessProfileList
 # from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
@@ -1834,6 +1834,7 @@ api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
 # api.add_resource(TenantProfile, '/tenantProfile')
 api.add_resource(BusinessProfile, '/businessProfile')
 # api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
+# api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 
 
 
@@ -1876,7 +1877,7 @@ api.add_resource(LateFees_CLASS, '/LateFees')
 # api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
 
 api.add_resource(SendEmail_CLASS, "/sendEmail_CLASS")
-api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
+
 api.add_resource(SendEmail, "/sendEmail")
 
 api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")

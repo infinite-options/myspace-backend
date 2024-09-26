@@ -695,6 +695,7 @@ class DatabaseConnection:
                     sql += ' AND '
             if limit:
                 sql += f' LIMIT {limit}'
+            # print(sql)
             response = self.execute(sql, where, 'get')
         except Exception as e:
             print(e)

@@ -1528,8 +1528,8 @@ class PaymentVerification(Resource):
                         GROUP BY payment_intent, payment_date
                         ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
                     LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-                    -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
-                    WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
+                    -- WHERE pur_receiver = '600-000003' -- AND pur_payer LIKE '350%'
+                    WHERE pur_receiver = \'""" + user_id + """\' -- AND pur_payer LIKE '350%'
                         AND payment_verify = 'Unverified'
                     """)
         return cashflow
