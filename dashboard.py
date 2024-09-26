@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
-from queries import CashflowQuery, DashboardCashflowQuery, AnnouncementReceiverQuery, AnnouncementSenderQuery
+from queries import DashboardCashflowQuery, AnnouncementReceiverQuery, AnnouncementSenderQuery
 
 class Dashboard(Resource):
     def get(self, user_id):
