@@ -92,24 +92,32 @@ def DashboardCashflowQuery(user_id):
             response = db.execute("""
                     -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
                     SELECT -- *,
+                        -- IF(pur_receiver = '600-000003', '600-000003', "") AS pur_receiver,
+                        -- IF(pur_receiver = '600-000003', "", "") AS pur_payer,
                         IF(pur_receiver = \'""" + user_id + """\', \'""" + user_id + """\', "") AS pur_receiver,
                         IF(pur_receiver = \'""" + user_id + """\', "", "") AS pur_payer,
                         SUM(pur_amount_due) AS pur_amount_due, SUM(total_paid) AS total_paid,
                         cf_month, cf_month_num, cf_year,
+                        -- IF(pur_receiver = '600-000003', 'revenue', "") AS pur_cf_type
                         IF(pur_receiver = \'""" + user_id + """\', 'revenue', "") AS pur_cf_type
                     FROM space.pp_status
+                    -- WHERE pur_receiver = '600-000003'
                     WHERE pur_receiver = \'""" + user_id + """\'
-                    GROUP BY cf_month
+                    GROUP BY cf_month, cf_year
                     UNION
                     SELECT -- *,
+                        -- IF(pur_payer = '600-000003', "", "") AS pur_receiver,
+                        -- IF(pur_payer = '600-000003', '600-000003', "") AS pur_payer,
                         IF(pur_payer = \'""" + user_id + """\', "", "") AS pur_receiver,
                         IF(pur_payer = \'""" + user_id + """\', \'""" + user_id + """\', "") AS pur_payer,
                         SUM(pur_amount_due) AS pur_amount_due, SUM(total_paid) AS total_paid,
                         cf_month, cf_month_num, cf_year,
+                        -- IF(pur_payer = '600-000003', 'expense', "") AS pur_cf_type
                         IF(pur_payer = \'""" + user_id + """\', 'expense', "") AS pur_cf_type
                     FROM space.pp_status
+                    -- WHERE pur_payer = '600-000003'
                     WHERE pur_payer = \'""" + user_id + """\'
-                    GROUP BY cf_month
+                    GROUP BY cf_month, cf_year                                  
                     """)
             # print("Function Query Complete")
             # print("This is the Function response: ", response)
