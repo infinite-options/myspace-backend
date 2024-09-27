@@ -84,29 +84,32 @@ class NewPayments(Resource):
                             """)
                 print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
-                print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
+                # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
                 amt_remaining = float(amt_remaining_str)
                 print('amt_remaining: ', amt_remaining, type(amt_remaining))
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
                 print('amt_due: ', amt_due, type(amt_due))
 
-                print("Due Date Provided? ", purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
+                
                 print("Date Time Stamp: ", datetime.now(), type(datetime.now()))
 
-                if purchaseInfo['result'][0]['pur_due_date'] is None:
-                    print("1")
-                    pur_due_date = datetime.now()
-                    print("2")
+
+                if purchaseInfo['result'][0]['pur_due_date'] not in (None, '', 'None'):
+                    try:
+                        print("Due Date Provided? ", purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
+                        # Parse the date and time, handle cases where time may not be included
+                        if ' ' in purchaseInfo['result'][0]['pur_due_date']:
+                            pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y %H:%M')
+                        else:
+                            pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')  # No time included, defaults to 00:00
+                    except ValueError as e:
+                        print("Error:", e)
                 else:
-                    print("3")
-                    if ' ' in purchaseInfo['result'][0]['pur_due_date']:
-                        # If it contains a time, convert it to a datetime object and then format to just the date
-                        pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y %H:%M').date()
-                    else:
-                        # If it does not contain a time, directly convert to date
-                        pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y %H:%M').date()
-                    print("4")
-                print('pur_due_date: ', pur_due_date, type(pur_due_date))
+                    pur_due_date = datetime.today().strftime('%m-%d-%Y %H:%M')
+
+                print("Purchase Due Date: ", pur_due_date, type(pur_due_date))
+
+            
                 
                 purchase_status = "UNPAID"
                 pur_status_value = "0"
