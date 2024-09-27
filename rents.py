@@ -96,7 +96,7 @@ class Rents(Resource):
                             AND LEFT(pur_payer, 3) = '350'
                             AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
-                        GROUP BY pur_due_date, pur_property_id, purchase_type
+                        GROUP BY pur_property_id, purchase_type
                         ) AS pp
                         ON property_uid = pur_property_id;
                     """)
@@ -313,7 +313,7 @@ class RentDetails(Resource):
                             ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_property_id, purchase_type
+                                GROUP BY pur_property_id, purchase_type, cf_month
                                 ) AS pp
                                 ON property_uid = pur_property_id
                                 ORDER BY cf_month DESC, cf_year DESC;
@@ -426,7 +426,7 @@ class RentDetails(Resource):
                                 ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_property_id, purchase_type
+                                GROUP BY pur_property_id, purchase_type, cf_month
                             ) AS pp 
                             ON property_uid = pur_property_id
                             ORDER BY cf_month DESC, cf_year DESC
@@ -540,7 +540,7 @@ class RentDetails(Resource):
                             ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_property_id, purchase_type
+                                GROUP BY pur_property_id, purchase_type, cf_month
                                 ) AS pp
                                 ON property_uid = pur_property_id
                                 ORDER BY cf_month DESC, cf_year DESC;          
