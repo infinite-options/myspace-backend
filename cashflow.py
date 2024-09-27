@@ -1924,7 +1924,7 @@ class CashflowTransactions(Resource):
                         -- WHERE pur_receiver = '350-000007'  OR pur_payer = '350-000007'
                         -- WHERE pur_receiver = '600-000003'  OR pur_payer = '600-000003'
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
-                            AND STR_TO_DATE(purchase_date, '%m-%d-%Y') >= DATE_FORMAT(NOW() - INTERVAL 1 YEAR, '%Y-01-01')
+                            AND STR_TO_DATE(purchase_date, '%m-%d-%Y %H:%i') >= DATE_FORMAT(NOW() - INTERVAL 1 YEAR, '%Y-01-01')
                             -- AND cf_month = DATE_FORMAT(NOW(), '%M')
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
                         """)

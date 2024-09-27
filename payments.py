@@ -82,22 +82,31 @@ class NewPayments(Resource):
                             -- WHERE purchase_uid = '400-000703';
                             WHERE purchase_uid = \'""" + item['purchase_uid'] + """\';
                             """)
-                # print(purchaseInfo)
+                print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
-                # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
+                print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
                 amt_remaining = float(amt_remaining_str)
-                # print('amt_remaining: ', amt_remaining, type(amt_remaining))
+                print('amt_remaining: ', amt_remaining, type(amt_remaining))
                 amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
-                # print('amt_due: ', amt_due, type(amt_due))
+                print('amt_due: ', amt_due, type(amt_due))
 
-                # print("Due Date Provided? ", purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
-                # print("Date Time Stamp: ", datetime.now(), type(datetime.now()))
+                print("Due Date Provided? ", purchaseInfo['result'][0]['pur_due_date'], type(purchaseInfo['result'][0]['pur_due_date']))
+                print("Date Time Stamp: ", datetime.now(), type(datetime.now()))
 
                 if purchaseInfo['result'][0]['pur_due_date'] is None:
+                    print("1")
                     pur_due_date = datetime.now()
+                    print("2")
                 else:
-                    pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y')
-                # print('pur_due_date: ', pur_due_date, type(pur_due_date))
+                    print("3")
+                    if ' ' in purchaseInfo['result'][0]['pur_due_date']:
+                        # If it contains a time, convert it to a datetime object and then format to just the date
+                        pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y %H:%M').date()
+                    else:
+                        # If it does not contain a time, directly convert to date
+                        pur_due_date = datetime.strptime(purchaseInfo['result'][0]['pur_due_date'], '%m-%d-%Y %H:%M').date()
+                    print("4")
+                print('pur_due_date: ', pur_due_date, type(pur_due_date))
                 
                 purchase_status = "UNPAID"
                 pur_status_value = "0"
@@ -193,12 +202,12 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
-                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Extra Charges"
                                 , pur_cf_type = "revenue"
-                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
                                 , pur_notes = "Credit Card Fee - Auto Posted"
@@ -247,12 +256,12 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
-                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i'')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Bill Posting"
                                 , pur_cf_type = "expense"
-                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
                                 , pur_notes = "Credit Card Fee - Auto Posted"

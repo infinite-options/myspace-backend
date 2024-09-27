@@ -1272,12 +1272,12 @@ class RentPurchase_CLASS(Resource):
                         newRequest['pur_payer'] = response['result'][i]['lt_tenant_id']
                         newRequest['pur_initiator'] = response['result'][i]['business_uid']
                         due_by = response['result'][i]['due_by']
-                        newRequest['purchase_date'] = datetime.date(dt.year, dt.month, due_by)
-                        newRequest['pur_due_date'] = datetime.date(dt.year, dt.month, due_by)
+                        newRequest['purchase_date'] = datetime.date(dt.year, dt.month, due_by, 23, 59)
+                        newRequest['pur_due_date'] = datetime.date(dt.year, dt.month, due_by, 23, 59)
 
                         if days_for_rent == 2:
-                            newRequest['purchase_date'] = datetime.date(dt.year, dt.month + 1, due_by)
-                            newRequest['pur_due_date'] = datetime.date(dt.year, dt.month + 1, due_by)
+                            newRequest['purchase_date'] = datetime.date(dt.year, dt.month + 1, due_by, 23, 59)
+                            newRequest['pur_due_date'] = datetime.date(dt.year, dt.month + 1, due_by, 23, 59)
                         db.insert('purchases', newRequest)
         return 200
 

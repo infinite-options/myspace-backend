@@ -38,6 +38,7 @@ class BusinessProfile(Resource):
     def get(self):
         response = {}
         where = request.args.to_dict()
+        print("Where: ", where)
         with connect() as db:
             response = db.select('businessProfileInfo', where)
         return response

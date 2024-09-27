@@ -344,13 +344,13 @@ class Dashboard(Resource):
                                         , MIN(pur_status_value) AS pur_status_value
                                         , purchase_status
                                         , pur_description
-                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
+                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     FROM space.purchases
                                     WHERE purchase_type = "Rent"
                                         AND LEFT(pur_payer, 3) = '350'
-                                        AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                                        AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                                        AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
+                                        AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
                                     GROUP BY pur_due_date, pur_property_id, purchase_type
                                     ) AS pp
                                     ON property_uid = pur_property_id
@@ -519,13 +519,13 @@ class Dashboard(Resource):
                                         , MIN(pur_status_value) AS pur_status_value
                                         , purchase_status
                                         , pur_description
-                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
+                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     FROM space.purchases
                                     WHERE purchase_type = "Rent"
                                         AND LEFT(pur_payer, 3) = '350'
-                                        AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                                        AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                                        AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
+                                        AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
                                     GROUP BY pur_due_date, pur_property_id, purchase_type
                                     ) AS pp
                                     ON property_uid = pur_property_id
@@ -602,8 +602,8 @@ class Dashboard(Resource):
                         SELECT -- *
                             -- SUM( CASE WHEN purchase_status = 'UNPAID' AND pur_payer = '350-000002' THEN pur_amount_due ELSE 0 END) as balance
                             SUM( CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\'  THEN pur_amount_due ELSE 0 END) as balance
-                            -- ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = '350-000002' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y')) AS CHAR) AS earliest_due_date
-                            ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y')) AS CHAR) AS earliest_due_date
+                            -- ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = '350-000002' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y %H:%i')) AS CHAR) AS earliest_due_date
+                            ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y %H:%i')) AS CHAR) AS earliest_due_date
                             , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
                             , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
                             -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign

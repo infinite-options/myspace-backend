@@ -257,8 +257,8 @@ class RentDetails(Resource):
                                     , purchase_status
                                     , pur_description
                                     , latest_date, total_paid, amt_remaining
-                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
+                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     , lf_purchase_uid
                                     , lf_purchase_type
                                     , lf_pur_due_date
@@ -287,14 +287,14 @@ class RentDetails(Resource):
                                         , latest_date AS lf_latest_date
                                         , total_paid AS lf_total_paid
                                         , amt_remaining AS lf_amt_remaining
-                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_month
-                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_year
+                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_month
+                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_year
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
                                         AND purchase_type = "Late Fee"
                             ) AS lf ON purchase_uid = lf_purchase_uid
-                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
+                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                                 ) AS pp
                                 ON property_uid = pur_property_id
@@ -364,8 +364,8 @@ class RentDetails(Resource):
                                     , purchase_status
                                     , pur_description
                                     , latest_date, total_paid, amt_remaining
-                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
+                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     , lf_purchase_uid
                                     , lf_purchase_type
                                     , lf_pur_due_date
@@ -394,14 +394,14 @@ class RentDetails(Resource):
                                         , latest_date AS lf_latest_date
                                         , total_paid AS lf_total_paid
                                         , amt_remaining AS lf_amt_remaining
-                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_month
-                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_year
+                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_month
+                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_year
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
                                         AND purchase_type = "Late Fee"
                                 ) AS lf ON purchase_uid = lf_purchase_uid
-                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
+                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
                                 GROUP BY pur_due_date, pur_property_id, purchase_type
                             ) AS pp ON property_uid = pur_property_id
                             ORDER BY cf_month DESC, cf_year DESC
@@ -471,8 +471,8 @@ class RentDetails(Resource):
                                     , pur_description
                                     , pur_notes
                                     , latest_date, total_paid, amt_remaining
-                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                    , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
+                                    , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     , lf_purchase_uid
                                     , lf_purchase_type
                                     , lf_pur_due_date
@@ -501,15 +501,15 @@ class RentDetails(Resource):
                                         , latest_date AS lf_latest_date
                                         , total_paid AS lf_total_paid
                                         , amt_remaining AS lf_amt_remaining
-                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_month
-                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS lf_cf_year
+                                        , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_month
+                                        , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_year
                                     FROM space.pp_status -- space.purchases
                                     WHERE LEFT(pur_payer, 3) = '350'
                                         AND purchase_type = "Late Fee"
                             ) AS lf ON purchase_uid = lf_purchase_uid
-                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_due_date, pur_property_id, purchase_type
+                            -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
+                            -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
+                                GROUP BY s, pur_property_id, purchase_type
                                 ) AS pp
                                 ON property_uid = pur_property_id
                                 ORDER BY cf_month DESC, cf_year DESC;          

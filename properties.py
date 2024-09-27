@@ -132,13 +132,13 @@ class Properties(Resource):
                                 , MIN(pur_status_value) AS pur_status_value
                                 , purchase_status
                                 , pur_description
-                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
+                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year
                             FROM space.purchases
                             WHERE purchase_type = "Rent"
                                 AND LEFT(pur_payer, 3) = '350'
-                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = MONTH(CURRENT_DATE)
+                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = YEAR(CURRENT_DATE)
                             GROUP BY pur_property_id -- , pur_due_date
                             ) AS pp
                             ON property_uid = pur_property_id                  
@@ -294,13 +294,13 @@ class Properties(Resource):
                                 , MIN(pur_status_value) AS pur_status_value
                                 , purchase_status
                                 , pur_description
-                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
-                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
+                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
+                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year
                             FROM space.purchases
                             WHERE purchase_type = "Rent"
                                 AND LEFT(pur_payer, 3) = '350'
-                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
-                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
+                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = MONTH(CURRENT_DATE)
+                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = YEAR(CURRENT_DATE)
                             GROUP BY pur_property_id -- , pur_due_date
                             ) AS pp
                             ON property_uid = pur_property_id  

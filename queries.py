@@ -208,13 +208,13 @@ def UnpaidRents():
             response = db.execute("""
                     -- DETERMINE WHICH RENTS ARE PAID OR PARTIALLY PAID
                     SELECT *
-						, DATE_FORMAT(DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), INTERVAL pur_late_by DAY), '%m-%d-%Y') AS late_by_date
+						, DATE_FORMAT(DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i'), INTERVAL pur_late_by DAY), '%m-%d-%Y %H:%i') AS late_by_date
 					FROM space.purchases
 					LEFT JOIN space.contracts ON contract_property_id = pur_property_id
 					LEFT JOIN space.property_owner ON property_id = pur_property_id
 					WHERE purchase_type = "RENT" AND
 						  contract_status = "ACTIVE" AND
-                          DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), INTERVAL pur_late_by DAY) < CURDATE() AND
+                          DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i'), INTERVAL pur_late_by DAY) < CURDATE() AND
 						  (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID") AND 
 						  SUBSTRING(pur_payer, 1, 3) = '350';
                     """)
@@ -266,20 +266,20 @@ def NextDueDate():
                                         END
                                         
                                     WHEN frequency = 'Semi-Annually' THEN
-                                        IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
-                                            STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
-                                            DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y'), INTERVAL 6 MONTH)    
+                                        IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), 
+                                            STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), 
+                                            DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), INTERVAL 6 MONTH)    
                                         )
                                     WHEN frequency = 'Annually' THEN
-                                        IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
-                                            STR_TO_DATE(due_by_date, '%m-%d-%Y'), 
-                                            DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y'), INTERVAL 1 YEAR)
+                                        IF(CURDATE() <= STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), 
+                                            STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), 
+                                            DATE_ADD(STR_TO_DATE(due_by_date, '%m-%d-%Y %H:%i'), INTERVAL 1 YEAR)
                                         )
                                     WHEN frequency = 'Weekly' THEN 
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
                                     WHEN frequency = 'Bi-Weekly' THEN
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
-                                END, '%m-%d-%Y') AS next_due_date
+                                END, '%m-%d-%Y %H:%i') AS next_due_date
                         FROM (
                             SELECT * FROM space.leases WHERE lease_status = 'ACTIVE'
                             ) AS l
@@ -296,7 +296,7 @@ def NextDueDate():
                         AND fee_name = pur_notes
                         AND charge = pur_amount_due
                         AND lt_tenant_id = pur_payer
-                        AND STR_TO_DATE(next_due_date, '%m-%d-%Y') = STR_TO_DATE(pur_due_date, '%m-%d-%Y')
+                        AND STR_TO_DATE(next_due_date, '%m-%d-%Y %H:%i') = STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')
                     """)
             
             # print("Function Query Complete")

@@ -1341,7 +1341,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = next_due_date.date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -1356,7 +1356,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
                         # print(newRequest)
@@ -1428,7 +1428,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 newPMRequest['pur_group'] = grouping
 
                                 # *********
-                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                                 
@@ -1630,7 +1630,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = next_due_date.date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
@@ -1645,7 +1645,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                        newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
                         # print(newRequest)
@@ -1717,7 +1717,7 @@ def MonthlyRentPurchase_CRON(Resource):
                                 newPMRequest['pur_group'] = grouping
 
                                 # *********
-                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                                 

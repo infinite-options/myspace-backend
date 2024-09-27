@@ -14,30 +14,12 @@ import calendar
 from werkzeug.exceptions import BadRequest
 
 
-# OVERVIEW
-#           TENANT      OWNER     PROPERTY MANAGER     
-# BY MONTH    X           X               X
-# BY YEAR     X           X               X
-
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# def get_new_billUID(conn):
-#     newBillQuery = execute("CALL space.new_bill_uid;", "get", conn)
-#     if newBillQuery["code"] == 280:
-#         return newBillQuery["result"][0]["new_id"]
-#     return "Could not generate new bill UID", 500
-
-
-# def get_new_purchaseUID(conn):
-#     newPurchaseQuery = execute("CALL space.new_purchase_uid;", "get", conn)
-#     if newPurchaseQuery["code"] == 280:
-#         return newPurchaseQuery["result"][0]["new_id"]
-#     return "Could not generate new bill UID", 500
 
 
 class Bills(Resource):
@@ -237,13 +219,13 @@ class Bills(Resource):
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
-                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
                                     , pur_cf_type = \'""" + pur_cf_type  + """\'
                                     , pur_bill_id = \'""" + new_bill_uid + """\'
-                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                     , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                     , purchase_status = "UNPAID"
                                     , pur_notes = \'""" + bill_notes + """\'
@@ -264,13 +246,13 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
-                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
                                 , pur_cf_type = \'""" + pur_cf_type  + """\'
                                 , pur_bill_id = \'""" + new_bill_uid + """\'
-                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                 , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                 , purchase_status = "UNPAID"
                                 , pur_notes = \'""" + bill_notes + """\'
@@ -296,13 +278,13 @@ class Bills(Resource):
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
-                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                    , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
                                     , pur_cf_type = \'""" + pur_cf_type  + """\'
                                     , pur_bill_id = \'""" + new_bill_uid + """\'
-                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                    , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                    , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                     , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                     , purchase_status = "UNPAID"
                                     , pur_notes = \'""" + bill_notes + """\'
@@ -322,13 +304,13 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
-                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
                                 , pur_cf_type = \'""" + pur_cf_type  + """\'
                                 , pur_bill_id = \'""" + new_bill_uid + """\'
-                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y')
-                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y')  
+                                , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
+                                , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                 , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                 , purchase_status = "UNPAID"
                                 , pur_notes = \'""" + bill_notes + """\'
@@ -446,7 +428,7 @@ class AddExpense(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+            newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
 
             # print(datetime.date.today())
 
@@ -510,7 +492,7 @@ class AddRevenue(Resource):
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
+            newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
 
             # print(newRequest)
 
@@ -620,16 +602,21 @@ class RentPurchase(Resource):
                 purchase_group = newRequestID
 
 
-                newRequest['pur_timestamp'] = today
+                newRequest['pur_timestamp'] = today.strftime('%m-%d-%Y %H:%M')
                 newRequest['pur_property_id'] = fee["lease_property_id"]
                 newRequest['purchase_type'] = fee["fee_name"]
                 newRequest['pur_cf_type'] = "revenue"
                 # print("New Request: ", newRequest)
                 # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
-                dt = fee["lease_start"]
+                # dt = fee["lease_start"]
+                dt = datetime.strptime(fee["lease_start"], '%m-%d-%Y')
+
                 print("Lease Start Date: ", dt)
-                newRequest['purchase_date'] = dt
-                newRequest['pur_due_date'] = dt
+                # newRequest['purchase_date'] = dt
+                # newRequest['pur_due_date'] = dt
+
+                newRequest['purchase_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
+                newRequest['pur_due_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
                 print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
                 newRequest['pur_amount_due'] = fee["charge"]
                 newRequest['purchase_status'] = "UNPAID"
@@ -656,16 +643,21 @@ class RentPurchase(Resource):
                 print("New UID: ", newRequest['purchase_uid'])
 
 
-                newRequest['pur_timestamp'] = today
+                newRequest['pur_timestamp'] = today.strftime('%m-%d-%Y %H:%M')
                 newRequest['pur_property_id'] = fee["lease_property_id"]
                 newRequest['purchase_type'] = fee["fee_name"]
                 newRequest['pur_cf_type'] = "revenue"
                 # print("New Request: ", newRequest)
+
                 # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
-                dt = fee["lease_start"]
+                # dt = fee["lease_start"]
+                dt = datetime.strptime(fee["lease_start"], '%m-%d-%Y')
                 # print("Lease Start Date: ", dt)
-                newRequest['purchase_date'] = dt
-                newRequest['pur_due_date'] = dt
+                # newRequest['purchase_date'] = dt
+                # newRequest['pur_due_date'] = dt
+
+                newRequest['purchase_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
+                newRequest['pur_due_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
                 print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
                 newRequest['pur_amount_due'] = fee["charge"]
                 newRequest['purchase_status'] = "UNPAID"
@@ -707,16 +699,22 @@ class RentPurchase(Resource):
                         newRequest['purchase_uid'] = newRequestID
                         print("New UID: ", newRequest['purchase_uid'])
 
-                        newRequest['pur_timestamp'] = today
+                        newRequest['pur_timestamp'] = today.strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_property_id'] = fee["lease_property_id"]
                         newRequest['purchase_type'] = charge["fee_name"]
                         newRequest['pur_cf_type'] = "expense"
                         # print("New Request: ", newRequest)
+
                         # dt = datetime.datetime(2023,9,21)  # To Test Back Dating a Lease
                         dt = fee["lease_start"]
+                        dt = datetime.strptime(fee["lease_start"], '%m-%d-%Y')
                         # print("Lease Start Date: ", dt)
-                        newRequest['purchase_date'] = dt
-                        newRequest['pur_due_date'] = dt
+
+                        # newRequest['purchase_date'] = dt
+                        # newRequest['pur_due_date'] = dt
+
+                        newRequest['purchase_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
+                        newRequest['pur_due_date'] = dt.strftime('%m-%d-%Y') + ' 12:00'
                         print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
                         
                         newRequest['purchase_status'] = "UNPAID"
@@ -760,7 +758,7 @@ class RentPurchase(Resource):
             dt = datetime.datetime(2023,9,21)
             newRequest['purchase_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
             newRequest['pur_due_date'] = (dt.replace(day=1) + datetime.timedelta(days=32)).replace(day=1)
-            print("DateTime: ", newRequest['purchase_date'], newRequest['pur_due_date'])
+            print("DateTime: ", newRequest['purchase_date'], newRequest['s'])
 
             # THINGS THAT ARE MISSING:
             # 1. NEED TO GET LEASE INFO TO FIND RENT, RENT START DATE, DEPOSIT, DUE DATES AND LATE DATES
