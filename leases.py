@@ -519,15 +519,17 @@ class LeaseApplication(Resource):
                     # Calculate Pro-Rated Rent
                     if fee['fee_name'] == 'Rent':
                         avail_to_pay = fee.get('available_topay') or 10
-                        due_by = fee['due_by']
+                        due_by = fee['due_by']  #May need to adjust this parameter for fixed day due_by dates
 
                         today = datetime.today()
                         # today = datetime(2024, 8, 25)  # For testing purposes
-                        due_date = datetime(today.year, today.month, due_by)
-                        print("Due Date: ", due_date)
+                        print("Today: ", today, type(today))
 
-                        # Calculate due date taking December into account
-                        print("Today: ", today, "vs Due Date: ", due_date)
+                        due_date = datetime(today.year, today.month, due_by)
+                        print("Due Date: ", due_date, type(due_date))
+
+                        # Calculate Actual due date taking December into account
+                        print("Today: ", today , type(today), "vs Due Date: ", due_date, type(due_date))
                         if today < due_date:
                             print("Before due date")
                             
@@ -540,10 +542,33 @@ class LeaseApplication(Resource):
                             else:
                                 # For any other month, increment the month and keep the year the same
                                 due_date = datetime(today.year, today.month + 1, due_by)
-                            print("Modified Due Date: ", due_date)
+                            print("Modified Due Date: ", due_date, type(due_date))
+
+                        print("Final Due Date: ", due_date, type(due_date))
+
+                        pm_due_date = due_date + timedelta(days=32)
+                        print("PM Due Date: ", pm_due_date, type(pm_due_date))
+
+
+
+                        if fee['lease_start'] not in (None, '', 'None'):
+                            try:
+                                # Parse the date and time, handle cases where time may not be included
+                                if ' ' in fee['lease_start']:
+                                    lease_start = datetime.strptime(fee['lease_start'], '%m-%d-%Y %H:%M')
+                                else:
+                                    lease_start = datetime.strptime(fee['lease_start'], '%m-%d-%Y')  # No time included, defaults to 00:00
+                            except ValueError as e:
+                                print("Error:", e)
+                        else:
+                            lease_start = datetime.today().strftime('%m-%d-%Y %H:%M')
+
+                        print("Lease Start: ", lease_start, type(lease_start))
                       
                             
-                        pro_rate_days = (due_date - today).days
+
+
+                        pro_rate_days = (due_date - lease_start).days
                         print("ProRate days: ", pro_rate_days)
 
                         # Get the current year and month
@@ -559,7 +584,7 @@ class LeaseApplication(Resource):
 
 
 
-                        # Create JSON Object for Rent Purchase for Tenant-PM Payment
+                        # Create JSON Object for Rent Purchase for Tenant-PM Purchase
                         newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
@@ -568,15 +593,19 @@ class LeaseApplication(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime('%m-%d-%Y %H:%M')
                         
-                        # print(newRequest)
+
+                        newRequest['pur_due_date'] = today.strftime("%m-%d-%Y %H:%M")
+                        print("Unmodified: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))
+
+
+                        print("Input to purchases Tenant-PM: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
+                        print("Tenant-PM Fee Inserted")
 
 
-
-                        # Create PM-Owner Payment
+                        # Create PM-Owner Purchase
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
                         newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
@@ -584,17 +613,19 @@ class LeaseApplication(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
-                        # newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                        newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], '%m-%d-%Y %H:%M').replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                                    
+
+                        
+                        newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y %H:%M")
+                        print("PM Due Date: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))                            
 
                         newRequest['pur_group'] = grouping
                         newRequest['pur_late_fee'] = 0
                         newRequest['pur_perDay_late_fee'] = 0
 
-                        # print(newRequest)
+                        print("Input to purchases PM-Owner: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
+                        print("PM-Owner Fee Inserted")
 
 
 
@@ -672,7 +703,7 @@ class LeaseApplication(Resource):
                                 newPMRequest['pur_initiator'] = manager
                                 
 
-                                newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], '%m-%d-%Y %H:%M').replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                                newPMRequest['pur_due_date'] =  newRequest['pur_due_date']
                                 
                                 # print(newPMRequest)
                                 db.insert('purchases', newPMRequest)
@@ -685,6 +716,9 @@ class LeaseApplication(Resource):
 
                             newRequest['pur_amount_due'] = fee['charge']
                             newRequest['pur_due_date'] = due_date.strftime('%m-%d-%Y %H:%M')
+                            print("Next Months Rent Due: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))   
+
+
                             newRequest['pur_description'] = f"First Month {fee['fee_name']}"
 
                             # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -712,9 +746,9 @@ class LeaseApplication(Resource):
                             newRequest['pur_receiver'] = owner
                             newRequest['pur_payer'] = manager
                             newRequest['pur_initiator'] = manager
-                            # newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                            # newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
+                            
                             newRequest['pur_due_date'] = (due_date + timedelta(days=15)).strftime('%m-%d-%Y %H:%M')
+                            print("Next Months PM-Owner Due: ", newRequest['pur_due_date'], type(newRequest['pur_due_date'])) 
 
                             newRequest['pur_group'] = grouping
                             newRequest['pur_late_fee'] = 0
@@ -797,8 +831,8 @@ class LeaseApplication(Resource):
                                     newPMRequest['pur_initiator'] = manager
                                     
 
-                                    # newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
                                     newPMRequest['pur_due_date'] = (due_date + timedelta(days=15)).strftime('%m-%d-%Y %H:%M')
+                                    print("Next Months PM-Owner Due: ", newPMRequest['pur_due_date'], type(newPMRequest['pur_due_date'])) 
 
                                     # print(newPMRequest)
                                     db.insert('purchases', newPMRequest)
@@ -820,7 +854,9 @@ class LeaseApplication(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                        # newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                        newRequest['pur_due_date'] = today.strftime("%m-%d-%Y %H:%M")
+                        print("Non Rent Due Date: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))
                         
                         newRequest['pur_amount_due'] = fee['charge']
                         # print(newRequest)
@@ -833,94 +869,6 @@ class LeaseApplication(Resource):
                     
                     
 
-                    # FOR RENTS - Create Owner Payment
-                    # if fee['fee_name'] == 'Rent':
-                    #     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                    #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    #     newRequest['purchase_uid'] = newRequestID
-                    #     # print(newRequestID)
-                    #     newRequest['pur_receiver'] = owner
-                    #     newRequest['pur_payer'] = manager
-                    #     newRequest['pur_initiator'] = manager
-                    #     # newRequest['pur_due_date'] = fee['due_by_date'] if fee['due_by_date'] != 'None' else None
-                    #     newRequest['pur_due_date'] = ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                                      
-
-                    #     newRequest['pur_group'] = grouping
-                    #     newRequest['pur_late_fee'] = 0
-                    #     newRequest['pur_perDay_late_fee'] = 0
-
-                    #     # print(newRequest)
-                    #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                    #     db.insert('purchases', newRequest)
-
-
-                        # # For each entry posted to the purchases table, post any contract fees based on Rent
-                        # # Find contract fees based rent
-                        # manager_fees = db.execute("""
-                        #                 SELECT -- *
-                        #                     contract_uid, contract_property_id, contract_business_id
-                        #                     -- , contract_start_date, contract_end_date
-                        #                     , contract_fees
-                        #                     -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                        #                     , jt.*
-                        #                 FROM 
-                        #                     space.contracts,
-                        #                     JSON_TABLE(
-                        #                         contract_fees,
-                        #                         "$[*]" COLUMNS (
-                        #                             of_column VARCHAR(50) PATH "$.of",
-                        #                             charge_column VARCHAR(50) PATH "$.charge",
-                        #                             fee_name_column VARCHAR(50) PATH "$.fee_name",
-                        #                             fee_type_column VARCHAR(10) PATH "$.fee_type",
-                        #                             frequency_column VARCHAR(20) PATH "$.frequency"
-                        #                         )
-                        #                     ) AS jt
-                        #                 -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
-                        #                 WHERE contract_uid = \'""" + fee['contract_uid'] + """\' AND of_column LIKE '%rent%';
-                        #             """)
-                        # # print("\n Manager Fees: ", manager_fees)
                     
-
-                        # for j in range(len(manager_fees['result'])):
-
-                        #     # Check if fees is monthly 
-                        #     if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
-                        #         # print("Mon        thly Charge")
-
-                        #         # Check if charge is a % or Fixed $ Amount
-                        #         if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
-                        #             charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(fee['charge']) / 100
-                        #         else:
-                        #             charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
-                        #         # print("Charge Amount: ", charge_amt, property, fee['contract_uid'], manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
-
-                        #         # Create JSON Object for Fee Purchase
-                        #         newPMRequest = {}
-                        #         newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                        #         # print(newPMRequestID)
-                        #         newPMRequest['purchase_uid'] = newPMRequestID
-                        #         newPMRequest['pur_timestamp'] = datetime.today().date().strftime("%m-%d-%Y")
-                        #         newPMRequest['pur_property_id'] = fee['lease_property_id']
-                        #         newPMRequest['purchase_type'] = "Management"
-                        #         newPMRequest['pur_cf_type'] = "expense"
-                        #         newPMRequest['pur_amount_due'] = charge_amt
-                        #         newPMRequest['purchase_status'] = "UNPAID"
-                        #         newPMRequest['pur_status_value'] = "0"
-                        #         newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                        #         newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for Initial Rent "
-                        #         # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
-                        #         # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
-                        #         newPMRequest['pur_receiver'] = manager
-                        #         newPMRequest['pur_payer'] = owner
-                        #         newPMRequest['pur_initiator'] = manager
-                        #         newPMRequest['purchase_date'] = datetime.today().date().strftime("%m-%d-%Y")
-                        #         newPMRequest['pur_group'] = grouping
-
-                        #         # *********
-                        #         newPMRequest['pur_due_date'] =  ((datetime.strptime(fee['lease_start'], "%m-%d-%Y").replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)).strftime("%m-%d-%Y") if fee['lease_start'] != 'None' else datetime.today().date().strftime("%m-%d-%Y")
-                                
-                        #         # print(newPMRequest)
-                        #         db.insert('purchases', newPMRequest)
 
         return response

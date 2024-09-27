@@ -636,7 +636,7 @@ class DatabaseConnection:
         self.disconnect()
 
     def execute(self, sql, args=[], cmd='get'):
-        # print("In execute.  SQL: ", sql)
+        # print("\nIn execute.  SQL: ", sql)
         # print("In execute.  args: ",args)
         # print("In execute.  cmd: ",cmd)
         response = {}
@@ -664,7 +664,7 @@ class DatabaseConnection:
                     response['result'] = result
                     # print('RESPONSE GET')
                 elif 'post' in cmd:
-                    # print('IN POST')
+                    print('IN POST')
                     self.conn.commit()
                     response['message'] = 'Successfully committed SQL query'
                     response['code'] = 200
@@ -702,6 +702,7 @@ class DatabaseConnection:
         return response
 
     def insert(self, table, object):
+        # print("\nInside insert: ", table, object)
         response = {}
         try:
             sql = f'INSERT INTO {table} SET '
@@ -712,6 +713,7 @@ class DatabaseConnection:
             # print(sql)
             # print(object)
             response = self.execute(sql, object, 'post')
+            # print("Insert Response: ", response)
         except Exception as e:
             print(e)
         return response
