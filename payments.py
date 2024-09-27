@@ -202,6 +202,7 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
+                                , pur_group = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Extra Charges"
@@ -210,8 +211,9 @@ class NewPayments(Resource):
                                 , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
-                                , pur_notes = "Credit Card Fee - Auto Posted"
-                                , pur_description =  \'""" + item['purchase_uid'] + """\'
+                                , pur_status_value = '5'
+                                , pur_notes = \'""" + item['purchase_uid'] + """\'
+                                , pur_description =  "Credit Card Fee - Auto Posted"
                                 , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
@@ -256,6 +258,7 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
+                                , pur_group = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i'')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Bill Posting"
@@ -264,8 +267,9 @@ class NewPayments(Resource):
                                 , pur_due_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_amount_due = """ + str(itemFee) + """
                                 , purchase_status = "PAID"
-                                , pur_notes = "Credit Card Fee - Auto Posted"
-                                , pur_description =  \'""" + item['purchase_uid'] + """\'
+                                , pur_status_value = '5'
+                                , pur_notes = \'""" + item['purchase_uid'] + """\'
+                                , pur_description =  "Credit Card Fee - Auto Posted"
                                 , pur_receiver = "STRIPE"
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
