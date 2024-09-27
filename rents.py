@@ -81,7 +81,13 @@ class Rents(Resource):
                             , pur_due_date
                             , SUM(pur_amount_due) AS pur_amount_due
                             , MIN(pur_status_value) AS pur_status_value
-                            , purchase_status
+                            , CASE
+                                    WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                    WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                    WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                    WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                    ELSE purchase_status
+                                END AS purchase_status
                             , pur_description
                             , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                             , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
@@ -149,7 +155,13 @@ class Rents(Resource):
                             , pur_due_date
                             , SUM(pur_amount_due) AS pur_amount_due
                             , MIN(pur_status_value) AS pur_status_value
-                            , purchase_status
+                            , CASE
+                                    WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                    WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                    WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                    WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                    ELSE purchase_status
+                                END AS purchase_status
                             , pur_description
                             , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_month
                             , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) AS cf_year
@@ -158,7 +170,7 @@ class Rents(Resource):
                             AND LEFT(pur_payer, 3) = '350'
                             AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = MONTH(CURRENT_DATE)
                             AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y')) = YEAR(CURRENT_DATE)
-                        GROUP BY pur_due_date, pur_property_id, purchase_type
+                        GROUP BY pur_property_id, purchase_type
                         ) AS pp
                         ON property_uid = pur_property_id;
                     """) 
@@ -186,7 +198,7 @@ class Rents(Resource):
 
 class RentDetails(Resource):
     def get(self, uid):
-        print("in Get Rent Status")
+        print("in Get Rent Details")
 
         response = {}
 
@@ -254,7 +266,13 @@ class RentDetails(Resource):
                                     , pur_due_date
                                     , SUM(pur_amount_due) AS pur_amount_due
                                     , MIN(pur_status_value) AS pur_status_value
-                                    , purchase_status
+                                    , CASE
+                                            WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                            WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                            WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                            WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                            ELSE purchase_status
+                                        END AS purchase_status
                                     , pur_description
                                     , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
@@ -295,7 +313,7 @@ class RentDetails(Resource):
                             ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_due_date, pur_property_id, purchase_type
+                                GROUP BY pur_property_id, purchase_type
                                 ) AS pp
                                 ON property_uid = pur_property_id
                                 ORDER BY cf_month DESC, cf_year DESC;
@@ -361,7 +379,13 @@ class RentDetails(Resource):
                                     , pur_due_date
                                     , SUM(pur_amount_due) AS pur_amount_due
                                     , MIN(pur_status_value) AS pur_status_value
-                                    , purchase_status
+                                    , CASE
+                                            WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                            WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                            WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                            WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                            ELSE purchase_status
+                                        END AS purchase_status
                                     , pur_description
                                     , latest_date, total_paid, amt_remaining
                                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
@@ -402,8 +426,9 @@ class RentDetails(Resource):
                                 ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY pur_due_date, pur_property_id, purchase_type
-                            ) AS pp ON property_uid = pur_property_id
+                                GROUP BY pur_property_id, purchase_type
+                            ) AS pp 
+                            ON property_uid = pur_property_id
                             ORDER BY cf_month DESC, cf_year DESC
                             """)
 
@@ -467,7 +492,13 @@ class RentDetails(Resource):
                                     , pur_due_date
                                     , SUM(pur_amount_due) AS pur_amount_due
                                     , MIN(pur_status_value) AS pur_status_value
-                                    , purchase_status
+                                    , CASE
+                                            WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                            WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                            WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                            WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                            ELSE purchase_status
+                                        END AS purchase_status
                                     , pur_description
                                     , pur_notes
                                     , latest_date, total_paid, amt_remaining
@@ -509,7 +540,7 @@ class RentDetails(Resource):
                             ) AS lf ON purchase_uid = lf_purchase_uid
                             -- 		AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                             -- 		AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                GROUP BY s, pur_property_id, purchase_type
+                                GROUP BY pur_property_id, purchase_type
                                 ) AS pp
                                 ON property_uid = pur_property_id
                                 ORDER BY cf_month DESC, cf_year DESC;          

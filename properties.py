@@ -130,7 +130,13 @@ class Properties(Resource):
                                 , pur_due_date
                                 , SUM(pur_amount_due) AS pur_amount_due
                                 , MIN(pur_status_value) AS pur_status_value
-                                , purchase_status
+                                , CASE
+                                        WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                        WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                        WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                        WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                        ELSE purchase_status
+                                    END AS purchase_status
                                 , pur_description
                                 , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
                                 , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year
@@ -292,7 +298,13 @@ class Properties(Resource):
                                 , pur_due_date
                                 , SUM(pur_amount_due) AS pur_amount_due
                                 , MIN(pur_status_value) AS pur_status_value
-                                , purchase_status
+                                , CASE
+                                        WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                        WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                        WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                        WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                        ELSE purchase_status
+                                    END AS purchase_status
                                 , pur_description
                                 , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
                                 , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year

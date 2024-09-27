@@ -342,7 +342,13 @@ class Dashboard(Resource):
                                         , pur_due_date
                                         , SUM(pur_amount_due) AS pur_amount_due
                                         , MIN(pur_status_value) AS pur_status_value
-                                        , purchase_status
+                                        , CASE
+                                            WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
+                                            WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
+                                            WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
+                                            WHEN MIN(pur_status_value) = 5 THEN "PAID"
+                                            ELSE purchase_status
+                                            END AS purchase_status
                                         , pur_description
                                         , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
                                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
@@ -351,7 +357,7 @@ class Dashboard(Resource):
                                         AND LEFT(pur_payer, 3) = '350'
                                         AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                                         AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                    GROUP BY pur_due_date, pur_property_id, purchase_type
+                                    GROUP BY pur_property_id, purchase_type
                                     ) AS pp
                                     ON property_uid = pur_property_id
                                 ) AS rs
