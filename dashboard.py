@@ -172,6 +172,13 @@ class Dashboard(Resource):
                             -- WHERE pur_payer LIKE "110%" OR pur_receiver LIKE "110%"
                             WHERE (pur_payer LIKE "110%" OR pur_receiver LIKE "110%")
                                 AND CAST(cf_year AS UNSIGNED) <= YEAR(CURDATE()) AND CAST(cf_month_num AS UNSIGNED) <= MONTH(CURDATE())
+                                -- 	AND STR_TO_DATE(
+                                --         pur_due_date, 
+                                --         CASE 
+                                --             WHEN pur_due_date LIKE '% %' THEN '%m-%d-%Y %H-%i' -- For mm-dd-yyyy hh-mm format
+                                --             ELSE '%m-%d-%Y' -- For mm-dd-yyyy format
+                                --         END
+                                --     ) <= CURDATE()
                             GROUP BY pur_property_id) AS pp ON pur_property_id = contract_property_id
                             LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
                             -- WHERE contract_business_id = '600-000011'
