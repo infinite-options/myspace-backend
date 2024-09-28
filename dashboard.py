@@ -143,40 +143,42 @@ class Dashboard(Resource):
 
                     # HAPPINESS MATRIX - VACANCY AND CASHFLOW
                     response["happinessMatrix"] = db.execute("""
-                                    -- CASHFLOW ENDPOINT REWRITE TO INCLUDE BOTH VACANCY AND CASHFLOW
-                                    SELECT -- *,
-                                        contracts.contract_property_id
-                                        -- , property_owner.*
-                                        , property_owner_id, owner_first_name, owner_last_name
-                                        -- , l.*
-                                        , COUNT(contract_property_id) AS total_properties
-                                        , COUNT(contract_property_id) - COUNT(lease_status) AS vacancy_num
-                                        , ROUND((COUNT(contract_property_id) - COUNT(lease_status))/COUNT(contract_property_id)*100, 0) AS vacancy_perc
-                                        , SUM(pur_amount_due) AS expected_cashflow
-                                        , if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) AS actual_cashflow
-                                        , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)), 0)  AS delta_cashflow
-                                        , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
-                                        -- , pp.*
-                                    FROM space.contracts
-                                    LEFT JOIN property_owner ON contract_property_id = property_id
-                                    -- LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
-                                    LEFT JOIN (SELECT lease_property_id
-                                        , lease_status 
-                                        FROM space.leases 
-                                        WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON contract_property_id = lease_property_id
-                                    LEFT JOIN (SELECT pur_property_id
-                                        , SUM(if(pur_receiver LIKE "110%", pur_amount_due, -pur_amount_due)) AS pur_amount_due
-                                        , SUM(if(pur_receiver LIKE "110%", total_paid, -total_paid)) AS total_paid
-                                        , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
-                                    FROM space.pp_status
-                                    WHERE pur_payer LIKE "110%" OR pur_receiver LIKE "110%"
-                                    GROUP BY pur_property_id) AS pp ON pur_property_id = contract_property_id
-                                    LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
-                                    -- WHERE contract_business_id = '600-000011'
-                                    WHERE contract_business_id = \'""" + user_id + """\'
-                                        AND contract_status = 'ACTIVE'
-                                    GROUP BY property_owner_id
-        	                    """)
+                            -- CASHFLOW ENDPOINT REWRITE TO INCLUDE BOTH VACANCY AND CASHFLOW
+                            SELECT -- *,
+                                -- contracts.contract_property_id
+                                -- , property_owner.*
+                                property_owner_id, owner_first_name, owner_last_name
+                                -- , l.*
+                                , COUNT(contract_property_id) AS total_properties
+                                , COUNT(contract_property_id) - COUNT(lease_status) AS vacancy_num
+                                , ROUND((COUNT(contract_property_id) - COUNT(lease_status))/COUNT(contract_property_id)*100, 0) AS vacancy_perc
+                                , SUM(pur_amount_due) AS expected_cashflow
+                                , if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) AS actual_cashflow
+                                , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)), 0)  AS delta_cashflow
+                                , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
+                                -- , pp.*
+                            FROM space.contracts
+                            LEFT JOIN property_owner ON contract_property_id = property_id
+                            -- LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                            LEFT JOIN (SELECT lease_property_id
+                                , lease_status 
+                                FROM space.leases 
+                                WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON contract_property_id = lease_property_id
+                            LEFT JOIN (SELECT pur_property_id
+                                , SUM(if(pur_receiver LIKE "110%", pur_amount_due, -pur_amount_due)) AS pur_amount_due
+                                , SUM(if(pur_receiver LIKE "110%", total_paid, -total_paid)) AS total_paid
+                                , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
+                            FROM space.pp_status
+                            -- WHERE pur_payer LIKE "110%" OR pur_receiver LIKE "110%"
+                            WHERE (pur_payer LIKE "110%" OR pur_receiver LIKE "110%")
+                                AND CAST(cf_year AS UNSIGNED) <= YEAR(CURDATE()) AND CAST(cf_month_num AS UNSIGNED) <= MONTH(CURDATE())
+                            GROUP BY pur_property_id) AS pp ON pur_property_id = contract_property_id
+                            LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                            -- WHERE contract_business_id = '600-000011'
+                            WHERE contract_business_id = \'""" + user_id + """\'
+                                AND contract_status = 'ACTIVE'
+                            GROUP BY property_owner_id
+                            """)
 
 
                     # MAINTENANCE     
