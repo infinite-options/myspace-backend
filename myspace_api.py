@@ -13,7 +13,7 @@
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
 from appliances import Appliances, RemoveAppliance
-from rents import Rents, RentDetails
+from rents import Rents, RentDetails, RentTest
 from payments import NewPayments, PaymentStatus, PaymentMethod #, Payments, PaymentOwner, RequestPayment
 from properties import Properties
 from transactions import AllTransactions
@@ -1793,8 +1793,12 @@ api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance
 
 
 api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
-api.add_resource(Rents, '/rents/<string:uid>')
-api.add_resource(RentDetails, '/rentDetails/<string:uid>')
+# api.add_resource(Rents, '/rents/<string:uid>')
+api.add_resource(Rents, '/rents/<string:user_id>')
+# api.add_resource(RentDetails, '/rentDetails/<string:uid>')
+api.add_resource(RentDetails, '/rentDetails/<string:user_id>')
+api.add_resource(RentTest, '/rentTest/<string:user_id>')
+
 
 
 

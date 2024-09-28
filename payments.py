@@ -244,6 +244,7 @@ class NewPayments(Resource):
                                 , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                                 , payment_type = \'""" + data['payment_type'] + """\'
                                 , payment_date = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 8 HOUR), '%m-%d-%Y %H:%i')
+                                -- , payment_verify = "Verified"
                                 , paid_by = \'""" + data['paid_by'] + """\'
                                 , payment_intent = \'""" + data['payment_intent'] + """\'
                                 , payment_method = \'""" + data['payment_method'] + """\';     
@@ -300,6 +301,7 @@ class NewPayments(Resource):
                                 , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                                 , payment_type = \'""" + data['payment_type'] + """\'
                                 , payment_date = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 8 HOUR), '%m-%d-%Y %H:%i')
+                                , payment_verify = "Verified"
                                 , paid_by = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , payment_intent = \'""" + data['payment_intent'] + """\'
                                 , payment_method = \'""" + data['payment_method'] + """\';     
