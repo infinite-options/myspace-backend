@@ -17,14 +17,14 @@ def testQuery(user_id):
         print("Invalid condition type")
         return None
 
-    print(query)
+    # print(query)
 
     try:
         # Run query to find Announcements Received
         with connect() as db:    
             response = db.execute(query, (like_pattern,))
             print("Function Query Complete")
-            print("This is the Function response: ", response)
+            # print("This is the Function response: ", response)
         return response
     except:
         print("Error in testQuery Query ")
@@ -112,7 +112,7 @@ def RentStatusQuery(user_id):
         print("Invalid condition type")
         return None
 
-    print(query)
+    # print(query)
 
     try:
         # Run query to find Announcements Received
@@ -120,7 +120,7 @@ def RentStatusQuery(user_id):
             response = db.execute(query)
             # response = db.execute(query, (like_pattern,))
             print("Function Query Complete")
-            print("This is the Function response: ", response)
+            # print("This is the Function response: ", response)
         return response
     except:
         print("Error in RentStatusQuery Query ")
@@ -256,7 +256,7 @@ def RentDetailsQuery(user_id):
         print("Invalid condition type")
         return None
 
-    print(query)
+    # print(query)
 
     try:
         # Run query to find Announcements Received
@@ -264,7 +264,7 @@ def RentDetailsQuery(user_id):
             response = db.execute(query)
             # response = db.execute(query, (like_pattern,))
             print("Function Query Complete")
-            print("This is the Function response: ", response)
+            # print("This is the Function response: ", response)
         return response
     except:
         print("Error in RentDetailsQuery Query ")
@@ -495,7 +495,7 @@ def NextDueDate():
                     """)
             
             # print("Function Query Complete")
-            # print("THis is the Function response: ", response)
+            # print("This is the Function response: ", len(response["result"]))
         return response
     except:
         print("Error in NextDueDate Query ")
