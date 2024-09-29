@@ -621,7 +621,7 @@ def serializeJSON(unserialized):
         # print("in else")
         return unserialized
 
-
+# Actual Database Commands
 class DatabaseConnection:
     def __init__(self, conn):
         self.conn = conn
@@ -664,7 +664,7 @@ class DatabaseConnection:
                     response['result'] = result
                     # print('RESPONSE GET')
                 elif 'post' in cmd:
-                    print('IN POST')
+                    # print('IN POST')
                     self.conn.commit()
                     response['message'] = 'Successfully committed SQL query'
                     response['code'] = 200
@@ -742,7 +742,7 @@ class DatabaseConnection:
                 if i != len(primaryKey.keys()) - 1:
                     # print("update here 3")
                     sql += ' AND '
-            print("SQL Query: ", sql, object)
+            # print("SQL Query: ", sql, object)
             response = self.execute(sql, object, 'post')
             # print("Response: ", response)
         except Exception as e:
