@@ -638,8 +638,8 @@ class LateFees_CLASS(Resource):
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
                         FROM space.purchases    
-                        WHERE purchase_type = "LATE FEE" AND
-                            (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
+                        WHERE purchase_type = "Late Fee" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
+                            AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                         """)
                 print("\n",lateFees['result'][0:1], type(lateFees))
 
@@ -852,7 +852,7 @@ class LateFees_CLASS(Resource):
                                     newRequest['pur_receiver'] = manager
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
-                                    newRequest['purchase_type'] = "Late Fees - Management"
+                                    newRequest['purchase_type'] = "Management"
                                     newRequest['pur_description'] = "Late Fee"
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
