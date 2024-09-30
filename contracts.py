@@ -55,6 +55,7 @@ class Contracts(Resource):
                     , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                     , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
                     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+                    , business_services_fees, business_locations
                 FROM space.o_details o
                 LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
                 WHERE o.owner_uid = \'""" + user_id + """\';
