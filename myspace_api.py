@@ -25,7 +25,7 @@ from profiles import Profile, BusinessProfile #, BusinessProfileList
 # from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication
-from purchases import Bills, AddExpense, AddRevenue, RentPurchase
+from purchases import Bills, AddExpense, AddRevenue, AddPurchase, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from cron import PeriodicPurchases_CLASS # , ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, LateFees_CRON
 from contacts import Contacts
@@ -1796,7 +1796,7 @@ api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
 api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(NewPayments, '/makePayment')
-# api.add_resource(Payments, '/makePayment')  # Original endpoint
+# api.add_resource(Payments, '/payment')
 # api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
 # api.add_resource(RequestPayment, '/requestPayment')
 
@@ -1830,6 +1830,8 @@ api.add_resource(Bills, '/bills','/bills/<string:user_id>')
 api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
 api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
+api.add_resource(AddPurchase, '/addPurchase')
+
 # api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
 # api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
 # api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')

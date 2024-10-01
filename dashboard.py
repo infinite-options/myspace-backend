@@ -147,7 +147,7 @@ class Dashboard(Resource):
                             SELECT -- *,
                                 -- contracts.contract_property_id
                                 -- , property_owner.*
-                                property_owner_id, owner_first_name, owner_last_name
+                                property_owner_id, owner_first_name, owner_last_name, owner_photo_url
                                 -- , l.*
                                 , COUNT(contract_property_id) AS total_properties
                                 , COUNT(contract_property_id) - COUNT(lease_status) AS vacancy_num

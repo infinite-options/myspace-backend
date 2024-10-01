@@ -391,6 +391,78 @@ class Bills(Resource):
 
             return response
         
+
+class AddPurchase(Resource):
+    def post(self):
+        print("In Add Purchase")
+        response = {}
+        with connect() as db:
+            data = request.get_json(force=True)
+            # print(data)
+
+            fields = [
+                "pur_property_id"
+                , "purchase_type"
+                , "pur_cf_type"
+                , "purchase_date"
+                , "pur_due_date"
+                , "pur_amount_due"
+                , "purchase_status"
+                , "pur_notes"
+                , "pur_description"
+                , "pur_receiver"
+                , "pur_initiator"
+                , "pur_payer"
+            ]
+
+            # PUTS JSON DATA INTO EACH FIELD
+            newRequest = {}
+            for field in fields:
+                newRequest[field] = data.get(field)
+                # print(field, " = ", newRequest[field])
+
+
+            # # GET NEW UID
+            # print("Get New Request UID")
+            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequest['purchase_uid'] = newRequestID
+            newRequest['pur_group'] = newRequestID
+            # print(newRequestID)
+
+            # SET TRANSACTION DATE TO NOW
+            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
+
+            # SET ADDITIONAL FIELDS
+            newRequest['pur_status_value'] = "5"
+
+            # FORMAT DATE FIELDS
+            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
+            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
+
+            # print(datetime.date.today())
+
+            response = db.insert('purchases', newRequest)
+            response['Purchases_UID'] = newRequestID
+
+        return response
+        
+    def put(self):
+        print('in purchases')
+        payload = request.form
+        if payload.get('purchase_uid') in {None, '', 'null'}:
+            print("No purchase_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'purchase_uid': payload['purchase_uid']}
+        print("Key: ", key)
+        purchases = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", purchases)
+        with connect() as db:
+            print("In actual PUT")
+            response = db.update('purchases', key, purchases)
+        return response
+
+        
 class AddExpense(Resource):
     def post(self):
         print("In Add Expense")
@@ -414,7 +486,7 @@ class AddExpense(Resource):
                 , "pur_payer"
             ]
 
-            # PUTS JSON DATA INTO EACH FILE
+            # PUTS JSON DATA INTO EACH FIELD
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
@@ -425,10 +497,19 @@ class AddExpense(Resource):
             # print("Get New Request UID")
             newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
+            newRequest['pur_group'] = newRequestID
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
+
+            # SET ADDITIONAL FIELDS
+            newRequest['pur_status_value'] = "5"
+
+            # FORMAT DATE FIELDS
+            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
+            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
 
             # print(datetime.date.today())
 
@@ -453,8 +534,6 @@ class AddExpense(Resource):
         return response
     
 
-
-
 class AddRevenue(Resource):
     def post(self):
         print("In Add Revenue")
@@ -478,7 +557,7 @@ class AddRevenue(Resource):
                 , "pur_payer"
             ]
 
-            # PUTS JSON DATA INTO EACH FILE
+            # PUTS JSON DATA INTO EACH FIELD
             newRequest = {}
             for field in fields:
                 newRequest[field] = data.get(field)
@@ -489,11 +568,20 @@ class AddRevenue(Resource):
             # print("Get New Request UID")
             newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
+            newRequest['pur_group'] = newRequestID
             # print(newRequestID)
 
             # SET TRANSACTION DATE TO NOW
-            newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
 
+            # SET ADDITIONAL FIELDS
+            newRequest['pur_status_value'] = "5"
+
+            # FORMAT DATE FIELDS
+            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
+            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
+            
             # print(newRequest)
 
             response = db.insert('purchases', newRequest)
@@ -515,6 +603,7 @@ class AddRevenue(Resource):
             print("In actual PUT")
             response = db.update('purchases', key, purchases)
         return response
+
 
 class RentPurchase(Resource):
     def post(self):
