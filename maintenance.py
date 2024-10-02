@@ -650,11 +650,11 @@ class MaintenanceStatus(Resource):
                             , CASE  
                                     WHEN quote_status_ranked = "COMPLETED"                                           					THEN "PAID" 
                                     WHEN maintenance_request_status IN ("NEW" ,"INFO")                                      			THEN "NEW REQUEST"
-                                    WHEN maintenance_request_status = "SCHEDULED"                                           			THEN "SCHEDULED"
+                                    WHEN quote_status_ranked = "SCHEDULED"                                           			        THEN "SCHEDULED"
                                     WHEN maintenance_request_status = 'CANCELLED' or quote_status_ranked = "FINISHED"       			THEN "COMPLETED"
                                     WHEN quote_status_ranked IN ("MORE INFO", "SENT" ,"REFUSED" , "REQUESTED", "REJECTED", "WITHDRAWN") THEN "QUOTES REQUESTED"
                                     WHEN quote_status_ranked IN ("ACCEPTED" , "SCHEDULE")                                   			THEN "QUOTES ACCEPTED"
-                                    ELSE maintenance_request_status
+                                    ELSE maintenance_request_status -- "NEW REQUEST"
                                 END AS maintenance_status
                             FROM (
                                     SELECT * 
