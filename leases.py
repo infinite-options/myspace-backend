@@ -546,7 +546,11 @@ class LeaseApplication(Resource):
 
                         print("Final Due Date: ", due_date, type(due_date))
 
-                        pm_due_date = due_date + timedelta(days=32)
+                        # pm_due_date = due_date + timedelta(days=32)
+                        last_day_of_month = calendar.monthrange(due_date.year, due_date.month)[1]
+                        # Create a new datetime object for the last day of the month
+                        pm_due_date = due_date.replace(day=last_day_of_month)
+                        # print("PM Due Date: ", pm_due_date, type(pm_due_date))
                         print("PM Due Date: ", pm_due_date, type(pm_due_date))
 
 

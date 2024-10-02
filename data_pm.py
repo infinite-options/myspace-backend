@@ -351,6 +351,24 @@ def processDocument(key, payload):
                 payload_documents = payload_query['result'][0]['bill_documents'] if payload_query['result'] else None
             else:
                 return payload
+            
+
+        elif 'appliance_uid' in key:
+            print("Appliance Key passed")
+            key_type = 'appliances'
+            key_uid = key['appliance_uid']
+            payload_changed_documents = payload.pop('appliance_documents', None)            # Current Documents     (if there is a change in a current document)
+            payload_document_details = payload.pop('appliance_documents_details', None)     # New Documents
+            payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
+            if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
+                payload_query = db.execute(""" SELECT appliance_documents FROM space.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                if payload_query['result']: print("4: ", payload_query['result'][0]['appliance_documents'], type(payload_query['result'][0]['appliance_documents']))
+                payload_documents = payload_query['result'][0]['appliance_documents'] if payload_query['result'] else None
+            else:
+                return payload
 
         elif 'maintenance_quote_uid' in key:
             print("Quote Key passed")
@@ -536,6 +554,7 @@ def processDocument(key, payload):
         if key_type == 'contracts': payload['contract_documents'] = json.dumps(current_documents)
         if key_type == 'leases': payload['lease_documents'] = json.dumps(current_documents)
         if key_type == 'bills': payload['bill_documents'] = json.dumps(current_documents) 
+        if key_type == 'appliances': payload['appliance_documents'] = json.dumps(current_documents) 
         if key_type == 'quotes': payload['quote_documents'] = json.dumps(current_documents)
         if key_type == 'tenants': payload['tenant_documents'] = json.dumps(current_documents)
         if key_type == 'business': payload['business_documents'] = json.dumps(current_documents) 

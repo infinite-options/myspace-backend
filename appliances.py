@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 import boto3
-from data_pm import connect, uploadImage, deleteImage, s3, processImage
+from data_pm import connect, uploadImage, deleteImage, s3, processImage, processDocument
 from datetime import date, timedelta, datetime
 from calendar import monthrange
 import json
@@ -61,6 +61,14 @@ class Appliances(Resource):
             
             # --------------- PROCESS IMAGES ------------------
 
+            
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
+
 
             # Add Appliance Info
             payload['appliance_images'] = '[]' if payload.get('appliance_images') in {None, '', 'null'} else payload.get('appliance_images', '[]')
@@ -71,6 +79,7 @@ class Appliances(Resource):
             response['Add Appliance'] = db.insert('appliances', payload)
             response['appliance_UID'] = newApplianceUID 
             response['Appliance Images Added'] = payload.get('appliance_images', "None")
+            response['Appliance Documents Added'] = payload.get('appliance_documents', "None")
             print("\nNew Appliance Added")
 
         return response
