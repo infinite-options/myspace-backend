@@ -108,6 +108,14 @@ class Appliances(Resource):
         print("Payload after function: ", payload)
         
         # --------------- PROCESS IMAGES ------------------
+        
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
 
 
 
