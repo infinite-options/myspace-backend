@@ -921,10 +921,8 @@ def LateFees_CRON(Resource):
 
         try:
 
-            headers = ["Index", "Purchase UID", "Property ID", "Due Date", "Late By", "Late By Date", "Amount Due", "Purchase Status", "Status Value", "Payer"]
-            print("{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(*headers))
-
             with connect() as db:
+
 
                 # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
                 # Run Query to get all late fees
@@ -932,11 +930,15 @@ def LateFees_CRON(Resource):
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
                         FROM space.purchases    
-                        WHERE purchase_type = "LATE FEE" AND
-                            (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
+                        WHERE purchase_type = "Late Fee" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
+                            AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                         """)
-                print("\n",lateFees['result'][0:11], type(lateFees))
+                print("\n",lateFees['result'][0:1], type(lateFees))
 
+
+
+                headers = ["Index", "Purchase UID", "Property ID", "Due Date", "Late By", "Late By Date", "Amount Due", "Purchase Status", "Status Value", "Payer"]
+                print("\n{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(*headers))
 
                 # EXTRACT KEY DATES FOR EACH UNPAID RENT
                 for i in range(len(response['result'])):
@@ -956,13 +958,15 @@ def LateFees_CRON(Resource):
                     purchase_uid = response['result'][i]['purchase_uid']
                     property_id = response['result'][i]['pur_property_id']
                     # print(response['result'][i]['late_by_date'])
-                    late_date = datetime.strptime(response['result'][i]['late_by_date'], '%m-%d-%Y').date()
+                    late_date = datetime.strptime(response['result'][i]['late_by_date'],'%m-%d-%Y %H:%M').date()
                     # print('late_by_date', late_date, type(late_date), dt , type(dt))
                     numDays = (dt - late_date).days
                     # print("Number of Days Late: ", numDays, type(numDays))
                     
 
             # DETERMINE IF UNPAID RENT IS LATE
+                    # print("Late Date: ", late_date, type(late_date))
+                    # print("Today: ", dt, type(dt))
                     if late_date < dt:
                         print("Rent is late!", purchase_uid, property_id)
 
@@ -975,6 +979,7 @@ def LateFees_CRON(Resource):
                         purchase_notes = response['result'][i]['pur_notes']
                         purchase_description = response['result'][i]['pur_description']
                         fees = json.loads(response['result'][i]['contract_fees'])
+                        # print("Fees: ", fees)
                         # PAYMENT PARTIES
                         tenant = response['result'][i]['pur_payer']
                         owner = response['result'][i]['property_owner_id']
@@ -1011,8 +1016,8 @@ def LateFees_CRON(Resource):
                         putFlag = 0
                         if len(lateFees['result']) > 0 and late_fee > 0:
                             for j in range(len(lateFees['result'])):
-                                # print(lateFees['result'][j]['pur_description'])
-                                if  purchase_uid == lateFees['result'][j]['pur_description']:
+                                # print("Conditional Parameters: ", purchase_uid, lateFees['result'][j]['pur_notes'])
+                                if  purchase_uid == lateFees['result'][j]['pur_notes']:
                                     putFlag = putFlag + 1
                                     # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
                                     # print("Entire Row: ", lateFees['result'][j])
@@ -1030,8 +1035,10 @@ def LateFees_CRON(Resource):
                                     elif payer[0:3] == '110':                                   
                                         # print("Figure out what the appropriate Fee split is", purchase_notes )
                                         for fee in fees:
+                                            # print("Fee: ", fee)
                                             # Extract only the monthly fees
-                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_notes']:
+                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_description']:
+                                                print("In Update PM Fee if statement")
                                                 charge = fee['charge']
                                                 charge_type = fee['fee_type']
                                                 # print("\nCharge: ", charge, charge_type)
@@ -1044,8 +1051,9 @@ def LateFees_CRON(Resource):
                                                 numCronUpdates = numCronUpdates + 1
                                                 # print("Updated PM", key, payload)
                                     else:
-                                        print("No Match Found: ", payer)
-                            
+                                        print("No Matching Payer Found: ", payer)
+                                # else:
+                                #     print("No existing Late Fee found")
                                 continue
             # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
                         
@@ -1076,7 +1084,7 @@ def LateFees_CRON(Resource):
                             newRequest['pur_perDay_late_fee'] = 0
 
                             newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                            newRequest['pur_description'] = purchase_uid
+                            newRequest['pur_notes'] = purchase_uid
                             
                         
                             # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -1088,10 +1096,10 @@ def LateFees_CRON(Resource):
 
                             if numDays ==  0:
                                 # print("\n", "Late Today")
-                                newRequest['pur_notes'] = "One Time Late Fee Applied"
+                                newRequest['pur_description'] = "One Time Late Fee Applied"
                             else:
-                                newRequest['pur_notes'] = "One Time Late Fee and Per Day Late Fee Applied"
-                                # newRequest['pur_notes'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
+                                newRequest['pur_description'] = "One Time Late Fee and Per Day Late Fee Applied"
+                                # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
                             db.insert('space.purchases', newRequest)
@@ -1137,7 +1145,7 @@ def LateFees_CRON(Resource):
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
                                     newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_notes'] = "Late Fee"
+                                    newRequest['pur_description'] = "Late Fee"
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)
@@ -1185,7 +1193,7 @@ def LateFees_CRON(Resource):
                     'code': 500}
 
 
-        return response
+        return response    
 
 class MonthlyRentPurchase_CLASS(Resource):
     def get(self):
