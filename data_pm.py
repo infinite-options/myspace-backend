@@ -6,6 +6,7 @@ import datetime
 import json
 import boto3
 from botocore.response import StreamingBody
+import calendar
 from decimal import Decimal
 # from datetime import date, datetime, timedelta
 from werkzeug.datastructures import FileStorage
@@ -13,6 +14,29 @@ import mimetypes
 import ast
 
 s3 = boto3.client('s3')
+
+
+def pmDueDate(due_date):
+    print("\nIn pmDueDate: ", due_date, type(due_date))
+    # Calculate PM Due Date
+    try:
+        # # Parse the date and time, handle cases where time may not be included
+        # if ' ' in due_date:
+        #     dd = datetime.strptime(due_date, '%m-%d-%Y %H:%M')
+        # else:
+        #     dd = datetime.strptime(due_date, '%m-%d-%Y')  # No time included, defaults to 00:00
+        # print("Due Date: ", dd, type(dd))
+        dd = due_date
+    
+        # Find the Last Day of the Due Date Month
+        last_day_of_month = calendar.monthrange(dd.year, dd.month)[1]
+        print("last_day_of_month: ", last_day_of_month, type(last_day_of_month))
+        # Calcuate the last day of the Due Date Month
+        pm_due_date = dd.replace(day=last_day_of_month)
+        print("PM Due Date: ", pm_due_date, type(pm_due_date))
+        return pm_due_date
+    except ValueError as e:
+        print("Error:", e)
 
 
 def deleteImage(key):

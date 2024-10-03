@@ -394,6 +394,153 @@ class Bills(Resource):
 
 class AddPurchase(Resource):
     def post(self):
+        print("In Add Purchase FORM")
+        response = {}
+        payload = request.form.to_dict()
+        print("Property Add Payload: ", payload)
+        # Verify uid has NOT been included in the data
+        if payload.get('purchase_uid'):
+            print("purchase_uid found.  Please call PUT endpoint")
+            raise BadRequest("Request failed, UID found in payload.")
+        with connect() as db:
+            newPurchaseUID = db.call('new_property_uid')['result'][0]['new_id']
+            key = {'property_uid': newPurchaseUID}
+            print("Property Key: ", key)
+            # --------------- PROCESS DOCUMENTS ------------------
+            processDocument(key, payload)
+            print("Payload after function: ", payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
+            # Add Purchase Info
+            fields = [
+                "pur_property_id"
+                , "purchase_type"
+                # , "pur_cf_type"
+                , "purchase_date"
+                , "pur_due_date"
+                , "pur_amount_due"
+                # , "purchase_status"
+                , "pur_notes"
+                , "pur_description"
+                , "pur_receiver"
+                , "pur_initiator"
+                , "pur_payer"
+            ]
+            # PUTS JSON DATA INTO EACH FIELD
+            newRequest = {}
+            newRequest['pur_group'] = newPurchaseUID
+            for field in fields:
+                if field in payload:
+                    newRequest[field] = payload.get(field)
+                print(field, " = ", newRequest[field])
+            print("Payload at this stage: ", newRequest)
+            # IF PAYER = 3RD PARTY
+                # IF RECIEVER = TENANT
+                    # 3RD PARTY - OWNER
+                    # OWNER - PM
+                    # PM - TENANT
+                        # ----OR-----
+                    # 3RD PARTY - PM
+                    # PM - TENANT
+                # IF RECEIVER = PM
+                    # 3RD PARTY - OWNER
+                    # OWNER - PM
+                        # ----OR-----
+                    # 3RD PARTY - PM
+                # IF RECEIVER = OWNER
+                    # 3RD PARTY - OWNER
+                        # ----OR-----
+                    # 3RD PARTY - PM
+                    # PM - OWNER
+                # IF RECEIVER = 3RD PARTY
+                    # 3RD PARTY - OWNER
+                    # OWNER - PM
+                    # PM - 3RD PARTY
+                        # ----OR-----
+                    # 3RD PARTY - PM
+                    # PM - 3RD PARTY
+                    
+            # IF PAYER = TENANT
+            # IF PERSON WHO ACTUALLY MADE PAYEMENT (PAYER) = TENANT
+                # IF RECEIVER = PM
+                    # TENANT - PM
+                # IF RECEIVER = OWNER
+                    # TENANT - PM
+                    # PM - OWNER
+                # IF RECEIVER = 3RD PARTY
+                    # TENANT - PM
+                    # PM - OWNER
+                    # OWNER - 3RD PARTY
+                        # ----OR-----
+                    # TENANT - PM
+                    # PM - 3RD PARTY
+            # IF PERSON WHO ACTUALLY MADE PAYEMENT (PAYER) = PM
+                # IF RECEIVER = TENANT
+                    # PM - TENANT
+                # IF RECEIVER = OWNER
+                    # PM - OWNER
+                # IF RECEIVER = 3RD PARTY
+                    # PM - 3RD PARTY
+                        # ----OR-----  (IF Reimbursable  WHO ACTUALLY PAID?  WHO IS ULTIMATELY RESPONSIBLE?)
+                    # OWNER - PM
+                    # PM - 3RD PARTY
+      
+            # IF PAYER = OWNER
+            # IF PERSON WHO ACTUALLY MADE PAYEMENT (PAYER) = OWNER
+                # IF RECEIVER = TENANT
+                    # OWNER - PM
+                    # PM - TENANT
+                # IF RECEIVER = PM
+                    # OWNER - PM
+                # IF RECEIVER = 3RD PARTY
+                    # OWNER - 3RD PARTY
+                        # ----OR-----  (IF Reimbursable)
+                    # PM - OWNER
+                    # OWNER - 3RD PARTY
+            # WHO ACTUALLY MADE PAYEMENT (PAYER) = OWNER
+            # WHO IS UTLIMATELY RESPONSIBLE FOR PAYMENT = 
+            # WHO IS THE RECEIVER
+            
+                # IF RECEIVER = TENANT
+                    # OWNER - PM
+                    # PM - TENANT
+                # IF RECEIVER = PM
+                    # OWNER - PM
+                # IF RECEIVER = 3RD PARTY
+                    # OWNER - 3RD PARTY
+                        # ----OR-----  (IF Reimbursable)
+                    # PM - OWNER
+                    # OWNER - 3RD PARTY
+            # SET TRANSACTION DATE TO NOW
+            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
+            # SET ADDITIONAL FIELDS
+            newRequest['pur_status_value'] = "5"
+            # FORMAT DATE FIELDS
+            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
+            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
+            # print(datetime.date.today())
+            response = db.insert('purchases', newRequest)
+            response['Purchases_UID'] = newPurchaseUID
+        return response
+        
+    def put(self):
+        print('in purchases')
+        payload = request.form
+        if payload.get('purchase_uid') in {None, '', 'null'}:
+            print("No purchase_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'purchase_uid': payload['purchase_uid']}
+        print("Key: ", key)
+        purchases = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", purchases)
+        with connect() as db:
+            print("In actual PUT")
+            response = db.update('purchases', key, purchases)
+        return response
+    
+class AddPurchaseJSON(Resource):
+    def post(self):
         print("In Add Purchase")
         response = {}
         with connect() as db:

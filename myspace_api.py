@@ -63,6 +63,7 @@ import pytz
 # import csv
 # import re  # regex
 
+import calendar
 from dotenv import load_dotenv
 # from datetime import datetime as dt
 # from datetime import timezone as dtz
@@ -1239,7 +1240,10 @@ class MonthlyRentPurchase_CLASS(Resource):
                 # print("Rent due: ", next_due_date, type(next_due_date))
                 postdate = next_due_date - timedelta(days=payable)
                 # print("Post Date: ", postdate, type(postdate))
-                pm_due_date = next_due_date + relativedelta(days=15)
+                # pm_due_date = next_due_date + relativedelta(days=15)
+                last_day_of_month = calendar.monthrange(next_due_date.year, next_due_date.month)[1]
+                # Create a new datetime object for the last day of the month
+                pm_due_date = next_due_date.replace(day=last_day_of_month)
                 # print("PM Due Date: ", pm_due_date, type(pm_due_date))
                 
                 # print("Available to Post x days ahead: ", payable)
