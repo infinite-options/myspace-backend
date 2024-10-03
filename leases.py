@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-from data_pm import connect, deleteImage, uploadImage, s3, processDocument
+from data_pm import connect, deleteImage, uploadImage, s3, processDocument, pmDueDate
 import boto3
 import json
 # import datetime
@@ -377,7 +377,7 @@ class LeaseApplication(Resource):
         print("\nIn Lease Application PUT")
         response = {}
         payload = request.form.to_dict()
-        # print("Lease Application Payload: ", payload)
+        print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
         if payload.get('lease_uid') in {None, '', 'null'}:
@@ -398,7 +398,7 @@ class LeaseApplication(Resource):
 
         with connect() as db: 
 
-            # DEL FEES
+            # DEL FEES.  Typically if PM is modifying the lease for Tenant
             if "delete_fees" in payload:
                 json_object = json.loads(payload.pop('delete_fees'))
                 print("delete lease fees json_object", json_object)
@@ -410,7 +410,7 @@ class LeaseApplication(Resource):
                             WHERE leaseFees_uid = \'""" + delete_uid + """\'
                             """)
 
-            # POST TO LEASE FEES.  Need to post Lease Fees into Lease Fees Table
+            # POST TO LEASE FEES.  Need to post Lease Fees into leaseFees Table.  Typically when PM sends lease to Tenant
             if "lease_fees" in payload:
                 print("lease_fees in data", payload['lease_fees'])
                 fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
@@ -477,7 +477,7 @@ class LeaseApplication(Resource):
                             AND contract_status = 'ACTIVE';
                         """)
                 print("Lease Fees: ", fees) 
-
+                
 
                 # PROCESS EACH LEASE FEE
                 for fee in fees['result']:
@@ -545,12 +545,13 @@ class LeaseApplication(Resource):
                             print("Modified Due Date: ", due_date, type(due_date))
 
                         print("Final Due Date: ", due_date, type(due_date))
-
+                        
+                        # Calculate PM Due Date
                         # pm_due_date = due_date + timedelta(days=32)
                         last_day_of_month = calendar.monthrange(due_date.year, due_date.month)[1]
+                        print("last_day_of_month: ", last_day_of_month, type(last_day_of_month))
                         # Create a new datetime object for the last day of the month
                         pm_due_date = due_date.replace(day=last_day_of_month)
-                        # print("PM Due Date: ", pm_due_date, type(pm_due_date))
                         print("PM Due Date: ", pm_due_date, type(pm_due_date))
 
 
@@ -618,8 +619,8 @@ class LeaseApplication(Resource):
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
 
-                        
                         newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y %H:%M")
+                        # newRequest['pur_due_date'] = pmDueDate(newRequest['pur_due_date'])
                         print("PM Due Date: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))                            
 
                         newRequest['pur_group'] = grouping

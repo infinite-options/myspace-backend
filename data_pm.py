@@ -3,6 +3,7 @@ from flask import request
 import os
 import pymysql
 import datetime
+from datetime import datetime, date, timedelta
 import json
 import boto3
 from botocore.response import StreamingBody
@@ -11,8 +12,35 @@ from decimal import Decimal
 from werkzeug.datastructures import FileStorage
 import mimetypes
 import ast
+import calendar
 
 s3 = boto3.client('s3')
+
+def pmDueDate(due_date):
+    print("\nIn pmDueDate: ", due_date, type(due_date))
+    # Calculate PM Due Date
+
+
+    try:
+        # Parse the date and time, handle cases where time may not be included
+        if ' ' in due_date:
+            dd = datetime.strptime(due_date, '%m-%d-%Y %H:%M')
+        else:
+            dd = datetime.strptime(due_date, '%m-%d-%Y')  # No time included, defaults to 00:00
+        print("Due Date: ", dd, type(dd))
+    
+        # Find the Last Day of the Due Date Month
+        last_day_of_month = calendar.monthrange(dd.year, dd.month)[1]
+        print("last_day_of_month: ", last_day_of_month, type(last_day_of_month))
+
+        # Calcuate the last day of the Due Date Month
+        pm_due_date = dd.replace(day=last_day_of_month)
+        print("PM Due Date: ", pm_due_date, type(pm_due_date))
+        return pm_due_date
+
+    except ValueError as e:
+        print("Error:", e)
+
 
 
 def deleteImage(key):
@@ -344,8 +372,8 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT bill_documents FROM space.bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
+                # print("1: ", payload_query)
+                # print("2: ", payload_query['result'], type(payload_query['result']))
                 if payload_query['result']: print("3: ", payload_query['result'][0] ) 
                 if payload_query['result']: print("4: ", payload_query['result'][0]['bill_documents'], type(payload_query['result'][0]['bill_documents']))
                 payload_documents = payload_query['result'][0]['bill_documents'] if payload_query['result'] else None
@@ -362,8 +390,8 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT appliance_documents FROM space.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
+                # print("1: ", payload_query)
+                # print("2: ", payload_query['result'], type(payload_query['result']))
                 if payload_query['result']: print("3: ", payload_query['result'][0] ) 
                 if payload_query['result']: print("4: ", payload_query['result'][0]['appliance_documents'], type(payload_query['result'][0]['appliance_documents']))
                 payload_documents = payload_query['result'][0]['appliance_documents'] if payload_query['result'] else None
