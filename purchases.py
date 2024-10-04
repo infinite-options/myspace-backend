@@ -392,119 +392,99 @@ class Bills(Resource):
             return response
         
 
-class AddPurchaseFORM(Resource):
+class AddPurchase(Resource):
     def post(self):
         print("In Add Purchase FORM")
         response = {}
         payload = request.form.to_dict()
         print("Property Add Payload: ", payload)
+
         # Verify uid has NOT been included in the data
         if payload.get('purchase_uid'):
             print("purchase_uid found.  Please call PUT endpoint")
             raise BadRequest("Request failed, UID found in payload.")
+        
         with connect() as db:
-
-            # DETERMINE PURCHASE FLOW
-            # IF ULTIMATE PAYER = ACTUAL PAYER JUST FOCUS ON TRANSACTION FLOW
-            # IF NOT EQUAL, POST ACTUAL PAYMENT AND THEN TRANSACTION FLOW
-
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS TENANT AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS PM AND RECEIVER IS PM:  (Not applicable)
-            #   
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
-            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
-            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
-
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS TENANT AND RECEIVER IS OWNER:
-            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS PM AND RECEIVER IS OWNER:
-            #   ACTUAL PAYMENT:    PAYER: PM ==> RECEIVER: OWNER & PAYER: TENANT ==> RECEIVER: PM
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS OWNER:
-            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
- 
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
-            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
-
-
-
-
-
-
-
-
-
-            # IF ULTIMATE PAYER IS PM AND PAYER IS TENANT AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: PM ==> RECEIVER: TENANT
-            # IF ULTIMATE PAYER IS PM AND PAYER IS PM AND RECEIVER IS PM:  (Not applicable)
-            #   
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
-            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
-            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
-            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
-            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
-
-
-
-
-
             newPurchaseUID = db.call('new_purchase_uid')['result'][0]['new_id']
             key = {'purchase_uid': newPurchaseUID}
             print("Purchase Key: ", key)
+
             # --------------- PROCESS DOCUMENTS ------------------
-            processDocument(key, payload)
-            print("Payload after function: ", payload)
+            # processDocument(key, payload)
+            # print("Payload after function: ", payload)
             
             # --------------- PROCESS DOCUMENTS ------------------
-            # Add Purchase Info
-            fields = [
-                "pur_property_id"
-                , "purchase_type"
-                # , "pur_cf_type"
-                , "purchase_date"
-                , "pur_due_date"
-                , "pur_amount_due"
-                # , "purchase_status"
-                , "pur_notes"
-                , "pur_description"
-                , "pur_receiver"
-                , "pur_initiator"
-                , "pur_payer"
-            ]
-
-            # CREATE PURCHASE ENTRIES AS NEEDED
-
-            # START WITH ULTIMATE PAYER
-            print("Ultimate Payer: ", payload.get("pur_payer_final") )
-            newRequest["pur_payer"] = payload.get("pur_payer_final")
 
 
-            # PUTS JSON DATA INTO EACH FIELD
-            newRequest = {}
-            newRequest['pur_group'] = newPurchaseUID
-            for field in fields:
-                if field in payload:
-                    newRequest[field] = payload.get(field)
-                print(field, " = ", newRequest[field])
-            print("Payload at this stage: ", newRequest)
-            
+           # Add Purachse Info
+
+            # payload['bill_documents'] = '[]' if payload.get('bill_documents') in {None, '', 'null'} else payload.get('bill_documents', '[]')
+            # print("Add Appliance Payload: ", payload)  
+
+            payload["purchase_uid"] = newPurchaseUID  
+
             # SET TRANSACTION DATE TO NOW
             # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
-            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
+            payload['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
             # SET ADDITIONAL FIELDS
-            newRequest['pur_status_value'] = "5"
+            payload['pur_status_value'] = "5"
             # FORMAT DATE FIELDS
-            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
-            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
+            payload['purchase_date'] = f"{payload.get('purchase_date')} 12:00"
+            payload['pur_due_date'] = f"{payload.get('pur_due_date')} 12:00"
             # print(datetime.date.today())
-            response = db.insert('purchases', newRequest)
+
+            payer = payload.get('pur_payer') 
+            payload['pur_cf_type'] = 'revenue' if payer.startswith(('110', '350')) else 'expense'
+
             response['Purchases_UID'] = newPurchaseUID
+            response['Add Purchase'] = db.insert('purchases', payload)
+            response['purchase_UID'] = newPurchaseUID 
+        
+            # response['Appliance Documents Added'] = payload.get('appliance_documents', "None")
+            print("1")
+            print(response)
+            print("\nNew Purchase Added")
+
+
+
         return response
+
+
+
+            # Add Purchase Info
+        #     fields = [
+        #         "pur_property_id"
+        #         , "purchase_type"
+        #         , "pur_cf_type"
+        #         , "purchase_date"
+        #         , "pur_due_date"
+        #         , "pur_amount_due"
+        #         , "purchase_status"
+        #         , "pur_notes"
+        #         , "pur_description"
+        #         , "pur_receiver"
+        #         , "pur_initiator"
+        #         , "pur_payer"
+        #     ]
+
+
+        #     # PUTS FROM DATA INTO EACH FIELD
+        #     newRequest = {}
+        #     newRequest['pur_group'] = newPurchaseUID
+        #     payload['appliance_documents'] = '[]' if payload.get('appliance_documents') in {None, '', 'null'} else payload.get('appliance_documents', '[]')
+        #     for field in fields:
+        #         if field in payload:
+        #             newRequest[field] = payload.get(field)
+        #         print(field, " = ", newRequest[field])
+        #     print("Payload at this stage: ", newRequest)
+            
+
+        # return response
+    
+
+
+
+
         
     def put(self):
         print('in purchases')
@@ -600,7 +580,7 @@ class AddPurchaseFORM(Resource):
                     # PM - OWNER
                     # OWNER - 3RD PARTY
     
-class AddPurchase(Resource):
+class AddPurchaseJSON(Resource):
     def post(self):
         print("In Add Purchase")
         response = {}
