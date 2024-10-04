@@ -392,7 +392,7 @@ class Bills(Resource):
             return response
         
 
-class AddPurchase(Resource):
+class AddPurchaseFORM(Resource):
     def post(self):
         print("In Add Purchase FORM")
         response = {}
@@ -600,7 +600,7 @@ class AddPurchase(Resource):
                     # PM - OWNER
                     # OWNER - 3RD PARTY
     
-class AddPurchaseJSON(Resource):
+class AddPurchase(Resource):
     def post(self):
         print("In Add Purchase")
         response = {}
