@@ -421,7 +421,8 @@ class AddPurchase(Resource):
             # payload['bill_documents'] = '[]' if payload.get('bill_documents') in {None, '', 'null'} else payload.get('bill_documents', '[]')
             # print("Add Appliance Payload: ", payload)  
 
-            payload["purchase_uid"] = newPurchaseUID  
+            payload["purchase_uid"] = newPurchaseUID
+            payload["pur_group"] = newPurchaseUID 
 
             # SET TRANSACTION DATE TO NOW
             # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
