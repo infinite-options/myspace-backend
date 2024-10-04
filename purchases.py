@@ -440,14 +440,12 @@ class AddPurchase(Resource):
             payer = payload.get('pur_payer') 
             payload['pur_cf_type'] = 'revenue' if payer.startswith(('110', '350')) else 'expense'
 
-            response['Purchases_UID'] = newPurchaseUID
             response['Add Purchase'] = db.insert('purchases', payload)
             response['purchase_UID'] = newPurchaseUID 
         
-            # response['Appliance Documents Added'] = payload.get('appliance_documents', "None")
-            print("1")
-            print(response)
-            print("\nNew Purchase Added")
+            # response['Purchase Documents Added'] = payload.get('purchase_documents', "None")
+            # print(response)
+            # print("\nNew Purchase Added")
 
 
 
