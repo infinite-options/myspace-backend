@@ -403,9 +403,59 @@ class AddPurchase(Resource):
             print("purchase_uid found.  Please call PUT endpoint")
             raise BadRequest("Request failed, UID found in payload.")
         with connect() as db:
-            newPurchaseUID = db.call('new_property_uid')['result'][0]['new_id']
-            key = {'property_uid': newPurchaseUID}
-            print("Property Key: ", key)
+
+            # DETERMINE PURCHASE FLOW
+            # IF ULTIMATE PAYER = ACTUAL PAYER JUST FOCUS ON TRANSACTION FLOW
+            # IF NOT EQUAL, POST ACTUAL PAYMENT AND THEN TRANSACTION FLOW
+
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS TENANT AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS PM AND RECEIVER IS PM:  (Not applicable)
+            #   
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
+            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
+            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
+
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS TENANT AND RECEIVER IS OWNER:
+            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS PM AND RECEIVER IS OWNER:
+            #   ACTUAL PAYMENT:    PAYER: PM ==> RECEIVER: OWNER & PAYER: TENANT ==> RECEIVER: PM
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS OWNER:
+            #   ACTUAL PAYMENT:    PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
+ 
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
+            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
+
+
+
+
+
+
+
+
+
+            # IF ULTIMATE PAYER IS PM AND PAYER IS TENANT AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: PM ==> RECEIVER: TENANT
+            # IF ULTIMATE PAYER IS PM AND PAYER IS PM AND RECEIVER IS PM:  (Not applicable)
+            #   
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS OWNER AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
+            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: OWNER
+            # IF ULTIMATE PAYER IS TENANT AND PAYER IS 3rd PARTY AND RECEIVER IS PM:
+            #   ACTUAL PAYMENT:    PAYER: OWNER ==> RECEIVER: PM   
+            #   ULTIMATE PAYMENT:  PAYER: TENANT ==> RECEIVER: PM & PAYER: PM ==> RECEIVER: 3rd PARTY
+
+
+
+
+
+            newPurchaseUID = db.call('new_purchase_uid')['result'][0]['new_id']
+            key = {'purchase_uid': newPurchaseUID}
+            print("Purchase Key: ", key)
             # --------------- PROCESS DOCUMENTS ------------------
             processDocument(key, payload)
             print("Payload after function: ", payload)
@@ -426,6 +476,14 @@ class AddPurchase(Resource):
                 , "pur_initiator"
                 , "pur_payer"
             ]
+
+            # CREATE PURCHASE ENTRIES AS NEEDED
+
+            # START WITH ULTIMATE PAYER
+            print("Ultimate Payer: ", payload.get("pur_payer_final") )
+            newRequest["pur_payer"] = payload.get("pur_payer_final")
+
+
             # PUTS JSON DATA INTO EACH FIELD
             newRequest = {}
             newRequest['pur_group'] = newPurchaseUID
@@ -434,7 +492,37 @@ class AddPurchase(Resource):
                     newRequest[field] = payload.get(field)
                 print(field, " = ", newRequest[field])
             print("Payload at this stage: ", newRequest)
-            # IF PAYER = 3RD PARTY
+            
+            # SET TRANSACTION DATE TO NOW
+            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
+            # SET ADDITIONAL FIELDS
+            newRequest['pur_status_value'] = "5"
+            # FORMAT DATE FIELDS
+            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
+            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
+            # print(datetime.date.today())
+            response = db.insert('purchases', newRequest)
+            response['Purchases_UID'] = newPurchaseUID
+        return response
+        
+    def put(self):
+        print('in purchases')
+        payload = request.form
+        if payload.get('purchase_uid') in {None, '', 'null'}:
+            print("No purchase_uid")
+            raise BadRequest("Request failed, no UID in payload.")
+        key = {'purchase_uid': payload['purchase_uid']}
+        print("Key: ", key)
+        purchases = {k: v for k, v in payload.items()}
+        print("KV Pairs: ", purchases)
+        with connect() as db:
+            print("In actual PUT")
+            response = db.update('purchases', key, purchases)
+        return response
+    
+
+    # IF PAYER = 3RD PARTY
                 # IF RECIEVER = TENANT
                     # 3RD PARTY - OWNER
                     # OWNER - PM
@@ -511,33 +599,6 @@ class AddPurchase(Resource):
                         # ----OR-----  (IF Reimbursable)
                     # PM - OWNER
                     # OWNER - 3RD PARTY
-            # SET TRANSACTION DATE TO NOW
-            # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
-            newRequest['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
-            # SET ADDITIONAL FIELDS
-            newRequest['pur_status_value'] = "5"
-            # FORMAT DATE FIELDS
-            newRequest['purchase_date'] = f"{data.get('purchase_date')} 12:00"
-            newRequest['pur_due_date'] = f"{data.get('pur_due_date')} 12:00"
-            # print(datetime.date.today())
-            response = db.insert('purchases', newRequest)
-            response['Purchases_UID'] = newPurchaseUID
-        return response
-        
-    def put(self):
-        print('in purchases')
-        payload = request.form
-        if payload.get('purchase_uid') in {None, '', 'null'}:
-            print("No purchase_uid")
-            raise BadRequest("Request failed, no UID in payload.")
-        key = {'purchase_uid': payload['purchase_uid']}
-        print("Key: ", key)
-        purchases = {k: v for k, v in payload.items()}
-        print("KV Pairs: ", purchases)
-        with connect() as db:
-            print("In actual PUT")
-            response = db.update('purchases', key, purchases)
-        return response
     
 class AddPurchaseJSON(Resource):
     def post(self):

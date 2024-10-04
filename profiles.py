@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-from data_pm import connect, deleteImage, uploadImage, s3, processDocument
+from data_pm import connect, deleteImage, uploadImage, s3, processImage, processDocument
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -278,6 +278,48 @@ class Profile(Resource):
 
         return response
 
+    def put(self):
+        print("\nIn Profile PUT")
+        response = {}
+        payload = request.form.to_dict()
+        print("Profile Update Payload: ", payload) 
+   
+        if payload.get('tenant_uid'):
+            key = {'tenant_uid': payload.pop('tenant_uid')}
+        elif payload.get('owner_uid'):
+            key = {'owner_uid': payload.pop('owner_uid')}
+        elif payload.get('business_uid'):
+            valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
+            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            print("Filtered Payload: ", filtered_payload)
+            key = {'business_uid': filtered_payload.pop('business_uid')}
+        elif payload.get('employee_uid'):
+            valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
+            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            print("Filtered Payload: ", filtered_payload)
+            key = {'employee_uid': filtered_payload.pop('employee_uid')}
+        else:
+            print("No uid passed")
+            return
+        print("Key Received: ", key)
+
+
+        # --------------- PROCESS IMAGES ------------------
+
+        processImage(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS IMAGES ------------------
+
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, filtered_payload)
+        print("Payload after function: ", filtered_payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
+   
+   
     def put(self):
         print("\nIn Profile PUT")
         response = {}

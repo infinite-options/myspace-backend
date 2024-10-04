@@ -158,6 +158,25 @@ def processImage(key, payload):
                 payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
+            
+
+        elif 'tenant_uid' in key:
+            print("Tenant Profile Key passed")
+            key_type = 'tenant Profile'
+            key_uid = key['tenant_uid']
+            # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'tenant_photo_url' in request.files: #  New images are passed in as photo_url
+                payload_query = db.execute(""" SELECT tenant_photo_urls FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('tenant_photo_url', None))
+                    payload_delete_images = payload_query['result'][0]['tenant_photo_url'] if payload_query['result'] else None
+                payload_images =  None  # Current Images
+            else:
+                return payload
+
+
 
         elif 'maintenance_request_uid' in key:
             print("Maintenance Request Key passed")
@@ -224,57 +243,65 @@ def processImage(key, payload):
         print("About to process ADDED Images")
 
         # ADD Images
-        while True:
-            filename = f'img_{i}'
-            print("Put image file into Filename: ", filename) 
-            file = request.files.get(filename)
-            print("File:" , file)            
-            s3Link = payload.get(filename)
-            print("S3Link: ", s3Link)
 
-            if file:
-                print("In File if Statement")
-                imageFiles[filename] = file
-                unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
-                image_key = f'{key_type}/{key_uid}/{unique_filename}'
-                # This calls the uploadImage function that generates the S3 link
-                image = uploadImage(file, image_key, '')
-                print("Image after upload: ", image)
+        if 'profile' in key_type.lower():  # Use lower() for case-insensitivity
+            print("Key type contains 'Profile'. Performing action for profile.")
+            filename = f'tenant_photo_url'
+        else:
+            # Do something else if it does not contain 'profile'
+            print("Key type does not contain 'Profile'. Performing alternative action.")
+
+            while True:
+                filename = f'img_{i}'
+                print("Put image file into Filename: ", filename) 
+                file = request.files.get(filename)
+                print("File:" , file)            
+                s3Link = payload.get(filename)
+                print("S3Link: ", s3Link)
+
+                if file:
+                    print("In File if Statement")
+                    imageFiles[filename] = file
+                    unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+                    image_key = f'{key_type}/{key_uid}/{unique_filename}'
+                    # This calls the uploadImage function that generates the S3 link
+                    image = uploadImage(file, image_key, '')
+                    print("Image after upload: ", image)
+                    
+
+                    images.append(image)
+
+                    if filename == payload_fav_images:
+                        if key_type == 'properties': payload["property_favorite_image"] = image
+                        if key_type == 'appliances': payload["appliance_favorite_image"] = image
+                        if key_type == 'maintenance request': payload["maintenance_favorite_image"] = image
+
+
+
+                elif s3Link:
+                    # payload.pop(f'img_{i}')
+                    imageFiles[filename] = s3Link
+                    images.append(s3Link)
+
+                    if filename == payload_fav_images:
+                        if key_type == 'properties': payload["property_favorite_image"] = s3Link
+                        if key_type == 'appliances': payload["appliance_favorite_image"] = s3Link
+                        if key_type == 'maintenance request': payload["maintenance_favorite_image"] = s3Link
                 
-
-                images.append(image)
-
-                if filename == payload_fav_images:
-                    if key_type == 'properties': payload["property_favorite_image"] = image
-                    if key_type == 'appliances': payload["appliance_favorite_image"] = image
-                    if key_type == 'maintenance request': payload["maintenance_favorite_image"] = image
-
-
-
-            elif s3Link:
-                # payload.pop(f'img_{i}')
-                imageFiles[filename] = s3Link
-                images.append(s3Link)
-
-                if filename == payload_fav_images:
-                    if key_type == 'properties': payload["property_favorite_image"] = s3Link
-                    if key_type == 'appliances': payload["appliance_favorite_image"] = s3Link
-                    if key_type == 'maintenance request': payload["maintenance_favorite_image"] = s3Link
+                
+                else:
+                    break
+                i += 1
             
+            print("Images after loop: ", images)
+            if images != []:
+                current_images.extend(images)
+                # if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
+                # if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+                # if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
+                # if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
             
-            else:
-                break
-            i += 1
-        
-        print("Images after loop: ", images)
-        if images != []:
-            current_images.extend(images)
-            # if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
-            # if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-            # if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
-            # if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
-        
-        print("processed ADDED documents")
+            print("processed ADDED documents")
 
 
         # Delete Images
@@ -301,12 +328,13 @@ def processImage(key, payload):
                     deleteImage(delete_key)
                 except: 
                     print("could not delete from S3")
-        print("processed DELETED documents")
+        print("processed DELETED Images")
             
         print("\nCurrent Images in Function: ", current_images, type(current_images))
         # print("Key Type: ", key_type)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+        if key_type == 'profile': payload['profile_images'] = json.dumps(current_images) 
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
