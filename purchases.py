@@ -426,8 +426,11 @@ class AddPurchase(Resource):
             # SET TRANSACTION DATE TO NOW
             # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
             payload['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
-            # SET ADDITIONAL FIELDS
-            payload['pur_status_value'] = "5"
+            # SET ADDITIONAL FIELDS           
+            payload['pur_status_value'] = "5" if payload.get('purchase_status') == "UNPAID" else \
+                              "1" if payload.get('purchase_status') == "PARTIALLY PAID" else \
+                              "0" if payload.get('purchase_status') == "PAID" else "5"
+
             # FORMAT DATE FIELDS
             payload['purchase_date'] = f"{payload.get('purchase_date')} 12:00"
             payload['pur_due_date'] = f"{payload.get('pur_due_date')} 12:00"
