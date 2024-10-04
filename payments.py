@@ -192,7 +192,7 @@ class NewPayments(Resource):
                     # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
                     newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    # print(newPurchaseRequestID)
+                    # print("Part 2A: ", newPurchaseRequestID)
 
                     # DETERMINE HOW MUCH OF THE CONVENIENCE FEES WAS DUE TO EACH PURCHASE
                     # print(item['pur_amount_due'], type(item['pur_amount_due']))
@@ -257,13 +257,13 @@ class NewPayments(Resource):
                     # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
                     newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                    # print(newPurchaseRequestID)
+                    # print("Part 2B: ", newPurchaseRequestID)
 
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
                                 , pur_group = \'""" + newPurchaseRequestID + """\'
-                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i'')
+                                , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Bill Posting"
                                 , pur_cf_type = "expense"

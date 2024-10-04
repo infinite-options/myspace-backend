@@ -44,7 +44,7 @@ class Appliances(Resource):
         payload = request.form.to_dict()
         print("Appliance Add Payload: ", payload)
 
-
+        # Verify uid has NOT been included in the data
         if payload.get('appliance_uid'):
             print("appliance_uid found.  Please call PUT endpoint")
             raise BadRequest("Request failed, UID found in payload.")
