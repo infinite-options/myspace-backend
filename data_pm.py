@@ -246,7 +246,8 @@ def processImage(key, payload):
 
         if 'profile' in key_type.lower():  # Use lower() for case-insensitivity
             print("Key type contains 'Profile'. Performing action for profile.")
-            filename = f'tenant_photo_url'
+            # filename = f'tenant_photo_url'
+            filename = request.files.get("tenant_photo_url")
         else:
             # Do something else if it does not contain 'profile'
             print("Key type does not contain 'Profile'. Performing alternative action.")
@@ -334,7 +335,7 @@ def processImage(key, payload):
         # print("Key Type: ", key_type)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-        if key_type == 'profile': payload['profile_images'] = json.dumps(current_images) 
+        if key_type == 'tenant Profile': payload['tenant_photo_url'] = json.dumps(current_images) 
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
