@@ -285,29 +285,30 @@ class Profile(Resource):
         print("Profile Update Payload: ", payload) 
    
         if payload.get('tenant_uid'):
-            key = {'tenant_uid': payload.pop('tenant_uid')}
+            filtered_payload = request.form.to_dict()
+            key = {'tenant_uid': filtered_payload.pop('tenant_uid')}
         elif payload.get('owner_uid'):
-            key = {'owner_uid': payload.pop('owner_uid')}
+            filtered_payload = request.form.to_dict()
+            key = {'owner_uid': filtered_payload.pop('owner_uid')}
         elif payload.get('business_uid'):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-            print("Filtered Payload: ", filtered_payload)
             key = {'business_uid': filtered_payload.pop('business_uid')}
         elif payload.get('employee_uid'):
             valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-            print("Filtered Payload: ", filtered_payload)
             key = {'employee_uid': filtered_payload.pop('employee_uid')}
         else:
             print("No uid passed")
             return
         print("Key Received: ", key)
+        print("Filtered Payload: ", filtered_payload)
 
 
         # --------------- PROCESS IMAGES ------------------
 
-        processImage(key, payload)
-        print("Payload after function: ", payload)
+        processImage(key, filtered_payload)
+        print("Payload after function: ", filtered_payload)
         
         # --------------- PROCESS IMAGES ------------------
 
@@ -318,150 +319,165 @@ class Profile(Resource):
         print("Payload after function: ", filtered_payload)
         
         # --------------- PROCESS DOCUMENTS ------------------
-   
-   
-    def put(self):
-        print("\nIn Profile PUT")
-        response = {}
-        payload = request.form.to_dict()
-        print("Profile Update Payload: ", payload)
-        
-        # Profile Picture is Unique to Profile 
-        if payload.get('business_uid'):
-            print("In Business")  # Need valid-columns since business can be updated with employee
-            valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
-            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-            print("Filtered Payload: ", filtered_payload)
-            key = {'business_uid': filtered_payload.pop('business_uid')}
-            print("Business Key: ", key)
-
-            file = request.files.get("business_photo")
-            if file:
-                key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
-
-                try:
-                    deleteImage(key1)
-                    print(f"Deleted existing file {key1}")
-                except s3.exceptions.ClientError as e:
-                    if e.response['Error']['Code'] == '404':
-                        print(f"File {key1} does not exist")
-                    else:
-                        print(f"Error deleting file {key1}: {e}")
-
-                filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
-                # print("business photo: ", filtered_payload["business_photo_url"] )
-
-            # --------------- PROCESS DOCUMENTS ------------------
-
-            processDocument(key, filtered_payload)
-            print("Payload after function: ", filtered_payload)
-            
-            # --------------- PROCESS DOCUMENTS ------------------
 
 
-            with connect() as db:
-                # print("Checking Inputs: ", key, filtered_payload)
-                response = db.update('businessProfileInfo', key, filtered_payload)
-        
-        
-        if payload.get('tenant_uid'):
-            print("In Tenant")
-            # tenant_uid = payload.get('tenant_uid')
-            key = {'tenant_uid': payload.pop('tenant_uid')}
-            print("Tenant Key: ", key)
+        with connect() as db:
+                print("Checking Inputs: ", key, filtered_payload)
+                if payload.get('tenant_uid'):
+                    # response['tenant_docs'] = db.update('tenantProfileInfo', key, filtered_payload)
+                    response = db.update('tenantProfileInfo', key, filtered_payload)
+                elif payload.get('owner_uid'):
+                    response = db.update('ownerProfileInfo', key, filtered_payload)
+                elif payload.get('business_uid'):
+                    response = db.update('businessProfileInfo', key, filtered_payload)
+                elif payload.get('employee_uid'):
+                    response = db.update('employees', key, filtered_payload)
 
-            file = request.files.get("tenant_photo_url")
-            if file:
-                key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
-                
-                try:    
-                    deleteImage(key1)
-                    print(f"Deleted existing file {key1}")
-                except s3.exceptions.ClientError as e:
-                    if e.response['Error']['Code'] == '404':
-                        print(f"File {key1} does not exist")
-                    else:
-                        print(f"Error deleting file {key1}: {e}")
-
-                payload["tenant_photo_url"] = uploadImage(file, key1, '')
-
-
-            # --------------- PROCESS DOCUMENTS ------------------
-
-            processDocument(key, payload)
-            print("Payload after function: ", payload)
-            
-            # --------------- PROCESS DOCUMENTS ------------------
-
-
-            # Update File List in Database        
-            # print("tenant")
-            # print("key: ", key )
-            # print("payload: ", payload)
-
-            with connect() as db:
-                # print("Checking Inputs: ", key, payload)
-                response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
-                # print("Response:" , response)
-
-
-        if payload.get('owner_uid'):
-            # print("In Owner")
-            key = {'owner_uid': payload.pop('owner_uid')}
-            # print("Owner Key: ", key)
-
-            file = request.files.get("owner_photo_url")
-            if file:
-                key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
-
-                try:
-                    deleteImage(key1)
-                    print(f"Deleted existing file {key1}")
-                except s3.exceptions.ClientError as e:
-                    if e.response['Error']['Code'] == '404':
-                        print(f"File {key1} does not exist")
-                    else:
-                        print(f"Error deleting file {key1}: {e}")
-
-                payload["owner_photo_url"] = uploadImage(file, key1, '')
-                # print("Owner Payload: ", payload)
-
-            with connect() as db:
-                # print("Checking Inputs: ", key, filtered_payload)
-                response = db.update('ownerProfileInfo', key, payload)
-                # print(response)
-
-        
-        if payload.get('employee_uid'):
-            # print("In Employee")
-            valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
-            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-            print("Filtered Payload: ", filtered_payload)
-            key = {'employee_uid': filtered_payload.pop('employee_uid')}
-            # print("Employee Key: ", key)
-
-            file = request.files.get("employee_photo_url")
-            if file:
-                key1 = f'employees/{key["employee_uid"]}/employee_photo'
-
-                try:
-                    deleteImage(key1)
-                    print(f"Deleted existing file {key1}")
-                except s3.exceptions.ClientError as e:
-                    if e.response['Error']['Code'] == '404':
-                        print(f"File {key1} does not exist")
-                    else:
-                        print(f"Error deleting file {key1}: {e}")
-
-                filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
-                # print("employee photo: ", filtered_payload["employee_photo_url"] )
-            
-            
-            with connect() as db:
-                # print("Checking Inputs: ", key, filtered_payload)
-                response = db.update('employees', key, filtered_payload)
-
-        # else:
-        #     raise BadRequest("Request failed, no UID in payload.")
-        
         return response
+   
+   
+    # def put(self):
+    #     print("\nIn Profile PUT")
+    #     response = {}
+    #     payload = request.form.to_dict()
+    #     print("Profile Update Payload: ", payload)
+        
+    #     # Profile Picture is Unique to Profile 
+    #     if payload.get('business_uid'):
+    #         print("In Business")  # Need valid-columns since business can be updated with employee
+    #         valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
+    #         filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+    #         print("Filtered Payload: ", filtered_payload)
+    #         key = {'business_uid': filtered_payload.pop('business_uid')}
+    #         print("Business Key: ", key)
+
+    #         file = request.files.get("business_photo")
+    #         if file:
+    #             key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
+
+    #             try:
+    #                 deleteImage(key1)
+    #                 print(f"Deleted existing file {key1}")
+    #             except s3.exceptions.ClientError as e:
+    #                 if e.response['Error']['Code'] == '404':
+    #                     print(f"File {key1} does not exist")
+    #                 else:
+    #                     print(f"Error deleting file {key1}: {e}")
+
+    #             filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
+    #             # print("business photo: ", filtered_payload["business_photo_url"] )
+
+    #         # --------------- PROCESS DOCUMENTS ------------------
+
+    #         processDocument(key, filtered_payload)
+    #         print("Payload after function: ", filtered_payload)
+            
+    #         # --------------- PROCESS DOCUMENTS ------------------
+
+
+    #         with connect() as db:
+    #             # print("Checking Inputs: ", key, filtered_payload)
+    #             response = db.update('businessProfileInfo', key, filtered_payload)
+        
+        
+    #     if payload.get('tenant_uid'):
+    #         print("In Tenant")
+    #         # tenant_uid = payload.get('tenant_uid')
+    #         key = {'tenant_uid': payload.pop('tenant_uid')}
+    #         print("Tenant Key: ", key)
+
+    #         file = request.files.get("tenant_photo_url")
+    #         if file:
+    #             key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
+                
+    #             try:    
+    #                 deleteImage(key1)
+    #                 print(f"Deleted existing file {key1}")
+    #             except s3.exceptions.ClientError as e:
+    #                 if e.response['Error']['Code'] == '404':
+    #                     print(f"File {key1} does not exist")
+    #                 else:
+    #                     print(f"Error deleting file {key1}: {e}")
+
+    #             payload["tenant_photo_url"] = uploadImage(file, key1, '')
+
+
+    #         # --------------- PROCESS DOCUMENTS ------------------
+
+    #         processDocument(key, payload)
+    #         print("Payload after function: ", payload)
+            
+    #         # --------------- PROCESS DOCUMENTS ------------------
+
+
+    #         # Update File List in Database        
+    #         # print("tenant")
+    #         # print("key: ", key )
+    #         # print("payload: ", payload)
+
+    #         with connect() as db:
+    #             # print("Checking Inputs: ", key, payload)
+    #             response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
+    #             # print("Response:" , response)
+
+
+    #     if payload.get('owner_uid'):
+    #         # print("In Owner")
+    #         key = {'owner_uid': payload.pop('owner_uid')}
+    #         # print("Owner Key: ", key)
+
+    #         file = request.files.get("owner_photo_url")
+    #         if file:
+    #             key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
+
+    #             try:
+    #                 deleteImage(key1)
+    #                 print(f"Deleted existing file {key1}")
+    #             except s3.exceptions.ClientError as e:
+    #                 if e.response['Error']['Code'] == '404':
+    #                     print(f"File {key1} does not exist")
+    #                 else:
+    #                     print(f"Error deleting file {key1}: {e}")
+
+    #             payload["owner_photo_url"] = uploadImage(file, key1, '')
+    #             # print("Owner Payload: ", payload)
+
+    #         with connect() as db:
+    #             # print("Checking Inputs: ", key, filtered_payload)
+    #             response = db.update('ownerProfileInfo', key, payload)
+    #             # print(response)
+
+        
+    #     if payload.get('employee_uid'):
+    #         # print("In Employee")
+    #         valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
+    #         filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
+    #         print("Filtered Payload: ", filtered_payload)
+    #         key = {'employee_uid': filtered_payload.pop('employee_uid')}
+    #         # print("Employee Key: ", key)
+
+    #         file = request.files.get("employee_photo_url")
+    #         if file:
+    #             key1 = f'employees/{key["employee_uid"]}/employee_photo'
+
+    #             try:
+    #                 deleteImage(key1)
+    #                 print(f"Deleted existing file {key1}")
+    #             except s3.exceptions.ClientError as e:
+    #                 if e.response['Error']['Code'] == '404':
+    #                     print(f"File {key1} does not exist")
+    #                 else:
+    #                     print(f"Error deleting file {key1}: {e}")
+
+    #             filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
+    #             # print("employee photo: ", filtered_payload["employee_photo_url"] )
+            
+            
+    #         with connect() as db:
+    #             # print("Checking Inputs: ", key, filtered_payload)
+    #             response = db.update('employees', key, filtered_payload)
+
+    #     # else:
+    #     #     raise BadRequest("Request failed, no UID in payload.")
+        
+    #     return response

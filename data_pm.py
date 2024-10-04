@@ -162,16 +162,72 @@ def processImage(key, payload):
 
         elif 'tenant_uid' in key:
             print("Tenant Profile Key passed")
-            key_type = 'tenant Profile'
+            key_type = 'tenantProfile'
             key_uid = key['tenant_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'tenant_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT tenant_photo_urls FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT tenant_photo_url FROM space.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('tenant_photo_url', None))
                     payload_delete_images = payload_query['result'][0]['tenant_photo_url'] if payload_query['result'] else None
+                    # payload_delete_images = payload_delete_images.replace("https://s3-us-west-1.amazonaws.com/io-pm", "")
+                    if payload_delete_images is not None: payload_delete_images = '["'+payload_delete_images+'"]'
+                payload_images =  None  # Current Images
+            else:
+                return payload
+            
+        elif 'owner_uid' in key:
+            print("Owner Profile Key passed")
+            key_type = 'ownerProfile'
+            key_uid = key['owner_uid']
+            # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'owner_photo_url' in request.files: #  New images are passed in as photo_url
+                payload_query = db.execute(""" SELECT owner_photo_url FROM space.ownerProfileInfo WHERE owner_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('owner_photo_url', None))
+                    payload_delete_images = payload_query['result'][0]['owner_photo_url'] if payload_query['result'] else None
+                    # payload_delete_images = payload_delete_images.replace("https://s3-us-west-1.amazonaws.com/io-pm", "")
+                    if payload_delete_images is not None: payload_delete_images = '["'+payload_delete_images+'"]'
+                payload_images =  None  # Current Images
+            else:
+                return payload
+        
+        elif 'business_uid' in key:
+            print("Business Profile Key passed")
+            key_type = 'businessProfile'
+            key_uid = key['business_uid']
+            # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'business_photo_url' in request.files: #  New images are passed in as photo_url
+                payload_query = db.execute(""" SELECT business_photo_url FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('business_photo_url', None))
+                    payload_delete_images = payload_query['result'][0]['business_photo_url'] if payload_query['result'] else None
+                    # payload_delete_images = payload_delete_images.replace("https://s3-us-west-1.amazonaws.com/io-pm", "")
+                    if payload_delete_images is not None: payload_delete_images = '["'+payload_delete_images+'"]'
+                payload_images =  None  # Current Images
+            else:
+                return payload
+            
+        elif 'employee_uid' in key:
+            print("Employee Profile Key passed")
+            key_type = 'employeeProfile'
+            key_uid = key['employee_uid']
+            # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'employee_photo_url' in request.files: #  New images are passed in as photo_url
+                payload_query = db.execute(""" SELECT employee_photo_url FROM space.employeeProfileInfo WHERE employee_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('employee_photo_url', None))
+                    payload_delete_images = payload_query['result'][0]['employee_photo_url'] if payload_query['result'] else None
+                    # payload_delete_images = payload_delete_images.replace("https://s3-us-west-1.amazonaws.com/io-pm", "")
+                    if payload_delete_images is not None: payload_delete_images = '["'+payload_delete_images+'"]'
                 payload_images =  None  # Current Images
             else:
                 return payload
@@ -220,7 +276,7 @@ def processImage(key, payload):
         print("key_uid: ", key_uid, type(key_uid))
         print("payload_images: ", payload_images, type(payload_images))
         print("payload_images delete: ", payload_delete_images, type(payload_delete_images))       # Documents to Delete
-        if key_type != 'maintenance quote': print("payload_fav_images: ", payload_fav_images, type(payload_fav_images))
+        if key_type in ['properties', 'appliances', 'bills', 'maintenance request']: print("payload_fav_images: ", payload_fav_images, type(payload_fav_images))
 
         print("Verified Add or Delete Images in Payload")
 
@@ -246,8 +302,19 @@ def processImage(key, payload):
 
         if 'profile' in key_type.lower():  # Use lower() for case-insensitivity
             print("Key type contains 'Profile'. Performing action for profile.")
-            # filename = f'tenant_photo_url'
-            filename = request.files.get("tenant_photo_url")
+            filename = 'profile'
+            if key_type == 'tenantProfile': file = request.files.get("tenant_photo_url")
+            if key_type == 'ownerProfile': file = request.files.get("owner_photo_url")
+            if key_type == 'businessProfile': file = request.files.get("business_photo_url")
+            if key_type == 'employeeProfile': file = request.files.get("employee_photo_url")
+            # file = request.files.get("tenant_photo_url")
+            print("After Profile get filename", filename, file)
+            unique_filename = filename + "_" + datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+            image_key = f'{key_type}/{key_uid}/{unique_filename}'
+            profileImage = uploadImage(file, image_key, '')
+            print("Image after upload: ", profileImage)
+            images.append(profileImage)
+            print("Image after upload: ", images)
         else:
             # Do something else if it does not contain 'profile'
             print("Key type does not contain 'Profile'. Performing alternative action.")
@@ -335,7 +402,10 @@ def processImage(key, payload):
         # print("Key Type: ", key_type)
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-        if key_type == 'tenant Profile': payload['tenant_photo_url'] = json.dumps(current_images) 
+        if key_type == 'tenantProfile': payload['tenant_photo_url'] = profileImage
+        if key_type == 'ownerProfile': payload['owner_photo_url'] = profileImage
+        if key_type == 'businessProfile': payload['business_photo_url'] = profileImage
+        if key_type == 'employeeProfile': payload['employee_photo_url'] = profileImage
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
 
