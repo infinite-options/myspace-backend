@@ -369,8 +369,8 @@ def DashboardCashflowQuery(user_id):
                         -- IF(pur_receiver = '600-000003', 'revenue', "") AS pur_cf_type
                         IF(pur_receiver = \'""" + user_id + """\', 'revenue', "") AS pur_cf_type
                     FROM space.pp_status
-                    -- WHERE pur_receiver = '600-000003'
-                    WHERE pur_receiver = \'""" + user_id + """\'
+                    -- WHERE pur_receiver = '600-000003' AND purchase_type != 'Deposit'
+                    WHERE pur_receiver = \'""" + user_id + """\' AND purchase_type != 'Deposit'
                     GROUP BY cf_month, cf_year
                     UNION
                     SELECT -- *,
@@ -383,8 +383,8 @@ def DashboardCashflowQuery(user_id):
                         -- IF(pur_payer = '600-000003', 'expense', "") AS pur_cf_type
                         IF(pur_payer = \'""" + user_id + """\', 'expense', "") AS pur_cf_type
                     FROM space.pp_status
-                    -- WHERE pur_payer = '600-000003'
-                    WHERE pur_payer = \'""" + user_id + """\'
+                    -- WHERE pur_payer = '600-000003' AND purchase_type != 'Deposit'
+                    WHERE pur_payer = \'""" + user_id + """\' AND purchase_type != 'Deposit'
                     GROUP BY cf_month, cf_year                                  
                     """)
             # print("Function Query Complete")
