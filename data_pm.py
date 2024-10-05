@@ -201,8 +201,8 @@ def processImage(key, payload):
             key_type = 'businessProfile'
             key_uid = key['business_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
-            if 'business_photo' in request.files: #  New images are passed in as photo_url
-            # if 'business_photo_url' in request.files: #  New images are passed in as photo_url
+            # if 'business_photo' in request.files: #  New images are passed in as photo_url
+            if 'business_photo_url' in request.files: #  New images are passed in as photo_url
                 payload_query = db.execute(""" SELECT business_photo_url FROM space.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
@@ -221,7 +221,7 @@ def processImage(key, payload):
             key_uid = key['employee_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'employee_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT employee_photo_url FROM space.employeeProfileInfo WHERE employee_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT employee_photo_url FROM space.employees WHERE employee_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -306,8 +306,8 @@ def processImage(key, payload):
             filename = 'profile'
             if key_type == 'tenantProfile': file = request.files.get("tenant_photo_url")
             if key_type == 'ownerProfile': file = request.files.get("owner_photo_url")
-            if key_type == 'businessProfile': file = request.files.get("business_photo")
-            # if key_type == 'businessProfile': file = request.files.get("business_photo_url")
+            # if key_type == 'businessProfile': file = request.files.get("business_photo")
+            if key_type == 'businessProfile': file = request.files.get("business_photo_url")
             if key_type == 'employeeProfile': file = request.files.get("employee_photo_url")
             # file = request.files.get("tenant_photo_url")
             print("After Profile get filename", filename, file)
