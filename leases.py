@@ -77,7 +77,11 @@ class LeaseDetails(Resource):
                                 'tenant_email', tenant_email,
                                 'tenant_drivers_license_number', tenant_drivers_license_number,
                                 'tenant_drivers_license_state', tenant_drivers_license_state,
-                                'tenant_ssn', tenant_ssn
+                                'tenant_ssn', tenant_ssn,
+                                'tenant_current_salary', tenant_current_salary,
+                                'tenant_salary_frequency', tenant_salary_frequency,
+                                'tenant_current_job_title', tenant_current_job_title,
+                                'tenant_current_job_company', tenant_current_job_company
                                 )) AS tenants
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
