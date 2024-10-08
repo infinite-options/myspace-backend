@@ -101,7 +101,7 @@ class Contracts(Resource):
                     response = db.execute("""
                                 SELECT * From space.contracts
                                 WHERE contract_property_id = \'""" + properties[i] + """\' AND contract_business_id = \'""" + business_id + """\'
-                                AND contract_status in ('NEW','ACTIVE','SENT');
+                                AND contract_status in ('NEW','SENT');
                                 """)
                     if len(response['result']) != 0:
                         index_to_remove.append(i)
@@ -168,6 +168,12 @@ class Contracts(Resource):
             print("Checking Inputs: ", key, payload)
             response['contract_info'] = db.update('contracts', key, payload)
             # print("Response:" , response)
+
+        # Get all contracts between Owner - PM
+        # If no other contracts then end
+        # If new contract has a start date <= today then make it Active
+        # If new contract becomes active, make other contracts Inactive
+        
         return response
 
 
