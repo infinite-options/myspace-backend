@@ -589,6 +589,19 @@ class Dashboard(Resource):
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
                     """)
 
+                response["tenantPayments"] = db.execute("""
+                        -- Tenant Payment Details
+                        SELECT -- *,
+                            payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by
+                            -- , payment_intent, payment_method, payment_date_cleared, payment_client_secret, purchase_uid, pur_timestamp
+                            , pur_property_id, purchase_type, pur_description, pur_notes 
+                            -- , pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due
+                            , purchase_status, pur_status_value -- , pur_receiver, pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, pur_leaseFees_id
+                        FROM space.payments
+                        LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
+                        WHERE paid_by = "350-000007";
+                    """)
+
 
                 response["leaseDetails"] = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
