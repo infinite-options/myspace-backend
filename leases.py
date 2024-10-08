@@ -348,6 +348,8 @@ class LeaseApplication(Resource):
             tenant_responsibiity = str(1/len(tenants))
             for tenant_uid in tenants:
                 # print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
+                # lt_employment = tenant_employment if tenant_employment else []
+
                 ltQuery = (""" 
                     INSERT INTO space.lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
