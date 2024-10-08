@@ -664,20 +664,20 @@ class Dashboard(Resource):
                         """)
                    
                     
+                # response["maintenanceRequestsOld"] = db.execute("""
+                #         -- TENENT MAINTENANCE TICKETS
+                #         SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
+                #             p.business_name, p.business_phone_number, p.business_email,
+                #             mr.*
+                #         FROM space.maintenanceRequests mr
+                #             LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
+                #             LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
+                #         -- WHERE tenant_uid = '350-000162';
+                #         WHERE tenant_uid = \'""" + user_id + """\';
+                #         """)
+
+
                 response["maintenanceRequests"] = db.execute("""
-                        -- TENENT MAINTENANCE TICKETS
-                        SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
-                            p.business_name, p.business_phone_number, p.business_email,
-                            mr.*
-                        FROM space.maintenanceRequests mr
-                            LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
-                            LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
-                        -- WHERE tenant_uid = '350-000162';
-                        WHERE tenant_uid = \'""" + user_id + """\';
-                        """)
-
-
-                response["maintenanceRequestsNew"] = db.execute("""
                         -- TENENT MAINTENANCE TICKETS
                         SELECT -- *,
                             lt_tenant_id
