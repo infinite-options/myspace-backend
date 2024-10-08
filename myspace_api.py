@@ -639,10 +639,10 @@ class LateFees_CLASS(Resource):
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
                         FROM space.purchases    
-                        WHERE purchase_type = "Late Fee" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
+                        WHERE purchase_type LIKE "%LATE FEE%" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
                             AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                         """)
-                print("\n",lateFees['result'][0:1], type(lateFees))
+                print("\n","LateFees Query: ", lateFees['result'][0:1], type(lateFees))
 
 
 
@@ -728,7 +728,7 @@ class LateFees_CLASS(Resource):
                                 # print("Conditional Parameters: ", purchase_uid, lateFees['result'][j]['pur_notes'])
                                 if  purchase_uid == lateFees['result'][j]['pur_notes']:
                                     putFlag = putFlag + 1
-                                    # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['pur_notes'])
+                                    # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['purchase_uid'])
                                     # print("Entire Row: ", lateFees['result'][j])
                                     payer = lateFees['result'][j]['pur_payer']
                                     receiver = lateFees['result'][j]['pur_receiver']
@@ -746,7 +746,7 @@ class LateFees_CLASS(Resource):
                                         for fee in fees:
                                             # print("Fee: ", fee)
                                             # Extract only the monthly fees
-                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] == lateFees['result'][j]['pur_description']:
+                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
                                                 print("In Update PM Fee if statement")
                                                 charge = fee['charge']
                                                 charge_type = fee['fee_type']
@@ -849,12 +849,12 @@ class LateFees_CLASS(Resource):
                                     # Create JSON Object for Rent Purchase for PM-Owner Payment
                                     newRequestID = db.call('space.new_purchase_uid')['result'][0]['new_id']
                                     newRequest['purchase_uid'] = newRequestID
-                                    # print(newRequestID)
+                                    # print(newRequestID
                                     newRequest['pur_receiver'] = manager
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
                                     newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_description'] = "Late Fee"
+                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee'
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)

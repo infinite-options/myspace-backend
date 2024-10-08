@@ -878,12 +878,4 @@ class LeaseApplication(Resource):
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
 
-
-
-
-                    
-                    
-
-                    
-
         return response
