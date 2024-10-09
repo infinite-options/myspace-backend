@@ -281,6 +281,7 @@ class Profile(Resource):
     def put(self):
         print("\nIn Profile PUT")
         response = {}
+        flag = 'false'
         payload = request.form.to_dict()
         print("Profile Update Payload: ", payload) 
    
@@ -294,44 +295,71 @@ class Profile(Resource):
             valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
             filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
             key = {'business_uid': filtered_payload.pop('business_uid')}
-        elif payload.get('employee_uid'):
-            valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
-            filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-            key = {'employee_uid': filtered_payload.pop('employee_uid')}
         else:
-            print("No uid passed")
-            return
-        print("Key Received: ", key)
-        print("Filtered Payload: ", filtered_payload)
+            print("No tenant, owner or buisness uid passed")
+            flag = 'true'
+
+        if flag == 'false':
+            print("Key Received: ", key)
+            print("Filtered Payload: ", filtered_payload)
 
 
-        # --------------- PROCESS IMAGES ------------------
+            # --------------- PROCESS IMAGES ------------------
 
-        processImage(key, filtered_payload)
-        print("Payload after function: ", filtered_payload)
-        
-        # --------------- PROCESS IMAGES ------------------
+            processImage(key, filtered_payload)
+            print("Payload after function: ", filtered_payload)
+            
+            # --------------- PROCESS IMAGES ------------------
 
 
-        # --------------- PROCESS DOCUMENTS ------------------
+            # --------------- PROCESS DOCUMENTS ------------------
 
-        processDocument(key, filtered_payload)
-        print("Payload after function: ", filtered_payload)
-        
-        # --------------- PROCESS DOCUMENTS ------------------
+            processDocument(key, filtered_payload)
+            print("Payload after function: ", filtered_payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
 
+
+        if payload.get('employee_uid'):
+            print("In employee")
+            valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
+            employee_payload = {key: value for key, value in payload.items() if key in valid_columns}
+            employee_key = {'employee_uid': employee_payload.pop('employee_uid')}
+            print("Key Received: ", employee_key)
+            print("Filtered Payload: ", employee_payload)
+
+            # --------------- PROCESS IMAGES ------------------
+
+            processImage(employee_key, employee_payload)
+            print("Payload after function: ", employee_payload)
+            
+            # --------------- PROCESS IMAGES ------------------
+
+
+            # --------------- PROCESS DOCUMENTS ------------------
+
+            processDocument(employee_key, employee_payload)
+            print("Payload after function: ", employee_payload)
+            
+            # --------------- PROCESS DOCUMENTS ------------------
+
+        else:
+            if flag == 'true':
+                print("No uid passed")
+                return
+            
 
         with connect() as db:
                 print("Checking Inputs: ", key, filtered_payload)
                 if payload.get('tenant_uid'):
                     # response['tenant_docs'] = db.update('tenantProfileInfo', key, filtered_payload)
                     response = db.update('tenantProfileInfo', key, filtered_payload)
-                elif payload.get('owner_uid'):
+                if payload.get('owner_uid'):
                     response = db.update('ownerProfileInfo', key, filtered_payload)
-                elif payload.get('business_uid'):
+                if payload.get('business_uid'):
                     response = db.update('businessProfileInfo', key, filtered_payload)
-                elif payload.get('employee_uid'):
-                    response = db.update('employees', key, filtered_payload)
+                if payload.get('employee_uid'):
+                    response['employee'] = db.update('employees', employee_key, employee_payload)
 
         return response
    
