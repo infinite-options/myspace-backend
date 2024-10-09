@@ -14,7 +14,7 @@
 from dashboard import Dashboard
 from appliances import Appliances, RemoveAppliance
 from rents import Rents, RentDetails, RentTest
-from payments import NewPayments, PaymentStatus, PaymentMethod #, Payments, PaymentOwner, RequestPayment
+from payments import NewPayments, PaymentMethod #,  PaymentStatus, Payments, PaymentOwner, RequestPayment
 from properties import Properties
 from transactions import AllTransactions
 # from cashflow import CashflowByOwner
@@ -40,7 +40,7 @@ from cron import MonthlyRent_CLASS
 from users import UserInfo
 from password import Password
 from data_pm import connect, uploadImage, s3
-from queries import NextDueDate, UnpaidRents
+from queries import NextDueDate, UnpaidRents, ApprovedContracts
 
 
 
@@ -614,7 +614,7 @@ class stripe_key(Resource):
 
 class Contract_CRON(Resource):
     def get(self):
-        print("In Late Fees CRON JOB")
+        print("In Contract CRON JOB")
 
         # Establish current day, month and year
         dt = date.today()
@@ -622,10 +622,12 @@ class Contract_CRON(Resource):
         numCronContracts = 0
 
         # FIND ALL ACTIVE CONTRACTS THAT HAVE EXPIRED
-        response = UnpaidRents()
+        response = ApprovedContracts()
         # print("\nUnpaid Rents: ", response)
         print(range(len(response['result'])))
-        
+
+        # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
         return
 
 class LateFees_CLASS(Resource):
@@ -1822,7 +1824,7 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 # Payment Endpoints
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
-api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
+# api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(NewPayments, '/makePayment')
 # api.add_resource(Payments, '/payment')
 # api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')

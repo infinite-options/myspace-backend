@@ -635,6 +635,7 @@ class LeaseApplication(Resource):
                         newRequest['pur_due_date'] = pm_due_date.strftime("%m-%d-%Y %H:%M")
                         print("PM Due Date: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))                            
 
+                        newRequest['purchase_type'] = f"{fee['fee_type']} due Owner"
                         newRequest['pur_group'] = grouping
                         newRequest['pur_late_fee'] = 0
                         newRequest['pur_perDay_late_fee'] = 0

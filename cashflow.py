@@ -20,6 +20,9 @@ class PaymentVerification(Resource):
             print("in connect loop")
             cashflow = db.execute("""                            
                     SELECT payments.*, cp.total_paid, purchases.*
+                        , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
+                        , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num
+                        , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%Y") AS cf_year
                     FROM space.payments
                     LEFT JOIN (
                         SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
@@ -28,7 +31,7 @@ class PaymentVerification(Resource):
                         GROUP BY payment_intent, payment_date
                         ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
                     LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-                    -- WHERE pur_receiver = '600-000003' AND pur_payer LIKE '350%'
+                    -- WHERE pur_receiver = '600-000043' AND pur_payer LIKE '350%'
                     WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
                         AND payment_verify = 'Unverified'
                     """)

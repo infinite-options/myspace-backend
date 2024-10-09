@@ -500,3 +500,22 @@ def NextDueDate():
     except:
         print("Error in NextDueDate Query ")
 
+
+
+def ApprovedContracts():
+    print("In Approved Contracts Query FUNCTION CALL")
+
+    try:
+        # Run query to find all APPROVED Contracts
+        with connect() as db:    
+            response = db.execute("""
+                    SELECT * 
+                    FROM space.contracts
+                    WHERE contract_status = 'APPROVED'
+                        AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
+                    """)
+            print("Function Query Complete")
+            print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in ApprovedContracts Query ")
