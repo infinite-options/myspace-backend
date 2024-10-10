@@ -823,9 +823,9 @@ class LateFees_CLASS(Resource):
 
                             if numDays ==  0:
                                 # print("\n", "Late Today")
-                                newRequest['pur_description'] = "One Time Late Fee Applied"
+                                newRequest['pur_description'] = "Late Fee Applied"
                             else:
-                                newRequest['pur_description'] = "One Time Late Fee and Per Day Late Fee Applied"
+                                newRequest['pur_description'] = "Late Fee"
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
@@ -1114,9 +1114,9 @@ def LateFees_CRON(Resource):
 
                             if numDays ==  0:
                                 # print("\n", "Late Today")
-                                newRequest['pur_description'] = "One Time Late Fee Applied"
+                                newRequest['pur_description'] = "Late Fee Applied"
                             else:
-                                newRequest['pur_description'] = "One Time Late Fee and Per Day Late Fee Applied"
+                                newRequest['pur_description'] = "Late Fee"
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
