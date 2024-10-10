@@ -19,6 +19,7 @@ class PaymentVerification(Resource):
         with connect() as db:
             print("in connect loop")
             cashflow = db.execute("""                            
+                    -- PAYMENT VERIFICATION GET
                     SELECT payments.*, cp.total_paid, purchases.*
                         , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
                         , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num

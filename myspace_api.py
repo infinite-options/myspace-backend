@@ -16,7 +16,6 @@ from appliances import Appliances, RemoveAppliance
 from rents import Rents, RentDetails, RentTest
 from payments import NewPayments, PaymentMethod #,  PaymentStatus, Payments, PaymentOwner, RequestPayment
 from properties import Properties
-from transactions import AllTransactions
 # from cashflow import CashflowByOwner
 # from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised, 
 from cashflow import PaymentVerification, CashflowTransactions
@@ -1873,7 +1872,7 @@ api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<
 
 
 
-api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
+# api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
 
 
 api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
