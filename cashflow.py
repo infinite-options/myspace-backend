@@ -438,9 +438,11 @@ class CashflowTransactions(Resource):
             
                 response = db.execute("""                          
                         -- All Cashflow Transactions
-                        SELECT * 
+                        SELECT pp_details.*,
+                            property_address, property_unit
                         FROM space.pp_details
-                        -- WHERE pur_receiver = '600-000003' OR pur_payer = '600-000003';
+                        LEFT JOIN space.properties ON property_uid = pur_property_id
+                        -- WHERE pur_receiver = '600-000007' OR pur_payer = '600-000007';
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\';
                         """)
             else:
