@@ -14,7 +14,7 @@
 from dashboard import Dashboard
 from appliances import Appliances, RemoveAppliance
 from rents import Rents, RentDetails, RentTest
-from payments import NewPayments, PaymentMethod #,  PaymentStatus, Payments, PaymentOwner, RequestPayment
+from payments import NewPayments, PaymentMethod
 from properties import Properties
 # from cashflow import CashflowByOwner
 # from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised, 
@@ -1823,11 +1823,7 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 # Payment Endpoints
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
 api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
-# api.add_resource(PaymentStatus, '/paymentStatus/<string:user_id>')
 api.add_resource(NewPayments, '/makePayment')
-# api.add_resource(Payments, '/payment')
-# api.add_resource(PaymentOwner, '/paymentOwner/<string:user_id>/<string:owner_id>')
-# api.add_resource(RequestPayment, '/requestPayment')
 
 
 
@@ -1861,12 +1857,7 @@ api.add_resource(AddExpense, '/addExpense')
 api.add_resource(AddRevenue, '/addRevenue')
 api.add_resource(AddPurchase, '/addPurchase')
 
-# api.add_resource(Cashflow, '/cashflow/<string:user_id>/<string:year>')
-# api.add_resource(CashflowSimplified, '/cashflowSimplified/<string:user_id>')
-# api.add_resource(CashflowSummary, '/cashflowSummary/<string:user_id>')
-# api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:type>')
-# api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>/<string:month>/<string:year>')
-# api.add_resource(CashflowRevised, '/cashflowRevised/<string:user_id>')
+
 api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>', '/paymentVerification')
 api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<string:filter>')
 
