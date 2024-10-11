@@ -618,32 +618,223 @@ class Contract_CLASS(Resource):
         # Establish current day, month and year
         dt = date.today()
 
-        numCronContracts = 0
+        contractsMadeInactive = 0
+        contractsMadeActive = 0
+        CronPostings = ["Contracts Affected:"] 
+        response = {}
 
-        # FIND ALL ACTIVE CONTRACTS THAT HAVE EXPIRED
-        response = ApprovedContracts()
-        print("\nApproved Contracts: ", response)
-        print(range(len(response['result'])))
 
-        # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+        try:
+            # Run query to find all APPROVED Contracts
+            with connect() as db:    
+                contract_query = db.execute("""
+                    SELECT * 
+                    FROM space.contracts
+                    WHERE contract_status = 'APPROVED'
+                        AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
+                    """)
+
+                approved_contracts = contract_query['result']
+                print("\nApproved Contracts: ", approved_contracts)
+
+                for contract in approved_contracts:
+                        print("Contract: ", contract)
+
+                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
+                        active_contract = ("""
+                                UPDATE space.contracts
+                                SET contract_status = 'INACTIVE'
+                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                AND contract_status = 'ACTIVE';
+                                """)
+                        print("active_contract Query: ", active_contract)
+
+                        response['old_contract'] = db.execute(active_contract, cmd='post')
+                        print(response['old_contract']['change'])
+                        contractsMadeInactive = contractsMadeInactive + 1
+                        print("Contracts Made Inactive: ", contractsMadeInactive)
+
+
+                        
+
+                        # Make the Approved contract Active
+                        new_contract = ("""
+                                UPDATE space.contracts
+                                SET contract_status = 'ACTIVE'
+                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                AND contract_status = 'APPROVED';  
+                                """)
+
+                        print("new_contract Query: ", new_contract)
+                        response['new_contract'] = db.execute(new_contract, cmd='post')
+                        print(response['new_contract']['change'])
+                        contractsMadeActive = contractsMadeActive + 1
+                        print("Contracts Made Inactive: ", contractsMadeActive)
+
+                        CronPostings.append(f"{contract['contract_property_id']}  ")
+                        
+                print("Conract Cron Query Complete")
+                response['Contracts_Made_Inactive'] = contractsMadeInactive
+                response['Contracts_Made_Aactive'] = contractsMadeActive
+                print("This is the Function response: ", response)
+
+
+                # APPEND TO CRON OUTPUT
+                CronPostings.append(
+                        f"""
+                        response['Contracts_Made_Inactive'] = {contractsMadeInactive}
+                        response['Contracts_Made_Active'] = {contractsMadeActive}
+                        """
+                        )
+
+                          
+
+
+                try:
+                    # print(CronPostings)
+                    recipient = "pmarathay@gmail.com"
+                    subject = f"MySpace CONTRACT CRON JOB for {dt} Completed "
+                    body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
+                        'code': 500}
+                    
+        except:
+                response["cron fail"] = {'message': f'CONTRACT CRON Job failed for {dt}' ,
+                        'code': 500}
+                try:
+                    recipient = "pmarathay@gmail.com"
+                    subject = "MySpace CONTRACT CRON JOB Failed!"
+                    body = "CONTRACT CRON JOB Failed"
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
+                        'code': 500}
 
         return response
 
 def Contract_CRON(Resource):
-
         print("In Contract CRON JOB")
 
         # Establish current day, month and year
         dt = date.today()
 
-        numCronContracts = 0
+        contractsMadeInactive = 0
+        contractsMadeActive = 0
+        CronPostings = ["Contracts Affected:"] 
+        response = {}
 
-        # FIND ALL ACTIVE CONTRACTS THAT HAVE EXPIRED
-        response = ApprovedContracts()
-        # print("\nUnpaid Rents: ", response)
-        print(range(len(response['result'])))
 
-        # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+        try:
+            # Run query to find all APPROVED Contracts
+            with connect() as db:    
+                contract_query = db.execute("""
+                    SELECT * 
+                    FROM space.contracts
+                    WHERE contract_status = 'APPROVED'
+                        AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
+                    """)
+
+                approved_contracts = contract_query['result']
+                print("\nApproved Contracts: ", approved_contracts)
+
+                for contract in approved_contracts:
+                        print("Contract: ", contract)
+
+                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
+                        active_contract = ("""
+                                UPDATE space.contracts
+                                SET contract_status = 'INACTIVE'
+                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                AND contract_status = 'ACTIVE';
+                                """)
+                        print("active_contract Query: ", active_contract)
+
+                        response['old_contract'] = db.execute(active_contract, cmd='post')
+                        print(response['old_contract']['change'])
+                        contractsMadeInactive = contractsMadeInactive + 1
+                        print("Contracts Made Inactive: ", contractsMadeInactive)
+
+
+                        
+
+                        # Make the Approved contract Active
+                        new_contract = ("""
+                                UPDATE space.contracts
+                                SET contract_status = 'ACTIVE'
+                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                AND contract_status = 'APPROVED';  
+                                """)
+
+                        print("new_contract Query: ", new_contract)
+                        response['new_contract'] = db.execute(new_contract, cmd='post')
+                        print(response['new_contract']['change'])
+                        contractsMadeActive = contractsMadeActive + 1
+                        print("Contracts Made Inactive: ", contractsMadeActive)
+
+                        CronPostings.append(f"{contract['contract_property_id']}  ")
+                        
+                print("Conract Cron Query Complete")
+                response['Contracts_Made_Inactive'] = contractsMadeInactive
+                response['Contracts_Made_Aactive'] = contractsMadeActive
+                print("This is the Function response: ", response)
+
+
+                # APPEND TO CRON OUTPUT
+                CronPostings.append(
+                        f"""
+                        response['Contracts_Made_Inactive'] = {contractsMadeInactive}
+                        response['Contracts_Made_Active'] = {contractsMadeActive}
+                        """
+                        )
+
+                          
+
+
+                try:
+                    # print(CronPostings)
+                    recipient = "pmarathay@gmail.com"
+                    subject = f"MySpace CONTRACT CRON JOB for {dt} Completed "
+                    body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
+                        'code': 500}
+                    
+        except:
+                response["cron fail"] = {'message': f'CONTRACT CRON Job failed for {dt}' ,
+                        'code': 500}
+                try:
+                    recipient = "pmarathay@gmail.com"
+                    subject = "MySpace CONTRACT CRON JOB Failed!"
+                    body = "CONTRACT CRON JOB Failed"
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
+                        'code': 500}
 
         return response
 
