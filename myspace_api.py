@@ -622,7 +622,7 @@ class Contract_CLASS(Resource):
 
         # FIND ALL ACTIVE CONTRACTS THAT HAVE EXPIRED
         response = ApprovedContracts()
-        # print("\nUnpaid Rents: ", response)
+        print("\nApproved Contracts: ", response)
         print(range(len(response['result'])))
 
         # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
