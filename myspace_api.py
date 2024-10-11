@@ -611,7 +611,7 @@ class stripe_key(Resource):
 
 # -- CURRENT CRON JOB
 
-class Contract_CRON(Resource):
+class Contract_CLASS(Resource):
     def get(self):
         print("In Contract CRON JOB")
 
@@ -627,7 +627,25 @@ class Contract_CRON(Resource):
 
         # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
-        return
+        return response
+
+def Contract_CRON(Resource):
+
+        print("In Contract CRON JOB")
+
+        # Establish current day, month and year
+        dt = date.today()
+
+        numCronContracts = 0
+
+        # FIND ALL ACTIVE CONTRACTS THAT HAVE EXPIRED
+        response = ApprovedContracts()
+        # print("\nUnpaid Rents: ", response)
+        print(range(len(response['result'])))
+
+        # For each approved contract, see if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
+        return response
 
 class LateFees_CLASS(Resource):
     def get(self):
@@ -1912,6 +1930,7 @@ api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
 api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
 api.add_resource(RentPurchase, '/rentPurchase')
 api.add_resource(LateFees_CLASS, '/LateFees')
+api.add_resource(Contract_CLASS, '/contractCRON')
 # api.add_resource(CRONTest_CLASS, '/CRONRent')
 
 

@@ -514,6 +514,25 @@ def ApprovedContracts():
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
                     """)
+
+            # response = db.execute("""
+            #         UPDATE space.contracts AS c
+            #         JOIN (
+            #             SELECT contract_property_id
+            #             FROM space.contracts
+            #             WHERE STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE()
+            #             AND contract_status = 'APPROVED'
+            #         ) AS approved_contracts
+            #         ON c.contract_property_id = approved_contracts.contract_property_id
+            #         SET c.contract_status = 'INACTIVE'
+            #         WHERE c.contract_status = 'ACTIVE';
+
+            #         SELECT * 
+            #         FROM space.contracts
+            #         WHERE contract_status = 'APPROVED'
+            #             AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
+            #         """)
+
             print("Function Query Complete")
             print("This is the Function response: ", response)
         return response

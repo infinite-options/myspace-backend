@@ -227,6 +227,7 @@ class Profile(Resource):
                 profile_info['tenant_vehicle_info'] = profile_info['tenant_vehicle_info'] if 'tenant_vehicle_info' in profile_info else '[]'
                 profile_info['tenant_references'] = profile_info['tenant_references'] if 'tenant_references' in profile_info else '[]'
                 profile_info['tenant_pet_occupants'] = profile_info['tenant_pet_occupants'] if 'tenant_pet_occupants' in profile_info else '[]'
+                profile_info['tenant_employment'] = profile_info['tenant_employment'] if 'tenant_employment' in profile_info else '[]'
                 # print("Updated Tenant Profile: ", tenant_profile)
 
                 profile_info["tenant_uid"] = db.call('space.new_tenant_uid')['result'][0]['new_id']
