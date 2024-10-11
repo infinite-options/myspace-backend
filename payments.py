@@ -36,7 +36,13 @@ class NewPayments(Resource):
         with connect() as db:
 
             purchase_ids = data['pay_purchase_id']
-            total_paid = data['cashflow_total'] if data['cashflow_total'] else data['pay_total']
+            # total_paid = data['cashflow_total'] if data['cashflow_total'] else data['pay_total']
+            # Check if 'cashflow_total' exists and is not None
+            if 'cashflow_total' in data and data['cashflow_total'] is not None:
+                total_paid = data.pop('cashflow_total')  # Pop the value from the dictionary
+            else:
+                total_paid = data.get('pay_total', 0)  # Use 'pay_total' or default to 0
+
             num_pi = len(purchase_ids)
             print("number of items: ", num_pi, total_paid)
 
