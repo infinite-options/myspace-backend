@@ -599,7 +599,8 @@ class Dashboard(Resource):
                             , purchase_status, pur_status_value -- , pur_receiver, pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, pur_leaseFees_id
                         FROM space.payments
                         LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
-                        WHERE paid_by = "350-000007";
+                        -- WHERE paid_by = "350-000007";
+                        WHERE paid_by = \'""" + user_id + """\' 
                     """)
 
 

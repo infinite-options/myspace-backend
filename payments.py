@@ -36,7 +36,7 @@ class NewPayments(Resource):
         with connect() as db:
 
             purchase_ids = data['pay_purchase_id']
-            total_paid = data['pay_total']
+            total_paid = data['cashflow_total'] if data['cashflow_total'] else data['pay_total']
             num_pi = len(purchase_ids)
             print("number of items: ", num_pi, total_paid)
 
@@ -97,9 +97,9 @@ class NewPayments(Resource):
                 print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
                 # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
-                amt_remaining = float(amt_remaining_str)
+                amt_remaining = round(float(amt_remaining_str), 2)
                 print('amt_remaining: ', amt_remaining, type(amt_remaining))
-                amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
+                amt_due = round(float(purchaseInfo['result'][0]['pur_amount_due']), 2)
                 print('amt_due: ', amt_due, type(amt_due))
 
                 
