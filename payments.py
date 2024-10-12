@@ -410,7 +410,7 @@ class PaymentMethod(Resource):
                  """)
         return paymentMethodQuery
 
-    def delete(self, user_id):
+    def delete(self, user_id, payment_id):
         print("In paymentMethods DELETE")
         print(user_id)
         response = {}
@@ -419,7 +419,8 @@ class PaymentMethod(Resource):
             paymentQuery = ("""
                     DELETE 
                     FROM space.paymentMethods
-                    WHERE paymentMethod_uid = \'""" + user_id + """\';
+                    -- WHERE paymentMethod_profile_id = '350-000007' AND paymentMethod_uid = '070-000075';
+                    WHERE paymentMethod_profile_id = \'""" + user_id + """\' AND paymentMethod_uid = \'""" + payment_id + """\';
                     """)
 
             response["delete_paymentMethods"] = db.delete(paymentQuery)

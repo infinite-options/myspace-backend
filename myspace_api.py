@@ -2031,7 +2031,7 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 
 # Payment Endpoints
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
-api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>')
+api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>','/paymentMethod/<string:user_id>//<string:payment_id>')
 api.add_resource(NewPayments, '/makePayment')
 
 
