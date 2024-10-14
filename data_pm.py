@@ -105,7 +105,7 @@ def uploadImage(file, key, content):
 # --------------- PROCESS IMAGES ------------------
 
 def processImage(key, payload):
-    print("\nIn Process Image: ", payload)
+    # print("\nIn Process Image: ", payload)
     # print("Key Passed into processImage: ", key)
     response = {}
     with connect() as db:
@@ -420,7 +420,7 @@ def processImage(key, payload):
 # --------------- PROCESS DOCUMENTS ------------------
 
 def processDocument(key, payload):
-    print("\nIn Process Documents: ", payload)
+    # print("\nIn Process Documents: ", payload)
     # print("Key Passed into processDocuments: ", key)
     response = {}
     with connect() as db:
