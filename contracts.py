@@ -73,12 +73,13 @@ class Contracts(Resource):
                     -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
                     , owner_photo_url
                     , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_end_notice_period, contract_m2m
-                    , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
+                    , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_services_fees
                     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                 FROM space.o_details o
                 LEFT JOIN space.properties p ON o.property_id =p.property_uid 
                 LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
                 -- WHERE b.business_uid = '600-000011'
+                -- WHERE o.owner_uid = '110-000003'
                 WHERE o.owner_uid = \'""" + user_id + """\';
                 -- WHERE b.business_uid = \'""" + user_id + """\';
                 """)
