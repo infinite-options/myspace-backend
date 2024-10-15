@@ -398,7 +398,7 @@ class LeaseApplication(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        # print("Payload after function: ", payload)
+        print("Payload after function: ", payload)
         
         # --------------- PROCESS DOCUMENTS ------------------
 
@@ -453,8 +453,9 @@ class LeaseApplication(Resource):
                         # print('New Lease Fees Payload: ', new_leaseFees)
                         response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
-
-            payload["lease_early_end_date"] = payload["lease_end"]
+            if "lease_end" in payload:
+                payload["lease_early_end_date"] = payload["lease_end"]
+                
             print("Leases Payload: ", payload)
             response['lease_docs'] = db.update('leases', key, payload)
             # print("Response:" , response)

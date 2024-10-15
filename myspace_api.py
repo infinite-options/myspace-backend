@@ -1564,7 +1564,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_property_id'] = property
                     newRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
                     
-                    newRequest['purchase_type'] = "Rent"
+                    
                     newRequest['pur_cf_type'] = "revenue"
                     newRequest['pur_amount_due'] = amt_due
                     newRequest['purchase_status'] = "UNPAID"
@@ -1589,6 +1589,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
+                        newRequest['purchase_type'] = "Rent"
                         newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
@@ -1604,6 +1605,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
+                        newRequest['purchase_type'] = "Rent due Owner"
                         newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
@@ -1773,7 +1775,10 @@ def MonthlyRentPurchase_CRON(Resource):
                 # print("Rent due: ", next_due_date, type(next_due_date))
                 postdate = next_due_date - timedelta(days=payable)
                 # print("Post Date: ", postdate, type(postdate))
-                pm_due_date = next_due_date + relativedelta(days=15)
+                # pm_due_date = next_due_date + relativedelta(days=15)
+                last_day_of_month = calendar.monthrange(next_due_date.year, next_due_date.month)[1]
+                # Create a new datetime object for the last day of the month
+                pm_due_date = next_due_date.replace(day=last_day_of_month)
                 # print("PM Due Date: ", pm_due_date, type(pm_due_date))
                 
                 # print("Available to Post x days ahead: ", payable)
@@ -1860,7 +1865,7 @@ def MonthlyRentPurchase_CRON(Resource):
                     newRequest['pur_property_id'] = property
                     newRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
                     
-                    newRequest['purchase_type'] = "Rent"
+                    
                     newRequest['pur_cf_type'] = "revenue"
                     newRequest['pur_amount_due'] = amt_due
                     newRequest['purchase_status'] = "UNPAID"
@@ -1885,6 +1890,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
+                        newRequest['purchase_type'] = "Rent"
                         newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
@@ -1900,6 +1906,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
+                        newRequest['purchase_type'] = "Rent due Owner"
                         newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
