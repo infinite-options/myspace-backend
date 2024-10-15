@@ -628,6 +628,7 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
                         -- WHERE tenants LIKE "%350-000007%"
+                        AND lease_status = "ACTIVE"
                         ; """)
 
 
@@ -659,6 +660,7 @@ class Dashboard(Resource):
                         -- WHERE pur_payer = '350-000002' 
                         -- WHERE lt_tenant_id = '350-000002' 
                         WHERE lt_tenant_id = \'""" + user_id + """\' 
+                            AND lease_status = "ACTIVE"
                             AND property_uid!=""
                         GROUP BY lease_uid
                         ORDER BY lease_status;

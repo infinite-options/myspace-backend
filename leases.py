@@ -454,8 +454,9 @@ class LeaseApplication(Resource):
                         response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
             if "lease_end" in payload:
+                print("In lease_end")
                 payload["lease_early_end_date"] = payload["lease_end"]
-                
+
             print("Leases Payload: ", payload)
             response['lease_docs'] = db.update('leases', key, payload)
             # print("Response:" , response)
