@@ -348,7 +348,7 @@ class Dashboard(Resource):
                                         AND LEFT(pur_payer, 3) = '350'
                                         AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                                         AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                    GROUP BY pur_property_id, purchase_type
+                                    GROUP BY pur_property_id
                                     ) AS pp
                                     ON property_uid = pur_property_id
                                 ) AS rs
@@ -502,7 +502,8 @@ class Dashboard(Resource):
                                     FROM space.p_details
                                     -- WHERE business_uid = "600-000003"
                                     -- WHERE owner_uid = "110-000003"
-                                    WHERE owner_uid = \'""" + user_id + """\'
+                                    -- WHERE owner_uid = \'""" + user_id + """\'
+                                    WHERE owner_uid = '110-000012'
                                     -- WHERE business_uid = \'""" + user_id + """\'
                                     -- WHERE tenant_uid = \'""" + user_id + """\'  
                                     ) AS p
@@ -525,11 +526,11 @@ class Dashboard(Resource):
                                         , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
                                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
                                     FROM space.purchases
-                                    WHERE purchase_type = "Rent"
-                                        AND LEFT(pur_payer, 3) = '350'
+                                    WHERE LEFT(pur_payer, 3) = '350'
+                                        -- AND purchase_type = "Rent"
                                         AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
                                         AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = YEAR(CURRENT_DATE)
-                                    GROUP BY pur_property_id, purchase_type
+                                    GROUP BY pur_property_id -- , purchase_type
                                     ) AS pp
                                     ON property_uid = pur_property_id
                                 ) AS rs
