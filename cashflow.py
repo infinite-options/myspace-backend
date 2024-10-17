@@ -439,7 +439,9 @@ class CashflowTransactions(Resource):
                 response = db.execute("""                          
                         -- All Cashflow Transactions
                         SELECT pp_details.*,
-                            property_address, property_unit,
+                            property_address, property_unit, property_owner_id, owner_first_name, owner_last_name,
+                            -- properties.*,
+                            -- p_details.*,
                             CASE 
                                 WHEN purchase_type = 'Rent' THEN 1
                                 WHEN purchase_type = 'Rent due owner' THEN 2
@@ -447,7 +449,8 @@ class CashflowTransactions(Resource):
                                 ELSE 5
                             END AS pur_type_code
                         FROM space.pp_details
-                        LEFT JOIN space.properties ON property_uid = pur_property_id
+                        -- LEFT JOIN space.properties ON property_uid = pur_property_id
+                        LEFT JOIN space.p_details ON property_uid = pur_property_id
                         -- WHERE pur_receiver = '600-000043' OR pur_payer = '600-000043';
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\';
                         """)

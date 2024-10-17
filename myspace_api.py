@@ -2044,7 +2044,7 @@ api.add_resource(NewPayments, '/makePayment')
 
 
 # Maintenance Endpoints
-api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:uid>')
+api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:user_id>')
 api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
 api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
 api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
