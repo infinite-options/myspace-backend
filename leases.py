@@ -403,9 +403,12 @@ class LeaseApplication(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         with connect() as db: 
+            print("Connection Established")
 
             # DEL FEES  Typically if PM is modifying the lease for Tenant
+            print("delete fees: ", payload.get('delete_fees'))
             if "delete_fees" in payload:
+                print("In delete fees")
                 json_object = json.loads(payload.pop('delete_fees'))
                 print("delete lease fees json_object", json_object)
                 for delete_uid in json_object:
@@ -462,7 +465,7 @@ class LeaseApplication(Resource):
             # print("Response:" , response)
        
 
-            # ==> ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
+            # ==> ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED AND NOT BEING RENEWED
             if payload.get('lease_status') == 'ACTIVE':
                 print("\nLease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
