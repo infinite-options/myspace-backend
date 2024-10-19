@@ -508,6 +508,7 @@ class Dashboard(Resource):
                             -- AND cf_year = DATE_FORMAT(NOW(), '%Y')
                     """)
 
+
                 response["tenantPayments"] = db.execute("""
                         -- Tenant Payment Details
                         SELECT -- *,
@@ -572,20 +573,8 @@ class Dashboard(Resource):
                             ) AS pp ON pur_property_id = property_uid AND lease_status IN ('ACTIVE')
                         -- WHERE lt_tenant_id = '350-000007'
                         WHERE lt_tenant_id = \'""" + user_id + """\'
+                        ORDER BY lease_status
                         """)
-                   
-                    
-                # response["maintenanceRequestsOld"] = db.execute("""
-                #         -- TENENT MAINTENANCE TICKETS
-                #         SELECT  property_uid, owner_first_name, owner_last_name, owner_phone_number, owner_email,
-                #             p.business_name, p.business_phone_number, p.business_email,
-                #             mr.*
-                #         FROM space.maintenanceRequests mr
-                #             LEFT JOIN space.p_details p ON property_uid = mr.maintenance_property_id
-                #             LEFT JOIN space.businessProfileInfo b ON b.business_uid = p.business_uid
-                #         -- WHERE tenant_uid = '350-000162';
-                #         WHERE tenant_uid = \'""" + user_id + """\';
-                #         """)
 
 
                 response["maintenanceRequests"] = db.execute("""
@@ -634,11 +623,6 @@ class Dashboard(Resource):
                         WHERE lt_tenant_id = \'""" + user_id + """\'
                         -- GROUP BY maintenance_request_status;
                         """)
-
-
-
-
-
 
 
                 return response
