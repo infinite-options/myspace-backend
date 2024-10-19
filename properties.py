@@ -319,7 +319,7 @@ class Properties(Resource):
                 # print("Query: ", maintenanceQuery)
                 response["MaintenanceRequests"] = maintenanceQuery
         
-        
+
         elif uid[:3] == '350':
             print("In Tenant ID")
             with connect() as db:
@@ -413,7 +413,6 @@ class Properties(Resource):
                     FROM space.p_details AS p      
                     -- WHERE property_uid = '200-000001'              
                     WHERE property_uid = \'""" + uid + """\'
-                    GROUP BY p.property_uid;
                 """)
             response["Property"] = propertiesQuery
         

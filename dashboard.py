@@ -554,35 +554,24 @@ class Dashboard(Resource):
                 response["property"] = db.execute("""
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
-                        SELECT -- *
-                            -- SUM( CASE WHEN purchase_status = 'UNPAID' AND pur_payer = '350-000002' THEN pur_amount_due ELSE 0 END) as balance
-                            SUM( CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\'  THEN pur_amount_due ELSE 0 END) as balance
-                            -- ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = '350-000002' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y %H:%i')) AS CHAR) AS earliest_due_date
-                            ,CAST(MIN(STR_TO_DATE(CASE WHEN purchase_status = 'UNPAID' AND pur_payer = \'""" + user_id + """\' THEN pur_due_date ELSE lease_end END, '%m-%d-%Y %H:%i')) AS CHAR) AS earliest_due_date
-                            , lt_lease_id, lt_tenant_id, lt_responsibility, lease_uid, lease_property_id
-                            , lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date
-                            -- , lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, linked_application_id-DNU, lease_docuSign
-                            -- , lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_fees, lease_actual_rent
-                            , property_uid
-                            -- , property_available_to_rent, property_active_date
-                            , property_address, property_unit, property_city, property_state, property_zip, property_longitude, property_latitude
-                            , property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_deposit, property_pets_allowed, property_deposit_for_rent
-                            , property_images, property_favorite_image
-                            -- , property_taxes, property_mortgages, property_insurance, property_featured
-                            , property_description, property_notes
-                            , MAX(CASE WHEN lease_status = 'ACTIVE' THEN 1 ELSE 0 END) AS active_priority
+                        SELECT *
                         FROM space.lease_tenant
                         LEFT JOIN space.leases ON lease_uid = lt_lease_id
                         LEFT JOIN space.properties l ON lease_property_id = property_uid
-                        -- LEFT JOIN space.purchases pur ON property_uid = pur_property_id
-                        LEFT JOIN space.pp_status pur ON property_uid = pur_property_id
-                        -- WHERE pur_payer = '350-000002' 
-                        -- WHERE lt_tenant_id = '350-000002' 
-                        WHERE lt_tenant_id = \'""" + user_id + """\' 
-                            -- AND lease_status = "ACTIVE"
-                            AND property_uid!=""
-                        GROUP BY lease_uid
-                        ORDER BY lease_status;
+                        LEFT JOIN (
+                            SELECT 
+                                pur_property_id
+                                , SUM(pur_amount_due) AS pur_amount_due
+                                , SUM(total_paid) AS total_paid
+                                , SUM( amt_remaining) AS balance
+                                , MIN(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS earliest_due_date
+                                , MIN(pur_status_value) AS pur_status_value
+                            FROM space.pp_status
+                            WHERE purchase_status IN ('UNPAID', 'PARTIALLY PAID') AND LEFT(pur_payer,3) = '350'
+                            GROUP BY pur_property_id
+                            ) AS pp ON pur_property_id = property_uid AND lease_status IN ('ACTIVE')
+                        -- WHERE lt_tenant_id = '350-000007'
+                        WHERE lt_tenant_id = \'""" + user_id + """\'
                         """)
                    
                     
