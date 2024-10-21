@@ -778,7 +778,7 @@ def MaintenanceDetails(user_id):
                 -- WHERE maintenance_property_id = '200-000084'
                 -- WHERE maintenance_assigned_business = '600-000010'  -- THIS DOESN"T WORK IN ACTUAL QUERY
                 -- WHERE contract_business_id = '600-000043'
-                -- WHERE {column} =  \'""" + user_id + """\' 
+                WHERE {column} =  \'""" + user_id + """\' 
                 ) AS mr
 
             LEFT JOIN (
