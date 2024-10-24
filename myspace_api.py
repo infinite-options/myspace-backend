@@ -611,6 +611,236 @@ class stripe_key(Resource):
 
 # -- CURRENT CRON JOB
 
+class Lease_CLASS(Resource):
+    def get(self):
+        print("In Lease CRON JOB")
+
+        # Establish current day, month and year
+        dt = date.today()
+
+        leasesMadeInactive = 0
+        leasesMadeActive = 0
+        CronPostings = ["Lease Affected:"] 
+        response = {}
+
+
+        try:
+            # Run query to find all APPROVED Contracts
+            with connect() as db:    
+                lease_query = db.execute("""
+                    SELECT * 
+                    FROM space.leases
+                    WHERE lease_status = "APPROVED" 
+                        AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
+                    """)
+
+                approved_leases = lease_query['result']
+                print("\nApproved Contracts: ", approved_leases)
+
+                for lease in approved_leases:
+                        print("Lease: ", lease)
+                        print("Lease Property ID: ", lease['lease_property_id'])
+
+                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
+                        active_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'INACTIVE'
+                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                AND lease_status = 'ACTIVE';
+                                """)
+                        print("active_lease Query: ", active_lease)
+
+                        response['old_lease'] = db.execute(active_lease, cmd='post')
+                        print(response['old_lease']['change'])
+                        leasesMadeInactive = leasesMadeInactive + 1
+                        print("Leases Made Inactive: ", leasesMadeInactive)
+
+
+                        
+
+                        # Make the Approved contract Active
+                        new_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'ACTIVE'
+                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                AND lease_status = 'APPROVED';  
+                                """)
+
+                        print("new_lease Query: ", new_lease)
+                        response['new_lease'] = db.execute(new_lease, cmd='post')
+                        print(response['new_lease']['change'])
+                        leasesMadeActive = leasesMadeActive + 1
+                        print("Leases Made Active: ", leasesMadeActive)
+
+                        CronPostings.append(f"{lease['lease_property_id']}  ")
+                        
+                print("Lease Cron Query Complete")
+                response['Leases_Made_Inactive'] = leasesMadeInactive
+                response['Leases_Made_Aactive'] = leasesMadeActive
+                print("This is the Function response: ", response)
+
+
+                # APPEND TO CRON OUTPUT
+                CronPostings.append(
+                        f"""
+                        response['Leases_Made_Inactive'] = {leasesMadeInactive}
+                        response['Leases_Made_Active'] = {leasesMadeActive}
+                        """
+                        )
+
+                          
+
+
+                try:
+                    # print(CronPostings)
+                    recipient = "pmarathay@gmail.com"
+                    subject = f"MySpace LEASE CRON JOB for {dt} Completed "
+                    body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
+                        'code': 500}
+                    
+        except:
+                response["cron fail"] = {'message': f'LEASE CRON Job failed for {dt}' ,
+                        'code': 500}
+                try:
+                    recipient = "pmarathay@gmail.com"
+                    subject = "MySpace LEASE CRON JOB Failed!"
+                    body = "LEASE CRON JOB Failed"
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
+                        'code': 500}
+
+        return response
+    
+def Lease_CRON(Resource):
+        print("In Lease CRON JOB")
+
+        # Establish current day, month and year
+        dt = date.today()
+
+        leasesMadeInactive = 0
+        leasesMadeActive = 0
+        CronPostings = ["Lease Affected:"] 
+        response = {}
+
+
+        try:
+            # Run query to find all APPROVED Contracts
+            with connect() as db:    
+                lease_query = db.execute("""
+                    SELECT * 
+                    FROM space.leases
+                    WHERE lease_status = "APPROVED" 
+                        AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
+                    """)
+
+                approved_leases = lease_query['result']
+                print("\nApproved Contracts: ", approved_leases)
+
+                for lease in approved_leases:
+                        print("Lease: ", lease)
+                        print("Lease Property ID: ", lease['lease_property_id'])
+
+                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+
+                        active_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'INACTIVE'
+                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                AND lease_status = 'ACTIVE';
+                                """)
+                        print("active_lease Query: ", active_lease)
+
+                        response['old_lease'] = db.execute(active_lease, cmd='post')
+                        print(response['old_lease']['change'])
+                        leasesMadeInactive = leasesMadeInactive + 1
+                        print("Leases Made Inactive: ", leasesMadeInactive)
+
+
+                        
+
+                        # Make the Approved contract Active
+                        new_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'ACTIVE'
+                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                AND lease_status = 'APPROVED';  
+                                """)
+
+                        print("new_lease Query: ", new_lease)
+                        response['new_lease'] = db.execute(new_lease, cmd='post')
+                        print(response['new_lease']['change'])
+                        leasesMadeActive = leasesMadeActive + 1
+                        print("Leases Made Active: ", leasesMadeActive)
+
+                        CronPostings.append(f"{lease['lease_property_id']}  ")
+                        
+                print("Lease Cron Query Complete")
+                response['Leases_Made_Inactive'] = leasesMadeInactive
+                response['Leases_Made_Aactive'] = leasesMadeActive
+                print("This is the Function response: ", response)
+
+
+                # APPEND TO CRON OUTPUT
+                CronPostings.append(
+                        f"""
+                        response['Leases_Made_Inactive'] = {leasesMadeInactive}
+                        response['Leases_Made_Active'] = {leasesMadeActive}
+                        """
+                        )
+
+                          
+
+
+                try:
+                    # print(CronPostings)
+                    recipient = "pmarathay@gmail.com"
+                    subject = f"MySpace LEASE CRON JOB for {dt} Completed "
+                    body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
+                        'code': 500}
+                    
+        except:
+                response["cron fail"] = {'message': f'LEASE CRON Job failed for {dt}' ,
+                        'code': 500}
+                try:
+                    recipient = "pmarathay@gmail.com"
+                    subject = "MySpace LEASE CRON JOB Failed!"
+                    body = "LEASE CRON JOB Failed"
+                    # mail.send(msg)
+                    sendEmail(recipient, subject, body)
+
+                    response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
+                        'code': 500}
+
+                except:
+                    response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
+                        'code': 500}
+
+        return response
+
+
 class Contract_CLASS(Resource):
     def get(self):
         print("In Contract CRON JOB")
@@ -670,7 +900,7 @@ class Contract_CLASS(Resource):
                         response['new_contract'] = db.execute(new_contract, cmd='post')
                         print(response['new_contract']['change'])
                         contractsMadeActive = contractsMadeActive + 1
-                        print("Contracts Made Inactive: ", contractsMadeActive)
+                        print("Contracts Made Active: ", contractsMadeActive)
 
                         CronPostings.append(f"{contract['contract_property_id']}  ")
                         
@@ -783,7 +1013,7 @@ def Contract_CRON(Resource):
                         response['new_contract'] = db.execute(new_contract, cmd='post')
                         print(response['new_contract']['change'])
                         contractsMadeActive = contractsMadeActive + 1
-                        print("Contracts Made Inactive: ", contractsMadeActive)
+                        print("Contracts Made Active: ", contractsMadeActive)
 
                         CronPostings.append(f"{contract['contract_property_id']}  ")
                         
@@ -2130,6 +2360,7 @@ api.add_resource(RentPurchase, '/rentPurchase')
 api.add_resource(LateFees_CLASS, '/LateFees')
 api.add_resource(Contract_CLASS, '/contractCRON')
 # api.add_resource(CRONTest_CLASS, '/CRONRent')
+api.add_resource(Lease_CLASS, '/leaseCRON')
 
 
 # api.add_resource(ExtendLease, '/ExtendLease')
