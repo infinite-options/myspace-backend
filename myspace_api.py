@@ -41,7 +41,7 @@ from password import Password
 from data_pm import connect, uploadImage, s3
 from queries import NextDueDate, UnpaidRents, ApprovedContracts
 
-
+from test_api import endPointTest_CLASS
 
 import os
 import boto3
@@ -1923,6 +1923,8 @@ api.add_resource(SendEmail_CLASS, "/sendEmail_CLASS")
 api.add_resource(SendEmail, "/sendEmail")
 
 api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
+
+api.add_resource(endPointTest_CLASS, "/testapi")
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
