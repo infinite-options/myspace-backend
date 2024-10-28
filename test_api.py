@@ -3,7 +3,6 @@ import datetime
 import json
 from decimal import Decimal
 import requests
-import pytest
 
 from flask_restful import Resource
 
@@ -253,155 +252,299 @@ ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
 
 #     assert response.status_code == 200
 
-class endPointTest_CLASS(Resource):
+# class endPointTest_CLASS(Resource):
+#     def get(self):
+#         response = {}
+#         response['No of APIs tested'] = 0
+#         response['APIs running successfully'] = []
+#         response['APIs failing'] = []
 
-    def get(self):
-        response = {}
-        response['No of APIs tested'] = 0
-        response['APIs running successfully'] = []
-        response['APIs failing'] = []
-
-        try:
-            # -------- test post maintenance request --------
-            print("\nIn test POST Maintenance Requests")
-            post_maintenance_request_payload = {
-                    "maintenance_property_id":"200-000000",
-                    "maintenance_title":"Vents Broken",
-                    "maintenance_desc":"Vents",
-                    "maintenance_request_type":"Appliance",
-                    "maintenance_request_created_by":"600-000000",
-                    "maintenance_priority":"High",
-                    "maintenance_can_reschedule":1,
-                    "maintenance_assigned_business":"null",
-                    "maintenance_assigned_worker":"null",
-                    "maintenance_scheduled_date":"null",
-                    "maintenance_scheduled_time":"null",
-                    "maintenance_frequency":"One Time",
-                    "maintenance_notes":"null",
-                    "maintenance_request_created_date":"2024-11-13",
-                    "maintenance_request_closed_date":"null",
-                    "maintenance_request_adjustment_date":"null"
-                }
-            post_maintenance_request_response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_maintenance_request_payload)
-            maintenance_request_uid = post_maintenance_request_response.json()['maintenance_request_uid']
-            if post_maintenance_request_response.status_code == 200:
-                response['APIs running successfully'].append('POST Maintenance Requests')
-            else:
-                response['APIs failing'].append('POST Maintenance Requests')
-            response['No of APIs tested'] += 1
-
-
-            # -------- test post get maintenance request --------
-            print("\nIn test GET after POST Maintenance Requests")
-            post_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
-            data = post_get_maintenance_request_response.json()['result']['NEW REQUEST']['maintenance_items'][0]
-            for k, v in post_maintenance_request_payload.items():
-                if data[k] == v:
-                    continue
-                else:
-                    print(k, v, "not a match")
-            if post_get_maintenance_request_response.status_code == 200:
-                response['APIs running successfully'].append('GET after POST Maintenance Requests')
-            else:
-                response['APIs failing'].append('GET after POST Maintenance Requests')
-            response['No of APIs tested'] += 1
+#         try:
+#             # -------- test post maintenance request --------
+#             print("\nIn test POST Maintenance Requests")
+#             post_maintenance_request_payload = {
+#                     "maintenance_property_id":"200-000000",
+#                     "maintenance_title":"Vents Broken",
+#                     "maintenance_desc":"Vents",
+#                     "maintenance_request_type":"Appliance",
+#                     "maintenance_request_created_by":"600-000000",
+#                     "maintenance_priority":"High",
+#                     "maintenance_can_reschedule":1,
+#                     "maintenance_assigned_business":"null",
+#                     "maintenance_assigned_worker":"null",
+#                     "maintenance_scheduled_date":"null",
+#                     "maintenance_scheduled_time":"null",
+#                     "maintenance_frequency":"One Time",
+#                     "maintenance_notes":"null",
+#                     "maintenance_request_created_date":"2024-11-13",
+#                     "maintenance_request_closed_date":"null",
+#                     "maintenance_request_adjustment_date":"null"
+#                 }
+#             post_maintenance_request_response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_maintenance_request_payload)
+#             maintenance_request_uid = post_maintenance_request_response.json()['maintenance_request_uid']
+#             if post_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('POST Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('POST Maintenance Requests')
+#             response['No of APIs tested'] += 1
 
 
-            # -------- test put maintenance request --------
-            print("\nIn test PUT Maintenance Requests")
-            put_maintenance_request_payload = {
-                "maintenance_request_uid":f"{maintenance_request_uid}","maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"11/30/2024","maintenance_scheduled_time":"10:00:00"
-            }
-            put_maintenance_request_response = requests.put(ENDPOINT + "/maintenanceRequests", data = put_maintenance_request_payload) 
-            if put_maintenance_request_response.status_code == 200:
-                response['APIs running successfully'].append('PUT Maintenance Requests')
-            else:
-                response['APIs failing'].append('PUT Maintenance Requests')
-            response['No of APIs tested'] += 1
+#             # -------- test post get maintenance request --------
+#             print("\nIn test GET after POST Maintenance Requests")
+#             post_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+#             data = post_get_maintenance_request_response.json()['result']['NEW REQUEST']['maintenance_items'][0]
+#             for k, v in post_maintenance_request_payload.items():
+#                 if data[k] == v:
+#                     continue
+#                 else:
+#                     print(k, v, "not a match")
+#             if post_get_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('GET after POST Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('GET after POST Maintenance Requests')
+#             response['No of APIs tested'] += 1
 
 
-            # -------- test put get maintenance request --------
-            print("\nIn test GET after PUT Maintenance Requests")
-            put_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
-            data = put_get_maintenance_request_response.json()['result']['SCHEDULED']['maintenance_items'][0]
-            for k, v in put_maintenance_request_payload.items():
-                if data[k] == v:
-                    continue
-                else:
-                    print(k, v, "not a match")
-            if put_get_maintenance_request_response.status_code == 200:
-                response['APIs running successfully'].append('GET after PUT Maintenance Requests')
-            else:
-                response['APIs failing'].append('GET after PUT Maintenance Requests')
-            response['No of APIs tested'] += 1
+#             # -------- test put maintenance request --------
+#             print("\nIn test PUT Maintenance Requests")
+#             put_maintenance_request_payload = {
+#                 "maintenance_request_uid":f"{maintenance_request_uid}","maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"11/30/2024","maintenance_scheduled_time":"10:00:00"
+#             }
+#             put_maintenance_request_response = requests.put(ENDPOINT + "/maintenanceRequests", data = put_maintenance_request_payload) 
+#             if put_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('PUT Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('PUT Maintenance Requests')
+#             response['No of APIs tested'] += 1
 
 
-            # -------- test post maintenance quotes --------
-            print("\nIn test POST Maintenance Quotes")
-            post_maintenance_quotes_payload = {
-                    'quote_maintenance_request_id': f'{maintenance_request_uid}', 
-                    'quote_pm_notes': 'Vents',
-                    'quote_business_id': '600-000000'
-                }
-            post_maintenance_quotes_response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
-            maintenance_quote_uid = post_maintenance_quotes_response.json()['maintenance_quote_uid']
-            if post_maintenance_quotes_response.status_code == 200:
-                response['APIs running successfully'].append('POST Maintenance Quotes')
-            else:
-                response['APIs failing'].append('POST Maintenance Quotes')
-            response['No of APIs tested'] += 1
+#             # -------- test put get maintenance request --------
+#             print("\nIn test GET after PUT Maintenance Requests")
+#             put_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+#             data = put_get_maintenance_request_response.json()['result']['SCHEDULED']['maintenance_items'][0]
+#             for k, v in put_maintenance_request_payload.items():
+#                 if data[k] == v:
+#                     continue
+#                 else:
+#                     print(k, v, "not a match")
+#             if put_get_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('GET after PUT Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('GET after PUT Maintenance Requests')
+#             response['No of APIs tested'] += 1
 
 
-            # -------- test put maintenance quotes --------
-            print("\nIn test PUT Maintenance Quotes")
-            put_maintenance_quotes_payload = {
-                    'maintenance_quote_uid': f'{maintenance_quote_uid}',
-                    'quote_maintenance_request_id': f'{maintenance_request_uid}',
-                    'quote_business_id': '600-000000',
-                    'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}',
-                    'quote_notes': 'vents',
-                    'quote_status': 'SENT',
-                    'quote_event_type': '5 Hour Job',
-                    'quote_total_estimate': '300',
-                    'quote_created_date': '2000-04-23 00:00:00',
-                    'quote_earliest_available_date': '12-12-2023',
-                    'quote_earliest_available_date': '00:00:00'
-                }
-            put_maintenance_quotes_response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
-            if put_maintenance_quotes_response.status_code == 200:
-                response['APIs running successfully'].append('PUT Maintenance Quotes')
-            else:
-                response['APIs failing'].append('PUT Maintenance Quotes')
-            response['No of APIs tested'] += 1
+#             # -------- test post maintenance quotes --------
+#             print("\nIn test POST Maintenance Quotes")
+#             post_maintenance_quotes_payload = {
+#                     'quote_maintenance_request_id': f'{maintenance_request_uid}', 
+#                     'quote_pm_notes': 'Vents',
+#                     'quote_business_id': '600-000000'
+#                 }
+#             post_maintenance_quotes_response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
+#             maintenance_quote_uid = post_maintenance_quotes_response.json()['maintenance_quote_uid']
+#             if post_maintenance_quotes_response.status_code == 200:
+#                 response['APIs running successfully'].append('POST Maintenance Quotes')
+#             else:
+#                 response['APIs failing'].append('POST Maintenance Quotes')
+#             response['No of APIs tested'] += 1
 
 
-            # -------- delete data from Maintenance Requests and Maintenance Quotes --------
-            print("\nIn delete data from Maintenance Requests and Maintenance Quotes")
-            print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
-            with connect() as db:
-                delQuery_maintenance_req = ("""
-                                DELETE space.maintenanceRequests
-                                FROM space.maintenanceRequests
-                                WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
-                            """)
-                maintenance_req_response = db.delete(delQuery_maintenance_req)
+#             # -------- test put maintenance quotes --------
+#             print("\nIn test PUT Maintenance Quotes")
+#             put_maintenance_quotes_payload = {
+#                     'maintenance_quote_uid': f'{maintenance_quote_uid}',
+#                     'quote_maintenance_request_id': f'{maintenance_request_uid}',
+#                     'quote_business_id': '600-000000',
+#                     'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}',
+#                     'quote_notes': 'vents',
+#                     'quote_status': 'SENT',
+#                     'quote_event_type': '5 Hour Job',
+#                     'quote_total_estimate': '300',
+#                     'quote_created_date': '2000-04-23 00:00:00',
+#                     'quote_earliest_available_date': '12-12-2023',
+#                     'quote_earliest_available_date': '00:00:00'
+#                 }
+#             put_maintenance_quotes_response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
+#             if put_maintenance_quotes_response.status_code == 200:
+#                 response['APIs running successfully'].append('PUT Maintenance Quotes')
+#             else:
+#                 response['APIs failing'].append('PUT Maintenance Quotes')
+#             response['No of APIs tested'] += 1
 
-                delQuery_maintenance_quotes = ("""
-                                DELETE space.maintenanceQuotes
-                                FROM space.maintenanceQuotes
-                                WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
-                            """)
-                maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
 
-            return response
+#             # -------- delete data from Maintenance Requests and Maintenance Quotes --------
+#             print("\nIn delete data from Maintenance Requests and Maintenance Quotes")
+#             print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
+#             with connect() as db:
+#                 delQuery_maintenance_req = ("""
+#                                 DELETE space.maintenanceRequests
+#                                 FROM space.maintenanceRequests
+#                                 WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
+#                             """)
+#                 maintenance_req_response = db.delete(delQuery_maintenance_req)
+
+#                 delQuery_maintenance_quotes = ("""
+#                                 DELETE space.maintenanceQuotes
+#                                 FROM space.maintenanceQuotes
+#                                 WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
+#                             """)
+#                 maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
+
+#             return response
         
-        except:
-            return response
+#         except:
+#             return response
+
+# def endPointTest_CRON():
+#         response = {}
+#         response['No of APIs tested'] = 0
+#         response['APIs running successfully'] = []
+#         response['APIs failing'] = []
+
+#         try:
+#             # -------- test post maintenance request --------
+#             print("\nIn test POST Maintenance Requests")
+#             post_maintenance_request_payload = {
+#                     "maintenance_property_id":"200-000000",
+#                     "maintenance_title":"Vents Broken",
+#                     "maintenance_desc":"Vents",
+#                     "maintenance_request_type":"Appliance",
+#                     "maintenance_request_created_by":"600-000000",
+#                     "maintenance_priority":"High",
+#                     "maintenance_can_reschedule":1,
+#                     "maintenance_assigned_business":"null",
+#                     "maintenance_assigned_worker":"null",
+#                     "maintenance_scheduled_date":"null",
+#                     "maintenance_scheduled_time":"null",
+#                     "maintenance_frequency":"One Time",
+#                     "maintenance_notes":"null",
+#                     "maintenance_request_created_date":"2024-11-13",
+#                     "maintenance_request_closed_date":"null",
+#                     "maintenance_request_adjustment_date":"null"
+#                 }
+#             post_maintenance_request_response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_maintenance_request_payload)
+#             maintenance_request_uid = post_maintenance_request_response.json()['maintenance_request_uid']
+#             if post_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('POST Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('POST Maintenance Requests')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- test post get maintenance request --------
+#             print("\nIn test GET after POST Maintenance Requests")
+#             post_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+#             data = post_get_maintenance_request_response.json()['result']['NEW REQUEST']['maintenance_items'][0]
+#             for k, v in post_maintenance_request_payload.items():
+#                 if data[k] == v:
+#                     continue
+#                 else:
+#                     print(k, v, "not a match")
+#             if post_get_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('GET after POST Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('GET after POST Maintenance Requests')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- test put maintenance request --------
+#             print("\nIn test PUT Maintenance Requests")
+#             put_maintenance_request_payload = {
+#                 "maintenance_request_uid":f"{maintenance_request_uid}","maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"11/30/2024","maintenance_scheduled_time":"10:00:00"
+#             }
+#             put_maintenance_request_response = requests.put(ENDPOINT + "/maintenanceRequests", data = put_maintenance_request_payload) 
+#             if put_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('PUT Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('PUT Maintenance Requests')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- test put get maintenance request --------
+#             print("\nIn test GET after PUT Maintenance Requests")
+#             put_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+#             data = put_get_maintenance_request_response.json()['result']['SCHEDULED']['maintenance_items'][0]
+#             for k, v in put_maintenance_request_payload.items():
+#                 if data[k] == v:
+#                     continue
+#                 else:
+#                     print(k, v, "not a match")
+#             if put_get_maintenance_request_response.status_code == 200:
+#                 response['APIs running successfully'].append('GET after PUT Maintenance Requests')
+#             else:
+#                 response['APIs failing'].append('GET after PUT Maintenance Requests')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- test post maintenance quotes --------
+#             print("\nIn test POST Maintenance Quotes")
+#             post_maintenance_quotes_payload = {
+#                     'quote_maintenance_request_id': f'{maintenance_request_uid}', 
+#                     'quote_pm_notes': 'Vents',
+#                     'quote_business_id': '600-000000'
+#                 }
+#             post_maintenance_quotes_response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
+#             maintenance_quote_uid = post_maintenance_quotes_response.json()['maintenance_quote_uid']
+#             if post_maintenance_quotes_response.status_code == 200:
+#                 response['APIs running successfully'].append('POST Maintenance Quotes')
+#             else:
+#                 response['APIs failing'].append('POST Maintenance Quotes')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- test put maintenance quotes --------
+#             print("\nIn test PUT Maintenance Quotes")
+#             put_maintenance_quotes_payload = {
+#                     'maintenance_quote_uid': f'{maintenance_quote_uid}',
+#                     'quote_maintenance_request_id': f'{maintenance_request_uid}',
+#                     'quote_business_id': '600-000000',
+#                     'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}',
+#                     'quote_notes': 'vents',
+#                     'quote_status': 'SENT',
+#                     'quote_event_type': '5 Hour Job',
+#                     'quote_total_estimate': '300',
+#                     'quote_created_date': '2000-04-23 00:00:00',
+#                     'quote_earliest_available_date': '12-12-2023',
+#                     'quote_earliest_available_date': '00:00:00'
+#                 }
+#             put_maintenance_quotes_response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
+#             if put_maintenance_quotes_response.status_code == 200:
+#                 response['APIs running successfully'].append('PUT Maintenance Quotes')
+#             else:
+#                 response['APIs failing'].append('PUT Maintenance Quotes')
+#             response['No of APIs tested'] += 1
+
+
+#             # -------- delete data from Maintenance Requests and Maintenance Quotes --------
+#             print("\nIn delete data from Maintenance Requests and Maintenance Quotes")
+#             print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
+#             with connect() as db:
+#                 delQuery_maintenance_req = ("""
+#                                 DELETE space.maintenanceRequests
+#                                 FROM space.maintenanceRequests
+#                                 WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
+#                             """)
+#                 maintenance_req_response = db.delete(delQuery_maintenance_req)
+
+#                 delQuery_maintenance_quotes = ("""
+#                                 DELETE space.maintenanceQuotes
+#                                 FROM space.maintenanceQuotes
+#                                 WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
+#                             """)
+#                 maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
+
+#             return response
+        
+#         except:
+#             return response
 
 # ********* FUNCTION IMPLEMENTATION *********
 # -------- Maintenance Requests ---------
 maintenance_request_uid = ""
 post_payload = {}
+global put_payload
+
 def test_post_maintenanceReq():
     global post_payload
     post_payload = {
@@ -442,7 +585,6 @@ def test_post_get_maintenanceReq():
     # print(data)
     assert response.status_code == 200
 
-global put_payload
 def test_put_maintenanceReq():
     global maintenance_request_uid
     global put_payload
@@ -525,7 +667,6 @@ def test_put_maintenancyQuotes():
     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
 
     assert response.status_code == 200
-
 
 def test_delete_maintenanceReq():
     global maintenance_request_uid
