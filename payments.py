@@ -36,7 +36,13 @@ class NewPayments(Resource):
         with connect() as db:
 
             purchase_ids = data['pay_purchase_id']
-            total_paid = data['pay_total']
+            # total_paid = data['cashflow_total'] if data['cashflow_total'] else data['pay_total']
+            # Check if 'cashflow_total' exists and is not None
+            if 'cashflow_total' in data and data['cashflow_total'] is not None:
+                total_paid = data.pop('cashflow_total')  # Pop the value from the dictionary
+            else:
+                total_paid = data.get('pay_total', 0)  # Use 'pay_total' or default to 0
+
             num_pi = len(purchase_ids)
             print("number of items: ", num_pi, total_paid)
 
@@ -97,9 +103,9 @@ class NewPayments(Resource):
                 print(purchaseInfo)
                 amt_remaining_str = purchaseInfo['result'][0]['amt_remaining']
                 # print('amt_remaining: ', amt_remaining_str, type(amt_remaining_str))
-                amt_remaining = float(amt_remaining_str)
+                amt_remaining = round(float(amt_remaining_str), 2)
                 print('amt_remaining: ', amt_remaining, type(amt_remaining))
-                amt_due = float(purchaseInfo['result'][0]['pur_amount_due'])
+                amt_due = round(float(purchaseInfo['result'][0]['pur_amount_due']), 2)
                 print('amt_due: ', amt_due, type(amt_due))
 
                 
@@ -404,7 +410,7 @@ class PaymentMethod(Resource):
                  """)
         return paymentMethodQuery
 
-    def delete(self, user_id):
+    def delete(self, user_id, payment_id):
         print("In paymentMethods DELETE")
         print(user_id)
         response = {}
@@ -413,7 +419,8 @@ class PaymentMethod(Resource):
             paymentQuery = ("""
                     DELETE 
                     FROM space.paymentMethods
-                    WHERE paymentMethod_uid = \'""" + user_id + """\';
+                    -- WHERE paymentMethod_profile_id = '350-000007' AND paymentMethod_uid = '070-000075';
+                    WHERE paymentMethod_profile_id = \'""" + user_id + """\' AND paymentMethod_uid = \'""" + payment_id + """\';
                     """)
 
             response["delete_paymentMethods"] = db.delete(paymentQuery)

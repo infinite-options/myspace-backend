@@ -12,6 +12,8 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
 
+from queries import ContractDetails
+
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
 
@@ -23,49 +25,75 @@ def allowed_file(filename):
 class Contracts(Resource):
 
     def get(self, user_id):
-        if user_id.startswith("600"):
-            print('in ContractsByBusiness')
-            with connect() as db:
-                response = db.execute("""
-                SELECT -- *,
-                    -- property_id, property_unit, property_address, property_city, property_state, property_zip, property_owner_id, po_owner_percent
-                    p.*
-                    , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                    -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
-                    , owner_photo_url
-                    , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                    , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
-                    -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-                FROM space.o_details o
-                LEFT JOIN space.properties p ON o.property_id =p.property_uid 
-                LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
-                -- WHERE b.business_uid = '600-000011'
-                -- WHERE o.owner_uid = \'""" + user_id + """\';
-                WHERE b.business_uid = \'""" + user_id + """\';
-                """)
-                return response
+        print("in Get Contracts")
+        response = {}
 
-        elif user_id.startswith("110"):
-            print('in ContractsByOwner')
-            with connect() as db:
-                response = db.execute("""
-                SELECT -- *,
-                    property_id, property_owner_id, po_owner_percent
-                    , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
-                    -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
-                    , owner_photo_url
-                    , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
-                    , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
-                    -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-                    , business_services_fees, business_locations
-                FROM space.o_details o
-                LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
-                WHERE o.owner_uid = \'""" + user_id + """\';
-                -- WHERE b.business_uid = \'""" + user_id + """\';
-                """)
-                return response
-        else:
-            return "No records for this Uid"
+        response = ContractDetails(user_id)
+        return response
+
+        # if user_id.startswith("600"):
+        #     print('in ContractsByBusiness')
+        #     with connect() as db:
+        #         response = db.execute("""
+        #         SELECT -- *,
+        #             -- property_id, property_unit, property_address, property_city, property_state, property_zip, property_owner_id, po_owner_percent
+        #             p.*
+        #             , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+        #             -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
+        #             , owner_photo_url
+        #             , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_end_notice_period, contract_m2m
+        #             , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
+        #             -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+        #         FROM space.o_details o
+        #         LEFT JOIN space.properties p ON o.property_id =p.property_uid 
+        #         LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
+        #         -- WHERE b.business_uid = '600-000011'
+        #         -- WHERE o.owner_uid = \'""" + user_id + """\';
+        #         WHERE b.business_uid = \'""" + user_id + """\';
+        #         """)
+        #         return response
+
+        # elif user_id.startswith("110"):
+        #     print('in ContractsByOwner')
+        #     with connect() as db:
+        #         # response = db.execute("""
+        #         # SELECT -- *,
+        #         #     property_id, property_owner_id, po_owner_percent
+        #         #     , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+        #         #     -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
+        #         #     , owner_photo_url
+        #         #     , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_end_notice_period, contract_m2m
+        #         #     , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email
+        #         #     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+        #         #     , business_services_fees, business_locations
+        #         # FROM space.o_details o
+        #         # LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
+        #         # WHERE o.owner_uid = \'""" + user_id + """\';
+        #         # -- WHERE b.business_uid = \'""" + user_id + """\';
+        #         # """)
+        #         # return response
+
+        #         response = db.execute("""
+        #         SELECT -- *,
+        #             -- property_id, property_unit, property_address, property_city, property_state, property_zip, property_owner_id, po_owner_percent
+        #             p.*
+        #             , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
+        #             -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
+        #             , owner_photo_url
+        #             , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_end_notice_period, contract_m2m
+        #             , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_services_fees
+        #             -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
+        #         FROM space.o_details o
+        #         LEFT JOIN space.properties p ON o.property_id =p.property_uid 
+        #         LEFT JOIN space.b_details b ON o.property_id = b.contract_property_id
+        #         -- WHERE b.business_uid = '600-000011'
+        #         -- WHERE o.owner_uid = '110-000003'
+        #         WHERE o.owner_uid = \'""" + user_id + """\';
+        #         -- WHERE b.business_uid = \'""" + user_id + """\';
+        #         """)
+        #         return response
+        # else:
+        #     return "No records for this Uid"
 
     def post(self):
         print("In Contracts Start")
@@ -81,6 +109,8 @@ class Contracts(Resource):
                 , "contract_name"
                 , "contract_status"
                 , "contract_early_end_date"
+                , "contract_end_notice_period"
+                , "contract_m2m"
             ]
             properties_l = data.get("contract_property_ids")
             print(properties_l)

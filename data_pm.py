@@ -105,7 +105,7 @@ def uploadImage(file, key, content):
 # --------------- PROCESS IMAGES ------------------
 
 def processImage(key, payload):
-    print("\nIn Process Image: ", payload)
+    # print("\nIn Process Image: ", payload)
     # print("Key Passed into processImage: ", key)
     response = {}
     with connect() as db:
@@ -420,7 +420,7 @@ def processImage(key, payload):
 # --------------- PROCESS DOCUMENTS ------------------
 
 def processDocument(key, payload):
-    print("\nIn Process Documents: ", payload)
+    # print("\nIn Process Documents: ", payload)
     # print("Key Passed into processDocuments: ", key)
     response = {}
     with connect() as db:
@@ -469,10 +469,10 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT bill_documents FROM space.bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
-                if payload_query['result']: print("3: ", payload_query['result'][0] ) 
-                if payload_query['result']: print("4: ", payload_query['result'][0]['bill_documents'], type(payload_query['result'][0]['bill_documents']))
+                # print("1: ", payload_query)
+                # print("2: ", payload_query['result'], type(payload_query['result']))
+                # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                # if payload_query['result']: print("4: ", payload_query['result'][0]['bill_documents'], type(payload_query['result'][0]['bill_documents']))
                 payload_documents = payload_query['result'][0]['bill_documents'] if payload_query['result'] else None
             else:
                 return payload
@@ -487,10 +487,10 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT appliance_documents FROM space.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
-                if payload_query['result']: print("3: ", payload_query['result'][0] ) 
-                if payload_query['result']: print("4: ", payload_query['result'][0]['appliance_documents'], type(payload_query['result'][0]['appliance_documents']))
+                # print("1: ", payload_query)
+                # print("2: ", payload_query['result'], type(payload_query['result']))
+                # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                # if payload_query['result']: print("4: ", payload_query['result'][0]['appliance_documents'], type(payload_query['result'][0]['appliance_documents']))
                 payload_documents = payload_query['result'][0]['appliance_documents'] if payload_query['result'] else None
             else:
                 return payload

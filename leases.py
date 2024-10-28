@@ -363,7 +363,7 @@ class LeaseApplication(Resource):
             
 
             # Verify LIST variables are not empty
-            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents"]
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income"]
             for field in fields_with_lists:
                 print("field list", field)
                 if payload.get(field) in [None, '', 'undefined']:
@@ -383,16 +383,16 @@ class LeaseApplication(Resource):
         print("\nIn Lease Application PUT")
         response = {}
         payload = request.form.to_dict()
-        print("Lease Application Payload: ", payload)
+        # print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
         if payload.get('lease_uid') in {None, '', 'null'}:
-            print("No lease_uid")
+            # print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
         lease_uid = payload.get('lease_uid')
         key = {'lease_uid': payload.pop('lease_uid')}
-        print("Lease Key: ", key)
+        # print("Lease Key: ", key)
 
 
         # --------------- PROCESS DOCUMENTS ------------------
@@ -403,9 +403,12 @@ class LeaseApplication(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         with connect() as db: 
+            print("Connection Established")
 
             # DEL FEES  Typically if PM is modifying the lease for Tenant
+            print("delete fees: ", payload.get('delete_fees'))
             if "delete_fees" in payload:
+                print("In delete fees")
                 json_object = json.loads(payload.pop('delete_fees'))
                 print("delete lease fees json_object", json_object)
                 for delete_uid in json_object:
@@ -418,11 +421,11 @@ class LeaseApplication(Resource):
 
             # POST TO LEASE FEES.  Need to post Lease Fees into leaseFees Table.  Typically when PM sends lease to Tenant
             if "lease_fees" in payload:
-                print("lease_fees in data", payload['lease_fees'])
+                # print("lease_fees in data", payload['lease_fees'])
                 fields_leaseFees = ["charge", "due_by", "due_by_date", "late_by", "fee_name", "fee_type", "frequency", "available_topay",
                                             "perDay_late_fee", "late_fee"]
                 temp_fees = {'lease_fees': payload.pop('lease_fees')}
-                print("Temp: ", temp_fees)
+                # print("Temp: ", temp_fees)
 
                 json_string = temp_fees['lease_fees']
                 json_object = json.loads(json_string)
@@ -432,7 +435,7 @@ class LeaseApplication(Resource):
                     new_leaseFees = {}
                     new_leaseFees["fees_lease_id"] = key['lease_uid']
 
-                    print("here 1")
+                    # print("here 1")
                     for item in fields_leaseFees:
                         if item in fees:
                             # print("here 2", item)
@@ -453,19 +456,22 @@ class LeaseApplication(Resource):
                         # print('New Lease Fees Payload: ', new_leaseFees)
                         response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
+            if "lease_end" in payload:
+                print("In lease_end")
+                payload["lease_early_end_date"] = payload["lease_end"]
 
+            print("Leases Payload: ", payload)
             response['lease_docs'] = db.update('leases', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
        
 
-            # ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED
+            # ==> ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED AND NOT BEING RENEWED
             if payload.get('lease_status') == 'ACTIVE':
                 print("\nLease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
 
-            # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
-            # CONSIDER ADDING FULL FIRST MONTHS RENT AND NEXT MONTHS PARTIAL RENT IF THERE IS A WAY TO AVOID DUPLICATE CHARGES
-
+                # ADD DEPOSIT AND FIRST RENT PAYMENT HERE
+                # CONSIDER ADDING FULL FIRST MONTHS RENT AND NEXT MONTHS PARTIAL RENT IF THERE IS A WAY TO AVOID DUPLICATE CHARGES
 
                 # READ THE LEASE FEES
                 # INSERT EACH LEASE FEE INTO PURCHASES TABLE

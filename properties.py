@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
+from queries import RentPropertiesQuery
 
 
 
@@ -96,65 +97,16 @@ class Properties(Resource):
                         WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
                         AND property_owner_id = \'""" + uid + """\'   
                         """)
-            response["Applications"] = applicationQuery
-            # print("Query: ", applicationQuery)
-
-            with connect() as db:
-                propertiesQuery = db.execute("""  
-                        -- PROPERTY RENT STATUS FOR PROPERTIES
-                        SELECT p.*
-                            , pur_property_id, purchase_type, pur_due_date, pur_amount_due
-                            , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
-                            , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
-                            , pur_description, cf_month, cf_year
-                            , CASE
-                                WHEN ISNULL(contract_uid) THEN "NO MANAGER"
-                                WHEN ISNULL(lease_status) THEN "VACANT"
-                                WHEN ISNULL(purchase_status) THEN "UNPAID"
-                                ELSE purchase_status
-                                END AS rent_status  
-                        FROM (
-                            -- Find properties
-                            SELECT * FROM space.p_details
-                            -- WHERE business_uid = "600-000032"
-                            -- WHERE owner_uid = "110-000003"
-                            WHERE owner_uid = \'""" + uid + """\'
-                            -- WHERE business_uid = \'""" + uid + """\'
-                            -- WHERE tenant_uid = \'""" + uid + """\'  
-                            ) AS p
-                        -- Link to rent status
-                        LEFT JOIN (
-                            SELECT -- *
-                                pur_property_id
-                                , purchase_type
-                                , pur_due_date
-                                , SUM(pur_amount_due) AS pur_amount_due
-                                , MIN(pur_status_value) AS pur_status_value
-                                , CASE
-                                        WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
-                                        WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
-                                        WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
-                                        WHEN MIN(pur_status_value) = 5 THEN "PAID"
-                                        ELSE purchase_status
-                                    END AS purchase_status
-                                , pur_description
-                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
-                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year
-                            FROM space.purchases
-                            WHERE purchase_type = "Rent"
-                                AND LEFT(pur_payer, 3) = '350'
-                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = MONTH(CURRENT_DATE)
-                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = YEAR(CURRENT_DATE)
-                            GROUP BY pur_property_id -- , pur_due_date
-                            ) AS pp
-                            ON property_uid = pur_property_id                  
-                        """)
-            # print("Query: ", propertiesQuery)
-            response["Property"] = propertiesQuery
+                response["Applications"] = applicationQuery
+                # print("Query: ", applicationQuery)
 
 
-            print("In Maintenance Requests")
-            with connect() as db:
+                response["Property"] = RentPropertiesQuery(uid)
+
+
+
+                print("In Maintenance Requests")
+
                 maintenanceQuery = db.execute("""
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
@@ -224,8 +176,8 @@ class Properties(Resource):
                 #       WHERE owner_uid = \'""" + uid + """\'
                     """)
 
-            # print("Query: ", propertiesQuery)
-            response["MaintenanceRequests"] = maintenanceQuery
+                # print("Query: ", maintenanceQuery)
+                response["MaintenanceRequests"] = maintenanceQuery
         
         elif uid[:3] == '600':
             print("In Business ID")
@@ -263,68 +215,13 @@ class Properties(Resource):
                 AND contract_status = "ACTIVE"
                 AND contract_business_id = \'""" + uid + """\'                   
                 """)
-            response["Applications"] = applicationQuery
+                response["Applications"] = applicationQuery
 
-            #PROPERTIES
-            with connect() as db:
-                print("in connect loop")
-                propertiesQuery = db.execute(""" 
-                        -- PROPERTY RENT STATUS FOR PROPERTIES
-                        SELECT p.*
-                            , pur_property_id, purchase_type, pur_due_date, pur_amount_due
-                            , if(ISNULL(pur_status_value), "0", pur_status_value) AS pur_status_value
-                            , if(ISNULL(purchase_status), "UNPAID", purchase_status) AS purchase_status
-                            , pur_description, cf_month, cf_year
-                            , CASE
-                                WHEN ISNULL(contract_uid) THEN "NO MANAGER"
-                                WHEN ISNULL(lease_status) THEN "VACANT"
-                                WHEN ISNULL(purchase_status) THEN "UNPAID"
-                                ELSE purchase_status
-                                END AS rent_status  
-                        FROM (
-                            -- Find properties
-                            SELECT * FROM space.p_details
-                            -- WHERE business_uid = "600-000032"
-                            -- WHERE owner_uid = "110-000003"
-                            -- WHERE owner_uid = \'""" + uid + """\'
-                            WHERE business_uid = \'""" + uid + """\'
-                            -- WHERE tenant_uid = \'""" + uid + """\'  
-                            ) AS p
-                        -- Link to rent status
-                        LEFT JOIN (
-                            SELECT -- *
-                                pur_property_id
-                                , purchase_type
-                                , pur_due_date
-                                , SUM(pur_amount_due) AS pur_amount_due
-                                , MIN(pur_status_value) AS pur_status_value
-                                , CASE
-                                        WHEN MIN(pur_status_value) = 0 THEN "UNPAID"
-                                        WHEN MIN(pur_status_value) = 1 THEN "PARTIALLY PAID"
-                                        WHEN MIN(pur_status_value) = 4 THEN "PAID LATE"
-                                        WHEN MIN(pur_status_value) = 5 THEN "PAID"
-                                        ELSE purchase_status
-                                    END AS purchase_status
-                                , pur_description
-                                , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_month
-                                , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) AS cf_year
-                            FROM space.purchases
-                            WHERE purchase_type = "Rent"
-                                AND LEFT(pur_payer, 3) = '350'
-                                AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = MONTH(CURRENT_DATE)
-                                AND YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%M')) = YEAR(CURRENT_DATE)
-                            GROUP BY pur_property_id -- , pur_due_date
-                            ) AS pp
-                            ON property_uid = pur_property_id  
-                        """)  
+                #PROPERTIES
+                response["Property"] = RentPropertiesQuery(uid)
 
-            # print("Query: ", propertiesQuery)
-            response["Property"] = propertiesQuery
-
-            # NEW PM REQUESTS
-            print("In New PM Requests")
-            with connect() as db:
-            # print("in New PM Requests connect loop")
+                # NEW PM REQUESTS
+                print("In New PM Requests")
                 contractsQuery = db.execute("""
                     -- NEW PROPERTIES FOR MANAGER
                     SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
@@ -345,13 +242,11 @@ class Properties(Resource):
                     WHERE contract_business_id = \'""" + uid + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                     """)
 
-            # print("Query: ", propertiesQuery)
-            response["NewPMRequests"] = contractsQuery
+                # print("Query: ", contractsQuery)
+                response["NewPMRequests"] = contractsQuery
 
-            # MAINTENANCE REQUESTS
-            print("In Maintenance Requests")
-            with connect() as db:
-            # print("in Maintenance Requests connect loop")
+                # MAINTENANCE REQUESTS
+                print("In Maintenance Requests")
                 maintenanceQuery = db.execute("""
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
@@ -421,10 +316,10 @@ class Properties(Resource):
                 #       -- WHERE owner_uid = \'""" + uid + """\'
                     """)
 
-
-            # print("Query: ", propertiesQuery)
-            response["MaintenanceRequests"] = maintenanceQuery
+                # print("Query: ", maintenanceQuery)
+                response["MaintenanceRequests"] = maintenanceQuery
         
+
         elif uid[:3] == '350':
             print("In Tenant ID")
             with connect() as db:
@@ -518,7 +413,6 @@ class Properties(Resource):
                     FROM space.p_details AS p      
                     -- WHERE property_uid = '200-000001'              
                     WHERE property_uid = \'""" + uid + """\'
-                    GROUP BY p.property_uid;
                 """)
             response["Property"] = propertiesQuery
         

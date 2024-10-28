@@ -228,6 +228,7 @@ class Bills(Resource):
                                     , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                     , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                     , purchase_status = "UNPAID"
+                                    , pur_status_value = "0"
                                     , pur_notes = \'""" + bill_notes + """\'
                                     , pur_description = \'""" + bill_description + """\'
                                     , pur_receiver = \'""" + bill_created_by + """\'
@@ -255,6 +256,7 @@ class Bills(Resource):
                                 , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                 , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                 , purchase_status = "UNPAID"
+                                , pur_status_value = "0"
                                 , pur_notes = \'""" + bill_notes + """\'
                                 , pur_description = \'""" + bill_description + """\'
                                 , pur_receiver = \'""" + responsibleManager + """\'
@@ -287,6 +289,7 @@ class Bills(Resource):
                                     , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                     , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                     , purchase_status = "UNPAID"
+                                    , pur_status_value = "0"
                                     , pur_notes = \'""" + bill_notes + """\'
                                     , pur_description = \'""" + bill_description + """\'
                                     , pur_receiver = \'""" + bill_created_by + """\'
@@ -313,6 +316,7 @@ class Bills(Resource):
                                 , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
                                 , pur_amount_due = \'""" + str(split_bill_amount) + """\'
                                 , purchase_status = "UNPAID"
+                                , pur_status_value = "0"
                                 , pur_notes = \'""" + bill_notes + """\'
                                 , pur_description = \'""" + bill_description + """\'
                                 , pur_receiver = \'""" + bill_created_by + """\'
@@ -428,8 +432,8 @@ class AddPurchase(Resource):
             # newRequest['pur_timestamp'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
             payload['pur_timestamp'] = datetime.today().strftime('%m-%d-%Y %H:%M')
             # SET ADDITIONAL FIELDS           
-            payload['pur_status_value'] = "5" if payload.get('purchase_status') == "UNPAID" else \
-                              "1" if payload.get('purchase_status') == "PARTIALLY PAID" else \
+            payload['pur_status_value'] = "0" if payload.get('purchase_status') == "UNPAID" else \
+                              "4" if payload.get('purchase_status') == "PARTIALLY PAID" else \
                               "0" if payload.get('purchase_status') == "PAID" else "5"
 
             # FORMAT DATE FIELDS
