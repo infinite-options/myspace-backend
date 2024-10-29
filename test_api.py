@@ -620,37 +620,42 @@ def test_put_get_maintenanceReq():
 
 
 maintenance_quote_uid = ""
+post_maintenance_quotes_payload = {}
 def test_post_maintenanceQuotes():
     print("In Quotes")
     global maintenance_request_uid
-    payload = {
+    global post_maintenance_quotes_payload
+    post_maintenance_quotes_payload = {
             'quote_maintenance_request_id': f'{maintenance_request_uid}', 
             'quote_pm_notes': 'Vents',
             'quote_business_id': '600-000000'
         }
 
-    response = requests.post(ENDPOINT + "/maintenanceQuotes", data = payload)
+    response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
     global maintenance_quote_uid
     maintenance_quote_uid = response.json()['maintenance_quote_uid']
     assert response.status_code == 200
 
 def test_post_get_maintenanceQuotes():
+    print("\n\n\nIn POST GET Maintenance\n\n\n")
     global maintenance_quote_uid
     response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
-    print(response.json())
-    # data = response.json()['result']['SCHEDULED']['maintenance_items'][0]
-    # global put_payload
-    # for k, v in put_payload.items():
-    #     if data[k] == v:
-    #         continue
-    #     else:
-    #         print(k, v, "not a match")
+    # print(response.json())
+    global post_maintenance_quotes_payload
+    data = response.json()['maintenanceQuotes']['result'][0]
+    for k, v in post_maintenance_quotes_payload.items():
+        if data[k] == v:
+            continue
+        else:
+            print(k, v, "not a match")
     assert response.status_code == 200
 
+put_maintenance_quotes_payload = {}
 def test_put_maintenancyQuotes():
     global maintenance_quote_uid
     global maintenance_request_uid
-    payload = {
+    global put_maintenance_quotes_payload
+    put_maintenance_quotes_payload = {
             'maintenance_quote_uid': f'{maintenance_quote_uid}',
             'quote_maintenance_request_id': f'{maintenance_request_uid}',
             'quote_business_id': '600-000000',
@@ -664,7 +669,26 @@ def test_put_maintenancyQuotes():
             'quote_earliest_available_date': '00:00:00'
         }
 
-    response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
+    response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
+
+    assert response.status_code == 200
+
+def test_put_get_maintenanceQuotes():
+    print("\n\n\nIn PUT GET Maintenance\n\n\n")
+    global maintenance_quote_uid
+    response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
+    # print(response.json())
+    global put_maintenance_quotes_payload
+    data = response.json()['maintenanceQuotes']['result'][0]
+    for k, v in put_maintenance_quotes_payload.items():
+        if k == 'quote_services_expenses':
+            continue
+        if data[k] == v:
+            continue
+        else:
+            print(k, v, "not a match")
+            print("\n\n", type(data[k]))
+            print("\n\n", type(v))
 
     assert response.status_code == 200
 
