@@ -541,74 +541,74 @@ ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
 
 # ********* FUNCTION IMPLEMENTATION *********
 # -------- Maintenance Requests ---------
-maintenance_request_uid = ""
-post_payload = {}
-global put_payload
+# maintenance_request_uid = ""
+# post_payload = {}
+# global put_payload
 
-def test_post_maintenanceReq():
-    global post_payload
-    post_payload = {
-            "maintenance_property_id":"200-000000",
-            "maintenance_title":"Vents Broken",
-            "maintenance_desc":"Vents",
-            "maintenance_request_type":"Appliance",
-            "maintenance_request_created_by":"600-000000",
-            "maintenance_priority":"High",
-            "maintenance_can_reschedule":1,
-            "maintenance_assigned_business":"null",
-            "maintenance_assigned_worker":"null",
-            "maintenance_scheduled_date":"null",
-            "maintenance_scheduled_time":"null",
-            "maintenance_frequency":"One Time",
-            "maintenance_notes":"null",
-            "maintenance_request_created_date":"2024-11-13",
-            "maintenance_request_closed_date":"null",
-            "maintenance_request_adjustment_date":"null"
-        }
+# def test_post_maintenanceReq():
+#     global post_payload
+#     post_payload = {
+#             "maintenance_property_id":"200-000000",
+#             "maintenance_title":"Vents Broken",
+#             "maintenance_desc":"Vents",
+#             "maintenance_request_type":"Appliance",
+#             "maintenance_request_created_by":"600-000000",
+#             "maintenance_priority":"High",
+#             "maintenance_can_reschedule":1,
+#             "maintenance_assigned_business":"null",
+#             "maintenance_assigned_worker":"null",
+#             "maintenance_scheduled_date":"null",
+#             "maintenance_scheduled_time":"null",
+#             "maintenance_frequency":"One Time",
+#             "maintenance_notes":"null",
+#             "maintenance_request_created_date":"2024-11-13",
+#             "maintenance_request_closed_date":"null",
+#             "maintenance_request_adjustment_date":"null"
+#         }
     
-    response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_payload)
-    global maintenance_request_uid
-    maintenance_request_uid = response.json()['maintenance_request_uid']
-    assert response.status_code == 200
+#     response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_payload)
+#     global maintenance_request_uid
+#     maintenance_request_uid = response.json()['maintenance_request_uid']
+#     assert response.status_code == 200
 
-def test_post_get_maintenanceReq():
-    global maintenance_request_uid
-    response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
-    data = response.json()['result']['NEW REQUEST']['maintenance_items'][0]
-    global post_payload
-    for k, v in post_payload.items():
-        if data[k] == v:
-            continue
-        else:
-            print(k, v, "not a match")
+# def test_post_get_maintenanceReq():
+#     global maintenance_request_uid
+#     response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+#     data = response.json()['result']['NEW REQUEST']['maintenance_items'][0]
+#     global post_payload
+#     for k, v in post_payload.items():
+#         if data[k] == v:
+#             continue
+#         else:
+#             print(k, v, "not a match")
     
-    # print(data)
-    assert response.status_code == 200
+#     # print(data)
+#     assert response.status_code == 200
 
-def test_put_maintenanceReq():
-    global maintenance_request_uid
-    global put_payload
-    put_payload = {
-        "maintenance_request_uid":f"{maintenance_request_uid}","maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"11/30/2024","maintenance_scheduled_time":"10:00:00"
-    }
+# def test_put_maintenanceReq():
+#     global maintenance_request_uid
+#     global put_payload
+#     put_payload = {
+#         "maintenance_request_uid":f"{maintenance_request_uid}","maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"11/30/2024","maintenance_scheduled_time":"10:00:00"
+#     }
 
-    response = requests.put(ENDPOINT + "/maintenanceRequests", data = put_payload) 
-    assert response.status_code == 200
+#     response = requests.put(ENDPOINT + "/maintenanceRequests", data = put_payload) 
+#     assert response.status_code == 200
 
-def test_put_get_maintenanceReq():
-    global maintenance_request_uid
-    response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
+# def test_put_get_maintenanceReq():
+#     global maintenance_request_uid
+#     response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
 
-    data = response.json()['result']['SCHEDULED']['maintenance_items'][0]
-    global put_payload
-    for k, v in put_payload.items():
-        if data[k] == v:
-            continue
-        else:
-            print(k, v, "not a match")
+#     data = response.json()['result']['SCHEDULED']['maintenance_items'][0]
+#     global put_payload
+#     for k, v in put_payload.items():
+#         if data[k] == v:
+#             continue
+#         else:
+#             print(k, v, "not a match")
 
-    # print(data)
-    assert response.status_code == 200
+#     # print(data)
+#     assert response.status_code == 200
 
 # -------- Maintenance Status ---------
 # def test_get_maintenanceStatus():
@@ -619,130 +619,199 @@ def test_put_get_maintenanceReq():
 
 
 
-maintenance_quote_uid = ""
-post_maintenance_quotes_payload = {}
-def test_post_maintenanceQuotes():
-    print("In Quotes")
-    global maintenance_request_uid
-    global post_maintenance_quotes_payload
-    post_maintenance_quotes_payload = {
-            'quote_maintenance_request_id': f'{maintenance_request_uid}', 
-            'quote_pm_notes': 'Vents',
-            'quote_business_id': '600-000000'
-        }
+# maintenance_quote_uid = ""
+# post_maintenance_quotes_payload = {}
+# def test_post_maintenanceQuotes():
+#     print("In Quotes")
+#     global maintenance_request_uid
+#     global post_maintenance_quotes_payload
+#     post_maintenance_quotes_payload = {
+#             'quote_maintenance_request_id': f'{maintenance_request_uid}', 
+#             'quote_pm_notes': 'Vents',
+#             'quote_business_id': '600-000000'
+#         }
 
-    response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
-    global maintenance_quote_uid
-    maintenance_quote_uid = response.json()['maintenance_quote_uid']
-    assert response.status_code == 200
+#     response = requests.post(ENDPOINT + "/maintenanceQuotes", data = post_maintenance_quotes_payload)
+#     global maintenance_quote_uid
+#     maintenance_quote_uid = response.json()['maintenance_quote_uid']
+#     assert response.status_code == 200
 
-def test_post_get_maintenanceQuotes():
-    print("\n\n\nIn POST GET Maintenance\n\n\n")
-    global maintenance_quote_uid
-    response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
-    # print(response.json())
-    global post_maintenance_quotes_payload
-    data = response.json()['maintenanceQuotes']['result'][0]
-    for k, v in post_maintenance_quotes_payload.items():
-        if data[k] == v:
-            continue
-        else:
-            print(k, v, "not a match")
-    assert response.status_code == 200
+# def test_post_get_maintenanceQuotes():
+#     print("\n\n\nIn POST GET Maintenance\n\n\n")
+#     global maintenance_quote_uid
+#     response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
+#     # print(response.json())
+#     global post_maintenance_quotes_payload
+#     data = response.json()['maintenanceQuotes']['result'][0]
+#     for k, v in post_maintenance_quotes_payload.items():
+#         if data[k] == v:
+#             continue
+#         else:
+#             print(k, v, "not a match")
+#     assert response.status_code == 200
 
-put_maintenance_quotes_payload = {}
-def test_put_maintenancyQuotes():
-    global maintenance_quote_uid
-    global maintenance_request_uid
-    global put_maintenance_quotes_payload
-    put_maintenance_quotes_payload = {
-            'maintenance_quote_uid': f'{maintenance_quote_uid}',
-            'quote_maintenance_request_id': f'{maintenance_request_uid}',
-            'quote_business_id': '600-000000',
-            'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}',
-            'quote_notes': 'vents',
-            'quote_status': 'SENT',
-            'quote_event_type': '5 Hour Job',
-            'quote_total_estimate': '300',
-            'quote_created_date': '2000-04-23 00:00:00',
-            'quote_earliest_available_date': '12-12-2023',
-            'quote_earliest_available_date': '00:00:00'
-        }
+# put_maintenance_quotes_payload = {}
+# def test_put_maintenancyQuotes():
+#     global maintenance_quote_uid
+#     global maintenance_request_uid
+#     global put_maintenance_quotes_payload
+#     put_maintenance_quotes_payload = {
+#             'maintenance_quote_uid': f'{maintenance_quote_uid}',
+#             'quote_maintenance_request_id': f'{maintenance_request_uid}',
+#             'quote_business_id': '600-000000',
+#             'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}',
+#             'quote_notes': 'vents',
+#             'quote_status': 'SENT',
+#             'quote_event_type': '5 Hour Job',
+#             'quote_total_estimate': '300',
+#             'quote_created_date': '2000-04-23 00:00:00',
+#             'quote_earliest_available_date': '12-12-2023',
+#             'quote_earliest_available_date': '00:00:00'
+#         }
 
-    response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
+#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = put_maintenance_quotes_payload)
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-def test_put_get_maintenanceQuotes():
-    print("\n\n\nIn PUT GET Maintenance\n\n\n")
-    global maintenance_quote_uid
-    response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
-    # print(response.json())
-    global put_maintenance_quotes_payload
-    data = response.json()['maintenanceQuotes']['result'][0]
-    for k, v in put_maintenance_quotes_payload.items():
-        if k == 'quote_services_expenses':
-            continue
-        if data[k] == v:
-            continue
-        else:
-            print(k, v, "not a match")
-            print("\n\n", type(data[k]))
-            print("\n\n", type(v))
+# def test_put_get_maintenanceQuotes():
+#     print("\n\n\nIn PUT GET Maintenance\n\n\n")
+#     global maintenance_quote_uid
+#     response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
+#     # print(response.json())
+#     global put_maintenance_quotes_payload
+#     data = response.json()['maintenanceQuotes']['result'][0]
+#     for k, v in put_maintenance_quotes_payload.items():
+#         if k == 'quote_services_expenses':
+#             continue
+#         if data[k] == v:
+#             continue
+#         else:
+#             print(k, v, "not a match")
+#             print("\n\n", type(data[k]))
+#             print("\n\n", type(v))
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-def test_delete_maintenanceReq():
-    global maintenance_request_uid
-    global maintenance_quote_uid
+# def test_delete_maintenanceReq():
+#     global maintenance_request_uid
+#     global maintenance_quote_uid
 
-    print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
-    with connect() as db:
-        delQuery_maintenance_req = ("""
-                        DELETE space.maintenanceRequests
-                        FROM space.maintenanceRequests
-                        WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
-                    """)
+#     print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
+#     with connect() as db:
+#         delQuery_maintenance_req = ("""
+#                         DELETE space.maintenanceRequests
+#                         FROM space.maintenanceRequests
+#                         WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
+#                     """)
 
-        response = db.delete(delQuery_maintenance_req)
+#         response = db.delete(delQuery_maintenance_req)
 
-        delQuery_maintenance_quotes = ("""
-                        DELETE space.maintenanceQuotes
-                        FROM space.maintenanceQuotes
-                        WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
-                    """)
+#         delQuery_maintenance_quotes = ("""
+#                         DELETE space.maintenanceQuotes
+#                         FROM space.maintenanceQuotes
+#                         WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
+#                     """)
 
-        response = db.delete(delQuery_maintenance_quotes)
+#         response = db.delete(delQuery_maintenance_quotes)
 
 
 
 
 # -------- POST Methods --------
-# not working
-# def test_post_properties():
-#     payload = {"property_latitude":37.2367236,
-#                 "property_longitude":-121.8876474,
-#                 "property_owner_id":"110-000003",
-#                 "property_active_date":"08-10-2024",
-#                 "property_address":"1416 Test Court",
-#                 "property_unit":"2",
-#                 "property_city":"San Jose",
-#                 "property_state":"CA",
-#                 "property_zip":"95120",
-#                 "property_type":"Single Family",
-#                 "property_num_beds":4,
-#                 "property_num_baths":3,
-#                 "property_value":"",
-#                 "property_area":1450,
-#                 "property_listed":0,
-#                 "property_notes":"Dot Court",
-#                 "appliances":["050-000030","050-000031"],
-#                 "img_favorite":"img_1"
-#             }
+property_uid = ""
+properties_payload = {}
+def test_post_properties():
+    print("\n\nIn POST Properties")
+    global properties_payload
+    properties_payload = {"property_latitude":37.2367236,
+                "property_longitude":-121.8876474,
+                "property_owner_id":"110-000000",
+                "property_active_date":"08-10-2024",
+                "property_address":"123 Test APT",
+                "property_unit":"2",
+                "property_city":"San Jose",
+                "property_state":"CA",
+                "property_zip":"95120",
+                "property_type":"Single Family",
+                "property_num_beds":4,
+                "property_num_baths":3,
+                "property_value":0,
+                "property_area":1450,
+                "property_listed":'1',
+                "property_notes":"Dot Court",
+                "appliances":["050-000000"],
+            }
     
-#     response = requests.post(ENDPOINT + "/properties", data=payload)
+    response = requests.post(ENDPOINT + "/properties", data=properties_payload)
+    global property_uid
+    property_uid = response.json()['property_UID']
+    assert response.status_code == 200
 
-#     assert response.status_code == 200
+def test_get_post_properties():
+    print("\n\nIn GET after POST Properties")
+    global property_uid
+    global properties_payload
+
+    response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+    data = response.json()['Property']['result'][0]
+    # print(data)
+
+    for k, v in properties_payload.items():
+        if k == "property_listed" or k == "appliances" or k == "property_latitude" or k == "property_longitude":
+            continue
+
+        if data[k] != v:
+            print('\n\n', k, v, '\tNot Match')    
+
+    assert response.status_code == 200
+
+put_property_payload = {}
+def test_put_properties():
+    print("\n\nIn PUT Properties")
+    global property_uid
+    global put_property_payload
+
+    put_property_payload = {
+        "property_uid": f"{property_uid}",
+        "property_address": "456 Test House",
+        "property_value":1500000
+    }
+
+    response = requests.put(ENDPOINT + "/properties", data=put_property_payload)
+
+    assert response.status_code == 200
+
+def test_get_put_properties():
+    print("\n\nIn GET after PUT Properties")
+    global property_uid
+    global put_property_payload
+
+    response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+    data = response.json()['Property']['result'][0]
+
+    for k, v in put_property_payload.items():
+
+        if data[k] != v:
+            print('\n\n', k, v, '\tNot Match')
+
+    assert response.status_code == 200
+
+def test_delete_properties():
+    print("\n\nIn Delete Properties")
+    global property_uid
+    print(f"Deleteing property with property_uid: {property_uid} and property_owner_id: 110-000000")
+    
+    payload = {
+        "property_owner_id": "110-000000",
+        "property_id": f"{property_uid}"
+    }
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.delete(ENDPOINT + "/properties", data=json.dumps(payload), headers=headers)
+    
+    assert response.status_code == 200
 
 
 

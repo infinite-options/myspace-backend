@@ -2270,6 +2270,7 @@ class endPointTest_CLASS(Resource):
         response['APIs failing'] = []
 
         try:
+            # ------------------------- MAINTENANCE ------------------------------
             # -------- test post maintenance request --------
             print("\nIn test POST Maintenance Requests")
             post_maintenance_request_payload = {
@@ -2431,6 +2432,97 @@ class endPointTest_CLASS(Resource):
                             """)
                 maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
 
+            
+            # ------------------------- Properties ------------------------------
+            # -------- test post properties --------
+            print("\nIn test POST Properties")
+            post_properties_payload = {"property_latitude":37.2367236,
+                        "property_longitude":-121.8876474,
+                        "property_owner_id":"110-000000",
+                        "property_active_date":"08-10-2024",
+                        "property_address":"123 Test APT",
+                        "property_unit":"2",
+                        "property_city":"San Jose",
+                        "property_state":"CA",
+                        "property_zip":"95120",
+                        "property_type":"Single Family",
+                        "property_num_beds":4,
+                        "property_num_baths":3,
+                        "property_value":0,
+                        "property_area":1450,
+                        "property_listed":'1',
+                        "property_notes":"Dot Court",
+                        "appliances":["050-000000"],
+                    }
+            post_properties_response = requests.post(ENDPOINT + "/properties", data=post_properties_payload)
+            property_uid = post_properties_response.json()['property_UID']
+            if post_properties_response.status_code == 200:
+                response['APIs running successfully'].append('POST Properties')
+            else:
+                response['APIs failing'].append('POST Properties')
+            response['No of APIs tested'] += 1
+
+            # -------- test get after post properties --------
+            print("\nIn test GET after POST Properties")
+            post_get_properties_response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+            data = post_get_properties_response.json()['Property']['result'][0]
+            for k, v in post_properties_payload.items():
+                if k == "property_listed" or k == "appliances" or k == "property_latitude" or k == "property_longitude":
+                    continue
+                if data[k] != v:
+                    print('\n\n', k, v, '\tNot Match')    
+
+            if post_get_properties_response.status_code == 200:
+                response['APIs running successfully'].append('GET after POST Properties')
+            else:
+                response['APIs failing'].append('GET after POST Properties')
+            response['No of APIs tested'] += 1
+
+            # -------- test put properties --------
+            print("\nIn test PUT Properties")
+            put_properties_payload = {
+                "property_uid": f"{property_uid}",
+                "property_address": "456 Test House",
+                "property_value":1500000
+            }
+            put_properties_response = requests.put(ENDPOINT + "/properties", data=put_properties_payload)
+            if put_properties_response.status_code == 200:
+                response['APIs running successfully'].append('PUT Properties')
+            else:
+                response['APIs failing'].append('PUT Properties')
+            response['No of APIs tested'] += 1
+
+            # -------- test get after put properties --------
+            print("\nIn GET after PUT Properties")
+            put_get_properties_response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+            data = put_get_properties_response.json()['Property']['result'][0]
+            for k, v in put_properties_payload.items():
+                if data[k] != v:
+                    print('\n\n', k, v, '\tNot Match')
+
+            if put_get_properties_response.status_code == 200:
+                response['APIs running successfully'].append('GET after PUT Properties')
+            else:
+                response['APIs failing'].append('GET after PUT Properties')
+            response['No of APIs tested'] += 1
+
+            # -------- test delete properties --------
+            print("\nIn Delete Properties")
+            print(f"Deleteing property with property_uid: {property_uid} and property_owner_id: 110-000000")
+            delete_properties_payload = {
+                "property_owner_id": "110-000000",
+                "property_id": f"{property_uid}"
+            }
+            headers = {
+                'Content-Type': 'application/json'
+            }            
+            delete_properties_response = requests.delete(ENDPOINT + "/properties", data=json.dumps(delete_properties_payload), headers=headers)
+            if delete_properties_response.status_code == 200:
+                response['APIs running successfully'].append('DELETE Properties')
+            else:
+                response['APIs failing'].append('DELETE Properties')
+            response['No of APIs tested'] += 1
+
             # return response
             try:
                 # print(CronPostings)
@@ -2450,7 +2542,7 @@ class endPointTest_CLASS(Resource):
             try:
                 recipient = "pmarathay@gmail.com"
                 subject = "MySpace Test API CRON JOB Failed!"
-                body = "MySpace Test API CRON JOB Failed"
+                body = f"MySpace Test API CRON JOB Failed. \n{response}\n\n"
                 sendEmail(recipient, subject, body)
 
                 response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 500}
@@ -2468,6 +2560,7 @@ def endPointTest_CRON():
     response['APIs failing'] = []
 
     try:
+        # ------------------------- MAINTENANCE ------------------------------
         # -------- test post maintenance request --------
         print("\nIn test POST Maintenance Requests")
         post_maintenance_request_payload = {
@@ -2629,6 +2722,96 @@ def endPointTest_CRON():
                         """)
             maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
 
+        
+        # ------------------------- Properties ------------------------------
+        # -------- test post properties --------
+        print("\nIn test POST Properties")
+        post_properties_payload = {"property_latitude":37.2367236,
+                    "property_longitude":-121.8876474,
+                    "property_owner_id":"110-000000",
+                    "property_active_date":"08-10-2024",
+                    "property_address":"123 Test APT",
+                    "property_unit":"2",
+                    "property_city":"San Jose",
+                    "property_state":"CA",
+                    "property_zip":"95120",
+                    "property_type":"Single Family",
+                    "property_num_beds":4,
+                    "property_num_baths":3,
+                    "property_value":0,
+                    "property_area":1450,
+                    "property_listed":'1',
+                    "property_notes":"Dot Court",
+                    "appliances":["050-000000"],
+                }
+        post_properties_response = requests.post(ENDPOINT + "/properties", data=post_properties_payload)
+        property_uid = post_properties_response.json()['property_UID']
+        if post_properties_response.status_code == 200:
+            response['APIs running successfully'].append('POST Properties')
+        else:
+            response['APIs failing'].append('POST Properties')
+        response['No of APIs tested'] += 1
+
+        # -------- test get after post properties --------
+        print("\nIn test GET after POST Properties")
+        post_get_properties_response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+        data = post_get_properties_response.json()['Property']['result'][0]
+        for k, v in post_properties_payload.items():
+            if k == "property_listed" or k == "appliances" or k == "property_latitude" or k == "property_longitude":
+                continue
+            if data[k] != v:
+                print('\n\n', k, v, '\tNot Match')    
+        if post_get_properties_response.status_code == 200:
+            response['APIs running successfully'].append('GET after POST Properties')
+        else:
+            response['APIs failing'].append('GET after POST Properties')
+        response['No of APIs tested'] += 1
+
+        # -------- test put properties --------
+        print("\nIn test PUT Properties")
+        put_properties_payload = {
+            "property_uid": f"{property_uid}",
+            "property_address": "456 Test House",
+            "property_value":1500000
+        }
+        put_properties_response = requests.put(ENDPOINT + "/properties", data=put_properties_payload)
+        if put_properties_response.status_code == 200:
+            response['APIs running successfully'].append('PUT Properties')
+        else:
+            response['APIs failing'].append('PUT Properties')
+        response['No of APIs tested'] += 1
+
+        # -------- test get after put properties --------
+        print("\nIn GET after PUT Properties")
+        put_get_properties_response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+        data = put_get_properties_response.json()['Property']['result'][0]
+        for k, v in put_properties_payload.items():
+            if data[k] != v:
+                print('\n\n', k, v, '\tNot Match')
+
+        if put_get_properties_response.status_code == 200:
+            response['APIs running successfully'].append('GET after PUT Properties')
+        else:
+            response['APIs failing'].append('GET after PUT Properties')
+        response['No of APIs tested'] += 1
+
+        # -------- test delete properties --------
+        print("\nIn Delete Properties")
+        print(f"Deleteing property with property_uid: {property_uid} and property_owner_id: 110-000000")
+        delete_properties_payload = {
+            "property_owner_id": "110-000000",
+            "property_id": f"{property_uid}"
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }            
+        delete_properties_response = requests.delete(ENDPOINT + "/properties", data=json.dumps(delete_properties_payload), headers=headers)
+        if delete_properties_response.status_code == 200:
+            response['APIs running successfully'].append('DELETE Properties')
+        else:
+            response['APIs failing'].append('DELETE Properties')
+        response['No of APIs tested'] += 1
+
         # return response
         try:
             # print(CronPostings)
@@ -2648,7 +2831,7 @@ def endPointTest_CRON():
         try:
             recipient = "pmarathay@gmail.com"
             subject = "MySpace Test API CRON JOB Failed!"
-            body = "MySpace Test API CRON JOB Failed"
+            body = f"MySpace Test API CRON JOB Failed. \n{response}\n\n"
             sendEmail(recipient, subject, body)
 
             response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 500}
