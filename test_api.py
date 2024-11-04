@@ -514,6 +514,70 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('DELETE Properties')
             response['No of APIs tested'] += 1
 
+            # -------- test post contracts --------
+            print("\nIn POST Contract")
+            post_contract_payload = {
+                "contract_property_ids": '["200-000000"]',
+                "contract_business_id": "600-000000",
+                "contract_start_date": "11-01-2024",
+                "contract_status": "NEW"
+            }
+            post_contract_response = requests.post(ENDPOINT + "/contracts", data=post_contract_payload)
+            contract_uid = post_contract_response.json()['contract_UID']
+            if post_contract_response.status_code == 200:
+                response['APIs running successfully'].append('POST Contracts')
+            else:
+                response['APIs failing'].append('POST Contracts')
+            response['No of APIs tested'] += 1
+
+
+            # -------- test get after contracts --------
+            print("\nIn GET after POST Contract")
+            post_get_contract_response = requests.get(ENDPOINT + "/contracts/600-000000")
+            data = post_get_contract_response.json()['result'][0]
+            if data['contract_uid'] == contract_uid:
+                print("Not a match")
+            if post_get_contract_response.status_code == 200:
+                response['APIs running successfully'].append('GET after POST Contracts')
+            else:
+                response['APIs failing'].append('GET after POST Contracts')
+            response['No of APIs tested'] += 1
+
+            # -------- test put contracts --------
+            print("\nIn PUT Contract")
+            put_contract_payload = {
+                "contract_uid": f"{contract_uid}",
+                "contract_status": "ACTIVE"
+            }
+            put_contract_response = requests.put(ENDPOINT + "/contracts", data=put_contract_payload)
+            if put_contract_response.status_code == 200:
+                response['APIs running successfully'].append('PUT Contracts')
+            else:
+                response['APIs failing'].append('PUT Contracts')
+            response['No of APIs tested'] += 1
+
+            # -------- test get after put contracts --------
+            print("\nIn GET after PUT Contract")
+            put_get_contract_response = requests.get(ENDPOINT + "/contracts/600-000000")
+            data = put_get_contract_response.json()['result'][0]
+            if data['contract_uid'] == contract_uid:
+                print("Not a match")
+            if put_get_contract_response.status_code == 200:
+                response['APIs running successfully'].append('PUT Contracts')
+            else:
+                response['APIs failing'].append('PUT Contracts')
+            response['No of APIs tested'] += 1
+
+            # -------- test delete contracts --------
+            print("\nIn DELETE Contract")
+            print(f"Deleting {contract_uid} from Contract Table")
+            with connect() as db:
+                delQuery_contracts = ("""
+                                DELETE FROM space.contracts
+                                WHERE contract_uid = \'""" + contract_uid + """\';
+                            """)
+                contract_response = db.delete(delQuery_contracts)
+
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
 
@@ -698,100 +762,209 @@ class endPointTest_CLASS(Resource):
 
 
 # -------- POST Methods --------
-property_uid = ""
-properties_payload = {}
-def test_post_properties():
-    print("\n\nIn POST Properties")
-    global properties_payload
-    properties_payload = {"property_latitude":37.2367236,
-                "property_longitude":-121.8876474,
-                "property_owner_id":"110-000000",
-                "property_active_date":"08-10-2024",
-                "property_address":"123 Test APT",
-                "property_unit":"2",
-                "property_city":"San Jose",
-                "property_state":"CA",
-                "property_zip":"95120",
-                "property_type":"Single Family",
-                "property_num_beds":4,
-                "property_num_baths":3,
-                "property_value":0,
-                "property_area":1450,
-                "property_listed":'1',
-                "property_notes":"Dot Court",
-                "appliances":["050-000000"],
-            }
+# property_uid = ""
+# properties_payload = {}
+# def test_post_properties():
+#     print("\n\nIn POST Properties")
+#     global properties_payload
+#     properties_payload = {"property_latitude":37.2367236,
+#                 "property_longitude":-121.8876474,
+#                 "property_owner_id":"110-000000",
+#                 "property_active_date":"08-10-2024",
+#                 "property_address":"123 Test APT",
+#                 "property_unit":"2",
+#                 "property_city":"San Jose",
+#                 "property_state":"CA",
+#                 "property_zip":"95120",
+#                 "property_type":"Single Family",
+#                 "property_num_beds":4,
+#                 "property_num_baths":3,
+#                 "property_value":0,
+#                 "property_area":1450,
+#                 "property_listed":'1',
+#                 "property_notes":"Dot Court",
+#                 "appliances":["050-000000"],
+#             }
     
-    response = requests.post(ENDPOINT + "/properties", data=properties_payload)
-    global property_uid
-    property_uid = response.json()['property_UID']
-    assert response.status_code == 200
+#     response = requests.post(ENDPOINT + "/properties", data=properties_payload)
+#     global property_uid
+#     property_uid = response.json()['property_UID']
+#     assert response.status_code == 200
 
-def test_get_post_properties():
-    print("\n\nIn GET after POST Properties")
-    global property_uid
-    global properties_payload
+# def test_get_post_properties():
+#     print("\n\nIn GET after POST Properties")
+#     global property_uid
+#     global properties_payload
 
-    response = requests.get(ENDPOINT + f"/properties/{property_uid}")
-    data = response.json()['Property']['result'][0]
-    # print(data)
+#     response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+#     data = response.json()['Property']['result'][0]
+#     # print(data)
 
-    for k, v in properties_payload.items():
-        if k == "property_listed" or k == "appliances" or k == "property_latitude" or k == "property_longitude":
-            continue
+#     for k, v in properties_payload.items():
+#         if k == "property_listed" or k == "appliances" or k == "property_latitude" or k == "property_longitude":
+#             continue
 
-        if data[k] != v:
-            print('\n\n', k, v, '\tNot Match')    
+#         if data[k] != v:
+#             print('\n\n', k, v, '\tNot Match')    
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-put_property_payload = {}
-def test_put_properties():
-    print("\n\nIn PUT Properties")
-    global property_uid
-    global put_property_payload
+# put_property_payload = {}
+# def test_put_properties():
+#     print("\n\nIn PUT Properties")
+#     global property_uid
+#     global put_property_payload
 
-    put_property_payload = {
-        "property_uid": f"{property_uid}",
-        "property_address": "456 Test House",
-        "property_value":1500000
-    }
+#     put_property_payload = {
+#         "property_uid": f"{property_uid}",
+#         "property_address": "456 Test House",
+#         "property_value":1500000
+#     }
 
-    response = requests.put(ENDPOINT + "/properties", data=put_property_payload)
+#     response = requests.put(ENDPOINT + "/properties", data=put_property_payload)
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-def test_get_put_properties():
-    print("\n\nIn GET after PUT Properties")
-    global property_uid
-    global put_property_payload
+# def test_get_put_properties():
+#     print("\n\nIn GET after PUT Properties")
+#     global property_uid
+#     global put_property_payload
 
-    response = requests.get(ENDPOINT + f"/properties/{property_uid}")
-    data = response.json()['Property']['result'][0]
+#     response = requests.get(ENDPOINT + f"/properties/{property_uid}")
+#     data = response.json()['Property']['result'][0]
 
-    for k, v in put_property_payload.items():
+#     for k, v in put_property_payload.items():
 
-        if data[k] != v:
-            print('\n\n', k, v, '\tNot Match')
+#         if data[k] != v:
+#             print('\n\n', k, v, '\tNot Match')
 
-    assert response.status_code == 200
+#     assert response.status_code == 200
 
-def test_delete_properties():
-    print("\n\nIn Delete Properties")
-    global property_uid
-    print(f"Deleteing property with property_uid: {property_uid} and property_owner_id: 110-000000")
+# def test_delete_properties():
+#     print("\n\nIn Delete Properties")
+#     global property_uid
+#     print(f"Deleteing property with property_uid: {property_uid} and property_owner_id: 110-000000")
     
-    payload = {
-        "property_owner_id": "110-000000",
-        "property_id": f"{property_uid}"
-    }
-    headers = {
-        'Content-Type': 'application/json'
-    }
+#     payload = {
+#         "property_owner_id": "110-000000",
+#         "property_id": f"{property_uid}"
+#     }
+#     headers = {
+#         'Content-Type': 'application/json'
+#     }
     
-    response = requests.delete(ENDPOINT + "/properties", data=json.dumps(payload), headers=headers)
+#     response = requests.delete(ENDPOINT + "/properties", data=json.dumps(payload), headers=headers)
     
-    assert response.status_code == 200
+#     assert response.status_code == 200
+
+# post_contract_payload = {}
+# contract_uid = ""
+# def test_post_contracts():
+#     global post_contract_payload
+#     post_contract_payload = {
+#         "contract_property_ids": '["200-000000"]',
+#         "contract_business_id": "600-000000",
+#         "contract_start_date": "11-01-2024",
+#         "contract_status": "NEW"
+#     }
+
+#     response = requests.post(ENDPOINT + "/contracts", data=post_contract_payload)
+#     global contract_uid
+#     contract_uid = response.json()['contract_UID']
+
+#     assert response.status_code == 200
+
+# def test_post_get_contracts():
+#     global post_contract_payload
+#     global contract_uid
+#     response = requests.get(ENDPOINT + "/contracts/600-000000")
+
+#     data = response.json()['result'][0]
+
+#     if data['contract_uid'] == contract_uid:
+#         print("Not a match")
+
+#     assert response.status_code == 200
+
+# put_contract_payload = {}
+# def test_put_contracts():
+#     global contract_uid
+#     global put_contract_payload
+#     put_contract_payload = {
+#         "contract_uid": f"{contract_uid}",
+#         "contract_status": "ACTIVE"
+#     }
+
+#     response = requests.put(ENDPOINT + "/contracts", data=put_contract_payload)
+
+#     assert response.status_code == 200
+
+# def test_put_get_contracts():
+#     global post_contract_payload
+#     response = requests.get(ENDPOINT + "/contracts/600-000000")
+
+#     data = response.json()['result'][0]
+
+#     if data['contract_uid'] == contract_uid:
+#         print("Not a match")
+    
+#     assert response.status_code == 200
+
+# def test_delete_contracts():
+#     global contract_uid
+
+#     print(f"Deleting {contract_uid} from Contract Table")
+#     with connect() as db:
+#         delQuery_contracts = ("""
+#                         DELETE FROM space.contracts
+#                         WHERE contract_uid = \'""" + contract_uid + """\';
+#                     """)
+
+#         response = db.delete(delQuery_contracts)
+
+
+# need to add lease_uid iin the response
+# post_lease_application_payload = {}
+# def test_post_lease_application():
+#     global post_lease_application_payload
+#     post_lease_application_payload = {
+#         "lease_property_id":"200-000000",
+#         "lease_start":"01-31-2024",
+#         "lease_end":"01-30-2025",
+#         "lease_application_date":"06/27/2024",
+#         "tenant_uid":"350-000000",
+#         "lease_status":"PROCESSING"
+#     }
+
+#     post_lease_application_response = requests.post(ENDPOINT + "/leaseApplication", data=post_lease_application_payload)
+
+#     assert post_lease_application_response.status_code == 200
+
+
+
+
+# lease_property_id:200-000023
+# lease_start:01-31-2024
+# lease_end:01-30-2025
+# lease_end_notice_period:null
+# lease_application_date:6/27/2024
+# tenant_uid:350-000000
+# lease_move_in_date:11/04/2024
+# frequency:Monthly
+# lease_status:PROCESSING
+
+# lease_fees:[{"charge":1250,"due_by":1,"late_by":1,"fee_name":"Deposit","fee_type":"$","late_fee":"95","frequency":"One-time","due_by_date":"01-01-2024","leaseFees_uid":"370-000000","available_topay":10,"perDay_late_fee":10},{"charge":1700,"due_by":1,"late_by":1,"fee_name":"Rent","fee_type":"$","late_fee":"95","frequency":"Monthly","due_by_date":null,"leaseFees_uid":"370-000014","available_topay":10,"perDay_late_fee":10}]
+
+
+# lease_assigned_contacts:[{"email": "pmarathay@gmail.com", "last_name": "Marathay", "first_name": "Prashant", "company_role": "Property Manager", "phone_number": "(408) 476-0001"}]
+# lease_adults:[{"dob":"1958-01-18","name":"Donald Dingwell","relationship":"Father"},{"dob":"1985-08-18","name":"Evan Dingwell","relationship":"self"}]
+# lease_children:[{"dob":"2015-04-28","name":"Olivia","relationship":"Dingwell"}]
+# lease_pets:[]
+# lease_vehicles:[{"make":"Ford ","year":"2005","model":"f250","state":"az","license":"cbh2214"},{"make":"Ford ","year":"2010","model":"f150","state":"az","license":"cfv4636"}]
+# lease_referred:[]
+# property_listed_rent:1700
+# lease_documents:[{"fileIndex":0,"fileName":"California-Standard-Lease-Agreement.pdf","fileType":"pdf","type":"Lease Agreement"},{"fileIndex":1,"fileName":"California-Standard-Lease-Agreement.pdf","fileType":"pdf","type":"Hi Divya"}]
+
 
 
 

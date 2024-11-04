@@ -2273,7 +2273,6 @@ class EndPoint_CLASS(Resource):
                 raise Exception("Error in cronjob") 
 
             try:
-                # recipient = "saumyashah4751@gmail.com"
                 recipients = ["pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = f"MySpace Test API CRON JOB for {dt} Completed "
@@ -2289,7 +2288,6 @@ class EndPoint_CLASS(Resource):
 
         except:
             try:
-                # recipient = "saumyashah4751@gmail.com"
                 recipients = ["pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = "MySpace Test API CRON JOB Failed!"
@@ -2316,7 +2314,6 @@ def EndPoint_CRON():
                 raise Exception("Error in cronjob") 
 
             try:
-                # recipient = "saumyashah4751@gmail.com"
                 recipients = ["pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = f"MySpace Test API CRON JOB for {dt} Completed "
@@ -2332,7 +2329,6 @@ def EndPoint_CRON():
 
         except:
             try:
-                # recipient = "saumyashah4751@gmail.com"
                 recipients = ["pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = "MySpace Test API CRON JOB Failed!"

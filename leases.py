@@ -308,6 +308,7 @@ class LeaseApplication(Resource):
             # Get New Lease UID    
             lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
             key = {'lease_uid': lease_uid}
+            response['lease_uid'] = lease_uid
             print("Contract Key: ", key)
 
 
