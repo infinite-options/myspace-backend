@@ -919,7 +919,10 @@ class LeaseReferal(Resource):
 
                     # print(tenantID)
                     response1 = db.execute(tenantID, [], 'get')
-                    print(response1['result'][0]['tenant_uid'])
+                    # print(response1['result'][0]['tenant_uid'])
+                    tenant_uid = response1['result'][0]['tenant_uid']
+                    print(tenant_uid)
+                    
 
                     # IF Tenant ID has been found ==> 
                         # Write Property - Tenant ID - % to lease_tenant
@@ -928,25 +931,48 @@ class LeaseReferal(Resource):
                 except:
                     print("tenantID not found")
 
-                    try:
-                        userID = (""" 
-                            SELECT *
-                            FROM space.users
-                            WHERE email = \'""" + tenant["email"] + """\'
-                        """)
+                try:
+                    userID = (""" 
+                        SELECT *
+                        FROM space.users
+                        WHERE email = \'""" + tenant["email"] + """\'
+                    """)
 
-                        # print(userID)
-                        response2 = db.execute(userID, [], 'get')
-                        print(response2['result'][0]['user_uid'])
+                    # print(userID)
+                    response2 = db.execute(userID, [], 'get')
+                    # print(response2['result'][0]['user_uid'])
+                    user_uid = response2['result'][0]['user_uid']
+                    print(user_uid)
 
 
-                        # IF User ID has been found ==> 
+                    # IF User ID has been found ==> 
+                    # Create Tenant ID
+                    # Write Property - Tenant ID - % to lease_tenant
+                    # Add tenants to lease_assigned_contacts JSON object
+
+                except:
+                    print("userID not found")
+
+                
+                if user_uid in {None, '', 'null'} and tenant_uid in {None, '', 'null'}:
+                        print("Neither User UID nor Tenant UID Found: ", user_uid)
+
+                        # Create User ID
+
+
+                if user_uid not in {None, '', 'null'}:
+                        print("User UID Found: ", user_uid)
+
                         # Create Tenant ID
+
+                if tenant_uid not in {None, '', 'null'}:
+                        print("Tenent UID Found: ", tenant_uid)
+
                         # Write Property - Tenant ID - % to lease_tenant
                         # Add tenants to lease_assigned_contacts JSON object
 
-                    except:
-                        print("userID not found")
+                
+
 
                         # IF neither User ID nor Tenant ID has been found ==> 
                         # Create UserID
