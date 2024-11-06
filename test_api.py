@@ -425,6 +425,7 @@ class endPointTest_CLASS(Resource):
 
             
             # ------------------------- Properties ------------------------------
+
             # -------- test post properties --------
             print("\nIn test POST Properties")
             post_properties_payload = {"property_latitude":37.2367236,
@@ -514,6 +515,8 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('DELETE Properties')
             response['No of APIs tested'] += 1
 
+            # ------------------------- Contracts ------------------------------
+
             # -------- test post contracts --------
             print("\nIn POST Contract")
             post_contract_payload = {
@@ -577,6 +580,83 @@ class endPointTest_CLASS(Resource):
                                 WHERE contract_uid = \'""" + contract_uid + """\';
                             """)
                 contract_response = db.delete(delQuery_contracts)
+            
+            # ------------------------- Leases ------------------------------
+            
+            # -------- test post lease application --------
+            print("\nIn test POST Lease Application")
+            post_lease_application_payload = {
+                "lease_property_id":"200-000000",
+                "lease_start":"01-31-2024",
+                "lease_end":"01-30-2025",
+                "lease_application_date":"06-27-2024",
+                "tenant_uid":"350-000000",
+                "lease_status":"NEW"
+            }
+            post_lease_application_response = requests.post(ENDPOINT + "/leaseApplication", data=post_lease_application_payload)
+            if (post_lease_application_response.status_code == 200):
+                response['APIs running successfully'].append('POST Lease Application')
+            else:
+                response['APIs failing'].append('POST Lease Application')
+            response['No of APIs tested'] += 1
+
+            # -------- get lease uid --------
+            print("\nIn get lease_uid")
+            get_lease_uid_response = requests.get(ENDPOINT + "/leaseApplication/350-000000/200-000000")
+            lease_uid = get_lease_uid_response.json()
+            print("lease_uid", lease_uid)
+
+            # -------- test get after post lease details --------
+            print("\nIn test GET after POST Lease Application")
+            post_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
+            data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
+            if data['lease_status'] != "NEW":
+                print('Not Match')
+            if (post_get_lease_application_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Lease Application')
+            else:
+                response['APIs failing'].append('GET after POST Lease Application')
+            response['No of APIs tested'] += 1
+
+            # -------- test put lease application --------
+            print("\nIn test PUT Lease Application")
+            put_lease_application_payload = {
+                "lease_uid":f"{lease_uid}",
+                "lease_status":"PROCESSING"
+            }
+            put_lease_application_response = requests.put(ENDPOINT + "/leaseApplication", data=put_lease_application_payload)
+            if (put_lease_application_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Lease Application')
+            else:
+                response['APIs failing'].append('PUT Lease Application')
+            response['No of APIs tested'] += 1
+
+            # -------- test get after put lease details --------
+            print("\nIn test GET after PUT Lease Application")
+            put_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
+            data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
+            if data['lease_status'] != "PROCESSING":
+                print('Not Match')
+            if (put_get_lease_application_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Lease Application')
+            else:
+                response['APIs failing'].append('GET after PUT Lease Application')
+            response['No of APIs tested'] += 1
+
+            # -------- test delete lease --------
+            print("\nIn DELETE Lease")
+            print(f"Deleting {lease_uid} from Lease Table & {lease_uid} from Lease_tenant")
+            with connect() as db:
+                delQuery_leases = ("""
+                                DELETE FROM space.leases
+                                WHERE lease_uid = \'""" + lease_uid + """\';
+                            """)
+                delQuery_lease_tenant = ("""
+                                DELETE FROM space.lease_tenant
+                                WHERE lt_lease_id = \'""" + lease_uid + """\';
+                            """)
+                leases_response = db.delete(delQuery_leases)
+                lease_tenant_response = db.delete(delQuery_lease_tenant)
 
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
@@ -925,20 +1005,98 @@ class endPointTest_CLASS(Resource):
 
 # need to add lease_uid iin the response
 # post_lease_application_payload = {}
+# lease_uid = ""
 # def test_post_lease_application():
+#     print("\nIn test POST Lease Application")
 #     global post_lease_application_payload
 #     post_lease_application_payload = {
 #         "lease_property_id":"200-000000",
 #         "lease_start":"01-31-2024",
 #         "lease_end":"01-30-2025",
-#         "lease_application_date":"06/27/2024",
+#         "lease_application_date":"06-27-2024",
 #         "tenant_uid":"350-000000",
-#         "lease_status":"PROCESSING"
+#         "lease_status":"NEW"
 #     }
 
 #     post_lease_application_response = requests.post(ENDPOINT + "/leaseApplication", data=post_lease_application_payload)
-
 #     assert post_lease_application_response.status_code == 200
+
+# def test_get_lease_uid():
+#     get_lease_uid_response = requests.get(ENDPOINT + "/leaseApplication/350-000000/200-000000")
+#     global lease_uid 
+#     lease_uid = get_lease_uid_response.json()
+#     print("lease_uid", lease_uid)
+
+# def test_post_get_lease_details():
+#     post_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
+#     data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
+
+#     if data['lease_status'] != "NEW":
+#         print('Not Match')
+#     assert post_get_lease_application_response.status_code == 200
+
+# put_lease_application_payload = {}
+# def test_put_lease_application():
+#     print("\nIn test PUT Lease Application")
+#     global put_lease_application_payload
+#     global lease_uid
+#     put_lease_application_payload = {
+#         "lease_uid":f"{lease_uid}",
+#         "lease_status":"PROCESSING"
+#     }
+#     put_lease_application_response = requests.put(ENDPOINT + "/leaseApplication", data=put_lease_application_payload)
+#     assert put_lease_application_response.status_code == 200
+
+# def test_put_get_lease_details():
+#     put_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
+#     data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
+
+#     if data['lease_status'] != "PROCESSING":
+#         print('Not Match')
+#     assert put_get_lease_application_response.status_code == 200
+
+# def test_delete_lease():
+#     global lease_uid
+
+#     print(f"Deleting {lease_uid} from Lease Table & {lease_uid} from Lease_tenant")
+#     with connect() as db:
+#         delQuery_leases = ("""
+#                         DELETE FROM space.leases
+#                         WHERE lease_uid = \'""" + lease_uid + """\';
+#                     """)
+#         delQuery_lease_tenant = ("""
+#                         DELETE FROM space.lease_tenant
+#                         WHERE lt_lease_id = \'""" + lease_uid + """\';
+#                     """)
+
+#         response = db.delete(delQuery_leases)
+#         response = db.delete(delQuery_lease_tenant)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# lease_uid:300-000020
+# lease_status:PROCESSING
+# lease_effective_date:09-22-2024
+# lease_start:09-22-2024
+# lease_end:09-21-2025
+# lease_fees:[{"charge":1300,"due_by":1,"late_by":1,"fee_name":"Unit Rent","fee_type":"Rent","late_fee":"60","frequency":"Monthly","due_by_date":"","leaseFees_uid":"370-000054","available_topay":7,"perDay_late_fee":6},{"charge":1300,"due_by":0,"late_by":2,"fee_name":"Deposit","fee_type":"Deposit","late_fee":"20","frequency":"One Time","due_by_date":"09-22-2024","leaseFees_uid":"370-000055","available_topay":2,"perDay_late_fee":2},{"charge":200,"due_by":7,"late_by":7,"fee_name":"Extra Charge","fee_type":"Extra Charge","late_fee":"30","frequency":"Monthly","due_by_date":"","leaseFees_uid":"370-000057","available_topay":7,"perDay_late_fee":3},{"charge":25,"due_by":1,"late_by":5,"fee_name":"Replace Air Filter","fee_type":"Maintenance","late_fee":"50","frequency":"Quarterly","due_by_date":"","leaseFees_uid":"370-000058","available_topay":5,"perDay_late_fee":5}]
+# lease_move_in_date:09-22-2024
+# lease_end_notice_period:30
+# delete_fees:["370-000057"]
 
 
 
