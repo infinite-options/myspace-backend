@@ -420,8 +420,8 @@ def processImage(key, payload):
 # --------------- PROCESS DOCUMENTS ------------------
 
 def processDocument(key, payload):
-    # print("\nIn Process Documents: ", payload)
-    # print("Key Passed into processDocuments: ", key)
+    print("\nIn Process Documents: ", payload)
+    print("Key Passed into processDocuments: ", key)
     response = {}
     with connect() as db:
 
@@ -533,6 +533,11 @@ def processDocument(key, payload):
                 payload_documents = payload_query['result'][0]['business_documents'] if payload_query['result'] else None                                          
             else:
                 return payload
+            
+        elif 'employee_uid' in key:
+            print("Employee Key passed")
+            # No employee documents are passed
+            return payload
 
         else:
             print("No UID found in key")
