@@ -252,6 +252,7 @@ ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
 
 #     assert response.status_code == 200
 
+# Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
 class endPointTest_CLASS(Resource):
     def get():
         dt = datetime.today()
@@ -262,6 +263,7 @@ class endPointTest_CLASS(Resource):
 
         try:
             # ------------------------- MAINTENANCE ------------------------------
+
             # -------- test post maintenance request --------
             print("\nIn test POST Maintenance Requests")
             post_maintenance_request_payload = {
@@ -290,7 +292,6 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('POST Maintenance Requests')
             response['No of APIs tested'] += 1
 
-
             # -------- test post get maintenance request --------
             print("\nIn test GET after POST Maintenance Requests")
             post_get_maintenance_request_response = requests.get(ENDPOINT + f"/maintenanceReq/200-000000")
@@ -306,7 +307,6 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('GET after POST Maintenance Requests')
             response['No of APIs tested'] += 1
 
-
             # -------- test put maintenance request --------
             print("\nIn test PUT Maintenance Requests")
             put_maintenance_request_payload = {
@@ -318,7 +318,6 @@ class endPointTest_CLASS(Resource):
             else:
                 response['APIs failing'].append('PUT Maintenance Requests')
             response['No of APIs tested'] += 1
-
 
             # -------- test put get maintenance request --------
             print("\nIn test GET after PUT Maintenance Requests")
@@ -334,7 +333,6 @@ class endPointTest_CLASS(Resource):
             else:
                 response['APIs failing'].append('GET after PUT Maintenance Requests')
             response['No of APIs tested'] += 1
-
 
             # -------- test post maintenance quotes --------
             print("\nIn test POST Maintenance Quotes")
@@ -491,7 +489,6 @@ class endPointTest_CLASS(Resource):
             for k, v in put_properties_payload.items():
                 if data[k] != v:
                     print('\n\n', k, v, '\tNot Match')
-
             if put_get_properties_response.status_code == 200:
                 response['APIs running successfully'].append('GET after PUT Properties')
             else:
@@ -532,7 +529,6 @@ class endPointTest_CLASS(Resource):
             else:
                 response['APIs failing'].append('POST Contracts')
             response['No of APIs tested'] += 1
-
 
             # -------- test get after contracts --------
             print("\nIn GET after POST Contract")
@@ -657,6 +653,139 @@ class endPointTest_CLASS(Resource):
                             """)
                 leases_response = db.delete(delQuery_leases)
                 lease_tenant_response = db.delete(delQuery_lease_tenant)
+
+            # ------------------------- Payment Method ------------------------------
+            
+            # -------- test POST Payment Method --------
+            print("\nIn POST Payment Method")
+            post_payment_method_payload = {
+                "paymentMethod_profile_id": "110-000000",
+                "paymentMethod_type":"zelle",
+                "paymentMethod_name":"test123",
+                "paymentMethod_status":"Active"
+            } 
+            post_payment_method_response = requests.post(ENDPOINT + "/paymentMethod", data=json.dumps(post_payment_method_payload), headers=headers)
+            if (post_payment_method_response.status_code == 200):
+                response['APIs running successfully'].append('POST Payment Method')
+            else:
+                response['APIs failing'].append('POST Payment Method')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET Payment Method UID --------
+            print("\nIn GET Payment Method UID")
+            get_payment_method_uid = requests.get(ENDPOINT + "/paymentMethod/110-000000")
+            payment_method_uid = get_payment_method_uid.json()['result'][0]['paymentMethod_uid']
+            if (get_payment_method_uid.status_code == 200):
+                response['APIs running successfully'].append('GET Payment Method UID')
+            else:
+                response['APIs failing'].append('GET Payment Method UID')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Payment Method --------
+            global put_payment_method_payload
+            put_payment_method_payload = {
+                "paymentMethod_uid": f"{payment_method_uid}",
+                "paymentMethod_status":"Inactive"
+            } 
+            put_payment_method_response = requests.put(ENDPOINT + "/paymentMethod", data=json.dumps(put_payment_method_payload), headers=headers)
+            if (put_payment_method_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Payment Method')
+            else:
+                response['APIs failing'].append('PUT Payment Method')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Payment Method --------
+            print("\nIn DELETE Payment Method")
+            delete_payment_method_response = requests.delete(ENDPOINT + f"/paymentMethod/110-000000/{payment_method_uid}")
+            if (delete_payment_method_response.status_code == 200):
+                response['APIs running successfully'].append('DELETE Payment Method')
+            else:
+                response['APIs failing'].append('DELETE Payment Method')
+            response['No of APIs tested'] += 1
+
+            # ------------------------- Add Purchases ------------------------------
+
+            # -------- test POST Add Purchases --------
+            print("\nIn POST add purchase")
+            post_add_purchase_payload = {
+                "pur_property_id": "200-000000",
+                "purchase_type": "Rent",
+                "pur_description": "Test Rent",
+                "purchase_date": "11-07-2024",
+                "pur_due_date": "11-11-2024",
+                "pur_amount_due": 10.00,
+                "pur_late_fee": "0",
+                "pur_perDay_late_fee": "0",
+                "purchase_status": "UNPAID",
+                "pur_receiver": "600-000000",
+                "pur_initiator": "600-000000",
+                "pur_payer": "350-000000"
+            }
+            post_add_purchase_response = requests.post(ENDPOINT + "/addPurchase", data=post_add_purchase_payload)
+            purchase_uid = post_add_purchase_response.json()['purchase_UID']
+            if (post_add_purchase_response.status_code == 200):
+                response['APIs running successfully'].append('POST Add Purchases')
+            else:
+                response['APIs failing'].append('POST Add Purchases')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Add Purchases --------
+            print("\nIn PUT add purchase")
+            put_add_purchase_payload = {
+                "purchase_uid": f"{purchase_uid}",
+                "pur_late_fee": "10"
+            }
+            put_add_purchase_response = requests.put(ENDPOINT + "/addPurchase", data=put_add_purchase_payload)
+            if (put_add_purchase_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Add Purchases')
+            else:
+                response['APIs failing'].append('PUT Add Purchases')
+            response['No of APIs tested'] += 1
+
+            # ------------------------- Payments ------------------------------
+
+            # -------- test POST New Payments --------
+            print("\nIn POST New Payments")
+            post_payment_payload = {
+                "pay_purchase_id": [
+                    {
+                        "purchase_uid": f"{purchase_uid}",
+                        "pur_amount_due": "10.00"
+                    }
+                ],
+                "pay_fee": 0,
+                "pay_total": 10,
+                "payment_notes": "Test Payment",
+                "pay_charge_id": "stripe transaction key",
+                "payment_type": "zelle",
+                "payment_verify": "Unverified",
+                "paid_by": "350-000000",
+                "payment_intent": "pi_1testaccountpayment",
+                "payment_method": "pm_1testaccountpayment"
+            }
+            post_payment_response = requests.post(ENDPOINT + "/makePayment", data=json.dumps(post_payment_payload), headers=headers)
+            if (post_payment_response.status_code == 200):
+                response['APIs running successfully'].append('POST New Payments')
+            else:
+                response['APIs failing'].append('POST New Payments')
+            response['No of APIs tested'] += 1
+
+
+            print("\nIn DELETE add purchase")
+            print(f"\nDeleting purchase_uid: {purchase_uid} from Purchases Table and payments with same purchase_uid from Payments Table")
+            with connect() as db:
+                delQuery_add_purchase = ("""
+                                DELETE FROM space.purchases
+                                WHERE purchase_uid = \'""" + purchase_uid + """\';
+                            """)
+                del_add_purchase_response = db.delete(delQuery_add_purchase)
+
+                delQuery_payment = ("""
+                        DELETE FROM space.payments
+                        WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
+                    """)
+
+                del_payment_response = db.delete(delQuery_payment)
 
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
@@ -1003,7 +1132,6 @@ class endPointTest_CLASS(Resource):
 #         response = db.delete(delQuery_contracts)
 
 
-# need to add lease_uid iin the response
 # post_lease_application_payload = {}
 # lease_uid = ""
 # def test_post_lease_application():
@@ -1075,16 +1203,147 @@ class endPointTest_CLASS(Resource):
 
 
 
+# payment methods
+# post_payment_method_payload = {}
+# def test_post_payment_method():
+#     print("\nIn POST Payment Method")
+#     global post_payment_method_payload
+#     post_payment_method_payload = {
+#         "paymentMethod_profile_id": "110-000000",
+#         "paymentMethod_type":"zelle",
+#         "paymentMethod_name":"test123",
+#         "paymentMethod_status":"Active"
+#     }
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }    
+#     post_payment_method_response = requests.post(ENDPOINT + "/paymentMethod", data=json.dumps(post_payment_method_payload), headers=headers)
+#     assert post_payment_method_response.status_code == 200
+
+# payment_method_uid = ""
+# def test_get_payment_method_uid():
+#     print("\nIn GET Payment Method UID")
+#     get_payment_method_uid = requests.get(ENDPOINT + "/paymentMethod/110-000000")
+#     global payment_method_uid
+#     payment_method_uid = get_payment_method_uid.json()['result'][0]['paymentMethod_uid']
+#     assert get_payment_method_uid.status_code == 200
+
+# put_payment_method_payload = {}
+# def test_put_payment_method():
+#     print("\nIn PUT Payment Method")
+#     global payment_method_uid
+#     global put_payment_method_payload
+#     put_payment_method_payload = {
+#         "paymentMethod_uid": f"{payment_method_uid}",
+#         "paymentMethod_status":"Inactive"
+#     }
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }    
+#     put_payment_method_response = requests.put(ENDPOINT + "/paymentMethod", data=json.dumps(put_payment_method_payload), headers=headers)
+
+#     assert put_payment_method_response.status_code == 200
+
+# def test_delete_payment_method():
+#     print("\nIn DELETE Payment Method")
+#     global payment_method_uid
+#     delete_payment_method_response = requests.delete(ENDPOINT + f"/paymentMethod/110-000000/{payment_method_uid}")
+#     assert delete_payment_method_response.status_code == 200
+
+# 400-001364
+post_add_purchase_payload = {}
+purchase_uid = ""
+def test_post_add_purchases():
+    print("\nIn POST add purchase")
+    global post_add_purchase_payload
+    post_add_purchase_payload = {
+        "pur_property_id": "200-000000",
+        "purchase_type": "Rent",
+        "pur_description": "Test Rent",
+        "purchase_date": "11-07-2024",
+        "pur_due_date": "11-11-2024",
+        "pur_amount_due": 10.00,
+        "pur_late_fee": "0",
+        "pur_perDay_late_fee": "0",
+        "purchase_status": "UNPAID",
+        "pur_receiver": "600-000000",
+        "pur_initiator": "600-000000",
+        "pur_payer": "350-000000"
+    }
+
+    post_add_purchase_response = requests.post(ENDPOINT + "/addPurchase", data=post_add_purchase_payload)
+
+    global purchase_uid
+    purchase_uid = post_add_purchase_response.json()['purchase_UID']
+    print(purchase_uid, 'purchase_UID')
+    assert post_add_purchase_response.status_code == 200
+
+put_add_purchase_payload = {}
+def test_put_add_purchase():
+    print("\nIn PUT add purchase")
+    global put_add_purchase_payload
+    global purchase_uid
+    put_add_purchase_payload = {
+        "purchase_uid": f"{purchase_uid}",
+        "pur_late_fee": "10"
+    }
+
+    put_add_purchase_response = requests.put(ENDPOINT + "/addPurchase", data=put_add_purchase_payload)
+
+    assert put_add_purchase_response.status_code == 200
+
+# running this function, add 2 more entries in purchase table
+
+post_payment_payload = {}
+def test_make_payment():
+    global purchase_uid
+    global post_payment_payload
+    post_payment_payload = {
+        "pay_purchase_id": [
+            {
+                "purchase_uid": f"{purchase_uid}",
+                "pur_amount_due": "10.00"
+            }
+        ],
+        "pay_fee": 0,
+        "pay_total": 10,
+        "payment_notes": "Test Payment",
+        "pay_charge_id": "stripe transaction key",
+        "payment_type": "zelle",
+        "payment_verify": "Unverified",
+        "paid_by": "350-000000",
+        "payment_intent": "pi_1testaccountpayment",
+        "payment_method": "pm_1testaccountpayment"
+    }
+
+    headers = {
+                'Content-Type': 'application/json'
+            } 
+
+    post_payment_response = requests.post(ENDPOINT + "/makePayment", data=json.dumps(post_payment_payload), headers=headers)
+    print("\n\n", post_payment_response.json(), "\n\n")
+    assert post_payment_response.status_code == 200
 
 
+def test_delete_add_purchase():
+    global purchase_uid
+    print("\nIn DELETE add purchase")
+    print(f"\nDeleting purchase_uid: {purchase_uid} from Purchases Table and payments with same purchase_uid from Payments Table")
 
+    with connect() as db:
+        delQuery_add_purchase = ("""
+                        DELETE FROM space.purchases
+                        WHERE purchase_uid = \'""" + purchase_uid + """\';
+                    """)
 
+        del_add_purchase_response = db.delete(delQuery_add_purchase)
 
+        delQuery_payment = ("""
+                        DELETE FROM space.payments
+                        WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
+                    """)
 
-
-
-
-
+        del_payment_response = db.delete(delQuery_payment)
 
 
 
