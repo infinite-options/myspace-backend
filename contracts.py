@@ -193,6 +193,10 @@ class Contracts(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
    
 
+        # Check if Ownership % is 100%
+        # ie  80% Owner accepts ==> record acceptance but don't change status ==> Waiting for others  80% Accepted?
+
+
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)

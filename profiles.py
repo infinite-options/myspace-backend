@@ -339,8 +339,8 @@ class Profile(Resource):
 
             # --------------- PROCESS DOCUMENTS ------------------
 
-            processDocument(employee_key, employee_payload)
-            print("Payload after function: ", employee_payload)
+            # processDocument(employee_key, employee_payload)
+            # print("Payload after function: ", employee_payload)
             
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -351,7 +351,7 @@ class Profile(Resource):
             
 
         with connect() as db:
-                print("Checking Inputs: ", key, filtered_payload)
+                # print("Checking Inputs: ", key)
                 if payload.get('tenant_uid'):
                     # response['tenant_docs'] = db.update('tenantProfileInfo', key, filtered_payload)
                     response = db.update('tenantProfileInfo', key, filtered_payload)

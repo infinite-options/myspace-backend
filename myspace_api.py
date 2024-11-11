@@ -23,7 +23,7 @@ from employees import Employee, EmployeeVerification
 from profiles import Profile, BusinessProfile #, BusinessProfileList
 # from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
-from leases import LeaseDetails, LeaseApplication
+from leases import LeaseDetails, LeaseApplication, LeaseReferal
 from purchases import Bills, AddExpense, AddRevenue, AddPurchase, RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from cron import PeriodicPurchases_CLASS # , ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, LateFees_CRON
@@ -2423,6 +2423,7 @@ api.add_resource(EmployeeVerification, '/employeeVerification')
 api.add_resource(Documents, '/documents','/documents/<string:user_id>')
 api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>', '/leaseDetails')
 api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
+api.add_resource(LeaseReferal, '/leaseReferal')
 
 
 api.add_resource(Contacts, '/contacts/<string:uid>')

@@ -889,3 +889,224 @@ class LeaseApplication(Resource):
                         db.insert('purchases', newRequest)
 
         return response
+
+
+class LeaseReferal(Resource):
+
+    def __call__(self):
+        print("In Lease Referal")
+
+
+    def post(self):
+        print("In Lease Referal POST")
+        response = {}
+        lease_assigned_contacts = []
+        
+
+        payload = request.get_json()
+        print("Lease Referal Add Payload: ", payload)
+        tenants = payload["tenants"]
+        print("tenants: ", tenants)
+        lease_property_id = payload["property_uid"]
+
+        with connect() as db: 
+
+            lease_uid = db.call('space.new_lease_uid')['result'][0]['new_id']
+            print("New Lease UID: ", lease_uid)
+
+            # IF tenant_uid ==> POST
+            # IF no tenant_uid ==> Check if user_uid
+            #    If user_uid ==> Create Tenant Role
+            #    If no user_uid ==> create user_uid and tenant UID
+
+
+            # Need to figure out if the refered tenant has an account
+            for tenant in tenants:
+                print("\n",tenant["email"])
+                tenant_responsibiity = str(float(tenant["lease_perc"])/100)
+                print(tenant_responsibiity)
+
+                # Check if Tenant ID exists
+                try:
+                    tenantID = (""" 
+                        SELECT * 
+                        FROM space.tenantProfileInfo
+                        WHERE tenant_email = \'""" + tenant["email"] + """\'
+                    """)
+
+                    # print(tenantID)
+                    tenant_response = db.execute(tenantID, [], 'get')
+                    # print(response1['result'][0]['tenant_uid'])
+                    tenant_uid = tenant_response['result'][0]['tenant_uid']
+                    print("Found tenant_uid: ", tenant_uid)
+                    
+
+                    # IF Tenant ID has been found ==> 
+                        # Write Property - Tenant ID - % to lease_tenant
+                        # Add tenants to lease_assigned_contacts JSON object
+                
+                except:
+                    print("tenantID not found")
+
+                    try:
+                        user_uid = 0
+
+                        userID = (""" 
+                            SELECT *
+                            FROM space.users
+                            WHERE email = \'""" + tenant["email"] + """\'
+                        """)
+
+                        # print(userID)
+                        user_response = db.execute(userID, [], 'get')
+                        # print(response2['result'][0]['user_uid'])
+                        
+                        user_uid = user_response['result'][0]['user_uid']
+                        roles = str(user_response['result'][0]['role'])
+                        print(user_uid)
+                        print('Active Roles: ', roles)
+
+                        roles += ",TENANT"
+                        print('New Roles: ', roles)
+
+
+                        response = db.update('space.users', {"user_uid": user_uid}, {'role': roles})
+                        print("MYSPACE response: ", response)
+                        print("MYSPACE response code: ", response['code'])
+
+
+                        raise Exception("Found User ID")
+                        # Write Property - Tenant ID - % to lease_tenant
+                        # Add tenants to lease_assigned_contacts JSON object
+
+                    except:
+                        print("In userID exception")
+
+                        # Create User ID
+
+                        # Create UserID
+
+                        # query = ["CALL space.new_user_uid;"]
+                        # NewIDresponse = db.execute(query[0], [], 'get')
+                    
+                        # newUserID = NewIDresponse["result"][0]["new_id"]
+                        if user_uid == 0:
+                            print("UserID not found")
+                            user_uid = db.call('space.new_user_uid')['result'][0]['new_id']
+                        
+                            print("MySpace userID: ", user_uid)
+
+                            userQuery = ("""
+                                    INSERT INTO space.users SET
+                                        user_uid = \'""" + user_uid + """\',
+                                        first_name = \'""" + tenant["first_name"] + """\',
+                                        last_name = \'""" + tenant["last_name"] + """\',
+                                        phone_number = \'""" + tenant["phone_number"] + """\',
+                                        email = \'""" + tenant["email"] + """\',
+                                        role = 'TENANT'
+                                            """)
+                            # print("Myspace Query: ", userQuery)
+                            response["user_uid"] = db.execute(userQuery, [], "post")
+                            print("MYSPACE User response: ", response)
+                            # print("MYSPACE response code: ", response['code'])
+
+
+
+                        # Create Tenant ID
+
+                        print("create tenant ID")
+                        # newTenantID = db.call('space.new_tenant_uid')['result'][0]['new_id']
+                        # print("MySpace tenantID: ", newTenantID)
+
+                        # tenantQuery = ("""
+                        #         INSERT INTO space.tenantProfileInfo SET
+                        #             tenant_uid = \'""" + newTenantID + """\',
+                        #             tenant_user_id = \'""" + newUserID + """\',
+                        #             tenant_first_name = \'""" + tenant["first_name"] + """\',
+                        #             tenant_last_name = \'""" + tenant["last_name"] + """\',
+                        #             tenant_phone_number = \'""" + tenant["phone_number"] + """\',
+                        #             tenant_email = \'""" + tenant["email"] + """\',
+                        #                 """)
+                        # print("Myspace Query: ", tenantQuery)
+                        # response = db.execute(tenantQuery, [], "post")
+                        # print("MYSPACE response: ", response)
+                        # print("MYSPACE response code: ", response['code'])
+
+                        profile_info = {}
+
+                        tenant_uid = db.call('space.new_tenant_uid')['result'][0]['new_id']
+                        print("MySpace tenantID: ", tenant_uid)
+
+                        profile_info["tenant_uid"] = tenant_uid
+                        profile_info['tenant_user_id'] = user_uid
+                        profile_info['tenant_first_name'] = tenant["first_name"]
+                        profile_info['tenant_last_name'] = tenant["last_name"]
+                        profile_info['tenant_phone_number'] = tenant["phone_number"]
+                        profile_info['tenant_email'] = tenant["email"]
+                        
+
+                        # Check and add the keys using ternary expressions
+                        profile_info['tenant_documents'] =  '[]'
+                        profile_info['tenant_adult_occupants'] =  '[]'
+                        profile_info['tenant_children_occupants'] =  '[]'
+                        profile_info['tenant_vehicle_info'] =  '[]'
+                        profile_info['tenant_references'] =  '[]'
+                        profile_info['tenant_pet_occupants'] =  '[]'
+                        profile_info['tenant_employment'] =  '[]'
+                        # print("Updated Tenant Profile: ", tenant_profile)
+
+                        
+
+                        response = db.insert('tenantProfileInfo', profile_info)
+                        response["tenant_uid"] = profile_info["tenant_uid"]
+                        print("MYSPACE Tenant response: ", response)
+
+
+                
+                # Add Tenant to Lease Contacts
+                print(tenant_uid)
+                ltQuery = (""" 
+                    INSERT INTO space.lease_tenant
+                    SET lt_lease_id = \'""" + lease_uid + """\'
+                        , lt_tenant_id = \'""" + tenant_uid + """\'
+                        , lt_responsibility = \'""" + tenant_responsibiity + """\';
+                    """)
+                # print("Made it to here")
+                response = db.execute(ltQuery, [], 'post')
+
+                # Add Tenant to Lease
+                lease_assigned_contacts.append(tenant_uid)
+
+
+            # Add Tenant List to New Lease
+            payload = {}
+            print(lease_assigned_contacts)
+            payload["lease_assigned_contacts"] = json.dumps(lease_assigned_contacts)
+            payload["lease_uid"] = lease_uid
+            payload["lease_property_id"] = lease_property_id
+            
+            # Verify LIST variables are not empty
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_documents", "lease_income"]
+            for field in fields_with_lists:
+                print("field list", field)
+                if payload.get(field) in [None, '', 'undefined']:
+                    print(field,"Is None")
+                    payload[field] = '[]' 
+
+            # Actual Insert Statement
+            print("About to insert: ", payload)
+            response["lease"] = db.insert('leases', payload)
+            print("Data inserted into space.leases", response)
+
+        
+            response["msg"] = "Lease Referal Endpoint"
+
+            return response
+        
+
+
+
+
+
+
+        

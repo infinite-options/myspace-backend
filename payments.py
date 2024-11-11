@@ -216,9 +216,15 @@ class NewPayments(Resource):
                     # print(item['pur_amount_due'], type(item['pur_amount_due']))
                     # print(data['pay_total'], type(data['pay_total']))
                     # print(data['pay_fee'], type(data['pay_fee']))
-                    itemFee = float(item['pur_amount_due']) / (data['pay_total'] - data['pay_fee']) * data['pay_fee']
-                    itemFee = round(itemFee, 2)
-                    print("Item Convenience Fee: ", itemFee)
+
+                    if float(item['pur_amount_due']) >= (data['pay_total'] - data['pay_fee']):
+                        itemFee = data['pay_fee']
+                        itemFee = round(itemFee, 2)
+                        print("Item Convenience Fee: ", itemFee)
+                    else: 
+                        itemFee = float(item['pur_amount_due']) / (data['pay_total'] - data['pay_fee']) * data['pay_fee']
+                        itemFee = round(itemFee, 2)
+                        print("Item Convenience Fee: ", itemFee)
 
                     feePurchaseQuery = (""" 
                             INSERT INTO space.purchases
