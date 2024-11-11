@@ -1250,101 +1250,280 @@ class endPointTest_CLASS(Resource):
 #     delete_payment_method_response = requests.delete(ENDPOINT + f"/paymentMethod/110-000000/{payment_method_uid}")
 #     assert delete_payment_method_response.status_code == 200
 
-# 400-001364
-post_add_purchase_payload = {}
-purchase_uid = ""
-def test_post_add_purchases():
-    print("\nIn POST add purchase")
-    global post_add_purchase_payload
-    post_add_purchase_payload = {
-        "pur_property_id": "200-000000",
-        "purchase_type": "Rent",
-        "pur_description": "Test Rent",
-        "purchase_date": "11-07-2024",
-        "pur_due_date": "11-11-2024",
-        "pur_amount_due": 10.00,
-        "pur_late_fee": "0",
-        "pur_perDay_late_fee": "0",
-        "purchase_status": "UNPAID",
-        "pur_receiver": "600-000000",
-        "pur_initiator": "600-000000",
-        "pur_payer": "350-000000"
+
+# post_add_purchase_payload = {}
+# purchase_uid = ""
+# def test_post_add_purchases():
+#     print("\nIn POST add purchase")
+#     global post_add_purchase_payload
+#     post_add_purchase_payload = {
+#         "pur_property_id": "200-000000",
+#         "purchase_type": "Rent",
+#         "pur_description": "Test Rent",
+#         "purchase_date": "11-07-2024",
+#         "pur_due_date": "11-11-2024",
+#         "pur_amount_due": 10.00,
+#         "pur_late_fee": "0",
+#         "pur_perDay_late_fee": "0",
+#         "purchase_status": "UNPAID",
+#         "pur_receiver": "600-000000",
+#         "pur_initiator": "600-000000",
+#         "pur_payer": "350-000000"
+#     }
+
+#     post_add_purchase_response = requests.post(ENDPOINT + "/addPurchase", data=post_add_purchase_payload)
+
+#     global purchase_uid
+#     purchase_uid = post_add_purchase_response.json()['purchase_UID']
+#     print(purchase_uid, 'purchase_UID')
+#     assert post_add_purchase_response.status_code == 200
+
+# put_add_purchase_payload = {}
+# def test_put_add_purchase():
+#     print("\nIn PUT add purchase")
+#     global put_add_purchase_payload
+#     global purchase_uid
+#     put_add_purchase_payload = {
+#         "purchase_uid": f"{purchase_uid}",
+#         "pur_late_fee": "10"
+#     }
+
+#     put_add_purchase_response = requests.put(ENDPOINT + "/addPurchase", data=put_add_purchase_payload)
+
+#     assert put_add_purchase_response.status_code == 200
+
+
+# post_payment_payload = {}
+# def test_make_payment():
+#     global purchase_uid
+#     global post_payment_payload
+#     post_payment_payload = {
+#         "pay_purchase_id": [
+#             {
+#                 "purchase_uid": f"{purchase_uid}",
+#                 "pur_amount_due": "10.00"
+#             }
+#         ],
+#         "pay_fee": 0,
+#         "pay_total": 10,
+#         "payment_notes": "Test Payment",
+#         "pay_charge_id": "stripe transaction key",
+#         "payment_type": "zelle",
+#         "payment_verify": "Unverified",
+#         "paid_by": "350-000000",
+#         "payment_intent": "pi_1testaccountpayment",
+#         "payment_method": "pm_1testaccountpayment"
+#     }
+
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             } 
+
+#     post_payment_response = requests.post(ENDPOINT + "/makePayment", data=json.dumps(post_payment_payload), headers=headers)
+#     print("\n\n", post_payment_response.json(), "\n\n")
+#     assert post_payment_response.status_code == 200
+
+
+# def test_delete_add_purchase():
+#     global purchase_uid
+#     print("\nIn DELETE add purchase")
+#     print(f"\nDeleting purchase_uid: {purchase_uid} from Purchases Table and payments with same purchase_uid from Payments Table")
+
+#     with connect() as db:
+#         delQuery_add_purchase = ("""
+#                         DELETE FROM space.purchases
+#                         WHERE purchase_uid = \'""" + purchase_uid + """\';
+#                     """)
+
+#         del_add_purchase_response = db.delete(delQuery_add_purchase)
+
+#         delQuery_payment = ("""
+#                         DELETE FROM space.payments
+#                         WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
+#                     """)
+
+#         del_payment_response = db.delete(delQuery_payment)
+
+
+def test_get_dashboard():
+    
+    business_response = requests.get(ENDPOINT + "/dashboard/600-000000")
+    owner_response = requests.get(ENDPOINT + "/dashboard/110-000000")
+    tenant_response = requests.get(ENDPOINT + "/dashboard/350-000000")
+    print("\n\n", business_response.json())
+    print("\n\n", owner_response.json())
+    print("\n\n", tenant_response.json())
+
+    assert business_response.status_code == 200
+    assert owner_response.status_code == 200
+    assert tenant_response.status_code == 200
+
+
+post_owner_profile_payload = {}
+post_business_profile_payload = {}
+post_tenant_profile_payload = {}
+owner_uid = ""
+business_uid = ""
+employee_uid = ""
+tenant_uid = ""
+def test_post_profile():
+    global post_owner_profile_payload
+    post_owner_profile_payload = {
+        "owner_user_id": "100-000000",
+        "owner_first_name": "Test",
+        "owner_last_name": "Owner Account",
+        "owner_phone_number": "(000) 000-0000",
+        "owner_email": "test@gmail.com"
     }
-
-    post_add_purchase_response = requests.post(ENDPOINT + "/addPurchase", data=post_add_purchase_payload)
-
-    global purchase_uid
-    purchase_uid = post_add_purchase_response.json()['purchase_UID']
-    print(purchase_uid, 'purchase_UID')
-    assert post_add_purchase_response.status_code == 200
-
-put_add_purchase_payload = {}
-def test_put_add_purchase():
-    print("\nIn PUT add purchase")
-    global put_add_purchase_payload
-    global purchase_uid
-    put_add_purchase_payload = {
-        "purchase_uid": f"{purchase_uid}",
-        "pur_late_fee": "10"
+    post_owner_profile_response = requests.post(ENDPOINT + "/profile", data=post_owner_profile_payload)
+    global owner_uid
+    owner_uid = post_owner_profile_response.json()["owner_uid"]
+    
+    global post_business_profile_payload
+    post_business_profile_payload = {
+        "business_user_id": "100-000000",
+        "business_type": "Management",
+        "business_name": "Test Business Account",
+        "business_email": "test@gmail.com",
     }
+    post_business_profile_response = requests.post(ENDPOINT + "/profile", data=post_business_profile_payload)
+    global business_uid
+    global employee_uid
+    business_uid = post_business_profile_response.json()["business_uid"]
+    employee_uid = post_business_profile_response.json()["employee_uid"]
 
-    put_add_purchase_response = requests.put(ENDPOINT + "/addPurchase", data=put_add_purchase_payload)
-
-    assert put_add_purchase_response.status_code == 200
-
-# running this function, add 2 more entries in purchase table
-
-post_payment_payload = {}
-def test_make_payment():
-    global purchase_uid
-    global post_payment_payload
-    post_payment_payload = {
-        "pay_purchase_id": [
-            {
-                "purchase_uid": f"{purchase_uid}",
-                "pur_amount_due": "10.00"
-            }
-        ],
-        "pay_fee": 0,
-        "pay_total": 10,
-        "payment_notes": "Test Payment",
-        "pay_charge_id": "stripe transaction key",
-        "payment_type": "zelle",
-        "payment_verify": "Unverified",
-        "paid_by": "350-000000",
-        "payment_intent": "pi_1testaccountpayment",
-        "payment_method": "pm_1testaccountpayment"
+    global post_tenant_profile_payload
+    post_tenant_profile_payload = {
+        "tenant_user_id": "100-000000",
+        "tenant_first_name": "Test",
+        "tenant_last_name": "Tenant Account",
+        "tenant_email": "test@gmail.com",
+        "tenant_phone_number": "(000) 000-0000"
     }
+    post_tenant_profile_response = requests.post(ENDPOINT + "/profile", data=post_tenant_profile_payload)
+    global tenant_uid
+    tenant_uid = post_tenant_profile_response.json()["tenant_uid"]
 
-    headers = {
-                'Content-Type': 'application/json'
-            } 
+    assert post_owner_profile_response.status_code == 200
+    assert post_business_profile_response.status_code == 200
+    assert post_tenant_profile_response.status_code == 200
 
-    post_payment_response = requests.post(ENDPOINT + "/makePayment", data=json.dumps(post_payment_payload), headers=headers)
-    print("\n\n", post_payment_response.json(), "\n\n")
-    assert post_payment_response.status_code == 200
+def test_post_get_profile():
+    global owner_uid
+    post_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+    data = post_get_owner_profile_response.json()['profile']['result'][0]
+    if data["owner_first_name"] != "Test":
+        print("Not Match")
 
 
-def test_delete_add_purchase():
-    global purchase_uid
-    print("\nIn DELETE add purchase")
-    print(f"\nDeleting purchase_uid: {purchase_uid} from Purchases Table and payments with same purchase_uid from Payments Table")
+    global business_uid
+    post_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+    data = post_get_business_profile_response.json()['profile']['result'][0]
+    if data["business_type"] != "Management":
+        print("Not Match")
 
+
+    global tenant_uid
+    post_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+    data = post_get_tenant_profile_response.json()['profile']['result'][0]
+    if data["tenant_first_name"] != "Test":
+        print("Not Match")
+
+
+    assert post_get_owner_profile_response.status_code == 200
+    assert post_get_business_profile_response.status_code == 200
+    assert post_get_tenant_profile_response.status_code == 200
+
+
+put_owner_profile_payload = {}
+put_business_profile_payload = {}
+put_tenant_profile_payload = {}
+def test_put_profile():
+    global put_owner_profile_payload
+    global owner_uid
+    put_owner_profile_payload = {
+        "owner_uid": f"{owner_uid}",
+        "owner_first_name": "Test Owner",
+    }
+    put_owner_profile_response = requests.put(ENDPOINT + "/profile", data=put_owner_profile_payload)
+        
+    global put_business_profile_payload
+    global business_uid
+    put_business_profile_payload = {
+        "business_uid": f"{business_uid}",
+        "business_type": "Maintenance",
+    }
+    put_business_profile_response = requests.put(ENDPOINT + "/profile", data=put_business_profile_payload)
+
+    global put_tenant_profile_payload
+    global tenant_uid
+    put_tenant_profile_payload = {
+        "tenant_uid": f"{tenant_uid}",
+        "tenant_first_name": "Test Tenant",
+    }
+    put_tenant_profile_response = requests.put(ENDPOINT + "/profile", data=put_tenant_profile_payload)
+    
+
+    assert put_owner_profile_response.status_code == 200
+    assert put_business_profile_response.status_code == 200
+    assert put_tenant_profile_response.status_code == 200
+
+def test_put_get_profile():
+    global owner_uid
+    put_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+    data = put_get_owner_profile_response.json()['profile']['result'][0]
+    if data["owner_first_name"] != "Test Owner":
+        print("Not Match")
+
+
+    global business_uid
+    put_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+    data = put_get_business_profile_response.json()['profile']['result'][0]
+    if data["business_type"] != "Maintenance":
+        print("Not Match")
+
+
+    global tenant_uid
+    put_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+    data = put_get_tenant_profile_response.json()['profile']['result'][0]
+    if data["tenant_first_name"] != "Test Tenant":
+        print("Not Match")
+
+
+    assert put_get_owner_profile_response.status_code == 200
+    assert put_get_business_profile_response.status_code == 200
+    assert put_get_tenant_profile_response.status_code == 200
+
+
+def test_delete_post_profile():
+    global owner_uid
+    global business_uid
+    global employee_uid
+    global tenant_uid
+    print(f"Deleting {owner_uid} from Owner Table, {business_uid} from Business Table, {employee_uid} from Employee Table & {tenant_uid} from Tenant Table")
     with connect() as db:
-        delQuery_add_purchase = ("""
-                        DELETE FROM space.purchases
-                        WHERE purchase_uid = \'""" + purchase_uid + """\';
+        delQuery_owner = ("""
+                        DELETE FROM space.ownerProfileInfo
+                        WHERE owner_uid = \'""" + owner_uid + """\';
                     """)
-
-        del_add_purchase_response = db.delete(delQuery_add_purchase)
-
-        delQuery_payment = ("""
-                        DELETE FROM space.payments
-                        WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
+        delQuery_business = ("""
+                        DELETE FROM space.businessProfileInfo
+                        WHERE business_uid = \'""" + business_uid + """\';
                     """)
+        delQuery_employee = ("""
+                        DELETE FROM space.employees
+                        WHERE employee_uid = \'""" + employee_uid + """\';
+                    """)
+        delQuery_tenant = ("""
+                        DELETE FROM space.tenantProfileInfo
+                        WHERE tenant_uid = \'""" + tenant_uid + """\';
+                    """)
+        
 
-        del_payment_response = db.delete(delQuery_payment)
-
+        response = db.delete(delQuery_owner)
+        response = db.delete(delQuery_business)
+        response = db.delete(delQuery_employee)
+        response = db.delete(delQuery_tenant)
 
 
 # lease_uid:300-000020
