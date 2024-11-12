@@ -319,7 +319,6 @@ class Properties(Resource):
                 # print("Query: ", maintenanceQuery)
                 response["MaintenanceRequests"] = maintenanceQuery
         
-
         elif uid[:3] == '350':
             print("In Tenant ID")
             with connect() as db:

@@ -528,6 +528,21 @@ class Dashboard(Resource):
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
                         FROM space.leases
+                        LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee',late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS lease_fees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN (
@@ -547,7 +562,7 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = \'""" + user_id + """\'
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
-                        -- WHERE tenants LIKE "%350-000007%"
+                        -- WHERE tenants LIKE "%350-000004%"
                         -- AND lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M"
                         ; """)
 
