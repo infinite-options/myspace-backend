@@ -36,7 +36,7 @@ from decimal import Decimal
 #                     LEFT JOIN space.property_owner ON lease_property_id = property_id
 #                     LEFT JOIN space.contracts ON lease_property_id = contract_property_id
 #                     WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
-#                         AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+#                         AND lease_status IN ('ACTIVE', 'ACTIVE M2M', 'APPROVED') 
 #                         AND contract_status = 'ACTIVE'
 #                     ORDER BY frequency;
 #                     """)
@@ -337,7 +337,7 @@ from decimal import Decimal
 #                     LEFT JOIN space.property_owner ON lease_property_id = property_id
 #                     LEFT JOIN space.contracts ON lease_property_id = contract_property_id
 #                     WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
-#                         AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+#                         AND lease_status IN ('ACTIVE', 'ACTIVE M2M', 'APPROVED') 
 #                         AND contract_status = 'ACTIVE'
 #                     ORDER BY frequency;
 #                 """)
@@ -1154,7 +1154,7 @@ class PeriodicPurchases_CLASS(Resource):
                     LEFT JOIN space.property_owner ON lease_property_id = property_id
                     LEFT JOIN space.contracts ON lease_property_id = contract_property_id
                     WHERE frequency != 'One-time' AND !ISNULL(frequency) AND frequency != ""
-                        AND lease_status IN ('ACTIVE', 'ACTIVE MTM', 'APPROVED') 
+                        AND lease_status IN ('ACTIVE', 'ACTIVE M2M', 'APPROVED') 
                         AND contract_status = 'ACTIVE'
                     ORDER BY frequency;
                     """)
