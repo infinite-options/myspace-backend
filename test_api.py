@@ -512,7 +512,9 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('DELETE Properties')
             response['No of APIs tested'] += 1
 
+
             # ------------------------- Contracts ------------------------------
+
 
             # -------- test post contracts --------
             print("\nIn POST Contract")
@@ -577,8 +579,10 @@ class endPointTest_CLASS(Resource):
                             """)
                 contract_response = db.delete(delQuery_contracts)
             
+
             # ------------------------- Leases ------------------------------
             
+
             # -------- test post lease application --------
             print("\nIn test POST Lease Application")
             post_lease_application_payload = {
@@ -654,8 +658,10 @@ class endPointTest_CLASS(Resource):
                 leases_response = db.delete(delQuery_leases)
                 lease_tenant_response = db.delete(delQuery_lease_tenant)
 
+
             # ------------------------- Payment Method ------------------------------
             
+
             # -------- test POST Payment Method --------
             print("\nIn POST Payment Method")
             post_payment_method_payload = {
@@ -703,7 +709,9 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('DELETE Payment Method')
             response['No of APIs tested'] += 1
 
+
             # ------------------------- Add Purchases ------------------------------
+
 
             # -------- test POST Add Purchases --------
             print("\nIn POST add purchase")
@@ -742,7 +750,9 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('PUT Add Purchases')
             response['No of APIs tested'] += 1
 
+
             # ------------------------- Payments ------------------------------
+
 
             # -------- test POST New Payments --------
             print("\nIn POST New Payments")
@@ -770,7 +780,7 @@ class endPointTest_CLASS(Resource):
                 response['APIs failing'].append('POST New Payments')
             response['No of APIs tested'] += 1
 
-
+            # -------- test DELETE Add purchases and New Payments --------
             print("\nIn DELETE add purchase")
             print(f"\nDeleting purchase_uid: {purchase_uid} from Purchases Table and payments with same purchase_uid from Payments Table")
             with connect() as db:
@@ -786,6 +796,252 @@ class endPointTest_CLASS(Resource):
                     """)
 
                 del_payment_response = db.delete(delQuery_payment)
+            
+
+            # ------------------------- Dashboard ------------------------------
+
+
+            # -------- test GET Dashboard --------
+            print("\nIn GET Dashboard")
+            business_response = requests.get(ENDPOINT + "/dashboard/600-000000")
+            owner_response = requests.get(ENDPOINT + "/dashboard/110-000000")
+            tenant_response = requests.get(ENDPOINT + "/dashboard/350-000000")
+            if (business_response.status_code == 200 and owner_response.status_code == 200 and tenant_response.status_code == 200):
+                response['APIs running successfully'].append('GET Dashboard')
+            else:
+                response['APIs failing'].append('GET Dashboard')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Profiles ------------------------------
+
+
+            # -------- test POST Profile --------
+            print("\nIn test POST Profile")
+            post_owner_profile_payload = {
+                "owner_user_id": "100-000000",
+                "owner_first_name": "Test",
+                "owner_last_name": "Owner Account",
+                "owner_phone_number": "(000) 000-0000",
+                "owner_email": "test@gmail.com"
+            }
+            post_owner_profile_response = requests.post(ENDPOINT + "/profile", data=post_owner_profile_payload)
+            owner_uid = post_owner_profile_response.json()["owner_uid"]
+            
+            post_business_profile_payload = {
+                "business_user_id": "100-000000",
+                "business_type": "Management",
+                "business_name": "Test Business Account",
+                "business_email": "test@gmail.com",
+            }
+            post_business_profile_response = requests.post(ENDPOINT + "/profile", data=post_business_profile_payload)
+            business_uid = post_business_profile_response.json()["business_uid"]
+            employee_uid = post_business_profile_response.json()["employee_uid"]
+
+            post_tenant_profile_payload = {
+                "tenant_user_id": "100-000000",
+                "tenant_first_name": "Test",
+                "tenant_last_name": "Tenant Account",
+                "tenant_email": "test@gmail.com",
+                "tenant_phone_number": "(000) 000-0000"
+            }
+            post_tenant_profile_response = requests.post(ENDPOINT + "/profile", data=post_tenant_profile_payload)
+            tenant_uid = post_tenant_profile_response.json()["tenant_uid"]
+
+            if (post_owner_profile_response.status_code == 200 and post_business_profile_response.status_code == 200 and post_tenant_profile_response.status_code == 200):
+                response['APIs running successfully'].append('POST Profile')
+            else:
+                response['APIs failing'].append('POST Profile')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Profile --------
+            print("\nIn GET after POST Profile")
+            post_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+            data = post_get_owner_profile_response.json()['profile']['result'][0]
+            if data["owner_first_name"] != "Test":
+                print("Not Match")
+
+            post_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+            data = post_get_business_profile_response.json()['profile']['result'][0]
+            if data["business_type"] != "Management":
+                print("Not Match")
+
+            post_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+            data = post_get_tenant_profile_response.json()['profile']['result'][0]
+            if data["tenant_first_name"] != "Test":
+                print("Not Match")
+
+            if (post_get_owner_profile_response.status_code == 200 and post_get_business_profile_response.status_code == 200 and post_get_tenant_profile_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Profile')
+            else:
+                response['APIs failing'].append('GET after POST Profile')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Profile --------
+            print("\nIn test PUT Profile")
+            put_owner_profile_payload = {
+                "owner_uid": f"{owner_uid}",
+                "owner_first_name": "Test Owner",
+            }
+            put_owner_profile_response = requests.put(ENDPOINT + "/profile", data=put_owner_profile_payload)
+
+            put_business_profile_payload = {
+                "business_uid": f"{business_uid}",
+                "business_type": "Maintenance",
+            }
+            put_business_profile_response = requests.put(ENDPOINT + "/profile", data=put_business_profile_payload)
+
+            put_tenant_profile_payload = {
+                "tenant_uid": f"{tenant_uid}",
+                "tenant_first_name": "Test Tenant",
+            }
+            put_tenant_profile_response = requests.put(ENDPOINT + "/profile", data=put_tenant_profile_payload)
+            
+            if (put_owner_profile_response.status_code == 200 and put_business_profile_response.status_code == 200 and put_tenant_profile_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Profile')
+            else:
+                response['APIs failing'].append('PUT Profile')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Profile --------
+            print("\nIn test GET after PUT Profile")
+            put_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+            data = put_get_owner_profile_response.json()['profile']['result'][0]
+            if data["owner_first_name"] != "Test Owner":
+                print("Not Match")
+
+            put_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+            data = put_get_business_profile_response.json()['profile']['result'][0]
+            if data["business_type"] != "Maintenance":
+                print("Not Match")
+
+            put_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+            data = put_get_tenant_profile_response.json()['profile']['result'][0]
+            if data["tenant_first_name"] != "Test Tenant":
+                print("Not Match")
+
+            if (put_get_owner_profile_response.status_code == 200 and put_get_business_profile_response.status_code == 200 and put_get_tenant_profile_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Profile')
+            else:
+                response['APIs failing'].append('GET after PUT Profile')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Profile --------
+            print("\nIn DELETE Profile")
+            print(f"Deleting {owner_uid} from Owner Table, {business_uid} from Business Table, {employee_uid} from Employee Table & {tenant_uid} from Tenant Table")
+            with connect() as db:
+                delQuery_owner = ("""
+                                DELETE FROM space.ownerProfileInfo
+                                WHERE owner_uid = \'""" + owner_uid + """\';
+                            """)
+                delQuery_business = ("""
+                                DELETE FROM space.businessProfileInfo
+                                WHERE business_uid = \'""" + business_uid + """\';
+                            """)
+                delQuery_employee = ("""
+                                DELETE FROM space.employees
+                                WHERE employee_uid = \'""" + employee_uid + """\';
+                            """)
+                delQuery_tenant = ("""
+                                DELETE FROM space.tenantProfileInfo
+                                WHERE tenant_uid = \'""" + tenant_uid + """\';
+                            """)
+                del_owner_profile_response = db.delete(delQuery_owner)
+                del_business_profile_response = db.delete(delQuery_business)
+                del_employee_profile_response = db.delete(delQuery_employee)
+                del_tenant_profile_response = db.delete(delQuery_tenant)
+            
+            # ------------------------- Add Expense / Add Revenue ------------------------------
+
+
+            # -------- test POST add expense --------
+            post_add_expense_payload = {
+                "pur_property_id":"200-000000",
+                "purchase_type":"Rent",
+                "pur_cf_type":"expense",
+                "purchase_date":"2024-11-11",
+                "pur_due_date":"2024-12-10",
+                "pur_amount_due":1999,
+                "purchase_status":"UNPAID",
+                "pur_notes":"This is just a test note",
+                "pur_description":"Test Description",
+                "pur_receiver":"600-000000",
+                "pur_initiator":"600-000000",
+                "pur_payer":"350-000000"
+            }
+            post_add_expense_response = requests.post(ENDPOINT + "/addExpense", data=json.dumps(post_add_expense_payload), headers=headers)
+            expense_uid = post_add_expense_response.json()['Purchases_UID']
+            if (post_add_expense_response.status_code == 200):
+                response['APIs running successfully'].append('POST Add Expense')
+            else:
+                response['APIs failing'].append('POST Add Expense')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT add expense --------
+            print("\nIn PUT add expense")
+            put_add_purchase_payload = {
+                "purchase_uid": f"{expense_uid}",
+                "pur_amount_due": 999
+            }
+            put_add_purchase_response = requests.put(ENDPOINT + "/addExpense", data=put_add_purchase_payload)
+            if (put_add_purchase_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Add Expense')
+            else:
+                response['APIs failing'].append('PUT Add Expense')
+            response['No of APIs tested'] += 1
+
+            # -------- test POST add revenue --------
+            print("\nIn POST Add Revenue")
+            post_add_revenue_payload = {
+                "pur_property_id":"200-000000",
+                "purchase_type":"Rent",
+                "pur_cf_type":"revenue",
+                "purchase_date":"2024-11-11",
+                "pur_due_date":"2024-12-10",
+                "pur_amount_due":1999,
+                "purchase_status":"UNPAID",
+                "pur_notes":"This is just a test note",
+                "pur_description":"Test Description",
+                "pur_receiver":"600-000000",
+                "pur_initiator":"600-000000",
+                "pur_payer":"350-000000"
+            }
+            post_add_revenue_response = requests.post(ENDPOINT + "/addRevenue", data=json.dumps(post_add_revenue_payload), headers=headers)
+            revenue_uid = post_add_revenue_response.json()['Purchases_UID']
+            if (post_add_revenue_response.status_code == 200):
+                response['APIs running successfully'].append('POST Add Revenue')
+            else:
+                response['APIs failing'].append('POST Add Revenue')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT add revenue --------
+            print("\nIn PUT add revenue")
+            put_add_revenue_payload = {
+                "purchase_uid": f"{revenue_uid}",
+                "pur_amount_due": 999
+            }
+            put_add_revenue_response = requests.put(ENDPOINT + "/addRevenue", data=put_add_revenue_payload)
+            if (put_add_revenue_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Add Revenue')
+            else:
+                response['APIs failing'].append('PUT Add Revenue')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE add expense / add revenue --------
+            print("\nIn DELETE add expense / add revenue")
+            print(f"\nDeleting purchase_uid: {expense_uid} from Purchases Table (for expense) and purchase_uid: {revenue_uid} from Purchases Table (for revenue)")
+            with connect() as db:
+                delQuery_add_expense = ("""
+                                DELETE FROM space.purchases
+                                WHERE purchase_uid = \'""" + expense_uid + """\';
+                            """)
+                del_add_expense_response = db.delete(delQuery_add_expense)
+                
+                delQuery_add_revenue = ("""
+                                DELETE FROM space.purchases
+                                WHERE purchase_uid = \'""" + revenue_uid + """\';
+                            """)
+                del_add_revenue_response = db.delete(delQuery_add_revenue)
 
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
@@ -1345,185 +1601,308 @@ class endPointTest_CLASS(Resource):
 #         del_payment_response = db.delete(delQuery_payment)
 
 
-def test_get_dashboard():
+# def test_get_dashboard():
+#     print("\nIn test GET Dashboard")
+#     business_response = requests.get(ENDPOINT + "/dashboard/600-000000")
+#     owner_response = requests.get(ENDPOINT + "/dashboard/110-000000")
+#     tenant_response = requests.get(ENDPOINT + "/dashboard/350-000000")
+#     print("\n\n", business_response.json())
+#     print("\n\n", owner_response.json())
+#     print("\n\n", tenant_response.json())
+
+#     assert business_response.status_code == 200
+#     assert owner_response.status_code == 200
+#     assert tenant_response.status_code == 200
+
+
+# post_owner_profile_payload = {}
+# post_business_profile_payload = {}
+# post_tenant_profile_payload = {}
+# owner_uid = ""
+# business_uid = ""
+# employee_uid = ""
+# tenant_uid = ""
+# def test_post_profile():
+#     print("\nIn test POST Profile")
+#     global post_owner_profile_payload
+#     post_owner_profile_payload = {
+#         "owner_user_id": "100-000000",
+#         "owner_first_name": "Test",
+#         "owner_last_name": "Owner Account",
+#         "owner_phone_number": "(000) 000-0000",
+#         "owner_email": "test@gmail.com"
+#     }
+#     post_owner_profile_response = requests.post(ENDPOINT + "/profile", data=post_owner_profile_payload)
+#     global owner_uid
+#     owner_uid = post_owner_profile_response.json()["owner_uid"]
     
-    business_response = requests.get(ENDPOINT + "/dashboard/600-000000")
-    owner_response = requests.get(ENDPOINT + "/dashboard/110-000000")
-    tenant_response = requests.get(ENDPOINT + "/dashboard/350-000000")
-    print("\n\n", business_response.json())
-    print("\n\n", owner_response.json())
-    print("\n\n", tenant_response.json())
+#     global post_business_profile_payload
+#     post_business_profile_payload = {
+#         "business_user_id": "100-000000",
+#         "business_type": "Management",
+#         "business_name": "Test Business Account",
+#         "business_email": "test@gmail.com",
+#     }
+#     post_business_profile_response = requests.post(ENDPOINT + "/profile", data=post_business_profile_payload)
+#     global business_uid
+#     global employee_uid
+#     business_uid = post_business_profile_response.json()["business_uid"]
+#     employee_uid = post_business_profile_response.json()["employee_uid"]
 
-    assert business_response.status_code == 200
-    assert owner_response.status_code == 200
-    assert tenant_response.status_code == 200
+#     global post_tenant_profile_payload
+#     post_tenant_profile_payload = {
+#         "tenant_user_id": "100-000000",
+#         "tenant_first_name": "Test",
+#         "tenant_last_name": "Tenant Account",
+#         "tenant_email": "test@gmail.com",
+#         "tenant_phone_number": "(000) 000-0000"
+#     }
+#     post_tenant_profile_response = requests.post(ENDPOINT + "/profile", data=post_tenant_profile_payload)
+#     global tenant_uid
+#     tenant_uid = post_tenant_profile_response.json()["tenant_uid"]
 
+#     assert post_owner_profile_response.status_code == 200
+#     assert post_business_profile_response.status_code == 200
+#     assert post_tenant_profile_response.status_code == 200
 
-post_owner_profile_payload = {}
-post_business_profile_payload = {}
-post_tenant_profile_payload = {}
-owner_uid = ""
-business_uid = ""
-employee_uid = ""
-tenant_uid = ""
-def test_post_profile():
-    global post_owner_profile_payload
-    post_owner_profile_payload = {
-        "owner_user_id": "100-000000",
-        "owner_first_name": "Test",
-        "owner_last_name": "Owner Account",
-        "owner_phone_number": "(000) 000-0000",
-        "owner_email": "test@gmail.com"
-    }
-    post_owner_profile_response = requests.post(ENDPOINT + "/profile", data=post_owner_profile_payload)
-    global owner_uid
-    owner_uid = post_owner_profile_response.json()["owner_uid"]
-    
-    global post_business_profile_payload
-    post_business_profile_payload = {
-        "business_user_id": "100-000000",
-        "business_type": "Management",
-        "business_name": "Test Business Account",
-        "business_email": "test@gmail.com",
-    }
-    post_business_profile_response = requests.post(ENDPOINT + "/profile", data=post_business_profile_payload)
-    global business_uid
-    global employee_uid
-    business_uid = post_business_profile_response.json()["business_uid"]
-    employee_uid = post_business_profile_response.json()["employee_uid"]
-
-    global post_tenant_profile_payload
-    post_tenant_profile_payload = {
-        "tenant_user_id": "100-000000",
-        "tenant_first_name": "Test",
-        "tenant_last_name": "Tenant Account",
-        "tenant_email": "test@gmail.com",
-        "tenant_phone_number": "(000) 000-0000"
-    }
-    post_tenant_profile_response = requests.post(ENDPOINT + "/profile", data=post_tenant_profile_payload)
-    global tenant_uid
-    tenant_uid = post_tenant_profile_response.json()["tenant_uid"]
-
-    assert post_owner_profile_response.status_code == 200
-    assert post_business_profile_response.status_code == 200
-    assert post_tenant_profile_response.status_code == 200
-
-def test_post_get_profile():
-    global owner_uid
-    post_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
-    data = post_get_owner_profile_response.json()['profile']['result'][0]
-    if data["owner_first_name"] != "Test":
-        print("Not Match")
+# def test_post_get_profile():
+#     print("\nIn test GET after POST Profile")
+#     global owner_uid
+#     post_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+#     data = post_get_owner_profile_response.json()['profile']['result'][0]
+#     if data["owner_first_name"] != "Test":
+#         print("Not Match")
 
 
-    global business_uid
-    post_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
-    data = post_get_business_profile_response.json()['profile']['result'][0]
-    if data["business_type"] != "Management":
-        print("Not Match")
+#     global business_uid
+#     post_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+#     data = post_get_business_profile_response.json()['profile']['result'][0]
+#     if data["business_type"] != "Management":
+#         print("Not Match")
 
 
-    global tenant_uid
-    post_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
-    data = post_get_tenant_profile_response.json()['profile']['result'][0]
-    if data["tenant_first_name"] != "Test":
-        print("Not Match")
+#     global tenant_uid
+#     post_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+#     data = post_get_tenant_profile_response.json()['profile']['result'][0]
+#     if data["tenant_first_name"] != "Test":
+#         print("Not Match")
 
 
-    assert post_get_owner_profile_response.status_code == 200
-    assert post_get_business_profile_response.status_code == 200
-    assert post_get_tenant_profile_response.status_code == 200
+#     assert post_get_owner_profile_response.status_code == 200
+#     assert post_get_business_profile_response.status_code == 200
+#     assert post_get_tenant_profile_response.status_code == 200
 
 
-put_owner_profile_payload = {}
-put_business_profile_payload = {}
-put_tenant_profile_payload = {}
-def test_put_profile():
-    global put_owner_profile_payload
-    global owner_uid
-    put_owner_profile_payload = {
-        "owner_uid": f"{owner_uid}",
-        "owner_first_name": "Test Owner",
-    }
-    put_owner_profile_response = requests.put(ENDPOINT + "/profile", data=put_owner_profile_payload)
+# put_owner_profile_payload = {}
+# put_business_profile_payload = {}
+# put_tenant_profile_payload = {}
+# def test_put_profile():
+#     print("\nIn test PUT Profile")
+#     global put_owner_profile_payload
+#     global owner_uid
+#     put_owner_profile_payload = {
+#         "owner_uid": f"{owner_uid}",
+#         "owner_first_name": "Test Owner",
+#     }
+#     put_owner_profile_response = requests.put(ENDPOINT + "/profile", data=put_owner_profile_payload)
         
-    global put_business_profile_payload
-    global business_uid
-    put_business_profile_payload = {
-        "business_uid": f"{business_uid}",
-        "business_type": "Maintenance",
-    }
-    put_business_profile_response = requests.put(ENDPOINT + "/profile", data=put_business_profile_payload)
+#     global put_business_profile_payload
+#     global business_uid
+#     put_business_profile_payload = {
+#         "business_uid": f"{business_uid}",
+#         "business_type": "Maintenance",
+#     }
+#     put_business_profile_response = requests.put(ENDPOINT + "/profile", data=put_business_profile_payload)
 
-    global put_tenant_profile_payload
-    global tenant_uid
-    put_tenant_profile_payload = {
-        "tenant_uid": f"{tenant_uid}",
-        "tenant_first_name": "Test Tenant",
-    }
-    put_tenant_profile_response = requests.put(ENDPOINT + "/profile", data=put_tenant_profile_payload)
+#     global put_tenant_profile_payload
+#     global tenant_uid
+#     put_tenant_profile_payload = {
+#         "tenant_uid": f"{tenant_uid}",
+#         "tenant_first_name": "Test Tenant",
+#     }
+#     put_tenant_profile_response = requests.put(ENDPOINT + "/profile", data=put_tenant_profile_payload)
     
 
-    assert put_owner_profile_response.status_code == 200
-    assert put_business_profile_response.status_code == 200
-    assert put_tenant_profile_response.status_code == 200
+#     assert put_owner_profile_response.status_code == 200
+#     assert put_business_profile_response.status_code == 200
+#     assert put_tenant_profile_response.status_code == 200
 
-def test_put_get_profile():
-    global owner_uid
-    put_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
-    data = put_get_owner_profile_response.json()['profile']['result'][0]
-    if data["owner_first_name"] != "Test Owner":
-        print("Not Match")
-
-
-    global business_uid
-    put_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
-    data = put_get_business_profile_response.json()['profile']['result'][0]
-    if data["business_type"] != "Maintenance":
-        print("Not Match")
+# def test_put_get_profile():
+#     print("\nIn test GET after PUT Profile")
+#     global owner_uid
+#     put_get_owner_profile_response = requests.get(ENDPOINT + f"/profile/{owner_uid}")
+#     data = put_get_owner_profile_response.json()['profile']['result'][0]
+#     if data["owner_first_name"] != "Test Owner":
+#         print("Not Match")
 
 
-    global tenant_uid
-    put_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
-    data = put_get_tenant_profile_response.json()['profile']['result'][0]
-    if data["tenant_first_name"] != "Test Tenant":
-        print("Not Match")
+#     global business_uid
+#     put_get_business_profile_response = requests.get(ENDPOINT + f"/profile/{business_uid}")
+#     data = put_get_business_profile_response.json()['profile']['result'][0]
+#     if data["business_type"] != "Maintenance":
+#         print("Not Match")
 
 
-    assert put_get_owner_profile_response.status_code == 200
-    assert put_get_business_profile_response.status_code == 200
-    assert put_get_tenant_profile_response.status_code == 200
+#     global tenant_uid
+#     put_get_tenant_profile_response = requests.get(ENDPOINT + f"/profile/{tenant_uid}")
+#     data = put_get_tenant_profile_response.json()['profile']['result'][0]
+#     if data["tenant_first_name"] != "Test Tenant":
+#         print("Not Match")
 
 
-def test_delete_post_profile():
-    global owner_uid
-    global business_uid
-    global employee_uid
-    global tenant_uid
-    print(f"Deleting {owner_uid} from Owner Table, {business_uid} from Business Table, {employee_uid} from Employee Table & {tenant_uid} from Tenant Table")
-    with connect() as db:
-        delQuery_owner = ("""
-                        DELETE FROM space.ownerProfileInfo
-                        WHERE owner_uid = \'""" + owner_uid + """\';
-                    """)
-        delQuery_business = ("""
-                        DELETE FROM space.businessProfileInfo
-                        WHERE business_uid = \'""" + business_uid + """\';
-                    """)
-        delQuery_employee = ("""
-                        DELETE FROM space.employees
-                        WHERE employee_uid = \'""" + employee_uid + """\';
-                    """)
-        delQuery_tenant = ("""
-                        DELETE FROM space.tenantProfileInfo
-                        WHERE tenant_uid = \'""" + tenant_uid + """\';
-                    """)
+#     assert put_get_owner_profile_response.status_code == 200
+#     assert put_get_business_profile_response.status_code == 200
+#     assert put_get_tenant_profile_response.status_code == 200
+
+
+# def test_delete_post_profile():
+#     print("\nIn DELETE Profile")
+#     global owner_uid
+#     global business_uid
+#     global employee_uid
+#     global tenant_uid
+#     print(f"Deleting {owner_uid} from Owner Table, {business_uid} from Business Table, {employee_uid} from Employee Table & {tenant_uid} from Tenant Table")
+#     with connect() as db:
+#         delQuery_owner = ("""
+#                         DELETE FROM space.ownerProfileInfo
+#                         WHERE owner_uid = \'""" + owner_uid + """\';
+#                     """)
+#         delQuery_business = ("""
+#                         DELETE FROM space.businessProfileInfo
+#                         WHERE business_uid = \'""" + business_uid + """\';
+#                     """)
+#         delQuery_employee = ("""
+#                         DELETE FROM space.employees
+#                         WHERE employee_uid = \'""" + employee_uid + """\';
+#                     """)
+#         delQuery_tenant = ("""
+#                         DELETE FROM space.tenantProfileInfo
+#                         WHERE tenant_uid = \'""" + tenant_uid + """\';
+#                     """)
         
 
-        response = db.delete(delQuery_owner)
-        response = db.delete(delQuery_business)
-        response = db.delete(delQuery_employee)
-        response = db.delete(delQuery_tenant)
+#         response = db.delete(delQuery_owner)
+#         response = db.delete(delQuery_business)
+#         response = db.delete(delQuery_employee)
+#         response = db.delete(delQuery_tenant)
+
+# post_add_expense_payload = {}
+# expense_uid = ""
+# def test_post_add_expense():
+#     print("\nIn POST Add Expense")
+#     global post_add_expense_payload
+#     global expense_uid
+#     post_add_expense_payload = {
+#         "pur_property_id":"200-000000",
+#         "purchase_type":"Rent",
+#         "pur_cf_type":"expense",
+#         "purchase_date":"2024-11-11",
+#         "pur_due_date":"2024-12-10",
+#         "pur_amount_due":1999,
+#         "purchase_status":"UNPAID",
+#         "pur_notes":"This is just a test note",
+#         "pur_description":"Test Description",
+#         "pur_receiver":"600-000000",
+#         "pur_initiator":"600-000000",
+#         "pur_payer":"350-000000"
+#     }
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }  
+#     post_add_expense_response = requests.post(ENDPOINT + "/addExpense", data=json.dumps(post_add_expense_payload), headers=headers)
+#     expense_uid = post_add_expense_response.json()['Purchases_UID']
+#     assert post_add_expense_response.status_code == 200
+
+# put_add_expense_payload = {}
+# def test_put_add_expense():
+#     print("\nIn PUT add expense")
+#     global put_add_expense_payload
+#     global expense_uid
+#     put_add_purchase_payload = {
+#         "purchase_uid": f"{expense_uid}",
+#         "pur_amount_due": 999
+#     }
+#     put_add_purchase_response = requests.put(ENDPOINT + "/addExpense", data=put_add_purchase_payload)
+#     assert put_add_purchase_response.status_code == 200
+
+
+# post_add_revenue_payload = {}
+# revenue_uid = ""
+# def test_post_add_revenue():
+#     print("\nIn POST Add Revenue")
+#     global post_add_revenue_payload
+#     global revenue_uid
+#     post_add_revenue_payload = {
+#         "pur_property_id":"200-000000",
+#         "purchase_type":"Rent",
+#         "pur_cf_type":"revenue",
+#         "purchase_date":"2024-11-11",
+#         "pur_due_date":"2024-12-10",
+#         "pur_amount_due":1999,
+#         "purchase_status":"UNPAID",
+#         "pur_notes":"This is just a test note",
+#         "pur_description":"Test Description",
+#         "pur_receiver":"600-000000",
+#         "pur_initiator":"600-000000",
+#         "pur_payer":"350-000000"
+#     }
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }  
+#     post_add_revenue_response = requests.post(ENDPOINT + "/addRevenue", data=json.dumps(post_add_revenue_payload), headers=headers)
+#     revenue_uid = post_add_revenue_response.json()['Purchases_UID']
+#     assert post_add_revenue_response.status_code == 200
+
+# put_add_revenue_payload = {}
+# def test_put_add_revenue():
+#     print("\nIn PUT add revenue")
+#     global put_add_revenue_payload
+#     global revenue_uid
+#     put_add_revenue_payload = {
+#         "purchase_uid": f"{revenue_uid}",
+#         "pur_amount_due": 999
+#     }
+#     put_add_revenue_response = requests.put(ENDPOINT + "/addRevenue", data=put_add_revenue_payload)
+#     assert put_add_revenue_response.status_code == 200
+
+# def test_delete_add_expense_revenue():
+#     global expense_uid
+#     global revenue_uid
+#     print("\nIn DELETE add expense")
+#     print(f"\nDeleting purchase_uid: {expense_uid} from Purchases Table (for expense) and purchase_uid: {revenue_uid} from Purchases Table (for revenue)")
+
+#     with connect() as db:
+#         delQuery_add_expense = ("""
+#                         DELETE FROM space.purchases
+#                         WHERE purchase_uid = \'""" + expense_uid + """\';
+#                     """)
+
+#         del_add_expense_response = db.delete(delQuery_add_expense)
+        
+#         delQuery_add_revenue = ("""
+#                         DELETE FROM space.purchases
+#                         WHERE purchase_uid = \'""" + revenue_uid + """\';
+#                     """)
+
+#         del_add_revenue_response = db.delete(delQuery_add_revenue)
+
+def test_get_cashflow_transaction():
+
+    get_cashflow_response = requests.get(ENDPOINT + "/cashflowTransactions/600-000011/all")
+    # print(get_cashflow_response.json())
+    assert get_cashflow_response.status_code == 200
+
+def test_get_payment_verification():
+
+    get_payment_verification_response = requests.get(ENDPOINT + "/paymentVerification/600-000011")
+    print(get_payment_verification_response.json())
+    assert get_payment_verification_response.status_code == 200
+
+
+
+
+
+
 
 
 # lease_uid:300-000020
