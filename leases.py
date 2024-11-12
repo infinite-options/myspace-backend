@@ -364,7 +364,7 @@ class LeaseApplication(Resource):
             
 
             # Verify LIST variables are not empty
-            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income"]
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income", "lease_utilities"]
             for field in fields_with_lists:
                 print("field list", field)
                 if payload.get(field) in [None, '', 'undefined']:
@@ -1085,7 +1085,7 @@ class LeaseReferal(Resource):
             payload["lease_property_id"] = lease_property_id
             
             # Verify LIST variables are not empty
-            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_documents", "lease_income"]
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_documents", "lease_income", "lease_utilities"]
             for field in fields_with_lists:
                 print("field list", field)
                 if payload.get(field) in [None, '', 'undefined']:

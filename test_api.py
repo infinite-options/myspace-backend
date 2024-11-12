@@ -2098,7 +2098,7 @@ def test_get_payment_verification():
 
 #     assert response.status_code == 200
 
-#     payload = {"lease_property_id":"200-000084","lease_status":"NEW","lease_assigned_contacts":"[\"350-000068\"]","lease_documents":"[]","lease_adults":"[]","lease_children":"[]","lease_pets":"[]","lease_vehicles":"[]","lease_referred":"[]","lease_rent":"[]","lease_application_date":"11/6/2023","tenant_uid":"350-000068"}
+#     payload = {"lease_property_id":"200-000084","lease_status":"NEW","lease_assigned_contacts":"[\"350-000068\"]","lease_documents":"[]","lease_adults":"[]","lease_children":"[]","lease_pets":"[]","lease_vehicles":"[]","lease_referred":"[]","lease_rent":"[]","lease_utilities":"[]","lease_application_date":"11/6/2023","tenant_uid":"350-000068"}
 
 #     response = requests.post(ENDPOINT + "/leaseApplication", data = payload)
 
