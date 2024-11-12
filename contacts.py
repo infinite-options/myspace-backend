@@ -832,7 +832,7 @@ class Contacts(Resource):
                             ) AS ms
                             WHERE maintenance_status IN ("ACCEPTED", "SCHEDULED") AND
                                 !ISNULL(maintenance_assigned_business) AND
-                                lease_status IN ("ACTIVE", "ACTIVE-MTM") AND
+                                lease_status IN ("ACTIVE", "ACTIVE-M2M") AND
                                 -- lt_tenant_id = "350-000002"
                                 -- lt_tenant_id = "350-000025"
                                 lt_tenant_id = \'""" + uid + """\'

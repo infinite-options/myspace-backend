@@ -37,7 +37,7 @@ class Listings (Resource):
                     LEFT JOIN ( 
                         SELECT * FROM space.leases 
                         -- WHERE lease_status = "ACTIVE"
-                        WHERE lease_status = "ACTIVE" AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
+                        WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
                         ) AS l
                     ON lease_property_id = property_uid
                     WHERE lease_status IS null;
@@ -66,7 +66,7 @@ class Listings (Resource):
                             'frequency', frequency,
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
-                            )) AS leaseFees
+                            )) AS lease_fees
                             FROM space.leaseFees
                             GROUP BY fees_lease_id) as t ON lt_lease_id = fees_lease_id
                             WHERE lt_tenant_id = \'""" + tenant_id + """\';

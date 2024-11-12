@@ -642,8 +642,8 @@ class Lease_CLASS(Resource):
                 print("\nApproved Contracts: ", approved_leases)
 
                 for lease in approved_leases:
-                        print("Lease: ", lease)
-                        print("Lease Property ID: ", lease['lease_property_id'])
+                        # print("Lease: ", lease)
+                        # print("Lease Property ID: ", lease['lease_property_id'])
 
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
@@ -653,12 +653,12 @@ class Lease_CLASS(Resource):
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'ACTIVE';
                                 """)
-                        print("active_lease Query: ", active_lease)
+                        # print("active_lease Query: ", active_lease)
 
                         response['old_lease'] = db.execute(active_lease, cmd='post')
-                        print(response['old_lease']['change'])
+                        # print(response['old_lease']['change'])
                         leasesMadeInactive = leasesMadeInactive + 1
-                        print("Leases Made Inactive: ", leasesMadeInactive)
+                        # print("Leases Made Inactive: ", leasesMadeInactive)
 
 
                         
@@ -671,18 +671,18 @@ class Lease_CLASS(Resource):
                                 AND lease_status = 'APPROVED';  
                                 """)
 
-                        print("new_lease Query: ", new_lease)
+                        # print("new_lease Query: ", new_lease)
                         response['new_lease'] = db.execute(new_lease, cmd='post')
-                        print(response['new_lease']['change'])
+                        # print(response['new_lease']['change'])
                         leasesMadeActive = leasesMadeActive + 1
-                        print("Leases Made Active: ", leasesMadeActive)
+                        # print("Leases Made Active: ", leasesMadeActive)
 
                         CronPostings.append(f"{lease['lease_property_id']}  ")
                         
-                print("Lease Cron Query Complete")
+                # print("Lease Cron Query Complete")
                 response['Leases_Made_Inactive'] = leasesMadeInactive
                 response['Leases_Made_Aactive'] = leasesMadeActive
-                print("This is the Function response: ", response)
+                # print("This is the Function response: ", response)
 
 
                 # APPEND TO CRON OUTPUT
@@ -2239,12 +2239,14 @@ def MonthlyRentPurchase_CRON(Resource):
                 body = f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n" + "\n".join(CronPostings)
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 200}
 
-            except:
-                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent' , 'code': 500}
+            except Exception as e:  
+                print(f"Error occurred: {e}")  
+                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent', 'code': 500}
                 
-        except:
+        except Exception as e: 
+            print(f"Error occurred: {e}") 
             response["cron fail"] = {'message': f'CRON Job failed for {dt}' ,'code': 500}
 
             try:
@@ -2253,9 +2255,10 @@ def MonthlyRentPurchase_CRON(Resource):
                 body = "Monthly Rent CRON JOB Failed"
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 200}
 
-            except:
+            except Exception as e:  
+                print(f"Error occurred: {e}") 
                 response["email fail"] = {'message': f'CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
 
         return response
@@ -2303,7 +2306,7 @@ class EndPoint_CLASS(Resource):
 
         return response
 
-def EndPoint_CRON():
+def EndPoint_CRON(Resource):
         print("\nIn Test Class GET \n\n\n")
         response = {}
         dt = datetime.today()

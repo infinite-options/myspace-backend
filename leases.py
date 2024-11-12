@@ -43,11 +43,11 @@ class LeaseDetails(Resource):
                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
                             CASE
                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                             END AS lease_end_month
                             FROM space.leases 
-                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                             ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -108,11 +108,11 @@ class LeaseDetails(Resource):
                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
                             CASE
                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                             END AS lease_end_month
                             FROM space.leases 
-                            WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                             ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -171,11 +171,11 @@ class LeaseDetails(Resource):
                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
                             CASE
                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                    WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                             END AS lease_end_month
                             FROM space.leases 
-                            -- WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                            -- WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                             ) AS l
                         LEFT JOIN (
                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -379,7 +379,6 @@ class LeaseApplication(Resource):
         return response
 
 
-	
     def put(self):
         print("\nIn Lease Application PUT")
         response = {}

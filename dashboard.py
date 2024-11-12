@@ -234,7 +234,7 @@ class Dashboard(Resource):
                                 LEFT JOIN space.properties ON property_uid = maintenance_property_id
                                 LEFT JOIN space.o_details ON maintenance_property_id = property_id
                                 LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
                                 LEFT JOIN space.t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
@@ -267,12 +267,12 @@ class Dashboard(Resource):
                                     , DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining
                                     , CASE
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
-                                    WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN space.property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -383,12 +383,12 @@ class Dashboard(Resource):
                                     , DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining
                                     , CASE
                                             WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'MTM' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'MTM'
+                                            WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
-                                    WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN space.property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -528,6 +528,21 @@ class Dashboard(Resource):
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
                         FROM space.leases
+                        LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee',late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS lease_fees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
                         LEFT JOIN space.properties ON property_uid = lease_property_id
                         LEFT JOIN space.o_details ON property_id = lease_property_id
                         LEFT JOIN (
@@ -547,8 +562,8 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = \'""" + user_id + """\'
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
-                        -- WHERE tenants LIKE "%350-000007%"
-                        -- AND lease_status = "ACTIVE"
+                        -- WHERE tenants LIKE "%350-000004%"
+                        -- AND lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M"
                         ; """)
 
 
