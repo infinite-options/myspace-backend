@@ -149,7 +149,7 @@ class Bills(Resource):
                                     , list_item AS utility_type
                                     , CASE
                                         WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
-                                        WHEN lease_status = "ACTIVE" AND utility_payer = "tenant" THEN lt_tenant_id
+                                        WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND utility_payer = "tenant" THEN lt_tenant_id
                                         ELSE property_owner_id
                                     END AS responsible_party
                                 FROM (

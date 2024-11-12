@@ -452,10 +452,10 @@ def processDocument(key, payload):
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
                 payload_query = db.execute(""" SELECT lease_documents FROM space.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
-                # print("1: ", payload_query)
-                # print("2: ", payload_query['result'], type(payload_query['result']))
-                # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
-                # if payload_query['result']: print("4: ", payload_query['result'][0]['lease_documents'], type(payload_query['result'][0]['lease_documents']))
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if payload_query['result']: print("3: ", payload_query['result'][0] ) 
+                if payload_query['result']: print("4: ", payload_query['result'][0]['lease_documents'], type(payload_query['result'][0]['lease_documents']))
                 payload_documents = payload_query['result'][0]['lease_documents'] if payload_query['result'] else None
             else:
                 return payload
@@ -545,7 +545,7 @@ def processDocument(key, payload):
 
         print("\nkey_type: ", key_type, type(key_type))
         print("key_uid: ", key_uid, type(key_uid))
-        print("payload_documents: ", payload_documents, type(payload_documents))                            # Current Documents
+        print("payload_documents: ", payload_documents, type(payload_documents))                            # Current Documents.  For POST requests there are no current documents
         print("payload_changed_documents: ", payload_changed_documents, type(payload_changed_documents))    # Documents being Changed
         print("payload_document_details: ", payload_document_details, type(payload_document_details))       # New Documents  
         print("payload_documents delete: ", payload_delete_documents, type(payload_delete_documents))       # Documents to Delete

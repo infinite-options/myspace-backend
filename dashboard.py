@@ -234,7 +234,7 @@ class Dashboard(Resource):
                                 LEFT JOIN space.properties ON property_uid = maintenance_property_id
                                 LEFT JOIN space.o_details ON maintenance_property_id = property_id
                                 LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
                                 LEFT JOIN space.t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
@@ -272,7 +272,7 @@ class Dashboard(Resource):
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
-                                    WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN space.property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -388,7 +388,7 @@ class Dashboard(Resource):
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM space.leases 
-                                    WHERE (lease_status = "ACTIVE" OR lease_status = "ENDED")
+                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN space.property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -548,7 +548,7 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
                         -- WHERE tenants LIKE "%350-000007%"
-                        -- AND lease_status = "ACTIVE"
+                        -- AND lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M"
                         ; """)
 
 

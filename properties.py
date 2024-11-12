@@ -485,7 +485,7 @@ class Properties(Resource):
                 property_user_id = payload.pop("property_owner_id")
 
                 findOwnerIdQuery = db.execute(""" 
-                            -- MAINTENANCE STATUS BY TENANT
+                            -- FIND OWNER UID
                             SELECT owner_uid
                             FROM space.ownerProfileInfo
                             -- WHERE owner_user_id = "100-000007"
