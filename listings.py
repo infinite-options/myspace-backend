@@ -66,7 +66,7 @@ class Listings (Resource):
                             'frequency', frequency,
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
-                            )) AS leaseFees
+                            )) AS lease_fees
                             FROM space.leaseFees
                             GROUP BY fees_lease_id) as t ON lt_lease_id = fees_lease_id
                             WHERE lt_tenant_id = \'""" + tenant_id + """\';
