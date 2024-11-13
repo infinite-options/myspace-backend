@@ -30,7 +30,7 @@ class LeaseDetails(Resource):
         print("in Get Lease Details")
         response = {}
 
-        response["Lease_Detailss"] = LeaseDetailsQuery(user_id)
+        response["Lease_Details"] = LeaseDetailsQuery(user_id)
         return response
 
 
