@@ -2498,7 +2498,7 @@ api.add_resource(EmployeeVerification, '/employeeVerification')
 # api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
 api.add_resource(Documents, '/documents','/documents/<string:user_id>')
-api.add_resource(LeaseDetails, '/leaseDetails/<string:user_id>', '/leaseDetails')
+api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>', '/leaseDetails')
 api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
 api.add_resource(LeaseReferal, '/leaseReferal')
 
