@@ -89,7 +89,7 @@ def LeaseDetailsQuery(user_id):
             -- WHERE owner_uid = \'""" + user_id + """\'
             -- WHERE contract_business_id = \'""" + user_id + """\'
             -- WHERE tenants LIKE '%""" + user_id + """%'
-            -- WHERE {column} LIKE  \'%""" + user_id + """%\' 
+            WHERE {column} LIKE  \'%""" + user_id + """%\' 
                         ;
                         """
     # like_pattern = '600%'
