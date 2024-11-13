@@ -30,6 +30,94 @@ def testQuery(user_id):
         print("Error in testQuery Query ")
 
 # RENT QUERIES
+def LeaseDetailsQuery(user_id):
+    print("In RentDetailsQuery FUNCTION CALL")
+
+    # query = 'SELECT * FROM space.purchases WHERE {column} LIKE %s'
+    query = """
+            -- OWNER, PROPERTY MANAGER, TENANT LEASES
+            SELECT * 
+            FROM (
+                -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
+                SELECT *,
+                DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
+                CASE
+                        WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
+                        WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
+                        ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
+                END AS lease_end_month
+                FROM space.leases 
+                WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
+                ) AS l
+            LEFT JOIN (
+                SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                    ('leaseFees_uid', leaseFees_uid,
+                    'fee_name', fee_name,
+                    'fee_type', fee_type,
+                    'charge', charge,
+                    'due_by', due_by,
+                    'late_by', late_by,
+                    'late_fee', late_fee,
+                    'perDay_late_fee', perDay_late_fee,
+                    'frequency', frequency,
+                    'available_topay', available_topay,
+                    'due_by_date', due_by_date
+                    )) AS lease_fees
+                    FROM space.leaseFees
+                    GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
+            LEFT JOIN space.properties ON property_uid = lease_property_id
+            LEFT JOIN space.o_details ON property_id = lease_property_id
+            LEFT JOIN (
+                SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                    ('tenant_uid', tenant_uid,
+                    'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
+                    'tenant_first_name', tenant_first_name,
+                    'tenant_last_name', tenant_last_name,
+                    'tenant_phone_number', tenant_phone_number,
+                    'tenant_email', tenant_email,
+                    'tenant_drivers_license_number', tenant_drivers_license_number,
+                    'tenant_drivers_license_state', tenant_drivers_license_state,
+                    'tenant_ssn', tenant_ssn
+                    )) AS tenants
+                    FROM space.t_details 
+                    GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
+            LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+            LEFT JOIN space.u_details ON utility_property_id = lease_property_id
+            -- WHERE owner_uid LIKE "%110-000003%"
+            -- WHERE contract_business_id LIKE "%600-000003%"
+            -- WHERE tenants LIKE "%350-000040%"
+            -- WHERE owner_uid = \'""" + user_id + """\'
+            -- WHERE contract_business_id = \'""" + user_id + """\'
+            -- WHERE tenants LIKE '%""" + user_id + """%'
+            -- WHERE {column} LIKE  \'%""" + user_id + """%\' 
+                        ;
+                        """
+    # like_pattern = '600%'
+
+    if user_id.startswith("110"):
+        query = query.format(column='owner_uid')
+    elif user_id.startswith("350"):
+        query = query.format(column='tenants')
+    elif user_id.startswith("600"):
+        query = query.format(column='contract_business_id')
+    else:
+        print("Invalid condition type")
+        return None
+
+    # print(query)
+
+    try:
+        # Run query
+        with connect() as db:    
+            response = db.execute(query)
+            # response = db.execute(query, (like_pattern,))
+            print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in RentDetailsQuery ")
+
+
 def RentStatusQuery(user_id):
     print("In RentStatusQuery FUNCTION CALL")
 
