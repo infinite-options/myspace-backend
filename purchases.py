@@ -239,6 +239,9 @@ class Bills(Resource):
                             # print("Query: ", purchaseQuery)
                             queryResponse = db.execute(purchaseQuery, [], 'post')
                             # print("queryResponse is: ", queryResponse)
+                            if (queryResponse['code'] == 200):
+                                print("In append function")
+                                pur_ids.append(new_purchase_uid)
 
 
                         #POST PM-OWNER OR FOR PM MAINTENANCE ITEM, POST PM-OWNER
@@ -267,6 +270,9 @@ class Bills(Resource):
                         print("Query: ", purchaseQuery)
                         queryResponse = db.execute(purchaseQuery, [], 'post')
                         print("queryResponse is: ", queryResponse)
+                        if (queryResponse['code'] == 200):
+                            print("In append function")
+                            pur_ids.append(new_purchase_uid)
 
 
 
@@ -300,6 +306,10 @@ class Bills(Resource):
                             # print("Query: ", purchaseQuery)
                             queryResponse = db.execute(purchaseQuery, [], 'post')
                             # print("queryResponse is: ", queryResponse)
+
+                            if (queryResponse['code'] == 200):
+                                print("In append function")
+                                pur_ids.append(new_purchase_uid)
 
                         #POST OWNER-PM REIMBURSEMENT
                         pur_cf_type = "expense"
