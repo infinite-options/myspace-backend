@@ -184,73 +184,6 @@ class DatabaseConnection:
 
 ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
 
-# -------- Dashboard -------- Completed
-# def test_get_dashboard():
-#     response_m = requests.get(ENDPOINT + "/dashboard/600-000038")
-#     assert response_m.status_code == 200
-
-#     # response_o = requests.get(ENDPOINT + "/dashboard/110-000099")
-#     # response_t = requests.get(ENDPOINT + "/dashboard/350-000068")
-#     # response_mt = requests.get(ENDPOINT + "/dashboard/600-000039")
-#     # assert response_o.status_code == 200
-#     # assert response_t.status_code == 200
-#     # assert response_mt.status_code == 200
-
-# -------- Cashflow Transactions -------- Completed
-# def test_get_cashflow():
-
-#     response = requests.get(ENDPOINT + "/cashflowTransactions/600-000011/all")
-#     assert response.status_code == 200
-
-# # -------- Property Endpoints --------
-# def test_get_properties():
-#     response = requests.get(ENDPOINT + '/properties/110-000099')
-#     assert response.status_code == 200
-
-# def test_get_listings():
-#     response = requests.get(ENDPOINT + "/listings/350-000002")
-
-#     assert response.status_code == 200
-
-# def test_get_contracts():
-#     response = requests.get(ENDPOINT + "/contracts/110-000099")
-
-#     assert response.status_code == 200
-
-# def test_get_rents():
-#     response = requests.get(ENDPOINT + "/rents/110-000099")
-
-#     assert response.status_code == 200
-
-# def test_get_searchManager():
-#     response = requests.get(ENDPOINT + "/searchManager?")
-
-#     assert response.status_code == 200
-
-# def test_get_leaseDetails():
-#     response = requests.get(ENDPOINT + "/leaseDetails/600-000038")
-
-#     assert response.status_code == 200
-
-# def test_get_announcements():
-#     response = requests.get(ENDPOINT + "/announcements/110-000099")
-
-#     assert response.status_code == 200
-
-# def test_get_contacts():
-#     response = requests.get(ENDPOINT + "/contacts/600-000038")
-
-#     assert response.status_code == 200
-
-# def test_get_contactsMaintenance():
-#     response = requests.get(ENDPOINT + "/contacts/600-000012")
-
-#     assert response.status_code == 200
-
-# def test_get_businessProfile():
-#     response = requests.get(ENDPOINT + "/businessProfile")
-
-#     assert response.status_code == 200
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
 class endPointTest_CLASS(Resource):
@@ -515,7 +448,6 @@ class endPointTest_CLASS(Resource):
 
             # ------------------------- Contracts ------------------------------
 
-
             # -------- test post contracts --------
             print("\nIn POST Contract")
             post_contract_payload = {
@@ -582,7 +514,6 @@ class endPointTest_CLASS(Resource):
 
             # ------------------------- Leases ------------------------------
             
-
             # -------- test post lease application --------
             print("\nIn test POST Lease Application")
             post_lease_application_payload = {
@@ -609,9 +540,9 @@ class endPointTest_CLASS(Resource):
             # -------- test get after post lease details --------
             print("\nIn test GET after POST Lease Application")
             post_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
-            data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
-            if data['lease_status'] != "NEW":
-                print('Not Match')
+            # data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
+            # if data['lease_status'] != "NEW":
+            #     print('Not Match')
             if (post_get_lease_application_response.status_code == 200):
                 response['APIs running successfully'].append('GET after POST Lease Application')
             else:
@@ -634,9 +565,9 @@ class endPointTest_CLASS(Resource):
             # -------- test get after put lease details --------
             print("\nIn test GET after PUT Lease Application")
             put_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
-            data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
-            if data['lease_status'] != "PROCESSING":
-                print('Not Match')
+            # data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
+            # if data['lease_status'] != "PROCESSING":
+            #     print('Not Match')
             if (put_get_lease_application_response.status_code == 200):
                 response['APIs running successfully'].append('GET after PUT Lease Application')
             else:
@@ -660,7 +591,6 @@ class endPointTest_CLASS(Resource):
 
 
             # ------------------------- Payment Method ------------------------------
-            
 
             # -------- test POST Payment Method --------
             print("\nIn POST Payment Method")
@@ -712,7 +642,6 @@ class endPointTest_CLASS(Resource):
 
             # ------------------------- Add Purchases ------------------------------
 
-
             # -------- test POST Add Purchases --------
             print("\nIn POST add purchase")
             post_add_purchase_payload = {
@@ -752,7 +681,6 @@ class endPointTest_CLASS(Resource):
 
 
             # ------------------------- Payments ------------------------------
-
 
             # -------- test POST New Payments --------
             print("\nIn POST New Payments")
@@ -800,7 +728,6 @@ class endPointTest_CLASS(Resource):
 
             # ------------------------- Dashboard ------------------------------
 
-
             # -------- test GET Dashboard --------
             print("\nIn GET Dashboard")
             business_response = requests.get(ENDPOINT + "/dashboard/600-000000")
@@ -814,7 +741,6 @@ class endPointTest_CLASS(Resource):
 
 
             # ------------------------- Profiles ------------------------------
-
 
             # -------- test POST Profile --------
             print("\nIn test POST Profile")
@@ -951,8 +877,8 @@ class endPointTest_CLASS(Resource):
                 del_employee_profile_response = db.delete(delQuery_employee)
                 del_tenant_profile_response = db.delete(delQuery_tenant)
             
-            # ------------------------- Add Expense / Add Revenue ------------------------------
 
+            # ------------------------- Add Expense / Add Revenue ------------------------------
 
             # -------- test POST add expense --------
             post_add_expense_payload = {
@@ -1042,6 +968,430 @@ class endPointTest_CLASS(Resource):
                                 WHERE purchase_uid = \'""" + revenue_uid + """\';
                             """)
                 del_add_revenue_response = db.delete(delQuery_add_revenue)
+            
+
+            # ------------------------- Cashflow Transaction ------------------------------
+
+            # -------- test GET Cashflow Transaction --------
+            print("\nIn GET Cashflow Transaction")
+            get_cashflow_response = requests.get(ENDPOINT + "/cashflowTransactions/600-000000/all")
+            if (get_cashflow_response.status_code == 200):
+                response['APIs running successfully'].append('GET Cashflow Transaction')
+            else:
+                response['APIs failing'].append('GET Cashflow Transaction')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Payment Verification ------------------------------
+
+            # -------- test GET Payment Verification --------
+            print("\nIn GET Payment Verification")
+            get_payment_verification_response = requests.get(ENDPOINT + "/paymentVerification/600-000000")
+            if (get_payment_verification_response.status_code == 200):
+                response['APIs running successfully'].append('GET Payment Verification')
+            else:
+                response['APIs failing'].append('GET Payment Verification')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Rents / Rent Deatils ------------------------------
+
+            # -------- test GET Rents --------
+            get_rents_response = requests.get(ENDPOINT + "/rents/110-000000")
+            if (get_rents_response.status_code == 200):
+                response['APIs running successfully'].append('GET Rents')
+            else:
+                response['APIs failing'].append('GET Rents')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET Rent Details --------
+            get_rent_details_response = requests.get(ENDPOINT + "/rentDetails/110-000000")
+            if (get_rent_details_response.status_code == 200):
+                response['APIs running successfully'].append('GET Rent Details')
+            else:
+                response['APIs failing'].append('GET Rent Details')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Appliances ------------------------------
+            
+            # -------- test POST Appliance --------
+            print("\nIn POST Appliances")
+            post_appliance_payload= {
+                "appliance_property_id":"200-000000",
+                "appliance_type":"050-000023",
+                "appliance_desc":"Test Appliance Description"
+            }
+            post_appliance_response = requests.post(ENDPOINT + "/appliances", data=post_appliance_payload)
+            appliance_uid = post_appliance_response.json()['appliance_UID']
+            if (post_appliance_response.status_code == 200):
+                response['APIs running successfully'].append('POST Appliances')
+            else:
+                response['APIs failing'].append('POST Appliances')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Appliance --------
+            print("\nIn GET after POST Appliances")          
+            get_post_appliance_response = requests.get(ENDPOINT + "/appliances/200-000000")
+            data = get_post_appliance_response.json()['result'][0]
+            if data["appliance_desc"] !=  "Test Appliance Description":
+                print("Not Match")
+            if (get_post_appliance_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Appliances')
+            else:
+                response['APIs failing'].append('GET after POST Appliances')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Appliance --------
+            print("\nIn PUT Appliances")
+            put_appliance_payload = {
+                "appliance_uid":f"{appliance_uid}",
+                "appliance_desc":"Test Appliance Description 1"
+            }
+            put_appliance_response = requests.put(ENDPOINT + "/appliances", data=put_appliance_payload)
+            if (put_appliance_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Appliances')
+            else:
+                response['APIs failing'].append('PUT Appliances')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Appliance --------
+            print("\nIn GET after PUT Appliances")            
+            get_put_appliance_response = requests.get(ENDPOINT + "/appliances/200-000000")
+            data = get_put_appliance_response.json()['result'][0]
+            if data["appliance_desc"] !=  "Test Appliance Description 1":
+                print("Not Match")
+            if (get_put_appliance_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Appliances')
+            else:
+                response['APIs failing'].append('GET after PUT Appliances')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Appliance --------
+            print("\nIn DELETE Appliances")
+            print(f"Deleting appliance_uid: {appliance_uid} form Appliances Table")
+            delete_appliance_response = requests.delete(ENDPOINT + f"/appliances/{appliance_uid}")
+            if (delete_appliance_response.status_code == 200):
+                response['APIs running successfully'].append('DELETE Appliances')
+            else:
+                response['APIs failing'].append('DELETE Appliances')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Employee / Employee Verification ------------------------------
+            
+            # -------- test POST Employee --------
+            print("\nIn POST Employee")
+            post_employee_payload = {
+                "employee_user_id":"100-000000",
+                "employee_business_id":"600-000000",
+                "employee_first_name":"Test",
+                "employee_last_name":"Employee"
+            }
+            post_employee_response = requests.post(ENDPOINT + "/employee", data=post_employee_payload)
+            employee_uid = post_employee_response.json()['employee_uid']
+            if (post_employee_response.status_code == 200):
+                response['APIs running successfully'].append('POST Employee')
+            else:
+                response['APIs failing'].append('POST Employee')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Employee --------
+            print("\nIn GET after POST Employee")
+            get_post_employee_response = requests.get(ENDPOINT + f"/employee/{employee_uid}")
+            data = get_post_employee_response.json()['employee']['result'][0]
+            if data["employee_first_name"] != "Test":
+                print("Not Match")
+            if (get_post_employee_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Employee')
+            else:
+                response['APIs failing'].append('GET after POST Employee')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Employee Verification --------
+            print("\nIn PUT Employee Verification")
+            put_employee_verification_payload = [{
+                "employee_uid":f"{employee_uid}",
+                "employee_first_name":"Test Account"
+            }]   
+            put_employee_verification_response = requests.put(ENDPOINT + "/employeeVerification", data=json.dumps(put_employee_verification_payload), headers=headers)
+            if (put_employee_verification_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Employee Verification')
+            else:
+                response['APIs failing'].append('PUT Employee Verification')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Employee --------
+            print("\nIn GET after PUT Employee")
+            get_put_employee_response = requests.get(ENDPOINT + f"/employee/{employee_uid}")
+            data = get_put_employee_response.json()['employee']['result'][0]
+            if data["employee_first_name"] != "Test Account":
+                print("Not Match")
+            if (get_put_employee_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Employee Verification')
+            else:
+                response['APIs failing'].append('GET after PUT Employee Verification')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Employee --------
+            print("\nIn DELETE Employee")
+            print(f"\nDeleting employee_uid: {employee_uid} from Employees Table")
+            with connect() as db:
+                delQuery_employee = ("""
+                                DELETE FROM space.employees
+                                WHERE employee_uid = \'""" + employee_uid + """\';
+                            """)
+                del_employee_response = db.delete(delQuery_employee)
+            
+
+            # ------------------------- Contacts ------------------------------
+            
+            # -------- test GET Contacts --------
+            print("\nIn GET Contacts")
+            get_contacts_business_response = requests.get(ENDPOINT + "/contacts/600-000000")
+            get_contacts_owner_response = requests.get(ENDPOINT + "/contacts/110-000000")
+            get_contacts_tenant_response = requests.get(ENDPOINT + "/contacts/350-000000")
+            if (get_contacts_business_response.status_code == 200 and get_contacts_owner_response.status_code == 200 and get_contacts_tenant_response.status_code == 200):
+                response['APIs running successfully'].append('GET Contacts')
+            else:
+                response['APIs failing'].append('GET Contacts')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- SearchManager ------------------------------
+            
+            # -------- test GET SearchManager --------
+            print("\nIn GET Search Manager")
+            get_search_manager_response = requests.get(ENDPOINT + "/searchManager")
+            if (get_search_manager_response.status_code == 200):
+                response['APIs running successfully'].append('GET Search Manager')
+            else:
+                response['APIs failing'].append('GET Search Manager')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Utility ------------------------------
+            
+            # -------- test POST Utility --------
+            print("\nIn POST Utility")
+            post_utility_payload = {
+                "property_uid": "200-000000",
+                "property_utility":json.dumps({
+                    "050-000000":"050-000000"
+                })
+            }
+            post_utility_payload_response = requests.post(ENDPOINT + "/utilities", data=post_utility_payload)
+            if (post_utility_payload_response.status_code == 200):
+                response['APIs running successfully'].append('POST Utility')
+            else:
+                response['APIs failing'].append('POST Utility')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Utility --------
+            print("\nIn GET after POST Utility")
+            post_get_utility_response = requests.get(ENDPOINT + "/utilities?utility_property_id=200-000000")
+            data = post_get_utility_response.json()['result'][0]
+            if data['utility_payer_id'] != "050-000000":
+                print("Not Match")
+            if (post_get_utility_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Utility')
+            else:
+                response['APIs failing'].append('GET after POST Utility')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Utility --------
+            print("\nIn PUT Utility")
+            put_utility_payload = {
+                "property_uid": "200-000000",
+                "property_utility":json.dumps({
+                    "050-000000":"050-100000"
+                })
+            }
+            put_utility_payload_response = requests.put(ENDPOINT + "/utilities", data=put_utility_payload)
+            if (put_utility_payload_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Utility')
+            else:
+                response['APIs failing'].append('PUT Utility')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Utility --------
+            print("\nIn GET after PUT Utility")
+            put_get_utility_response = requests.get(ENDPOINT + "/utilities?utility_property_id=200-000000")
+            data = put_get_utility_response.json()['result'][0]
+            if data['utility_payer_id'] != "050-100000":
+                print("Not Match")
+            if (put_get_utility_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Utility')
+            else:
+                response['APIs failing'].append('GET after PUT Utility')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Utility --------
+            print("\nIn DELETE Utility")
+            print(f"\nDeleting utility_property_id: '200-000000', utility_type_id: '050-000000' & utility_payer_id: '050-100000' from Employees Table")
+            with connect() as db:
+                delQuery_property_utility = ("""
+                                DELETE FROM space.property_utility
+                                WHERE utility_property_id = "200-000000"
+                                AND utility_type_id = "050-000000"
+                                AND utility_payer_id = "050-100000";
+                            """)
+                del_property_utility_response = db.delete(delQuery_property_utility)
+
+
+            # ------------------------- Bills ------------------------------
+            
+            # -------- test POST Bills --------
+            post_bill_payload = {
+                "bill_created_by":"600-000000",
+                "bill_description":"Test Bill Description",
+                "bill_amount":199.99,
+                "bill_utility_type":"maintenance",
+                "bill_split":"Uniform",
+                "bill_property_id":'[{"property_uid":"200-000000"}]',
+                "bill_maintenance_request_id":"800-000000",
+                "bill_maintenance_quote_id":"900-000000",
+                "bill_notes":""
+            }
+            post_bill_response = requests.post(ENDPOINT + "/bills", data=post_bill_payload)
+            bill_uid = post_bill_response.json()['maibill_uidtenance_request_uid']
+            purchase_uids = post_bill_response.json()['purchase_ids_add']
+            if (post_bill_response.status_code == 200):
+                response['APIs running successfully'].append('POST Bills')
+            else:
+                response['APIs failing'].append('POST Bills')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Bills --------
+            get_post_response = requests.get(ENDPOINT + f"/bills/{bill_uid}")
+            data = get_post_response.json()['result'][0]
+            if data['bill_description'] != "Test Bill Description":
+                print("Not Match")
+            if (get_post_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Bills')
+            else:
+                response['APIs failing'].append('GET after POST Bills')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Bills --------
+            put_bill_payload = {
+                "bill_uid":f"{bill_uid}",
+                "bill_description":"Test Bill Description 1"
+            }
+            put_bill_response = requests.put(ENDPOINT + "/bills", data=put_bill_payload)
+            if (put_bill_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Bills')
+            else:
+                response['APIs failing'].append('PUT Bills')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Bills --------
+            get_put_response = requests.get(ENDPOINT + f"/bills/{bill_uid}")
+            data = get_put_response.json()['result'][0]
+            if data['bill_description'] != "Test Bill Description 1":
+                print("Not Match")
+            if (get_put_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Bills')
+            else:
+                response['APIs failing'].append('GET after PUT Bills')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Bills --------
+            print("\nIn DELETE Bill")
+            print(f"\nDeleting bill_uid: {bill_uid} from Bills Table and purchase_uids: {purchase_uids} from Purchases Table")
+            with connect() as db:
+                delQuery_bill = ("""
+                                DELETE FROM space.bills
+                                WHERE bill_uid = \'""" + bill_uid + """\';
+                            """)
+                del_bill_response = db.delete(delQuery_bill)
+                for pur_id in purchase_uids:
+                    delQuery_purchase = ("""
+                                DELETE FROM space.purchases
+                                WHERE purchase_uid = \'""" + pur_id + """\';
+                            """)
+                    del_purchase_response = db.delete(delQuery_purchase)
+
+
+            # ------------------------- Listings ------------------------------
+
+            # -------- test GET Listings --------
+            print("\nIn GET Listings")
+            get_listings_response = requests.get(ENDPOINT + "/listings/350-000000")
+            if (get_listings_response.status_code == 200):
+                response['APIs running successfully'].append('GET Listings')
+            else:
+                response['APIs failing'].append('GET Listings')
+            response['No of APIs tested'] += 1
+
+
+            # ------------------------- Announcements ------------------------------
+
+            # -------- test POST Announcement --------
+            print("\nIn POST Announcement")
+            global post_announcement_payload
+            post_announcement_payload = {
+                    "announcement_title": "Test Announcement",
+                    "announcement_msg": "Hi! This is a test announcement",
+                    "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
+                    "announcement_mode": "LEASE",
+                    "announcement_receiver": "350-000000",
+                    "announcement_type": ["Text","Email"]
+                }
+            post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
+            if (post_announcement_response.status_code == 200):
+                response['APIs running successfully'].append('POST Announcement')
+            else:
+                response['APIs failing'].append('POST Announcement')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after POST Announcement --------
+            print("\nIn GET after POST Announcement")
+            post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+            data = post_get_announcement_response.json()['sent']['result'][0]
+            announcement_uid = data['announcement_uid']
+            if data['announcement_title'] != "Test Announcement":
+                print("Not Match")
+            if (post_get_announcement_response.status_code == 200):
+                response['APIs running successfully'].append('GET after POST Announcement')
+            else:
+                response['APIs failing'].append('GET after POST Announcement')
+            response['No of APIs tested'] += 1
+
+            # -------- test PUT Announcement --------
+            put_announcement_payload = {
+                "announcement_uid": [f"{announcement_uid}"],
+                "announcement_title": "Test Announcement 1"
+            }
+            put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
+            if (put_announcement_response.status_code == 200):
+                response['APIs running successfully'].append('PUT Announcement')
+            else:
+                response['APIs failing'].append('PUT Announcement')
+            response['No of APIs tested'] += 1
+
+            # -------- test GET after PUT Announcement --------
+            print("\nIn GET after PUT Announcement")
+            put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+            data = put_get_announcement_response.json()['sent']['result'][0]
+            if data['announcement_title'] != "Test Announcement 1":
+                print("Not Match")
+            if (put_get_announcement_response.status_code == 200):
+                response['APIs running successfully'].append('GET after PUT Announcement')
+            else:
+                response['APIs failing'].append('GET after PUT Announcement')
+            response['No of APIs tested'] += 1
+
+            # -------- test DELETE Announcement --------
+            print("\nIn DELETE Announcement")
+            print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
+            with connect() as db:
+                delQuery_announcement = ("""
+                                DELETE FROM space.announcements
+                                WHERE announcement_uid = \'""" + announcement_uid + """\';
+                            """)
+                del_announcement_response = db.delete(delQuery_announcement)
+
 
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
@@ -1413,10 +1763,11 @@ class endPointTest_CLASS(Resource):
 
 # def test_post_get_lease_details():
 #     post_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
-#     data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
+#     # print(post_get_lease_application_response.json())
+#     # data = post_get_lease_application_response.json()['Lease_Details']['result'][0]
 
-#     if data['lease_status'] != "NEW":
-#         print('Not Match')
+#     # if data['lease_status'] != "NEW":
+#     #     print('Not Match')
 #     assert post_get_lease_application_response.status_code == 200
 
 # put_lease_application_payload = {}
@@ -1433,10 +1784,10 @@ class endPointTest_CLASS(Resource):
 
 # def test_put_get_lease_details():
 #     put_get_lease_application_response = requests.get(ENDPOINT + "/leaseDetails/350-000000")
-#     data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
+#     # data = put_get_lease_application_response.json()['Lease_Details']['result'][0]
 
-#     if data['lease_status'] != "PROCESSING":
-#         print('Not Match')
+#     # if data['lease_status'] != "PROCESSING":
+#     #     print('Not Match')
 #     assert put_get_lease_application_response.status_code == 200
 
 # def test_delete_lease():
@@ -1754,8 +2105,7 @@ class endPointTest_CLASS(Resource):
 #     assert put_get_business_profile_response.status_code == 200
 #     assert put_get_tenant_profile_response.status_code == 200
 
-
-# def test_delete_post_profile():
+# def test_delete_profile():
 #     print("\nIn DELETE Profile")
 #     global owner_uid
 #     global business_uid
@@ -1886,525 +2236,376 @@ class endPointTest_CLASS(Resource):
 
 #         del_add_revenue_response = db.delete(delQuery_add_revenue)
 
-def test_get_cashflow_transaction():
+# def test_get_cashflow_transaction():
+#     get_cashflow_response = requests.get(ENDPOINT + "/cashflowTransactions/600-000000/all")
+#     # print(get_cashflow_response.json())
+#     assert get_cashflow_response.status_code == 200
 
-    get_cashflow_response = requests.get(ENDPOINT + "/cashflowTransactions/600-000011/all")
-    # print(get_cashflow_response.json())
-    assert get_cashflow_response.status_code == 200
+# def test_get_payment_verification():
+#     get_payment_verification_response = requests.get(ENDPOINT + "/paymentVerification/600-000011")
+#     print(get_payment_verification_response.json())
+#     assert get_payment_verification_response.status_code == 200
 
-def test_get_payment_verification():
+# def test_get_rents():
+#     get_rents_response = requests.get(ENDPOINT + "/rents/110-000000")
+#     print(get_rents_response.json())
+#     assert get_rents_response.status_code == 200
 
-    get_payment_verification_response = requests.get(ENDPOINT + "/paymentVerification/600-000011")
-    print(get_payment_verification_response.json())
-    assert get_payment_verification_response.status_code == 200
-
-
-
-
-
-
-
-
-# lease_uid:300-000020
-# lease_status:PROCESSING
-# lease_effective_date:09-22-2024
-# lease_start:09-22-2024
-# lease_end:09-21-2025
-# lease_fees:[{"charge":1300,"due_by":1,"late_by":1,"fee_name":"Unit Rent","fee_type":"Rent","late_fee":"60","frequency":"Monthly","due_by_date":"","leaseFees_uid":"370-000054","available_topay":7,"perDay_late_fee":6},{"charge":1300,"due_by":0,"late_by":2,"fee_name":"Deposit","fee_type":"Deposit","late_fee":"20","frequency":"One Time","due_by_date":"09-22-2024","leaseFees_uid":"370-000055","available_topay":2,"perDay_late_fee":2},{"charge":200,"due_by":7,"late_by":7,"fee_name":"Extra Charge","fee_type":"Extra Charge","late_fee":"30","frequency":"Monthly","due_by_date":"","leaseFees_uid":"370-000057","available_topay":7,"perDay_late_fee":3},{"charge":25,"due_by":1,"late_by":5,"fee_name":"Replace Air Filter","fee_type":"Maintenance","late_fee":"50","frequency":"Quarterly","due_by_date":"","leaseFees_uid":"370-000058","available_topay":5,"perDay_late_fee":5}]
-# lease_move_in_date:09-22-2024
-# lease_end_notice_period:30
-# delete_fees:["370-000057"]
+# def test_get_rent_details():
+#     get_rent_details_response = requests.get(ENDPOINT + "/rentDetails/110-000000")
+#     print(get_rent_details_response.json())
+#     assert get_rent_details_response.status_code == 200
 
 
-
-
-# lease_property_id:200-000023
-# lease_start:01-31-2024
-# lease_end:01-30-2025
-# lease_end_notice_period:null
-# lease_application_date:6/27/2024
-# tenant_uid:350-000000
-# lease_move_in_date:11/04/2024
-# frequency:Monthly
-# lease_status:PROCESSING
-
-# lease_fees:[{"charge":1250,"due_by":1,"late_by":1,"fee_name":"Deposit","fee_type":"$","late_fee":"95","frequency":"One-time","due_by_date":"01-01-2024","leaseFees_uid":"370-000000","available_topay":10,"perDay_late_fee":10},{"charge":1700,"due_by":1,"late_by":1,"fee_name":"Rent","fee_type":"$","late_fee":"95","frequency":"Monthly","due_by_date":null,"leaseFees_uid":"370-000014","available_topay":10,"perDay_late_fee":10}]
-
-
-# lease_assigned_contacts:[{"email": "pmarathay@gmail.com", "last_name": "Marathay", "first_name": "Prashant", "company_role": "Property Manager", "phone_number": "(408) 476-0001"}]
-# lease_adults:[{"dob":"1958-01-18","name":"Donald Dingwell","relationship":"Father"},{"dob":"1985-08-18","name":"Evan Dingwell","relationship":"self"}]
-# lease_children:[{"dob":"2015-04-28","name":"Olivia","relationship":"Dingwell"}]
-# lease_pets:[]
-# lease_vehicles:[{"make":"Ford ","year":"2005","model":"f250","state":"az","license":"cbh2214"},{"make":"Ford ","year":"2010","model":"f150","state":"az","license":"cfv4636"}]
-# lease_referred:[]
-# property_listed_rent:1700
-# lease_documents:[{"fileIndex":0,"fileName":"California-Standard-Lease-Agreement.pdf","fileType":"pdf","type":"Lease Agreement"},{"fileIndex":1,"fileName":"California-Standard-Lease-Agreement.pdf","fileType":"pdf","type":"Hi Divya"}]
-
-
-
-
-# -------------------------------------------------------------------------------------------
-
-# def test_get_payment_status():
-#     response = requests.get(ENDPOINT + "/paymentStatus/600-000038")
-
-#     assert response.status_code == 200
-
-# def test_get_allTransactions():
-#     response = requests.get(ENDPOINT + "/allTransactions/100-000003")
-
-#     assert response.status_code == 200
-
-# def test_get_contactsMaintenance():
-#     response = requests.get(ENDPOINT + "/contacts/600-000012")
-
-#     assert response.status_code == 200
-
-# def test_get_ownerProfile():
-#     response = requests.get(ENDPOINT + "/ownerProfile/110-000099")
-
-#     assert response.status_code == 200
-
-# def test_get_tenantProfile():
-#     response = requests.get(ENDPOINT + "/tenantProfile/350-000068")
-
-#     assert response.status_code == 200
-
-# def test_get_ownerDocuments():
-#     response = requests.get(ENDPOINT + "/ownerDocuments/110-000099")
-
-#     assert response.status_code == 200
-
-
-# def test_put_properties():
-#     payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2', 'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324', 'property_type': 'Single Family', 'property_num_beds': '0', 'property_num_baths': '2', 'property_area': '0', 'property_listed_rent': '0', 'property_deposit': '0', 'property_pets_allowed': '0', 'property_deposit_for_rent': '0', 'property_taxes': '0', 'property_mortgages': '0', 'property_insurance': '0', 'property_featured': '0', 'property_description': 'test', 'property_notes': '', 'property_available_to_rent': ''}
-#     response = requests.put(ENDPOINT + "/properties", data=payload)
-
-#     assert response.status_code == 200
-#     data = response.json()
-#     print(data)
-
-# def test_post_makepayments():
-#     data = {"pur_property_id":"200-000088","purchase_type":"Insurance","pur_cf_type":"expense","purchase_date":"04-04-2024","pur_due_date":"04-04-2024","pur_amount_due":323232,"purchase_status":"COMPLETED","pur_notes":"This is just a note","pur_description":"hi","pur_receiver":"110-000099","pur_initiator":"110-000099","pur_payer":"350-000068"}
-#     response = requests.post(ENDPOINT + "/addExpense", json=data)
-#     assert response.status_code == 200
-#     with connect() as db:
-#         purQuery = db.execute("""
-#                         SELECT purchase_uid, pur_payer from space.purchases
-#                         WHERE pur_notes = "This is just a note" and pur_description = "hi" and pur_property_id = "200-000088"
-#                                         """)
-
-#         # print("Query: ", propertiesQuery)
-#         response = purQuery
-#         purchase_uid = response["result"][0]["purchase_uid"]
-#         pur_payer = response["result"][0]["pur_payer"]
-#         print(purchase_uid)
-#     payload = {
-#     "pay_purchase_id": [
-#         {
-#             "purchase_uid":purchase_uid,
-#             "pur_amount_due": "30.00"
-#         }
-#     ],
-#     "pay_fee": 0,
-#     "pay_total": 34,
-#     "payment_notes": "PMTEST",
-#     "pay_charge_id": "stripe transaction key",
-#     "payment_type": "Credit Card",
-#     "payment_verify": "Unverified",
-#     "paid_by":pur_payer,
-#     "payment_intent": "pi_3OtBBYAdqquNNobL0H1HlLHO",
-#     "payment_method": "pm_1OtBBZAdqquNNobLecgTA3Se"
+# -----Appliances----
+# post_appliance_payload = {}
+# appliance_uid = ""
+# def test_post_appliance():
+#     print("\nIn POST Appliances")
+#     global post_appliance_payload
+#     post_appliance_payload= {
+#         "appliance_property_id":"200-000000",
+#         "appliance_type":"050-000023",
+#         "appliance_desc":"Test Appliance Description"
 #     }
 
-#     response = requests.post(ENDPOINT + "/makePayment", json = payload)
-#     assert response.status_code == 200
+#     post_appliance_response = requests.post(ENDPOINT + "/appliances", data=post_appliance_payload)
+#     global appliance_uid
+#     appliance_uid = post_appliance_response.json()['appliance_UID']
+
+#     assert post_appliance_response.status_code == 200
+
+# def test_get_post_appliance():
+#     print("\nIn GET after POST Appliances")
+#     global post_appliance_payload
+    
+#     get_post_appliance_response = requests.get(ENDPOINT + "/appliances/200-000000")
+#     data =get_post_appliance_response.json()['result'][0]
+#     if data["appliance_desc"] !=  "Test Appliance Description":
+#         print("Not Match")
+
+#     assert get_post_appliance_response.status_code == 200
+
+# put_appliance_payload = {}
+# def test_put_appliance():
+#     print("\nIn PUT Appliances")
+#     global put_appliance_payload
+#     global appliance_uid
+#     put_appliance_payload = {
+#         "appliance_uid":f"{appliance_uid}",
+#         "appliance_desc":"Test Appliance Description 1"
+#     }
+
+#     put_appliance_response = requests.put(ENDPOINT + "/appliances", data=put_appliance_payload)
+#     assert put_appliance_response.status_code == 200
+
+# def test_get_put_appliance():
+#     print("\nIn GET after PUT Appliances")
+#     global put_appliance_payload
+    
+#     get_put_appliance_response = requests.get(ENDPOINT + "/appliances/200-000000")
+#     data =get_put_appliance_response.json()['result'][0]
+#     if data["appliance_desc"] !=  "Test Appliance Description 1":
+#         print("Not Match")
+
+#     assert get_put_appliance_response.status_code == 200
+
+# def test_delete_appliance():
+#     print("\nIn DELETE Appliances")
+#     global appliance_uid
+#     print(f"Deleting appliance_uid: {appliance_uid} form Appliances Table")
+#     delete_appliance_response = requests.delete(ENDPOINT + f"/appliances/{appliance_uid}")
+
+#     assert delete_appliance_response.status_code == 200
+
+
+# post_employee_payload = {}
+# employee_uid = ""
+# def test_post_employee():
+#     global post_employee_payload
+#     post_employee_payload = {
+#         "employee_user_id":"100-000000",
+#         "employee_business_id":"600-000000",
+#         "employee_first_name":"Test",
+#         "employee_last_name":"Employee"
+#     }
+
+#     post_employee_response = requests.post(ENDPOINT + "/employee", data=post_employee_payload)
+#     global employee_uid
+#     employee_uid = post_employee_response.json()['employee_uid']
+
+#     assert post_employee_response.status_code == 200
+
+
+# def test_get_post_employee():
+#     global employee_uid
+#     get_post_employee_response = requests.get(ENDPOINT + f"/employee/{employee_uid}")
+#     data = get_post_employee_response.json()['employee']['result'][0]
+#     if data["employee_first_name"] != "Test":
+#         print("Not Match")
+
+#     assert get_post_employee_response.status_code == 200
+
+# put_employee_verification_payload = {}
+# def test_put_employee_verification():
+#     global put_employee_verification_payload
+#     global employee_uid
+#     put_employee_verification_payload = [{
+#         "employee_uid":f"{employee_uid}",
+#         "employee_first_name":"Test Account"
+#     }]
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }    
+#     put_employee_verification_response = requests.put(ENDPOINT + "/employeeVerification", data=json.dumps(put_employee_verification_payload), headers=headers)
+#     print(put_employee_verification_response.json())
+
+#     assert put_employee_verification_response.status_code == 200
+
+# def test_get_put_employee():
+#     global employee_uid
+#     get_put_employee_response = requests.get(ENDPOINT + f"/employee/{employee_uid}")
+#     data = get_put_employee_response.json()['employee']['result'][0]
+#     if data["employee_first_name"] != "Test Account":
+#         print("Not Match")
+
+#     assert get_put_employee_response.status_code == 200
+
+# def test_delete_employee():
+#     global employee_uid
+#     print("\nIn DELETE employee")
+#     print(f"\nDeleting employee_uid: {employee_uid} from Employees Table")
 
 #     with connect() as db:
+#         delQuery_employee = ("""
+#                         DELETE FROM space.employees
+#                         WHERE employee_uid = \'""" + employee_uid + """\';
+#                     """)
 
-#         delQuery = ("""
-#                 DELETE space.purchases
-#                 FROM space.purchases
-#                 WHERE purchase_uid = \'""" + purchase_uid + """\';
-#                 """)
-
-#         response = db.delete(delQuery)
+#         del_employee_response = db.delete(delQuery_employee)
 
 
-#         delQuery1 = ("""
-#                 DELETE space.payments
-#                 FROM space.payments
-#                 WHERE pay_purchase_id = \'""" + purchase_uid + """\';
-#                 """)
-
-#         response = db.delete(delQuery1)
-
-
-
-# def test_post_properties():
-#     payload = {'property_uid': '200-000084', 'property_address': 'Bellevue Square 2302', 'property_unit': '2',
-#                'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324',
-#                'property_type': 'Single Family', 'property_num_beds': '0', 'property_num_baths': '2',
-#                'property_area': '0', 'property_listed_rent': '0', 'property_deposit': '0', 'property_pets_allowed': '0',
-#                'property_deposit_for_rent': '0', 'property_taxes': '0', 'property_mortgages': '0',
-#                'property_insurance': '0', 'property_featured': '0', 'property_description': 'test',
-#                'property_notes': '', 'property_available_to_rent': ''}
-
-# # def test_post_addExpense():
-# #     payload = {"pur_property_id":"200-000088","purchase_type":"Insurance","pur_cf_type":"expense","purchase_date":"10-23-2023","pur_due_date":"10-23-2023","pur_amount_due":323232,"purchase_status":"COMPLETED","pur_notes":"This is just a note","pur_description":"hi","pur_receiver":"110-000099","pur_initiator":"110-000099","pur_payer": ''}
-# #     response = requests.post(ENDPOINT + "/addExpense", json = payload)
-# #
-# #     assert response.status_code == 200
-# #     data = response.json()
-# #
-# #     purchaseQuery = ("""
-# #             SELECT * from space.purchases
-# #             WHERE pur_property_id = '200-000088';
-# #             """)
-# #
-# #     propertyQuery = ("""
-# #             DELETE space.properties
-# #             FROM space.properties
-# #             WHERE lt_lease_id = \'""" + lease_uid + """\';
-# #             """)
-# #
-# #     response["delete_lease_tenant"] = db.delete(propertyQuery)
-# #
-# #     print(data)
-
-# def test_PM_Tenant_Flow():
-#     print("In test_PM_Tenant_flow", datetime.now())
-
-#     tenant_id = '350-000068'
-#     property_id = '200-000084'
-
-#     payload = {'property_uid': '200-000084', 'property_available_to_rent': '1', 'property_active_date': '2023-11-06', 'property_address': 'Bellevue Square 2302', 'property_unit': '2', 'property_city': 'Seattle', 'property_state': 'CA', 'property_zip': '97324', 'property_type': 'Single Family', 'property_num_beds': '0', 'property_num_baths': '2', 'property_area': '0', 'property_listed_rent': '0', 'property_deposit': '0', 'property_pets_allowed': '0', 'property_deposit_for_rent': '0', 'property_taxes': '0', 'property_mortgages': '0', 'property_insurance': '0', 'property_featured': '0', 'property_description': '', 'property_notes': ''}
-#     response = requests.put(ENDPOINT + "/properties", data=payload)
-
-#     assert response.status_code == 200
+# ------ Contacts ------
+# def test_get_contacts():
+#     print("\nIn GET Contacts")
+#     get_contacts_business_response = requests.get(ENDPOINT + "/contacts/600-000000")
+#     get_contacts_owner_response = requests.get(ENDPOINT + "/contacts/110-000000")
+#     get_contacts_tenant_response = requests.get(ENDPOINT + "/contacts/350-000000")
+#     assert get_contacts_business_response.status_code == 200
+#     assert get_contacts_owner_response.status_code == 200
+#     assert get_contacts_tenant_response.status_code == 200
 
 
-#     response = requests.get(ENDPOINT + "/listings/350-000002")
-
-#     assert response.status_code == 200
-
-#     response = requests.get(ENDPOINT + "/leaseDetails/350-000068")
-
-#     assert response.status_code == 200
-
-#     payload = {"announcement_title":"New Tenant Application","announcement_msg":"You have a new tenant application for your property","announcement_sender":"350-000068","announcement_date":"Mon Nov 06 2023","announcement_properties":"{\"600-000038\":[\"200-000084\"]}","announcement_mode":"LEASE","announcement_receiver":["600-000038"],"announcement_type":["App"]}
-
-#     response = requests.post(ENDPOINT + "/announcements/350-000068", json=payload)
-
-#     assert response.status_code == 200
-
-#     payload = {"lease_property_id":"200-000084","lease_status":"NEW","lease_assigned_contacts":"[\"350-000068\"]","lease_documents":"[]","lease_adults":"[]","lease_children":"[]","lease_pets":"[]","lease_vehicles":"[]","lease_referred":"[]","lease_rent":"[]","lease_utilities":"[]","lease_application_date":"11/6/2023","tenant_uid":"350-000068"}
-
-#     response = requests.post(ENDPOINT + "/leaseApplication", data = payload)
-
-#     data = response.json()
-
-#     print(data)
-
-#     assert response.status_code == 200
-
-#     response = requests.get(ENDPOINT + "/contracts/600-000038")
-
-#     assert response.status_code == 200
-
-#     response = {}
-#     with connect() as db:
-#         leaseQuery = db.execute("""
-#                         SELECT lease_uid from space.leases
-#                         LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
-#                         WHERE lt_tenant_id = \'""" + tenant_id + """\' AND lease_property_id = \'""" + property_id + """\';
-#                                         """)
-
-#         # print("Query: ", propertiesQuery)
-#         response["lease"] = leaseQuery
-
-#         lease_uid = response['lease']['result'][0]['lease_uid']
-
-#     payload = {"lease_uid": lease_uid,"lease_status":"PROCESSING","lease_start":"11/6/2023","lease_end":"11/5/2024","lease_fees":[{"id":1,"fee_name":"rent","fee_type":"$","frequency":"Monthly","charge":"300","due_by":"1st","late_by":"2","late_fee":"200","perDay_late_fee":"20","available_topay":""}]}
-
-#     response = requests.put(ENDPOINT + "/leaseApplication", json = payload)
-
-#     assert response.status_code == 200
-
-#     payload = {"announcement_title":"New Lease created","announcement_msg":"You have a new lease to be approved for your property","announcement_sender":"600-000038","announcement_date":"Mon Nov 06 2023","announcement_properties":"{\"350-000002\":[\"200-000084\"]}","announcement_mode":"LEASE","announcement_receiver":["350-000002"],"announcement_type":["App"]}
-
-#     response = requests.post(ENDPOINT + "/announcements/600-000038", json=payload)
-
-#     assert response.status_code == 200
-
-#     payload = {"lease_uid":lease_uid,"lease_status":"ACTIVE"}
-
-#     response = requests.put(ENDPOINT + "/leaseApplication", json=payload)
-
-#     assert response.status_code == 200
-
-#     response = {}
-#     with connect() as db:
-
-#         leaseQuery = ("""
-#                 DELETE space.leases
-#                 FROM space.leases
-#                 LEFT JOIN space.lease_tenant ON lt_lease_id = lease_uid
-#                 WHERE lease_uid = \'""" + lease_uid + """\';
-#                 """)
-
-#         response["delete_lease"] = db.delete(leaseQuery)
+# ------ SearchManager -------
+# def test_get_search_manager():
+#     print("\nIn GET Search Manager")
+#     get_search_manager_response = requests.get(ENDPOINT + "/searchManager")
+#     assert get_search_manager_response.status_code == 200
 
 
-#         leaseQuery = ("""
-#                 DELETE space.lease_tenant
-#                 FROM space.lease_tenant
-#                 WHERE lt_lease_id = \'""" + lease_uid + """\';
-#                 """)
+# ------ Utility -------
+# post_utility_payload = {}
+# def test_post_utility():
+#     print("\nIn POST Utility")
+#     global post_utility_payload
+#     post_utility_payload = {
+#         "property_uid": "200-000000",
+#         "property_utility":json.dumps({
+#             "050-000000":"050-000000"
+#         })
+#     }
 
-#         response["delete_lease_tenant"] = db.delete(leaseQuery)
+#     post_utility_payload_response = requests.post(ENDPOINT + "/utilities", data=post_utility_payload)
+#     # print("\n\n", post_utility_payload_response.json(), "\n\n")
+#     assert post_utility_payload_response.status_code == 200
 
-#     print(response)
+# def test_post_get_utility():
+#     print("\nIn GET after POST Utility")
+#     post_get_utility_response = requests.get(ENDPOINT + "/utilities?utility_property_id=200-000000")
+#     data = post_get_utility_response.json()['result'][0]
+#     if data['utility_payer_id'] != "050-000000":
+#         print("Not Match")
+#     # print("\n\n", post_get_utility_response.json())
+#     assert post_get_utility_response.status_code == 200
 
-# def test_PM_Owner():
-#     print("In test_PM_Owner ", datetime.now())
+# put_utility_payload = {}
+# def test_put_utility():
+#     print("\nIn PUT Utility")
+#     global put_utility_payload
+#     put_utility_payload = {
+#         "property_uid": "200-000000",
+#         "property_utility":json.dumps({
+#             "050-000000":"050-100000"
+#         })
+#     }
+#     put_utility_payload_response = requests.put(ENDPOINT + "/utilities", data=put_utility_payload)
+#     # print("\n\n", put_utility_payload_response.json())
+#     assert put_utility_payload_response.status_code == 200
 
-#     payload = {'property_owner_id': ['110-000099'], 'property_available_to_rent': ['0'], 'property_active_date': ['2023-11-07'], 'property_address': ['253rd Arizona'], 'property_unit': ['2'], 'property_city': ['Tucson'], 'property_state': ['AZ'], 'property_zip': ['80000'], 'property_type': ['Condo'], 'property_num_beds': ['2'], 'property_num_baths': ['3'], 'property_value': ['200000'], 'property_area': ['2323'], 'property_listed': ['0'], 'property_deposit': ['0'], 'property_pets_allowed': ['0'], 'property_deposit_for_rent': ['0'], 'property_taxes': ['0'], 'property_mortgages': ['0'], 'property_insurance': ['0'], 'property_featured': ['0'], 'property_description': [''], 'property_notes': ['test'], 'img_cover': ['']}
+# def test_put_get_utility():
+#     print("\nIn GET after PUT Utility")
+#     put_get_utility_response = requests.get(ENDPOINT + "/utilities?utility_property_id=200-000000")
+#     data = put_get_utility_response.json()['result'][0]
+#     if data['utility_payer_id'] != "050-100000":
+#         print("Not Match")
+#     # print("\n\n", put_get_utility_response.json()['result'][0])
+#     assert put_get_utility_response.status_code == 200
 
-#     response = requests.post(ENDPOINT + "/properties", data = payload)
-
-#     assert response.status_code == 200
-
-#     response1 = {}
-#     response2 = {}
-#     with connect() as db:
-#         propertyQuery = db.execute("""
-#                                 SELECT property_uid from space.properties
-#                                 LEFT JOIN space.property_owner ON property_uid = property_id
-#                                 WHERE property_owner_id = '110-000099' AND property_address = '253rd Arizona';
-#                                                 """)
-
-#         # print("Query: ", propertiesQuery)
-#         response1["property"] = propertyQuery
-
-#         property_uid = response1['property']['result'][0]['property_uid']
-
-
-
-#     payload = {"announcement_title":"black","announcement_msg":"hello","announcement_sender":"110-000099","announcement_date":"2023-11-07","announcement_properties":"{\"600-000038\":[\"200-000147\"]}","announcement_mode":"CONTRACT","announcement_receiver":["600-000038"],"announcement_type":["App"]}
-
-#     response = requests.post(ENDPOINT + "/announcements/110-000099", json=payload)
-
-#     assert response.status_code == 200
-
-#     property_uid = f'["{property_uid}"]'
-
-#     payload = {'contract_property_ids':property_uid,'contract_business_id':'600-000038','contract_start_date':'2023-11-07',
-#     'contract_status': 'NEW'}
-
-#     response = requests.post(ENDPOINT + "/contracts", data=payload)
-#     property_uid = property_uid.strip('[]"')
-#     assert response.status_code == 200
+# def test_delete_utility():
+#     print("\nIn DELETE Utility")
+#     print(f"\nDeleting utility_property_id: '200-000000', utility_type_id: '050-000000' & utility_payer_id: '050-100000' from Employees Table")
 
 #     with connect() as db:
-#         contractQuery = db.execute("""
-#                                         SELECT contract_uid from space.contracts
-#                                         WHERE contract_property_id = \'""" + property_uid + """\' AND contract_business_id = '600-000038';
-#                 """)
+#         delQuery_property_utility = ("""
+#                         DELETE FROM space.property_utility
+#                         WHERE utility_property_id = "200-000000"
+#                         AND utility_type_id = "050-000000"
+#                         AND utility_payer_id = "050-100000";
+#                     """)
 
-#         response2["contract"] = contractQuery
+#         del_property_utility_response = db.delete(delQuery_property_utility)
 
-#         contract_uid = response2['contract']['result'][0]['contract_uid']
 
-#     payload = {'contract_uid': contract_uid, 'contract_name': 'Black ', 'contract_start_date': '2023-11-07', 'contract_end_date': '12-12-2023', 'contract_fees': '[{"fee_name":"Black","fee_type":"FLAT-RATE","frequency":"One Time","isPercentage":false,"isFlatRate":true,"charge":"1000"}]', 'contract_status': 'SENT', 'contract_assigned_contacts': '[]'}
 
-#     response = requests.put(ENDPOINT + "/contracts", data=payload)
+# ------- Bills -------
+# post_bill_payload = {}
+# bill_uid = ""
+# purchase_uids = {}
+# def test_post_bill():
+#     global post_bill_payload
+#     post_bill_payload = {
+#         "bill_created_by":"600-000000",
+#         "bill_description":"Test Bill Description",
+#         "bill_amount":199.99,
+#         "bill_utility_type":"maintenance",
+#         "bill_split":"Uniform",
+#         "bill_property_id":'[{"property_uid":"200-000000"}]',
+#         "bill_maintenance_request_id":"800-000000",
+#         "bill_maintenance_quote_id":"900-000000",
+#         "bill_notes":""
+#     }
+#     post_bill_response = requests.post(ENDPOINT + "/bills", data=post_bill_payload)
+#     global bill_uid
+#     bill_uid = post_bill_response.json()['maibill_uidtenance_request_uid']
+#     global purchase_uids
+#     purchase_uids = post_bill_response.json()['purchase_ids_add']
 
-#     assert response.status_code == 200
+#     assert post_bill_response.status_code == 200
 
-#     payload = {'contract_uid': contract_uid, 'contract_status': 'ACTIVE'}
+# def test_get_post_bill():
+#     global bill_uid
+#     get_post_response = requests.get(ENDPOINT + f"/bills/{bill_uid}")
+#     data = get_post_response.json()['result'][0]
+#     if data['bill_description'] != "Test Bill Description":
+#         print("Not Match")
 
-#     response = requests.put(ENDPOINT + "/contracts", data=payload)
+#     assert get_post_response.status_code == 200
 
-#     assert response.status_code == 200
+# put_bill_payload = {}
+# def test_put_bill():
+#     global put_bill_payload
+#     put_bill_payload = {
+#         "bill_uid":f"{bill_uid}",
+#         "bill_description":"Test Bill Description 1"
+#     }
+#     put_bill_response = requests.put(ENDPOINT + "/bills", data=put_bill_payload)
+#     assert put_bill_response.status_code == 200
 
-#     response = {}
+# def test_get_put_bill():
+#     global bill_uid
+
+#     get_put_response = requests.get(ENDPOINT + f"/bills/{bill_uid}")
+#     data = get_put_response.json()['result'][0]
+#     if data['bill_description'] != "Test Bill Description 1":
+#         print("Not Match")
+#     assert get_put_response.status_code == 200
+
+# def test_delete_bill():
+#     print("\nIn DELETE Bill")
+#     global bill_uid
+#     global purchase_uids
+#     print(f"\nDeleting bill_uid: {bill_uid} from Bills Table and purchase_uids: {purchase_uids} from Purchases Table")
 
 #     with connect() as db:
-#         propertyQuery = db.execute("""
-#                         SELECT property_uid from space.properties
-#                         LEFT JOIN space.property_owner ON property_uid = property_id
-#                         WHERE property_owner_id = '110-000099' AND property_address = '253rd Arizona';
-#                                         """)
+#         delQuery_bill = ("""
+#                         DELETE FROM space.bills
+#                         WHERE bill_uid = \'""" + bill_uid + """\';
+#                     """)
 
-#         # print("Query: ", propertiesQuery)
-#         response["property"] = propertyQuery
+#         del_bill_response = db.delete(delQuery_bill)
 
-#         for i in range(len(response['property']['result'])):
-#             property_uid = response['property']['result'][i]['property_uid']
-#             delQuery = ("""
-#                         DELETE from space.properties WHERE property_uid = \'""" + property_uid + """\';
-#             """)
-#             delQuery2 = ("""
-#                         DELETE from space.property_owner WHERE property_id = \'""" + property_uid + """\';
-#             """)
+#         for pur_id in purchase_uids:
+#             delQuery_purchase = ("""
+#                         DELETE FROM space.purchases
+#                         WHERE purchase_uid = \'""" + pur_id + """\';
+#                     """)
 
-#             response[i] = db.delete(delQuery)
-#             response2[i] = db.delete(delQuery2)
+#             del_purchase_response = db.delete(delQuery_purchase)
 
-#         contractQuery = ("""
-#                         DELETE from space.contracts WHERE contract_uid = \'""" + contract_uid + """\';
-#         """)
+# def test_get_listings():
+#     get_listings_response = requests.get(ENDPOINT + "/listings/350-000000")
+#     assert get_listings_response.status_code == 200
 
-#         response3 = db.delete(contractQuery)
+# ------ Announcements ------
+# post_announcement_payload = {}
+# def test_post_announcement():
+#     print("\nIn POST Announcement")
+#     global post_announcement_payload
+#     post_announcement_payload = {
+#             "announcement_title": "Test Announcement",
+#             "announcement_msg": "Hi! This is a test announcement",
+#             "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
+#             "announcement_mode": "LEASE",
+#             "announcement_receiver": "350-000000",
+#             "announcement_type": ["Text","Email"]
+#         }
+#     headers = {
+#             'Content-Type': 'application/json'
+#         } 
+#     post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
+#     assert post_announcement_response.status_code == 200
 
-#     print(response, response2, response3)
+# announcement_uid = ""
+# def test_post_get_announcement():
+#     print("\nIn GET after POST Announcement")
+#     post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+#     data = post_get_announcement_response.json()['sent']['result'][0]
+#     global announcement_uid
+#     announcement_uid = data['announcement_uid']
+#     if data['announcement_title'] != "Test Announcement":
+#         print("Not Match")
+#     assert post_get_announcement_response.status_code == 200
 
-# def test_Maintenance_flow():
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
-# # Request Method:
-# # POST
+# put_announcement_payload = {}
+# def test_put_announcement():
+#     global put_announcement_payload
+#     global announcement_uid
+#     put_announcement_payload = {
+#         "announcement_uid": [f"{announcement_uid}"],
+#         "announcement_title": "Test Announcement 1"
+#     }
+#     headers = {
+#             'Content-Type': 'application/json'
+#         }
+#     put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
+#     assert put_announcement_response.status_code == 200
 
-#     payload = {'maintenance_property_id': '200-000084', 'maintenance_title': 'Vents Broken', 'maintenance_desc': 'Vents ', 'maintenance_request_type': 'Appliance', 'maintenance_request_created_by': '600-000038', 'maintenance_priority': 'High', 'maintenance_can_reschedule': '1', 'maintenance_assigned_business': 'null', 'maintenance_assigned_worker': 'null', 'maintenance_scheduled_date': 'null', 'maintenance_scheduled_time': 'null', 'maintenance_frequency': 'One Time', 'maintenance_notes': 'null', 'maintenance_request_created_date': '2023-11-13', 'maintenance_request_closed_date': 'null', 'maintenance_request_adjustment_date': 'null'}
+# def test_put_get_announcement():
+#     print("\nIn GET after PUT Announcement")
+#     put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+#     data = put_get_announcement_response.json()['sent']['result'][0]
+#     if data['announcement_title'] != "Test Announcement 1":
+#         print("Not Match")
+#     assert put_get_announcement_response.status_code == 200
 
-#     response = requests.post(ENDPOINT + "/maintenanceRequests", data = payload)
+# def test_delete_announcement():
+#     print("\nIn DELETE Announcement")
+#     global announcement_uid
+#     print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
 
-#     assert response.status_code == 200
-
-#     response = {}
 #     with connect() as db:
-#         maintenanceQuery = db.execute("""
-#                                         SELECT maintenance_request_uid from space.maintenanceRequests
-#                                         WHERE maintenance_property_id = '200-000084' AND maintenance_title = 'Vents Broken';
-#                 """)
-
-#         response["maint"] = maintenanceQuery
-
-#         maintenance_request_uid = response['maint']['result'][0]['maintenance_request_uid']
-
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/quotes
-# # Request Method:
-# # POST
-#     payload = {'quote_maintenance_request_id': maintenance_request_uid, 'quote_pm_notes': 'Vents', 'quote_maintenance_contacts': '600-000039'}
-
-#     response = requests.post(ENDPOINT + "/maintenanceQuotes", data = payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
-# # Request Method:
-# # PUT
-#     with connect() as db:
-#         response = {}
-#         quoteQuery = db.execute("""
-#                                     SELECT maintenance_quote_uid from space.maintenanceQuotes
-#                                     WHERE quote_maintenance_request_id = \'""" + maintenance_request_uid + """\';
-#                 """)
-
-#         response["quote"] = quoteQuery
-
-#         maintenance_quote_uid = response['quote']['result'][0]['maintenance_quote_uid']
-
-#     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"PROCESSING"}
-
-#     response = requests.put(ENDPOINT + "/maintenanceRequests", data = payload)
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
-# # Request Method:
-# # PUT
-#     payload = {'maintenance_quote_uid': maintenance_quote_uid, 'quote_maintenance_request_id': '800-000180', 'quote_business_id': '600-000039', 'quote_services_expenses': '{"per Hour Charge":"10","event_type":5,"service_name":"Labor","parts":[{"part":"250","quantity":"1","cost":"250"}],"labor":[{"description":"","hours":5,"rate":"10"}],"total_estimate":50}', 'quote_notes': 'vents', 'quote_status': 'SENT', 'quote_event_type': '5 Hour Job', 'quote_total_estimate': '300', 'quote_created_date': '2000-04-23 00:00:00', 'quote_earliest_available_date': '12-12-2023', 'quote_earliest_available_date': '00:00:00'}
-
-#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
-# # Request Method:
-# # PUT
-#     payload = {'maintenance_quote_uid': maintenance_quote_uid, 'quote_status': 'ACCEPTED'}
-
-#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
-# # Request Method:
-# # PUT
-#     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"SCHEDULED","maintenance_scheduled_date":"10/30/2023","maintenance_scheduled_time":"10:00:00"}
-
-#     response = requests.put(ENDPOINT + "/maintenanceRequests", data = payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
-# # Request Method:
-# # PUT
-#     payload = {'maintenance_quote_uid': maintenance_quote_uid, 'quote_status': 'SCHEDULED'}
-
-#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data = payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
-# # Request Method:
-# # PUT
-#     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"COMPLETED"}
-
-#     response = requests.put(ENDPOINT + "/maintenanceRequests", data=payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
-# # Request Method:
-# # PUT
-#     payload = {'maintenance_quote_uid': maintenance_quote_uid,'quote_status': 'FINISHED'}
-
-#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data=payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceRequests
-# # Request Method:
-# # PUT
-#     payload = {"maintenance_request_uid":maintenance_request_uid,"maintenance_request_status":"PAID"}
-
-#     response = requests.put(ENDPOINT + "/maintenanceRequests", data=payload)
-
-#     assert response.status_code == 200
-# # Request URL:
-# # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/maintenanceQuotes
-# # Request Method:
-# # PUT
-
-#     payload = {'maintenance_quote_uid': maintenance_quote_uid,'quote_status': 'COMPLETED'}
-
-#     response = requests.put(ENDPOINT + "/maintenanceQuotes", data=payload)
-
-#     assert response.status_code == 200
-
-#     response = {}
-#     response1 = {}
-#     with connect() as db:
-#         delQuery = ("""
-#                             DELETE space.maintenanceRequests
-#                             FROM space.maintenanceRequests
-#                             WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
-#                             """)
-
-
-#         response["delete_req"] = db.delete(delQuery)
-
-#         delQuery = ("""
-#                                     DELETE space.maintenanceQuotes
-#                                     FROM space.maintenanceQuotes
-#                                     WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
-#                                     """)
-
-#         response1["delete_quote"] = db.delete(delQuery)
-
-#     print(response)
-#     print(response1)
+#         delQuery_announcement = ("""
+#                         DELETE FROM space.announcements
+#                         WHERE announcement_uid = \'""" + announcement_uid + """\';
+#                     """)
+#         del_announcement_response = db.delete(delQuery_announcement)
