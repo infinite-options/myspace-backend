@@ -182,7 +182,7 @@ class Bills(Resource):
 
                     # print("queryResponse is: ", queryResponse)
                     responsibleArray = db.execute(queryResponse)
-                    # print("Responsible Party is: ", responsibleArray)
+                    print("Responsible Party is: ", responsibleArray)
                     responsibleParty = responsibleArray['result'][0]['responsible_party']
                     responsibleOwner = responsibleArray['result'][0]['property_owner_id']
                     responsibleManager = responsibleArray['result'][0]['contract_business_id']
@@ -239,6 +239,9 @@ class Bills(Resource):
                             # print("Query: ", purchaseQuery)
                             queryResponse = db.execute(purchaseQuery, [], 'post')
                             # print("queryResponse is: ", queryResponse)
+                            if (queryResponse['code'] == 200):
+                                print("In append function")
+                                pur_ids.append(new_purchase_uid)
 
 
                         #POST PM-OWNER OR FOR PM MAINTENANCE ITEM, POST PM-OWNER
@@ -267,15 +270,21 @@ class Bills(Resource):
                         print("Query: ", purchaseQuery)
                         queryResponse = db.execute(purchaseQuery, [], 'post')
                         print("queryResponse is: ", queryResponse)
+                        if (queryResponse['code'] == 200):
+                            print("In append function")
+                            pur_ids.append(new_purchase_uid)
 
 
 
 
                     if bill_utility_type != "maintenance":
-                        print("In Utility Bill")
+                        print("In Utility Bill", responsibleParty)
                         if responsibleParty[:3] == '350':
                             print("Tenant Responsible")
                             pur_cf_type = "revenue"
+
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                            print("New PM-OWNER Purchase ID: ", new_purchase_uid)  
 
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
@@ -300,9 +309,17 @@ class Bills(Resource):
                             # print("Query: ", purchaseQuery)
                             queryResponse = db.execute(purchaseQuery, [], 'post')
                             # print("queryResponse is: ", queryResponse)
+                            if (queryResponse['code'] == 200):
+                                print("In append function")
+                                pur_ids.append(new_purchase_uid)
+
+                            
 
                         #POST OWNER-PM REIMBURSEMENT
                         pur_cf_type = "expense"
+
+                        new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                        print("New PM-OWNER Purchase ID: ", new_purchase_uid)
 
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
@@ -327,6 +344,10 @@ class Bills(Resource):
                         # print("Query: ", purchaseQuery)
                         queryResponse = db.execute(purchaseQuery, [], 'post')
                         # print("queryResponse is: ", queryResponse)
+                        if (queryResponse['code'] == 200):
+                            print("In append function")
+                            pur_ids.append(new_purchase_uid)
+                        
 
 
                     # # THESE STATEMENTS DO THE SAME THING
@@ -338,9 +359,9 @@ class Bills(Resource):
                     # STORE PURCHASE IDS ADDED
                     
                     # print(queryResponse['code'])
-                    if (queryResponse['code'] == 200):
-                        print("In append function")
-                        pur_ids.append(new_purchase_uid)
+                    # if (queryResponse['code'] == 200):
+                    #     print("In append function")
+                    #     pur_ids.append(new_purchase_uid)
 
 
                     continue

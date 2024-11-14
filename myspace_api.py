@@ -624,6 +624,8 @@ class Lease_CLASS(Resource):
 
         leasesMadeInactive = 0
         leasesMadeActive = 0
+        leasesM2M = 0
+        leasesExpired = 0
         CronPostings = ["Lease Affected:"] 
         response = {}
 
@@ -639,7 +641,7 @@ class Lease_CLASS(Resource):
                     """)
 
                 approved_leases = lease_query['result']
-                print("\nApproved Contracts: ", approved_leases)
+                # print("\nApproved Contracts: ", approved_leases)
 
                 for lease in approved_leases:
                         # print("Lease: ", lease)
@@ -660,8 +662,6 @@ class Lease_CLASS(Resource):
                         leasesMadeInactive = leasesMadeInactive + 1
                         # print("Leases Made Inactive: ", leasesMadeInactive)
 
-
-                        
 
                         # Make the Approved contract Active
                         new_lease = ("""
@@ -685,16 +685,53 @@ class Lease_CLASS(Resource):
                 # print("This is the Function response: ", response)
 
 
+                # Run query to find all EXPIRED Contracts
+                lease_query = db.execute("""
+                    SELECT * 
+                    FROM space.leases
+                    WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
+                        AND lease_status = "ACTIVE" ;
+                    """)
+                
+                expired_leases = lease_query['result']
+                # print("\nExpired Leases: ", expired_leases)
+
+                for lease in expired_leases:
+                    if lease["lease_m2m"] == "1":
+                        m2m_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'ACTIVE M2M'
+                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
+                                """)
+
+                        # print("new_lease Query: ", new_lease)
+                        response['new_lease'] = db.execute(m2m_lease, cmd='post')
+                        leasesM2M = leasesM2M + 1
+
+                    else:
+                        expired_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'EXPIRED'
+                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
+                                """)
+
+                        # print("new_lease Query: ", new_lease)
+                        response['expired'] = db.execute(expired_lease, cmd='post')
+                        leasesExpired = leasesExpired + 1
+                
+                response['Leases_Made_M2M'] = leasesM2M
+                response['Leases_Expired'] = leasesExpired
+
+                
                 # APPEND TO CRON OUTPUT
                 CronPostings.append(
                         f"""
                         response['Leases_Made_Inactive'] = {leasesMadeInactive}
                         response['Leases_Made_Active'] = {leasesMadeActive}
+                        response['Leases_Made_M2M'] = {leasesM2M}
+                        response['Leases_Expired'] = {leasesExpired}
                         """
                         )
-
-                          
-
 
                 try:
                     # print(CronPostings)
@@ -705,7 +742,7 @@ class Lease_CLASS(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 200}
 
                 except:
                     response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
@@ -722,7 +759,7 @@ class Lease_CLASS(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 201}
 
                 except:
                     response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
@@ -738,6 +775,8 @@ def Lease_CRON(Resource):
 
         leasesMadeInactive = 0
         leasesMadeActive = 0
+        leasesM2M = 0
+        leasesExpired = 0
         CronPostings = ["Lease Affected:"] 
         response = {}
 
@@ -753,11 +792,11 @@ def Lease_CRON(Resource):
                     """)
 
                 approved_leases = lease_query['result']
-                print("\nApproved Contracts: ", approved_leases)
+                # print("\nApproved Contracts: ", approved_leases)
 
                 for lease in approved_leases:
-                        print("Lease: ", lease)
-                        print("Lease Property ID: ", lease['lease_property_id'])
+                        # print("Lease: ", lease)
+                        # print("Lease Property ID: ", lease['lease_property_id'])
 
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
@@ -767,15 +806,13 @@ def Lease_CRON(Resource):
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'ACTIVE';
                                 """)
-                        print("active_lease Query: ", active_lease)
+                        # print("active_lease Query: ", active_lease)
 
                         response['old_lease'] = db.execute(active_lease, cmd='post')
-                        print(response['old_lease']['change'])
+                        # print(response['old_lease']['change'])
                         leasesMadeInactive = leasesMadeInactive + 1
-                        print("Leases Made Inactive: ", leasesMadeInactive)
+                        # print("Leases Made Inactive: ", leasesMadeInactive)
 
-
-                        
 
                         # Make the Approved contract Active
                         new_lease = ("""
@@ -785,30 +822,67 @@ def Lease_CRON(Resource):
                                 AND lease_status = 'APPROVED';  
                                 """)
 
-                        print("new_lease Query: ", new_lease)
+                        # print("new_lease Query: ", new_lease)
                         response['new_lease'] = db.execute(new_lease, cmd='post')
-                        print(response['new_lease']['change'])
+                        # print(response['new_lease']['change'])
                         leasesMadeActive = leasesMadeActive + 1
-                        print("Leases Made Active: ", leasesMadeActive)
+                        # print("Leases Made Active: ", leasesMadeActive)
 
                         CronPostings.append(f"{lease['lease_property_id']}  ")
                         
-                print("Lease Cron Query Complete")
+                # print("Lease Cron Query Complete")
                 response['Leases_Made_Inactive'] = leasesMadeInactive
                 response['Leases_Made_Aactive'] = leasesMadeActive
-                print("This is the Function response: ", response)
+                # print("This is the Function response: ", response)
 
 
+                # Run query to find all EXPIRED Contracts
+                lease_query = db.execute("""
+                    SELECT * 
+                    FROM space.leases
+                    WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
+                        AND lease_status = "ACTIVE" ;
+                    """)
+                
+                expired_leases = lease_query['result']
+                # print("\nExpired Leases: ", expired_leases)
+
+                for lease in expired_leases:
+                    if lease["lease_m2m"] == "1":
+                        m2m_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'ACTIVE M2M'
+                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
+                                """)
+
+                        # print("new_lease Query: ", new_lease)
+                        response['new_lease'] = db.execute(m2m_lease, cmd='post')
+                        leasesM2M = leasesM2M + 1
+
+                    else:
+                        expired_lease = ("""
+                                UPDATE space.leases
+                                SET lease_status = 'EXPIRED'
+                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
+                                """)
+
+                        # print("new_lease Query: ", new_lease)
+                        response['expired'] = db.execute(expired_lease, cmd='post')
+                        leasesExpired = leasesExpired + 1
+                
+                response['Leases_Made_M2M'] = leasesM2M
+                response['Leases_Expired'] = leasesExpired
+
+                
                 # APPEND TO CRON OUTPUT
                 CronPostings.append(
                         f"""
                         response['Leases_Made_Inactive'] = {leasesMadeInactive}
                         response['Leases_Made_Active'] = {leasesMadeActive}
+                        response['Leases_Made_M2M'] = {leasesM2M}
+                        response['Leases_Expired'] = {leasesExpired}
                         """
                         )
-
-                          
-
 
                 try:
                     # print(CronPostings)
@@ -819,7 +893,7 @@ def Lease_CRON(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 200}
 
                 except:
                     response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
@@ -836,7 +910,7 @@ def Lease_CRON(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 201}
 
                 except:
                     response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
@@ -934,7 +1008,7 @@ class Contract_CLASS(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 200}
 
                 except:
                     response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
@@ -951,7 +1025,7 @@ class Contract_CLASS(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 201}
 
                 except:
                     response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
@@ -1047,7 +1121,7 @@ def Contract_CRON(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 200}
 
                 except:
                     response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
@@ -1064,7 +1138,7 @@ def Contract_CRON(Resource):
                     sendEmail(recipient, subject, body)
 
                     response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
-                        'code': 500}
+                        'code': 201}
 
                 except:
                     response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
@@ -1339,7 +1413,7 @@ class LateFees_CLASS(Resource):
                 sendEmail(recipient, subject, body)
 
                 response["email"] = {'message': f'LATE FEE CRON Job Email for {dt} sent!' ,
-                    'code': 500}
+                    'code': 200}
 
             except:
                 response["email fail"] = {'message': f'LATE FEE CRON Job Email for {dt} could not be sent' ,
@@ -1356,7 +1430,7 @@ class LateFees_CLASS(Resource):
                 sendEmail(recipient, subject, body)
 
                 response["email"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} sent!' ,
-                    'code': 500}
+                    'code': 201}
 
             except:
                 response["email fail"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} could not be sent' ,
@@ -1630,7 +1704,7 @@ def LateFees_CRON(Resource):
                 sendEmail(recipient, subject, body)
 
                 response["email"] = {'message': f'LATE FEE CRON Job Email for {dt} sent!' ,
-                    'code': 500}
+                    'code': 200}
 
             except:
                 response["email fail"] = {'message': f'LATE FEE CRON Job Email for {dt} could not be sent' ,
@@ -1647,7 +1721,7 @@ def LateFees_CRON(Resource):
                 sendEmail(recipient, subject, body)
 
                 response["email"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} sent!' ,
-                    'code': 500}
+                    'code': 201}
 
             except:
                 response["email fail"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} could not be sent' ,
@@ -1938,7 +2012,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 body = f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n" + "\n".join(CronPostings)
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 200}
 
             except:
                 response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent' , 'code': 500}
@@ -1952,7 +2026,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 body = "Monthly Rent CRON JOB Failed"
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 201}
 
             except:
                 response["email fail"] = {'message': f'CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
@@ -2255,7 +2329,7 @@ def MonthlyRentPurchase_CRON(Resource):
                 body = "Monthly Rent CRON JOB Failed"
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 200}
+                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 201}
 
             except Exception as e:  
                 print(f"Error occurred: {e}") 
@@ -2284,7 +2358,7 @@ class EndPoint_CLASS(Resource):
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 200}
 
             except:
                 response["email fail"] = {'message': f'MySpace Test API CRON Job Email for {dt} could not be sent' , 'code': 500}
@@ -2299,7 +2373,7 @@ class EndPoint_CLASS(Resource):
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 201}
 
             except:
                 response["email fail"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
@@ -2325,7 +2399,7 @@ def EndPoint_CRON(Resource):
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 200}
 
             except:
                 response["email fail"] = {'message': f'MySpace Test API CRON Job Email for {dt} could not be sent' , 'code': 500}
@@ -2340,7 +2414,7 @@ def EndPoint_CRON(Resource):
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 500}
+                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 201}
 
             except:
                 response["email fail"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
@@ -2424,7 +2498,7 @@ api.add_resource(EmployeeVerification, '/employeeVerification')
 # api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
 api.add_resource(Documents, '/documents','/documents/<string:user_id>')
-api.add_resource(LeaseDetails, '/leaseDetails/<string:filter_id>', '/leaseDetails')
+api.add_resource(LeaseDetails, '/leaseDetails/<string:user_id>', '/leaseDetails')
 api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
 api.add_resource(LeaseReferal, '/leaseReferal')
 
