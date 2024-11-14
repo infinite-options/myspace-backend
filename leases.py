@@ -369,7 +369,7 @@ class LeaseApplication(Resource):
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
                     """)
                 # print("Made it to here")
-                response = db.execute(ltQuery, [], 'post')
+                response["lease_tenant"] = db.execute(ltQuery, [], 'post')
                 # print("Added tenant: ", response)
             # print("Data inserted into space.lease_tenant")
             

@@ -460,7 +460,6 @@ def RentDashboardQuery(user_id):
 def RentPropertiesQuery(user_id):
     print("In RentPropertiesQuery FUNCTION CALL")
 
-    # query = 'SELECT * FROM space.purchases WHERE {column} LIKE %s'
     query = """
             -- PROPERTY RENT STATUS FOR PROPERTIES
             SELECT 
@@ -513,7 +512,6 @@ def RentPropertiesQuery(user_id):
                 ) AS pp
                 ON property_uid = pur_property_id  
             """
-    # like_pattern = '600%'
 
     if user_id.startswith("110"):
         query = query.format(column='owner_uid')
