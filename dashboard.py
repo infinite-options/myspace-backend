@@ -557,6 +557,7 @@ class Dashboard(Resource):
                                 FROM space.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        LEFT JOIN space.u_details ON utility_property_id = lease_property_id
                         -- WHERE owner_uid = \'""" + user_id + """\'
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE contract_business_id = \'""" + user_id + """\'
