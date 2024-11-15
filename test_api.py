@@ -1407,7 +1407,7 @@ class endPointTest_CLASS(Resource):
                     "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
                     "announcement_mode": "LEASE",
                     "announcement_receiver": "350-000000",
-                    "announcement_type": ["Text","Email"]
+                    "announcement_type": []
                 }
             post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
             if (post_announcement_response.status_code == 200):
@@ -1430,6 +1430,7 @@ class endPointTest_CLASS(Resource):
             response['No of APIs tested'] += 1
 
             # -------- test PUT Announcement --------
+            print("\nIn PUT Announcement")
             put_announcement_payload = {
                 "announcement_uid": [f"{announcement_uid}"],
                 "announcement_title": "Test Announcement 1"
@@ -2687,65 +2688,65 @@ class endPointTest_CLASS(Resource):
 #     assert get_listings_response.status_code == 200
 
 # ------ Announcements ------
-# post_announcement_payload = {}
-# def test_post_announcement():
-#     print("\nIn POST Announcement")
-#     global post_announcement_payload
-#     post_announcement_payload = {
-#             "announcement_title": "Test Announcement",
-#             "announcement_msg": "Hi! This is a test announcement",
-#             "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
-#             "announcement_mode": "LEASE",
-#             "announcement_receiver": "350-000000",
-#             "announcement_type": ["Text","Email"]
-#         }
-#     headers = {
-#             'Content-Type': 'application/json'
-#         } 
-#     post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
-#     assert post_announcement_response.status_code == 200
+post_announcement_payload = {}
+def test_post_announcement():
+    print("\nIn POST Announcement")
+    global post_announcement_payload
+    post_announcement_payload = {
+            "announcement_title": "Test Announcement",
+            "announcement_msg": "Hi! This is a test announcement",
+            "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
+            "announcement_mode": "LEASE",
+            "announcement_receiver": "350-000000",
+            "announcement_type": []
+        }
+    headers = {
+            'Content-Type': 'application/json'
+        } 
+    post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
+    assert post_announcement_response.status_code == 200
 
-# announcement_uid = ""
-# def test_post_get_announcement():
-#     print("\nIn GET after POST Announcement")
-#     post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
-#     data = post_get_announcement_response.json()['sent']['result'][0]
-#     global announcement_uid
-#     announcement_uid = data['announcement_uid']
-#     if data['announcement_title'] != "Test Announcement":
-#         print("Not Match")
-#     assert post_get_announcement_response.status_code == 200
+announcement_uid = ""
+def test_post_get_announcement():
+    print("\nIn GET after POST Announcement")
+    post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+    data = post_get_announcement_response.json()['sent']['result'][0]
+    global announcement_uid
+    announcement_uid = data['announcement_uid']
+    if data['announcement_title'] != "Test Announcement":
+        print("Not Match")
+    assert post_get_announcement_response.status_code == 200
 
-# put_announcement_payload = {}
-# def test_put_announcement():
-#     global put_announcement_payload
-#     global announcement_uid
-#     put_announcement_payload = {
-#         "announcement_uid": [f"{announcement_uid}"],
-#         "announcement_title": "Test Announcement 1"
-#     }
-#     headers = {
-#             'Content-Type': 'application/json'
-#         }
-#     put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
-#     assert put_announcement_response.status_code == 200
+put_announcement_payload = {}
+def test_put_announcement():
+    global put_announcement_payload
+    global announcement_uid
+    put_announcement_payload = {
+        "announcement_uid": [f"{announcement_uid}"],
+        "announcement_title": "Test Announcement 1"
+    }
+    headers = {
+            'Content-Type': 'application/json'
+        }
+    put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
+    assert put_announcement_response.status_code == 200
 
-# def test_put_get_announcement():
-#     print("\nIn GET after PUT Announcement")
-#     put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
-#     data = put_get_announcement_response.json()['sent']['result'][0]
-#     if data['announcement_title'] != "Test Announcement 1":
-#         print("Not Match")
-#     assert put_get_announcement_response.status_code == 200
+def test_put_get_announcement():
+    print("\nIn GET after PUT Announcement")
+    put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+    data = put_get_announcement_response.json()['sent']['result'][0]
+    if data['announcement_title'] != "Test Announcement 1":
+        print("Not Match")
+    assert put_get_announcement_response.status_code == 200
 
-# def test_delete_announcement():
-#     print("\nIn DELETE Announcement")
-#     global announcement_uid
-#     print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
+def test_delete_announcement():
+    print("\nIn DELETE Announcement")
+    global announcement_uid
+    print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
 
-#     with connect() as db:
-#         delQuery_announcement = ("""
-#                         DELETE FROM space.announcements
-#                         WHERE announcement_uid = \'""" + announcement_uid + """\';
-#                     """)
-#         del_announcement_response = db.delete(delQuery_announcement)
+    with connect() as db:
+        delQuery_announcement = ("""
+                        DELETE FROM space.announcements
+                        WHERE announcement_uid = \'""" + announcement_uid + """\';
+                    """)
+        del_announcement_response = db.delete(delQuery_announcement)
