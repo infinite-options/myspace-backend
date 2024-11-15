@@ -397,7 +397,7 @@ class LeaseApplication(Resource):
         # print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
-        if payload.get('lease_uid') in {None, '', 'null'}:
+        if payload.get('lease_uid') in {None, '', 'null', 'undefined'}:
             # print("No lease_uid")
             raise BadRequest("Request failed, no UID in payload.")
         
