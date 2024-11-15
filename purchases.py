@@ -141,43 +141,74 @@ class Bills(Resource):
                             """)
 
                     else:
+                        # queryResponse = (""" 
+                        #     -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
+                        #     SELECT *
+                        #     FROM (
+                        #         SELECT u.*
+                        #             , list_item AS utility_type
+                        #             , CASE
+                        #                 WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
+                        #                 WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND utility_payer = "tenant" THEN lt_tenant_id
+                        #                 ELSE property_owner_id
+                        #             END AS responsible_party
+                        #         FROM (
+                        #             SELECT -- *,
+                        #                 property_uid, property_address, property_unit
+                        #                 , utility_type_id, utility_payer_id
+                        #                 , list_item AS utility_payer
+                        #                 , property_owner_id
+                        #                 , contract_business_id, contract_status, contract_start_date, contract_end_date
+                        #                 , lease_status, lease_start, lease_end
+                        #                 , lt_tenant_id, lt_responsibility 
+                        #             FROM space.properties
+                        #             LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
+
+                        #             LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
+                        #             LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
+                        #             LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
+                        #             LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
+                        #             LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+                        #             WHERE contract_status = "ACTIVE"
+                        #             ) u 
+
+                        #         LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
+                        #         ) u_all
+
+                        #     WHERE property_uid = \'""" + pur_property_id + """\'
+                        #         AND utility_type = \'""" + bill_utility_type + """\';
+            
+                        #     """)
+
                         queryResponse = (""" 
                             -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
                             SELECT *
-                            FROM (
-                                SELECT u.*
-                                    , list_item AS utility_type
-                                    , CASE
-                                        WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
-                                        WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND utility_payer = "tenant" THEN lt_tenant_id
-                                        ELSE property_owner_id
+                            , CASE
+                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "owner" THEN property_owner_id
+                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "tenant" THEN lt_tenant_id
+                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "property manager" THEN contract_business_id
+                                ELSE property_owner_id
                                     END AS responsible_party
-                                FROM (
-                                    SELECT -- *,
-                                        property_uid, property_address, property_unit
-                                        , utility_type_id, utility_payer_id
-                                        , list_item AS utility_payer
-                                        , property_owner_id
-                                        , contract_business_id, contract_status, contract_start_date, contract_end_date
-                                        , lease_status, lease_start, lease_end
-                                        , lt_tenant_id, lt_responsibility 
-                                    FROM space.properties
-                                    LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
-
-                                    LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
-                                    LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
-                                    LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
-                                    LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
-                                    LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
-                                    WHERE contract_status = "ACTIVE"
-                                    ) u 
-
-                                LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
-                                ) u_all
-
-                            WHERE property_uid = \'""" + pur_property_id + """\'
-                                AND utility_type = \'""" + bill_utility_type + """\';
-            
+                            , IF((lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND lt_responsibility IS NOT NULL, lt_responsibility, 1) AS lt_responsibility
+                            FROM (
+                            SELECT -- *
+                                property_utility.*
+                                , utility.list_item as utility
+                                , payer.list_item AS payer
+                                , l.lease_status
+                                , property_owner.property_owner_id
+                                , contracts.contract_business_id
+                            --     , l.lease_assigned_contacts
+                                , lease_tenant.*
+                            FROM space.property_utility
+                            LEFT JOIN space.lists AS utility ON utility_type_id = utility.list_uid
+                            LEFT JOIN space.lists AS payer ON utility_payer_id = payer.list_uid
+                            LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON utility_property_id = lease_property_id
+                            LEFT JOIN space.property_owner ON utility_property_id = property_id		-- TO FIND PROPERTY OWNER
+                            LEFT JOIN space.contracts ON utility_property_id = contract_property_id    -- TO FIND PROPERTY MANAGER
+                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+                            ) AS rp
+                            WHERE utility_property_id = '200-000002' AND utility = 'electricity';
                             """)
 
                     # print("queryResponse is: ", queryResponse)
