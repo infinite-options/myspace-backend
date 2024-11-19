@@ -237,7 +237,7 @@ class Contracts(Resource):
                 print("Add Contract Payload: ", payload)  
 
                 payload["contract_uid"] = newContracteUID  
-                payload["contract_property_id"] = newContracteUID
+                payload["contract_property_id"] = property
                 response['Add Contract'] = db.insert('contracts', payload)
                 response['contract_UID'] = newContracteUID 
                 response['Contract Documents Added'] = payload.get('contract_documents', "None")

@@ -60,25 +60,25 @@ def deleteImage(key):
 
 
 def uploadImage(file, key, content):
-    print("\nIn Upload Image: ")
+    print("\nIn Upload Function: ")
     # print("File: ", file)
     # print("Key: ", key)
     # print("Content: ", content)
     bucket = 'io-pm'
 
     if isinstance(file, FileStorage): 
-        print("In Upload Image isInstance File Storage: ", FileStorage)
+        print("In Upload Function isInstance File Storage: ", FileStorage)
         file.stream.seek(0)
         file_content = file.stream.read()
         content_type, _ = mimetypes.guess_type(file.filename)
         contentType = content_type if content_type else 'application/octet-stream'  # Fallback if MIME type is not detected
-        print("In Upload Image contentType: ", contentType) # This returns jpeg, png, ect
+        print("In Upload Function contentType: ", contentType) # This returns jpeg, png, ect
 
     elif isinstance(file, StreamingBody):
-        print("In Upload Image isInstance Streaming Body")
+        print("In Upload Function isInstance Streaming Body")
         file_content = file.read()
         contentType = content
-        print("In Upload Image contentType: ", contentType)
+        print("In Upload Function contentType: ", contentType)
         # Set content type based on your logic or metadata
         # Example: contentType = 'image/jpeg' or other appropriate content type
 
@@ -573,6 +573,7 @@ def processDocument(key, payload):
 
             try:
                 list2_dict = {doc['link']: doc for doc in changed_documents}
+                print("List2: ", list)
                 current_documents = [list2_dict.get(doc['link'], doc) for doc in current_documents]
                 print(current_documents)
             except:
