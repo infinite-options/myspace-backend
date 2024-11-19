@@ -95,78 +95,154 @@ class Contracts(Resource):
         # else:
         #     return "No records for this Uid"
 
+    # def post(self):
+    #     print("In Contracts Start")
+    #     with connect() as db:
+    #         data = request.form
+    #         fields = [
+    #             'contract_business_id'
+    #             , "contract_start_date"
+    #             , 'contract_end_date'
+    #             , "contract_fees"
+    #             , "contract_assigned_contacts"
+    #             , "contract_documents"
+    #             , "contract_name"
+    #             , "contract_status"
+    #             , "contract_early_end_date"
+    #             , "contract_end_notice_period"
+    #             , "contract_m2m"
+    #         ]
+
+    #         # properties_l is a list since you may create contracts for multiple properties at once
+    #         # If contracts is called as part of AddProperty.jsx then it is a list of one property
+    #         properties_l = data.get("contract_property_ids")
+    #         # print("Properties affected: ", properties_l)
+    #         properties = json.loads(properties_l)
+    #         print("Properties affected: ", properties)
+    #         business_id = data.get('contract_business_id')
+    #         print(business_id)
+
+    #         # Check if the property already has any active renewals for the given business
+    #         index_to_remove = []
+    #         properties_removed = []
+    #         for i in range(len(properties)):
+    #             print('in Contracts Loop', len(properties), i, properties[i])
+    #             with connect() as db:
+    #                 response = db.execute("""
+    #                             SELECT * From space.contracts
+    #                             WHERE contract_property_id = \'""" + properties[i] + """\' AND contract_business_id = \'""" + business_id + """\'
+    #                             AND contract_status in ('NEW','SENT');
+    #                             """)
+    #                 if len(response['result']) != 0:
+    #                     index_to_remove.append(i)
+    #                     properties_removed.append(properties[i])
+    #         print("Response: ", response)
+    #         print("Properties ", properties)
+    #         print("Index to Remove: ", index_to_remove)
+    #         print("Properties to be removed: ", properties_removed)
+
+    #         # removes any properties from the List that already have contracts
+    #         for i in sorted(index_to_remove, reverse = True):
+    #             del properties[i]
+    #         print("Actual list of properties to be added:" , properties)
+    #         # response['properties with contracts'] = properties_removed
+
+    #         # Start actual query to add new contracts
+            
+    #         with connect() as db:
+    #             for i in range(len(properties)):
+    #                 print("loop", i)
+    #                 newContract = {}
+    #                 print(db.call('new_contract_uid'))
+    #                 newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
+    #                 newContract['contract_uid'] = newRequestID
+    #                 print("In /contracts - POST. new contract UID = ", newRequestID)
+    #                 newContract["contract_property_id"] = properties[i]
+    #                 for field in fields:
+    #                     if field in data:
+    #                         newContract[field] = data.get(field)
+    #                         # print(newContract[field])
+
+    #                 response = db.insert('contracts', newContract)
+    #                 response['contract_UID'] = newRequestID
+    #         response['properties with contracts 2'] = properties_removed
+    #     return response
+    
     def post(self):
-        print("In Contracts Start")
+        print("In Contracts POST ")
         with connect() as db:
-            data = request.form
-            fields = [
-                'contract_business_id'
-                , "contract_start_date"
-                , 'contract_end_date'
-                , "contract_fees"
-                , "contract_assigned_contacts"
-                , "contract_documents"
-                , "contract_name"
-                , "contract_status"
-                , "contract_early_end_date"
-                , "contract_end_notice_period"
-                , "contract_m2m"
-            ]
-            properties_l = data.get("contract_property_ids")
-            print(properties_l)
+            response = {}
+            payload = request.form.to_dict()
+            print("Contract Add Payload: ", payload)
+
+            # Verify uid has NOT been included in the data
+            if payload.get('contract_uid'):
+                print("contract_uid found.  Please call PUT endpoint")
+                raise BadRequest("Request failed, UID found in payload.")
+            
 
             # properties_l is a list since you may create contracts for multiple properties at once
             # If contracts is called as part of AddProperty.jsx then it is a list of one property
+            properties_l = payload.pop("contract_property_ids")
+            # print("Properties affected: ", properties_l)
             properties = json.loads(properties_l)
-            print(properties)
-            business_id = data.get('contract_business_id')
-            print(business_id)
+            print("Properties affected: ", properties)
 
-            # Check if there are active contracts for any properties in the given list
-            index_to_remove = []
-            properties_removed = []
-            for i in range(len(properties)):
-                print('in Contracts Loop', len(properties), i, properties[i])
-                with connect() as db:
-                    response = db.execute("""
-                                SELECT * From space.contracts
-                                WHERE contract_property_id = \'""" + properties[i] + """\' AND contract_business_id = \'""" + business_id + """\'
-                                AND contract_status in ('NEW','SENT');
-                                """)
-                    if len(response['result']) != 0:
-                        index_to_remove.append(i)
-                        properties_removed.append(properties[i])
-            print("Response: ", response)
-            print("Properties ", properties)
-            print("Index to Remove: ", index_to_remove)
-            # response = {}
-            print("Properties to be removed: ", properties_removed)
 
-            # removes any properties from the List that already have contracts
-            for i in sorted(index_to_remove, reverse = True):
-                del properties[i]
-            print("Actual list of properties to be added:" , properties)
-            # response['properties with contracts'] = properties_removed
+            #  # Check if the property already has any active renewals for the given business
+            # index_to_remove = []
+            # properties_removed = []
+            # for i in range(len(properties)):
+            #     print('in Contracts Loop', len(properties), i, properties[i])
+            #     with connect() as db:
+            #         response = db.execute("""
+            #                     SELECT * From space.contracts
+            #                     WHERE contract_property_id = \'""" + properties[i] + """\' AND contract_business_id = \'""" + business_id + """\'
+            #                     AND contract_status in ('NEW','SENT');
+            #                     """)
+            #         if len(response['result']) != 0:
+            #             index_to_remove.append(i)
+            #             properties_removed.append(properties[i])
+            # print("Response: ", response)
+            # print("Properties ", properties)
+            # print("Index to Remove: ", index_to_remove)
+            # print("Properties to be removed: ", properties_removed)
 
-            # Start actual query to add new contracts
+             # removes any properties from the List that already have contracts
+            # for i in sorted(index_to_remove, reverse = True):
+            #     del properties[i]
+            # print("Actual list of properties to be added:" , properties)
+
+        
+            # for i in range(len(properties)):
+            for property in properties:
+                print("In loop processing: ", property)
+
+
+                newContracteUID = db.call('new_contract_uid')['result'][0]['new_id']
+                key = {'contract_uid': newContracteUID}
+                print("Contract Key: ", key)
             
-            with connect() as db:
-                for i in range(len(properties)):
-                    print("loop", i)
-                    newContract = {}
-                    print(db.call('new_contract_uid'))
-                    newRequestID = db.call('new_contract_uid')['result'][0]['new_id']
-                    newContract['contract_uid'] = newRequestID
-                    print("In /contracts - POST. new contract UID = ", newRequestID)
-                    newContract["contract_property_id"] = properties[i]
-                    for field in fields:
-                        if field in data:
-                            newContract[field] = data.get(field)
-                            # print(newContract[field])
+                
+                # --------------- PROCESS DOCUMENTS ------------------
 
-                    response = db.insert('contracts', newContract)
-                    response['contract_UID'] = newRequestID
-            response['properties with contracts 2'] = properties_removed
+                processDocument(key, payload)
+                print("Payload after function: ", payload)
+                
+                # --------------- PROCESS DOCUMENTS ------------------
+
+
+                # Add Contract Info
+                payload['contract_documents'] = '[]' if payload.get('contract_documents') in {None, '', 'null'} else payload.get('contract_documents', '[]')
+                print("Add Contract Payload: ", payload)  
+
+                payload["contract_uid"] = newContracteUID  
+                payload["contract_property_id"] = newContracteUID
+                response['Add Contract'] = db.insert('contracts', payload)
+                response['contract_UID'] = newContracteUID 
+                response['Contract Documents Added'] = payload.get('contract_documents', "None")
+                print("\nNew Contract Added")
+
         return response
 
     def put(self):
