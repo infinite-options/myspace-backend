@@ -172,6 +172,7 @@ class Contracts(Resource):
         print("In Contracts POST ")
         with connect() as db:
             response = {}
+
             payload = request.form.to_dict()
             print("Contract Add Payload: ", payload)
 
@@ -179,6 +180,10 @@ class Contracts(Resource):
             if payload.get('contract_uid'):
                 print("contract_uid found.  Please call PUT endpoint")
                 raise BadRequest("Request failed, UID found in payload.")
+            
+            if payload.get('contract_property_ids') in {None, '', 'null', '[]'}:
+                print("No property_uid")
+                raise BadRequest("Request failed, no UID in payload.")
             
 
             # properties_l is a list since you may create contracts for multiple properties at once
@@ -219,8 +224,9 @@ class Contracts(Resource):
                 print("In loop processing: ", property)
 
 
-                newContracteUID = db.call('new_contract_uid')['result'][0]['new_id']
-                key = {'contract_uid': newContracteUID}
+                contract_uid = db.call('new_contract_uid')['result'][0]['new_id']
+                key = {'contract_uid': contract_uid}
+                response['contract_uid'] = contract_uid 
                 print("Contract Key: ", key)
             
                 
@@ -232,16 +238,22 @@ class Contracts(Resource):
                 # --------------- PROCESS DOCUMENTS ------------------
 
 
-                # Add Contract Info
-                payload['contract_documents'] = '[]' if payload.get('contract_documents') in {None, '', 'null'} else payload.get('contract_documents', '[]')
-                print("Add Contract Payload: ", payload)  
-
-                payload["contract_uid"] = newContracteUID  
+                # Actual Insert Statement
+                print("About to insert: ", payload)
                 payload["contract_property_id"] = property
-                response['Add Contract'] = db.insert('contracts', payload)
-                response['contract_UID'] = newContracteUID 
-                response['Contract Documents Added'] = payload.get('contract_documents', "None")
-                print("\nNew Contract Added")
+                response["contract"] = db.insert('contracts', payload)
+                print("Data inserted into space.contracts", response)
+
+                # Add Contract Info
+                # payload['contract_documents'] = '[]' if payload.get('contract_documents') in {None, '', 'null'} else payload.get('contract_documents', '[]')
+                # print("Add Contract Payload: ", payload)  
+
+                # payload["contract_uid"] = contract_uid 
+                # payload["contract_property_id"] = property
+                # response['Add Contract'] = db.insert('contracts', payload)
+                
+                # response['Contract Documents Added'] = payload.get('contract_documents', "None")
+                # print("\nNew Contract Added")
 
         return response
 
