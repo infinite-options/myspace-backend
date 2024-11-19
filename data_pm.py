@@ -138,7 +138,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('appliance_images', None))
                 payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.pop("appliance_favorite_image", None)   # (PUT & POST)
             else:
                 return payload
             

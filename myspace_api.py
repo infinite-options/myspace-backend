@@ -1887,7 +1887,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_perDay_late_fee'] = perDay_late_fee
 
                     newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year} CRON"
+                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year}"
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -2188,7 +2188,7 @@ def MonthlyRentPurchase_CRON(Resource):
                     newRequest['pur_perDay_late_fee'] = perDay_late_fee
 
                     newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year} CRON"
+                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year}"
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
