@@ -24,7 +24,7 @@ from profiles import Profile, BusinessProfile #, BusinessProfileList
 # from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication, LeaseReferal
-from purchases import Bills, AddExpense, AddRevenue, AddPurchase, RentPurchase
+from purchases import Bills, AddExpense, AddRevenue, AddPurchase # , RentPurchase
 from maintenance import MaintenanceStatus, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
 from cron import PeriodicPurchases_CLASS # , ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, LateFees_CRON
 from contacts import Contacts
@@ -2523,7 +2523,7 @@ api.add_resource(Password, '/password')
 # api.add_resource(Rent_CLASS, '/MonthlyRent')
 api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
 api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
-api.add_resource(RentPurchase, '/rentPurchase')
+# api.add_resource(RentPurchase, '/rentPurchase')
 api.add_resource(LateFees_CLASS, '/LateFees')
 api.add_resource(Contract_CLASS, '/contractCRON')
 # api.add_resource(CRONTest_CLASS, '/CRONRent')

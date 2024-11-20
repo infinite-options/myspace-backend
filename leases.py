@@ -338,12 +338,15 @@ class LeaseApplication(Resource):
                 json_object = json.loads(lease_fees)
                 # print("lease fees json_object", json_object)
                 for fees in json_object:
-                    # print("fees",fees)
+                    print("fees",fees)
                     new_leaseFees = {}
                     # Get new leaseFees_uid
                     new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
                     for item in fees:
-                        # print("Item: ", item)
+                        print("Item: ", item)
+                        if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
+                            if not any('due_by_date' in fee for fee in fees):  # Check if 'due_by_date' does NOT exist
+                                new_leaseFees['due_by_date'] = datetime.today().strftime('%m-%d-%Y %H:%M')
                         new_leaseFees[item] = fees[item]
                         # print(new_leaseFees[item])
                     # print("Payload: ", new_leaseFees)
