@@ -816,7 +816,7 @@ def ContractDetails(user_id):
                     , owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
                     -- , owner_address, owner_unit, owner_city, owner_state, owner_zip
                     , owner_photo_url
-                    , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, contract_end_notice_period, contract_m2m
+                    , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_renew_status, contract_early_end_date, contract_end_notice_period, contract_m2m
                     , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_services_fees
                     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
                 FROM space.o_details o
