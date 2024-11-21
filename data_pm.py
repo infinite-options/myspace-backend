@@ -137,8 +137,9 @@ def processImage(key, payload):
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('appliance_images', None))
-                payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images
+                payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images from database
                 payload_fav_images = payload.get("property_favorite_image") or payload.pop("appliance_favorite_image", None)   # (PUT & POST)
+                print("5: ", payload_fav_images)
             else:
                 return payload
             
@@ -284,22 +285,21 @@ def processImage(key, payload):
     
         # Check if images already exist
         # Put current db images into current_images
+        print("\nAbout to process CURRENT imagess in database")
         current_images = []
-        print("\nAbout to process CURRENT imagess in database", current_images)
         if payload_images not in {None, '', 'null'}:
-            print("Payload Images: ", payload_images)
+            # print("Current Database Images: ", payload_images)
             current_images =ast.literal_eval(payload_images)
-            print("Current images: ", current_images, type(current_images))
-        print("processed current imagess ", current_images)
+            print("Current images     : ", current_images, type(current_images))
+        print("processed current images ", current_images)
 
-        # Check if images are being added OR deleted
+        # Check if images are being ADDED OR DELETED
         images = []
         i = 0
         imageFiles = {}
 
-        print("About to process ADDED Images")
-
         # ADD Images
+        print("\nAbout to process ADDED Images")
 
         if 'profile' in key_type.lower():  # Use lower() for case-insensitivity
             print("Key type contains 'Profile'. Performing action for profile.")
@@ -360,16 +360,16 @@ def processImage(key, payload):
                 
                 
                 else:
+                    print("Processing Favorite Images if no files were added")
+                    if key_type == 'properties': payload["property_favorite_image"] = payload_fav_images
+                    if key_type == 'appliances': payload["appliance_favorite_image"] = payload_fav_images
+                    if key_type == 'maintenance request': payload["maintenance_favorite_image"] = payload_fav_images
                     break
                 i += 1
             
             print("Images after loop: ", images)
             if images != []:
                 current_images.extend(images)
-                # if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
-                # if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
-                # if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
-                # if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
             
             print("processed ADDED documents")
 
