@@ -138,7 +138,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('appliance_images', None))
                 payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images from database
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("appliance_favorite_image", None)   # (PUT & POST)
+                payload_fav_images = payload.get("property_favorite_image") or payload.get("appliance_favorite_image", None)   # (PUT & POST)
                 print("5: ", payload_fav_images)
             else:
                 return payload
@@ -272,7 +272,8 @@ def processImage(key, payload):
         else:
             print("No UID found in key")
             return
-        
+        print("Verified Add or Delete Images in Payload")
+
 
         print("\nkey_type: ", key_type, type(key_type))
         print("key_uid: ", key_uid, type(key_uid))
@@ -280,9 +281,7 @@ def processImage(key, payload):
         print("payload_images delete: ", payload_delete_images, type(payload_delete_images))       # Documents to Delete
         if key_type in ['properties', 'appliances', 'bills', 'maintenance request']: print("payload_fav_images: ", payload_fav_images, type(payload_fav_images))
 
-        print("Verified Add or Delete Images in Payload")
-
-    
+        
         # Check if images already exist
         # Put current db images into current_images
         print("\nAbout to process CURRENT imagess in database")
@@ -323,7 +322,7 @@ def processImage(key, payload):
 
             while True:
                 filename = f'img_{i}'
-                print("Put image file into Filename: ", filename) 
+                print("\nPut image file into Filename: ", filename) 
                 file = request.files.get(filename)
                 print("File:" , file)            
                 s3Link = payload.get(filename)
@@ -360,10 +359,10 @@ def processImage(key, payload):
                 
                 
                 else:
-                    print("Processing Favorite Images if no files were added")
-                    if key_type == 'properties': payload["property_favorite_image"] = payload_fav_images
-                    if key_type == 'appliances': payload["appliance_favorite_image"] = payload_fav_images
-                    if key_type == 'maintenance request': payload["maintenance_favorite_image"] = payload_fav_images
+                    # print("Processing Favorite Images if no files were added")
+                    # if key_type == 'properties': payload["property_favorite_image"] = payload_fav_images
+                    # if key_type == 'appliances': payload["appliance_favorite_image"] = payload_fav_images
+                    # if key_type == 'maintenance request': payload["maintenance_favorite_image"] = payload_fav_images
                     break
                 i += 1
             
