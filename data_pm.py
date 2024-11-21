@@ -110,23 +110,7 @@ def processImage(key, payload):
     response = {}
     with connect() as db:
 
-        if 'property_uid' in key:
-            print("Property Key passed")
-            key_type = 'properties'
-            key_uid = key['property_uid']
-            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
-            if 'img_0' in request.files or payload_delete_images != None:   #  New property images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT property_images FROM space.properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
-                if len(payload_query['result']) > 0:
-                    print("4: ", payload_query.get('result', [{}])[0].get('property_images', None))
-                payload_images = payload_query['result'][0]['property_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
-            else:
-                return payload
-
-        elif 'appliance_uid' in key:
+        if 'appliance_uid' in key:
             print("Appliance Key passed")
             key_type = 'appliances'
             key_uid = key['appliance_uid']
@@ -138,7 +122,7 @@ def processImage(key, payload):
                 if len(payload_query['result']) > 0:
                     print("4: ", payload_query.get('result', [{}])[0].get('appliance_images', None))
                 payload_images = payload_query['result'][0]['appliance_images'] if payload_query['result'] else None  # Current Images from database
-                payload_fav_images = payload.get("property_favorite_image") or payload.get("appliance_favorite_image", None)   # (PUT & POST)
+                payload_fav_images = payload.get("appliance_favorite_image") or payload.pop("appliance_favorite_image", None)   # (PUT & POST)
                 print("5: ", payload_fav_images)
             else:
                 return payload
@@ -156,10 +140,58 @@ def processImage(key, payload):
                     print("4: ", payload_query.get('result', [{}])[0].get('bill_images', None))
                 payload_images = payload_query['result'][0]['bill_images'] if payload_query['result'] else None  # Current Images
                 # payload_fav_images = payload.pop("img_favorite") if payload.get("img_favorite") else None  # (PUT & POST)
+                payload_fav_images = payload.get("bill_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
+            else:
+                return payload
+
+        elif 'maintenance_request_uid' in key:
+            print("Maintenance Request Key passed")
+            key_type = 'maintenance request'
+            key_uid = key['maintenance_request_uid']
+            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance request images are passed in as img_0, img_1.  No Image attributes are passed in
+                payload_query = db.execute(""" SELECT maintenance_images FROM space.maintenanceRequests WHERE maintenance_request_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('maintenance_images', None))
+                payload_images = payload_query['result'][0]['maintenance_images'] if payload_query['result'] else None  # Current Images
+                payload_fav_images = payload.get("maintenance_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
+            else:
+                return payload
+
+        elif 'maintenance_quote_uid' in key:
+            print("Maintenance Quote Key passed")
+            key_type = 'maintenance quote'
+            key_uid = key['maintenance_quote_uid']
+            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance quote images are passed in as img_0, img_1.  No Image attributes are passed in
+                payload_query = db.execute(""" SELECT quote_maintenance_images FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('quote_maintenance_images', None))
+                payload_images = payload_query['result'][0]['quote_maintenance_images'] if payload_query['result'] else None  # Current Images
+                payload_fav_images = payload.get("quote_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
+            else:
+                return payload            
+        
+        elif 'property_uid' in key:
+            print("Property Key passed")
+            key_type = 'properties'
+            key_uid = key['property_uid']
+            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'img_0' in request.files or payload_delete_images != None:   #  New property images are passed in as img_0, img_1.  No Image attributes are passed in
+                payload_query = db.execute(""" SELECT property_images FROM space.properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('property_images', None))
+                payload_images = payload_query['result'][0]['property_images'] if payload_query['result'] else None  # Current Images
                 payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
             else:
                 return payload
-            
+
 
         elif 'tenant_uid' in key:
             print("Tenant Profile Key passed")
@@ -234,41 +266,6 @@ def processImage(key, payload):
             else:
                 return payload
 
-
-
-        elif 'maintenance_request_uid' in key:
-            print("Maintenance Request Key passed")
-            key_type = 'maintenance request'
-            key_uid = key['maintenance_request_uid']
-            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
-            if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance request images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT maintenance_images FROM space.maintenanceRequests WHERE maintenance_request_uid = \'""" + key_uid + """\'; """)     # Current Images
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
-                if len(payload_query['result']) > 0:
-                    print("4: ", payload_query.get('result', [{}])[0].get('maintenance_images', None))
-                payload_images = payload_query['result'][0]['maintenance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
-            else:
-                return payload
-
-        
-        elif 'maintenance_quote_uid' in key:
-            print("Maintenance Quote Key passed")
-            key_type = 'maintenance quote'
-            key_uid = key['maintenance_quote_uid']
-            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
-            if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance quote images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT quote_maintenance_images FROM space.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)     # Current Images
-                print("1: ", payload_query)
-                print("2: ", payload_query['result'], type(payload_query['result']))
-                if len(payload_query['result']) > 0:
-                    print("4: ", payload_query.get('result', [{}])[0].get('quote_maintenance_images', None))
-                payload_images = payload_query['result'][0]['quote_maintenance_images'] if payload_query['result'] else None  # Current Images
-                payload_fav_images = payload.get("property_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
-            else:
-                return payload
-
         else:
             print("No UID found in key")
             return
@@ -279,7 +276,7 @@ def processImage(key, payload):
         print("key_uid: ", key_uid, type(key_uid))
         print("payload_images: ", payload_images, type(payload_images))
         print("payload_images delete: ", payload_delete_images, type(payload_delete_images))       # Documents to Delete
-        if key_type in ['properties', 'appliances', 'bills', 'maintenance request']: print("payload_fav_images: ", payload_fav_images, type(payload_fav_images))
+        if key_type in ['appliances', 'bills', 'maintenance request', 'properties']: print("payload_fav_images: ", payload_fav_images, type(payload_fav_images))
 
         
         # Check if images already exist
@@ -373,7 +370,7 @@ def processImage(key, payload):
             print("processed ADDED documents")
 
 
-        # Delete Images
+        # DELETE Images
         print("\nAbout to process DELETED images in database;")
         if payload_delete_images:
             print("In image delete: ", payload_delete_images, type( payload_delete_images))
@@ -401,15 +398,16 @@ def processImage(key, payload):
             
         print("\nCurrent Images in Function: ", current_images, type(current_images))
         # print("Key Type: ", key_type)
-        if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
+        
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
+        if key_type == 'bills': payload['bill_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
+        if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 
         if key_type == 'tenantProfile': payload['tenant_photo_url'] = profileImage
         if key_type == 'ownerProfile': payload['owner_photo_url'] = profileImage
         if key_type == 'businessProfile': payload['business_photo_url'] = profileImage
         if key_type == 'employeeProfile': payload['employee_photo_url'] = profileImage
-        if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
-        if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
-
 
         print("Payload before return: ", payload)
         return payload
