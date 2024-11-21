@@ -39,6 +39,27 @@ def pmDueDate(due_date):
         print("Error:", e)
 
 
+def deleteFolder(folder, uid):
+    #  Delete from S3 Bucket
+    print("In Delete S3 Folder")
+
+    bucket_name = 'io-pm'
+    folder_prefix = f'{folder}/{uid}/'
+
+    # List all objects with the given prefix
+    s3Objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+    print(s3Objects)
+
+    if 'Contents' in s3Objects:
+        print("In Contents")
+        for obj in s3Objects['Contents']:
+            print(f"Deleting {obj['Key']}")
+            s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+        print(f"Folder '{folder_prefix}' deleted successfully")
+    else:
+        print(f"No files found to delete in '{folder_prefix}'")
+
+
 def deleteImage(key):
     bucket = 'io-pm'
     try:

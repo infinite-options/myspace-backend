@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 import boto3
-from data_pm import connect, uploadImage, deleteImage, s3, processImage, processDocument
+from data_pm import connect, uploadImage, deleteImage, deleteFolder, s3, processImage, processDocument
 from datetime import date, timedelta, datetime
 from calendar import monthrange
 import json
@@ -138,8 +138,35 @@ class Appliances(Resource):
                 -- WHERE appliance_uid = '060-000005'
                 WHERE appliance_uid = \'""" + uid + """\';
                 """)
-            response = db.delete(applianceQuery)
+            response["delete"] = db.delete(applianceQuery)
             print(response)
+        
+        #  Delete from S3 Bucket
+        try:
+            folder = 'appliances'
+            deleteFolder(folder, uid)
+            response["S3"] = "Folder deleted successfully"
+
+        except:
+            response["S3"] = "Folder delete FAILED"
+
+
+        # bucket_name = 'io-pm'
+        # folder_prefix = f'appliances/{uid}/'
+
+        # # List all objects with the given prefix
+        # s3Objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+        # print(s3Objects)
+
+        # if 'Contents' in s3Objects:
+        #     for obj in s3Objects['Contents']:
+        #         print(f"Deleting {obj['Key']} at {datetime.now().isoformat()}")
+        #         s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
+        #     print(f"Folder '{folder_prefix}' deleted successfully at {datetime.now().isoformat()}")
+        #     response["S3"] = "Folder deleted successfully"
+        # else:
+        #     print(f"No files found to delete in '{folder_prefix}'")
+
         return response
 
 
