@@ -1755,8 +1755,12 @@ class MonthlyRentPurchase_CLASS(Resource):
             # print(len(response['result']), range(len(response['result'])))
 
             for i in range(len(response['result'])):
-                # print(response['result'][i])
+                print("\n Next i: ", response['result'][i]['leaseFees_uid'])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
+
+                # Check if lease_fee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
+                if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
+                    continue
 
                 # Check if available_topay is NONE
                 if response['result'][i]['available_topay'] is None:
@@ -1920,7 +1924,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_group'] = grouping
                 
                         # print(newRequest)
-                        # print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                        print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
 
 
@@ -1953,6 +1957,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         
 
                         for j in range(len(manager_fees['result'])):
+                            print("J :", j)
 
                             # Check if fees is monthly 
                             if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
@@ -1993,8 +1998,9 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                                 
                                 # print("PM Fees:", newPMRequest)
-                                print("Number of CRON Purchases: ", numCronPurchases, dt)
+                                # print("Number of CRON Purchases: ", numCronPurchases, dt)
                                 db.insert('purchases', newPMRequest)
+                                print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table
 
@@ -2056,8 +2062,12 @@ def MonthlyRentPurchase_CRON(Resource):
             # print(len(response['result']), range(len(response['result'])))
 
             for i in range(len(response['result'])):
-                # print(response['result'][i])
+                print("\n Next i: ", response['result'][i]['leaseFees_uid'])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
+
+                # Check if lease_fee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
+                if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
+                    continue
 
                 # Check if available_topay is NONE
                 if response['result'][i]['available_topay'] is None:
@@ -2221,7 +2231,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_group'] = grouping
                 
                         # print(newRequest)
-                        # print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                        print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
                         db.insert('purchases', newRequest)
 
 
@@ -2254,6 +2264,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         
 
                         for j in range(len(manager_fees['result'])):
+                            print("J :", j)
 
                             # Check if fees is monthly 
                             if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
@@ -2294,8 +2305,9 @@ def MonthlyRentPurchase_CRON(Resource):
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
                                 
                                 # print("PM Fees:", newPMRequest)
-                                print("Number of CRON Purchases: ", numCronPurchases, dt)
+                                # print("Number of CRON Purchases: ", numCronPurchases, dt)
                                 db.insert('purchases', newPMRequest)
+                                print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table
 
@@ -2315,12 +2327,10 @@ def MonthlyRentPurchase_CRON(Resource):
 
                 response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 200}
 
-            except Exception as e:  
-                print(f"Error occurred: {e}")  
-                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent', 'code': 500}
+            except:
+                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent' , 'code': 500}
                 
-        except Exception as e: 
-            print(f"Error occurred: {e}") 
+        except:
             response["cron fail"] = {'message': f'CRON Job failed for {dt}' ,'code': 500}
 
             try:
@@ -2331,8 +2341,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                 response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 201}
 
-            except Exception as e:  
-                print(f"Error occurred: {e}") 
+            except:
                 response["email fail"] = {'message': f'CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
 
         return response

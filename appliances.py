@@ -150,23 +150,6 @@ class Appliances(Resource):
         except:
             response["S3"] = "Folder delete FAILED"
 
-
-        # bucket_name = 'io-pm'
-        # folder_prefix = f'appliances/{uid}/'
-
-        # # List all objects with the given prefix
-        # s3Objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
-        # print(s3Objects)
-
-        # if 'Contents' in s3Objects:
-        #     for obj in s3Objects['Contents']:
-        #         print(f"Deleting {obj['Key']} at {datetime.now().isoformat()}")
-        #         s3.delete_object(Bucket=bucket_name, Key=obj['Key'])
-        #     print(f"Folder '{folder_prefix}' deleted successfully at {datetime.now().isoformat()}")
-        #     response["S3"] = "Folder deleted successfully"
-        # else:
-        #     print(f"No files found to delete in '{folder_prefix}'")
-
         return response
 
 
