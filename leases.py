@@ -338,16 +338,20 @@ class LeaseApplication(Resource):
                 json_object = json.loads(lease_fees)
                 # print("lease fees json_object", json_object)
                 for fees in json_object:
-                    # print("fees",fees)
+                    print("fees",fees)
                     new_leaseFees = {}
                     # Get new leaseFees_uid
                     new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
-                    new_leaseFees["fees_lease_id"] = lease_uid
                     for item in fees:
-                        # print("Item: ", item)
+                        print("Item: ", item)
+                        if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
+                            if not any('due_by_date' in fee for fee in fees):  # Check if 'due_by_date' does NOT exist
+                                new_leaseFees['due_by_date'] = datetime.today().strftime('%m-%d-%Y %H:%M')
                         new_leaseFees[item] = fees[item]
                         # print(new_leaseFees[item])
                     # print("Payload: ", new_leaseFees)
+                    # print("lease_uid: ", lease_uid)
+                    new_leaseFees["fees_lease_id"] = lease_uid
                     response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
                     # print("response: ", response["lease_fees"])
 
@@ -377,15 +381,15 @@ class LeaseApplication(Resource):
             # Verify LIST variables are not empty
             fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income", "lease_utilities"]
             for field in fields_with_lists:
-                print("field list", field)
+                # print("field list", field)
                 if payload.get(field) in [None, '', 'undefined']:
-                    print(field,"Is None")
+                    # print(field,"Is None")
                     payload[field] = '[]' 
 
             # Actual Insert Statement
-            print("About to insert: ", payload)
+            # print("About to insert: ", payload)
             response["lease"] = db.insert('leases', payload)
-            print("Data inserted into space.leases", response)
+            # print("Data inserted into space.leases", response)
 
         return response
 

@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-from data_pm import connect, uploadImage, deleteImage, s3, processImage
+from data_pm import connect, uploadImage, deleteImage, deleteFolder, s3, processImage
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -593,6 +593,16 @@ class Properties(Resource):
             # print("Query: ", delPropertyQuery)
             response = db.delete(delPropertyQuery) 
             # print("Query out", response["code"])
+
+
+            #  Delete from S3 Bucket
+            try:
+                folder = 'properties'
+                deleteFolder(folder, property_id)
+                response["S3"] = "Folder deleted successfully"
+
+            except:
+                response["S3"] = "Folder delete FAILED"
             
             if response["code"] == 200:
                 response["Deleted property_uid"] = property_id

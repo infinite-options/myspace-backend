@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 import boto3
-from data_pm import connect, uploadImage, deleteImage, s3, processImage, processDocument
+from data_pm import connect, uploadImage, deleteImage, deleteFolder, s3, processImage, processDocument
 from datetime import date, timedelta, datetime
 from calendar import monthrange
 import json
@@ -138,8 +138,18 @@ class Appliances(Resource):
                 -- WHERE appliance_uid = '060-000005'
                 WHERE appliance_uid = \'""" + uid + """\';
                 """)
-            response = db.delete(applianceQuery)
+            response["delete"] = db.delete(applianceQuery)
             print(response)
+        
+        #  Delete from S3 Bucket
+        try:
+            folder = 'appliances'
+            deleteFolder(folder, uid)
+            response["S3"] = "Folder deleted successfully"
+
+        except:
+            response["S3"] = "Folder delete FAILED"
+
         return response
 
 
