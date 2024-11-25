@@ -3,19 +3,20 @@ from datetime import datetime
 import json
 from decimal import Decimal
 import requests
-
+from dotenv import load_dotenv
 from flask_restful import Resource
+import os
 
 #python -m pytest -v -s Use this in cmd to run the pytest script
 
 
 def connect():
     conn = pymysql.connect(
-        host='io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com',
-        port=3306,
-        user='admin',
-        passwd='prashant',
-        db='space',
+        host=os.getenv('RDS_HOST'),
+        user=os.getenv('RDS_USER'),
+        port=int(os.getenv('RDS_PORT')),
+        passwd=os.getenv('RDS_PW'),
+        db=os.getenv('RDS_DB'),
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
@@ -248,6 +249,31 @@ class endPointTest_CLASS(Resource):
                                         WHERE (`contract_property_id` = '200-000000' AND `contract_business_id` = '600-000000' AND `contract_name` = 'Test Contract Name');
                                     """
 
+            insert_leases_query = """
+                                    INSERT INTO `space`.`leases` (`lease_uid`, `lease_property_id`, `lease_application_date`, `lease_start`, `lease_end`, `lease_status`, `lease_assigned_contacts`, `lease_documents`, `lease_renew_status`, `lease_move_in_date`, `lease_adults`, `lease_children`, `lease_pets`, `lease_vehicles`, `lease_referred`, `lease_effective_date`, `lease_docuSign`, `lease_end_notice_period`, `lease_income`, `lease_m2m`, `lease_utilities`) 
+                                    VALUES ('300-000000', '200-000000', '11-15-2024', '11-19-2024', '11-19-2025', 'NEW', '[\"350-000000\"]', '[]', 'TRUE', '11-19-2024', '[]', '[]', '[]', '[]', '[]', '11-19-2024', 'null', '30', '[]', '1', '[]');
+                                """
+            update_leases_query = """
+                                    UPDATE `space`.`leases` 
+                                    SET `lease_uid` = '300-000000' 
+                                    WHERE (`lease_property_id` = '200-000000' AND `lease_status` = 'NEW');
+                                """
+
+            insert_lease_tenant_query = """
+                                            INSERT INTO `space`.`lease_tenant` (`lt_lease_id`, `lt_tenant_id`, `lt_responsibility`) 
+                                            VALUES ('300-000000', '350-000000', '1');
+                                        """
+            
+            insert_lease_fees_query = """
+                                        INSERT INTO `space`.`leaseFees` (`leaseFees_uid`, `fees_lease_id`, `fee_name`, `fee_type`, `charge`, `frequency`, `available_topay`, `due_by`, `late_by`, `late_fee`, `perDay_late_fee`, `due_by_date`) 
+                                        VALUES ('370-000000', '300-000000', 'Rent', 'Rent', '900.00', 'Monthly', '10', '5', '0', '0', '0.00', '12-19-2024');
+                                    """
+            update_lease_fees_query = """
+                                    UPDATE `space`.`leaseFees` 
+                                    SET `leaseFees_uid` = '370-000000' 
+                                    WHERE (`fees_lease_id` = '300-000000' AND `fee_name` = 'Rent');
+                                """
+
             with connect() as db:
                 insert_property_query_response = db.execute(insert_property_query, cmd='post')
                 insert_property_owner_query_response = db.execute(insert_property_owner_query, cmd='post')
@@ -260,6 +286,11 @@ class endPointTest_CLASS(Resource):
                 insert_maintenance_quotes_query_response = db.execute(insert_maintenance_quotes_query, cmd='post')
                 insert_contracts_query_response = db.execute(insert_contracts_query, cmd='post')
                 update_contracts_query_response = db.execute(update_contracts_query, cmd='post')
+                # insert_leases_query_response = db.execute(insert_leases_query, cmd='post')
+                # update_leases_query_response = db.execute(update_leases_query, cmd='post')
+                # insert_lease_tenant_query_response = db.execute(insert_lease_tenant_query, cmd='post')
+                # insert_lease_fees_query_response = db.execute(insert_lease_fees_query, cmd='post')
+                # update_lease_fees_query_response = db.execute(update_lease_fees_query, cmd='post')
 
             print("\n*** Completed ***\n")
             response['insert_temporary_data'] = 'Passed'
@@ -402,7 +433,7 @@ class endPointTest_CLASS(Resource):
                     response['APIs failing'].append('PUT Maintenance Quotes')
                 response['No of APIs tested'] += 1
 
-                # -------- test post get maintenance quotes --------
+                # -------- test put get maintenance quotes --------
                 print("\nIn test GET after PUT Maintenance Quotes")
                 put_get_maintenance_quotes_response = requests.get(ENDPOINT + f"/maintenanceQuotes/600-000000")
                 data = put_get_maintenance_quotes_response.json()['maintenanceQuotes']['result'][0]
@@ -417,6 +448,15 @@ class endPointTest_CLASS(Resource):
                     response['APIs running successfully'].append('GET after PUT Maintenance Quotes')
                 else:
                     response['APIs failing'].append('GET after PUT Maintenance Quotes')
+                response['No of APIs tested'] += 1
+
+                # -------- test get maintenance quotes by uid--------
+                print("\nIn test GET Maintenance Quotes By UID")
+                get_maintenance_quotes_by_uid_response = requests.get(ENDPOINT + f"/maintenanceQuotes/{maintenance_quote_uid}")
+                if get_maintenance_quotes_by_uid_response.status_code == 200:
+                    response['APIs running successfully'].append('GET Maintenance Quotes By UID')
+                else:
+                    response['APIs failing'].append('GET Maintenance Quotes By UID')
                 response['No of APIs tested'] += 1
 
             except:
@@ -550,7 +590,8 @@ class endPointTest_CLASS(Resource):
                     "contract_status": "NEW"
                 }
                 post_contract_response = requests.post(ENDPOINT + "/contracts", data=post_contract_payload)
-                contract_uid = post_contract_response.json()['contract_UID']
+                contract_uid = post_contract_response.json()['contract_uid']
+                print('\nContract UID', contract_uid)
                 if post_contract_response.status_code == 200:
                     response['APIs running successfully'].append('POST Contracts')
                 else:
@@ -561,7 +602,7 @@ class endPointTest_CLASS(Resource):
                 print("\nIn GET after POST Contract")
                 post_get_contract_response = requests.get(ENDPOINT + "/contracts/600-000000")
                 data = post_get_contract_response.json()['result'][0]
-                if data['contract_uid'] == contract_uid:
+                if data.get('contract_uid', None) != contract_uid:
                     print("Not a match")
                 if post_get_contract_response.status_code == 200:
                     response['APIs running successfully'].append('GET after POST Contracts')
@@ -586,7 +627,7 @@ class endPointTest_CLASS(Resource):
                 print("\nIn GET after PUT Contract")
                 put_get_contract_response = requests.get(ENDPOINT + "/contracts/600-000000")
                 data = put_get_contract_response.json()['result'][0]
-                if data['contract_uid'] == contract_uid:
+                if data.get('contract_uid', None) != contract_uid:
                     print("Not a match")
                 if put_get_contract_response.status_code == 200:
                     response['APIs running successfully'].append('PUT Contracts')
@@ -1585,6 +1626,37 @@ class endPointTest_CLASS(Resource):
                                         WHERE announcement_uid = \'""" + announcement_uid + """\';
                                     """)
                         del_announcement_response = db.delete(delQuery_announcement)
+            
+
+            # ------------------------- UserInfo ------------------------------
+            try:
+                # -------- test PUT UserInfo --------
+                print("\nIn PUT UserInfo")
+                put_userinfo_payload = {
+                    "user_uid": "100-000000",
+                    "first_name": "test user"
+                }
+                put_userinfo_response = requests.put(ENDPOINT + "/userInfo", data=json.dumps(put_userinfo_payload), headers=headers)
+                if (put_userinfo_response.status_code == 200):
+                    response['APIs running successfully'].append('PUT UserInfo')
+                else:
+                    response['APIs failing'].append('PUT UserInfo')
+                response['No of APIs tested'] += 1
+                
+                # -------- test GET after PUT UserInfo --------
+                print("\nIn GET after PUT UserInfo")
+                get_userinfo_response = requests.get(ENDPOINT + "/userInfo/100-000000")
+                data = get_userinfo_response.json()['result'][0]
+                if data['first_name'] != "test user":
+                    print("Not Match")
+                if (get_userinfo_response.status_code == 200):
+                    response['APIs running successfully'].append('GET after PUT UserInfo')
+                else:
+                    response['APIs failing'].append('GET after PUT UserInfo')
+                response['No of APIs tested'] += 1
+
+            except:
+                response['Error in running APIs'].append('UserInfo API')
 
         except:
             response["cron fail"] = {'message': f'MySpace Test API CRON Job failed for {dt}' ,'code': 500}
@@ -1640,6 +1712,18 @@ class endPointTest_CLASS(Resource):
                                         DELETE FROM space.contracts
                                         WHERE contract_uid = "010-000000";
                                     """
+            delete_leases_query = """
+                                        DELETE FROM space.leases
+                                        WHERE lease_uid = "300-000000";
+                                    """
+            delete_lease_tenant_query = """
+                                        DELETE FROM space.lease_tenant
+                                        WHERE lt_lease_id = "300-000000" AND lt_tenant_id = "350-000000";
+                                    """
+            delete_lease_fees_query = """
+                                        DELETE FROM space.leaseFees
+                                        WHERE leaseFees_uid = "370-000000";
+                                    """
             
             with connect() as db:
                 delete_property_query_response = db.delete(delete_property_query)
@@ -1652,6 +1736,9 @@ class endPointTest_CLASS(Resource):
                 delete_maintenance_requests_query_response = db.delete(delete_maintenance_requests_query)
                 delete_maintenance_quotes_query_response = db.delete(delete_maintenance_quotes_query)
                 delete_contracts_query_response = db.delete(delete_contracts_query)
+                # delete_leases_query_response = db.delete(delete_leases_query)
+                # delete_lease_tenant_query_response = db.delete(delete_lease_tenant_query)
+                # delete_lease_fees_query_response = db.delete(delete_lease_fees_query)
 
             print("\n*** Completed ***\n")
             response['delete_temporary_data'] = 'Passed'
@@ -1660,6 +1747,7 @@ class endPointTest_CLASS(Resource):
             response['delete_temporary_data'] = 'Failed'
 
         return response
+
 
 # ********* FUNCTION IMPLEMENTATION *********
 # -------- Maintenance Requests ---------
@@ -2810,65 +2898,180 @@ class endPointTest_CLASS(Resource):
 #     assert get_listings_response.status_code == 200
 
 # ------ Announcements ------
-post_announcement_payload = {}
-def test_post_announcement():
-    print("\nIn POST Announcement")
-    global post_announcement_payload
-    post_announcement_payload = {
-            "announcement_title": "Test Announcement",
-            "announcement_msg": "Hi! This is a test announcement",
-            "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
-            "announcement_mode": "LEASE",
-            "announcement_receiver": "350-000000",
-            "announcement_type": []
-        }
-    headers = {
-            'Content-Type': 'application/json'
-        } 
-    post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
-    assert post_announcement_response.status_code == 200
+# post_announcement_payload = {}
+# def test_post_announcement():
+#     print("\nIn POST Announcement")
+#     global post_announcement_payload
+#     post_announcement_payload = {
+#             "announcement_title": "Test Announcement",
+#             "announcement_msg": "Hi! This is a test announcement",
+#             "announcement_properties": "{\"350-000000\":[\"200-000000\"]}",
+#             "announcement_mode": "LEASE",
+#             "announcement_receiver": "350-000000",
+#             "announcement_type": []
+#         }
+#     headers = {
+#             'Content-Type': 'application/json'
+#         } 
+#     post_announcement_response = requests.post(ENDPOINT + "/announcements/110-000000", data=json.dumps(post_announcement_payload), headers=headers)
+#     assert post_announcement_response.status_code == 200
 
-announcement_uid = ""
-def test_post_get_announcement():
-    print("\nIn GET after POST Announcement")
-    post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
-    data = post_get_announcement_response.json()['sent']['result'][0]
-    global announcement_uid
-    announcement_uid = data['announcement_uid']
-    if data['announcement_title'] != "Test Announcement":
-        print("Not Match")
-    assert post_get_announcement_response.status_code == 200
+# announcement_uid = ""
+# def test_post_get_announcement():
+#     print("\nIn GET after POST Announcement")
+#     post_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+#     data = post_get_announcement_response.json()['sent']['result'][0]
+#     global announcement_uid
+#     announcement_uid = data['announcement_uid']
+#     if data['announcement_title'] != "Test Announcement":
+#         print("Not Match")
+#     assert post_get_announcement_response.status_code == 200
 
-put_announcement_payload = {}
-def test_put_announcement():
-    global put_announcement_payload
-    global announcement_uid
-    put_announcement_payload = {
-        "announcement_uid": [f"{announcement_uid}"],
-        "announcement_title": "Test Announcement 1"
-    }
-    headers = {
-            'Content-Type': 'application/json'
-        }
-    put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
-    assert put_announcement_response.status_code == 200
+# put_announcement_payload = {}
+# def test_put_announcement():
+#     global put_announcement_payload
+#     global announcement_uid
+#     put_announcement_payload = {
+#         "announcement_uid": [f"{announcement_uid}"],
+#         "announcement_title": "Test Announcement 1"
+#     }
+#     headers = {
+#             'Content-Type': 'application/json'
+#         }
+#     put_announcement_response = requests.put(ENDPOINT + "/announcements", data=json.dumps(put_announcement_payload), headers=headers)
+#     assert put_announcement_response.status_code == 200
 
-def test_put_get_announcement():
-    print("\nIn GET after PUT Announcement")
-    put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
-    data = put_get_announcement_response.json()['sent']['result'][0]
-    if data['announcement_title'] != "Test Announcement 1":
-        print("Not Match")
-    assert put_get_announcement_response.status_code == 200
+# def test_put_get_announcement():
+#     print("\nIn GET after PUT Announcement")
+#     put_get_announcement_response = requests.get(ENDPOINT + "/announcements/110-000000")
+#     data = put_get_announcement_response.json()['sent']['result'][0]
+#     if data['announcement_title'] != "Test Announcement 1":
+#         print("Not Match")
+#     assert put_get_announcement_response.status_code == 200
 
-def test_delete_announcement():
-    print("\nIn DELETE Announcement")
-    global announcement_uid
-    print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
+# def test_delete_announcement():
+#     print("\nIn DELETE Announcement")
+#     global announcement_uid
+#     print(f"\nDeleting announcement_uid: {announcement_uid} from Announcements Table")
 
-    with connect() as db:
-        delQuery_announcement = ("""
-                        DELETE FROM space.announcements
-                        WHERE announcement_uid = \'""" + announcement_uid + """\';
-                    """)
-        del_announcement_response = db.delete(delQuery_announcement)
+#     with connect() as db:
+#         delQuery_announcement = ("""
+#                         DELETE FROM space.announcements
+#                         WHERE announcement_uid = \'""" + announcement_uid + """\';
+#                     """)
+#         del_announcement_response = db.delete(delQuery_announcement)
+
+
+# ----- Rent Purchases -------
+# def test_post_rent_purchases():
+#     post_rent_purchases_payload = {
+#         "lease_uid": "300-000000"
+#     }
+#     headers = {
+#                 'Content-Type': 'application/json'
+#             }  
+#     post_rent_purchases_response = requests.post(ENDPOINT + "/rentPurchase", data=json.dumps(post_rent_purchases_payload), headers=headers)
+
+#     print(post_rent_purchases_response.json())
+
+#     assert post_rent_purchases_response.status_code == 200
+
+# def test_post_lease_referral_payload():
+#     post_lease_referral_payload = {
+#         "property_uid": "200-000000",
+#         "tenants": ["350-000000"]
+#     }
+
+#     headers = {
+#             'Content-Type': 'application/json'
+#         }  
+#     post_lease_referral_response = requests.post(ENDPOINT + "/leaseReferal", data=json.dumps(post_lease_referral_payload), headers=headers)
+
+#     print(post_lease_referral_response.json())
+
+#     assert post_lease_referral_response.status_code == 200
+
+
+# def test_put_userinfo():
+#     put_userinfo_payload = {
+#         "user_uid": "100-000000",
+#         "first_name": "test user"
+#     }
+#     headers = {
+#             'Content-Type': 'application/json'
+#         } 
+    
+#     put_userinfo_response = requests.put(ENDPOINT + "/userInfo", data=json.dumps(put_userinfo_payload), headers=headers)
+
+#     assert put_userinfo_response.status_code == 200
+
+# def test_get_userinfo():
+#     get_userinfo_response = requests.get(ENDPOINT + "/userInfo/100-000000")
+#     print(get_userinfo_response.json())
+#     assert get_userinfo_response.status_code == 200
+
+def test_clean_up_Database():
+    print(os.getenv('RDS_PORT'))
+    print(os.getenv('RDS_HOST'))
+    print(os.getenv('RDS_USER'))
+    print(os.getenv('RDS_PW'))
+    # Define the patterns to search for
+    patterns = [r"200-000000", r"600-000000", r"110-000000", r"350-000000", r"100-000000", r"050-000000", r"800-000000", r"900-000000", r"400-000000", r"010-000000", r"370-000000", r"300-000000"]
+
+    # Connect to the MySQL database
+    connection = pymysql.connect(
+        host=os.getenv('RDS_HOST'),
+        user=os.getenv('RDS_USER'),
+        port=int(os.getenv('RDS_PORT')),
+        passwd=os.getenv('RDS_PW'),
+        db=os.getenv('RDS_DB'),
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+    cursor = connection.cursor()
+
+    try:
+        print("in new try")
+
+        cursor.execute("""
+            SELECT TABLE_NAME 
+            FROM information_schema.TABLES 
+            WHERE TABLE_SCHEMA = 'space' AND TABLE_TYPE = 'BASE TABLE';
+        """)
+        tables = cursor.fetchall()
+
+        print(tables)
+        for table_name in tables:
+            print(f"Processing table: {table_name}")
+            value = table_name['TABLE_NAME']
+
+            cursor.execute(f"DESCRIBE `{value}`") 
+
+            columns = cursor.fetchall()
+            # print(columns)
+
+            for column_info in columns:
+                column_name = column_info['Field']
+                print(f"Checking column: {column_name} in table: {value}")
+
+                for pattern in patterns:
+                    delete_query = f"""
+                    DELETE FROM `{value}`
+                    WHERE `{column_name}` REGEXP %s
+                    """
+                    cursor.execute(delete_query, (pattern,))
+                    rows_deleted = cursor.rowcount 
+                    connection.commit()
+                    if rows_deleted > 0:
+                        print(f"Deleted {rows_deleted} rows in table `{value}` where column `{column_name}` matched '{pattern}'")
+
+
+        print("Cleanup completed.")
+
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        cursor.close()
+        connection.close()
+

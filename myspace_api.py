@@ -42,6 +42,7 @@ from data_pm import connect, uploadImage, s3
 from queries import NextDueDate, UnpaidRents, ApprovedContracts
 
 from test_api import endPointTest_CLASS
+from extract_api import Extract_API, CleanUpDatabase
 import requests
 
 import os
@@ -2430,6 +2431,174 @@ def EndPoint_CRON(Resource):
 
         return response
 
+class Check_APIs_Remaining_To_Test_CLASS(Resource):
+    def get(self):
+        print("\nIn Check_APIs_Remaining_To_Test_CLASS Class \n\n\n")
+        response = {}
+        dt = datetime.today()
+        try:
+            extract_api_obj = Extract_API()
+
+            response = extract_api_obj.get()
+
+
+            try:
+                recipients = [#"pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
+                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!' , 'code': 200}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent' , 'code': 500}
+
+        except:
+            try:
+                recipients = [#"pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = "MySpace Check_APIs_Remaining_To_Test CRON JOB Failed!"
+                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB Failed. \n\n{response}\n\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!' , 'code': 201}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+
+        return response
+    
+def Check_APIs_Remaining_To_Test_CRON():
+        print("\nIn Check_APIs_Remaining_To_Test_CLASS CRON \n\n\n")
+        response = {}
+        dt = datetime.today()
+        try:
+            extract_api_obj = Extract_API()
+
+            response = extract_api_obj.get()
+
+
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
+                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!' , 'code': 200}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent' , 'code': 500}
+
+        except:
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = "MySpace Check_APIs_Remaining_To_Test CRON JOB Failed!"
+                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB Failed. \n\n{response}\n\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!' , 'code': 201}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+
+        return response
+
+
+class Delete_six_0s_from_database_CLASS(Resource):
+    def get(self):
+        print("\nIn Delete_six_0s_from_database Class \n\n\n")
+        response = {}
+        dt = datetime.today()
+        try:
+            clean_database_obj = CleanUpDatabase()
+
+            response = clean_database_obj.get()
+
+
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
+                body = f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!' , 'code': 200}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent' , 'code': 500}
+
+        except:
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
+                body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!' , 'code': 201}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+
+        return response
+
+def Delete_six_0s_from_database_CRON():
+        print("\nIn Delete_six_0s_from_database CRON \n\n\n")
+        response = {}
+        dt = datetime.today()
+        try:
+            clean_database_obj = CleanUpDatabase()
+
+            response = clean_database_obj.get()
+
+
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
+                body = f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!' , 'code': 200}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent' , 'code': 500}
+
+        except:
+            try:
+                recipients = ["pmarathay@gmail.com",
+                             "saumyashah4751@gmail.com"]
+                subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
+                body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"
+
+                for recipient in recipients:
+                    sendEmail(recipient, subject, body)
+
+                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!' , 'code': 201}
+
+            except:
+                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+
+        return response
+
+
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
@@ -2549,6 +2718,8 @@ api.add_resource(SendEmail, "/sendEmail")
 api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
 
 api.add_resource(EndPoint_CLASS, "/testapi")
+api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
+api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 
 # refresh
 # api.add_resource(Refresh, '/refresh')
