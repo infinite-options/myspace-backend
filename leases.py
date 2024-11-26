@@ -894,7 +894,7 @@ class LeaseApplication(Resource):
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
                         # newRequest['pur_due_date'] = fee['lease_start'] if fee['lease_start'] != 'None' else datetime.today().date().strftime('%m-%d-%Y %H:%M')
-                        newRequest['pur_due_date'] = datetime.today.strftime("%m-%d-%Y %H:%M")
+                        newRequest['pur_due_date'] = datetime.today().strftime('%m-%d-%Y %H:%M')
                         print("Non Rent Due Date: ", newRequest['pur_due_date'], type(newRequest['pur_due_date']))
                         
                         newRequest['pur_amount_due'] = fee['charge']
