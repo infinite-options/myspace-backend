@@ -761,14 +761,15 @@ class MaintenanceStatus(Resource):
                             FROM space.m_details
                             LEFT JOIN space.bills ON space.m_details.maintenance_request_uid = bill_maintenance_request_id
                             -- LEFT JOIN space.maintenanceQuotes ON bill_maintenance_quote_id = space.maintenanceQuotes.maintenance_quote_uid
-                            LEFT JOIN (SELECT * FROM space.purchases WHERE pur_receiver = '600-000012' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
+                            -- LEFT JOIN (SELECT * FROM space.purchases WHERE pur_receiver = '600-000008' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
+                            LEFT JOIN (SELECT * FROM space.purchases WHERE pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
                             LEFT JOIN space.properties ON property_uid = maintenance_property_id
                             LEFT JOIN space.o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                             LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN space.t_details ON lt_lease_id = lease_uid
                             WHERE quote_business_id = \'""" + user_id + """\'
-                            -- WHERE quote_business_id = '600-000012'
+                            -- WHERE quote_business_id = '600-000008'
                             """)
 
                 if maintenanceStatus.get('code') == 200:
