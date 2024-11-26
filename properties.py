@@ -251,13 +251,13 @@ class Properties(Resource):
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
                             , CASE
-                                    WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
-                                    WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                    WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
+                                    WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'              THEN "NEW REQUEST"
+                                    WHEN maintenance_request_status = "SCHEDULED"                                               THEN "SCHEDULED"
+                                    WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"                  THEN "COMPLETED"
                                     WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                    OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
-                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
-                                    WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
+                                    OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN" OR quote_status = "MORE INFO"    THEN "QUOTES REQUESTED"
+                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                                 THEN "QUOTES ACCEPTED"
+                                    WHEN quote_status = "COMPLETED"                                                             THEN "PAID"     
                                     ELSE quote_status
                                 END AS maintenance_status
                         FROM (
@@ -268,6 +268,7 @@ class Properties(Resource):
                                     CASE
                                         WHEN max_quote_rank = "10" THEN "REQUESTED"
                                         WHEN max_quote_rank = "11" THEN "REFUSED"
+                                        WHEN max_quote_rank = "12" THEN "MORE INFO"     
                                         WHEN max_quote_rank = "20" THEN "SENT"
                                         WHEN max_quote_rank = "21" THEN "REJECTED"
                                         WHEN max_quote_rank = "22" THEN "WITHDRAWN"
@@ -275,6 +276,7 @@ class Properties(Resource):
                                         WHEN max_quote_rank = "40" THEN "SCHEDULE"
                                         WHEN max_quote_rank = "50" THEN "SCHEDULED"
                                         WHEN max_quote_rank = "60" THEN "RESCHEDULED"
+                                        WHEN max_quote_rank = "65" THEN "CANCELLED"
                                         WHEN max_quote_rank = "70" THEN "FINISHED"
                                         WHEN max_quote_rank = "80" THEN "COMPLETED"
                                         ELSE "0"
@@ -292,6 +294,7 @@ class Properties(Resource):
                                         CASE
                                             WHEN quote_status = "REQUESTED" THEN "10"
                                             WHEN quote_status = "REFUSED" THEN "11"
+                                            WHEN quote_status = "MORE INFO" THEN "12"
                                             WHEN quote_status = "SENT" THEN "20"
                                             WHEN quote_status = "REJECTED" THEN "21"
                                             WHEN quote_status = "WITHDRAWN"  THEN "22"
@@ -299,6 +302,7 @@ class Properties(Resource):
                                             WHEN quote_status = "SCHEDULE" THEN "40"
                                             WHEN quote_status = "SCHEDULED" THEN "50"
                                             WHEN quote_status = "RESCHEDULED" THEN "60"
+                                            WHEN quote_status = "CANCELLED" THEN "65"
                                             WHEN quote_status = "FINISHED" THEN "70"
                                             WHEN quote_status = "COMPLETED" THEN "80"     
                                             ELSE 0
