@@ -402,21 +402,64 @@ class Bills(Resource):
             # response["purchase_ids added"] = json.dumps(pur_ids)
             return response
 
-    def put(self):
-        print('in bills')
+    # def put(self):
+    #     print('in bills')
 
-        payload = request.form
+    #     payload = request.form
         
+    #     if payload.get('bill_uid') in {None, '', 'null'}:
+    #         print("No bill_uid")
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'bill_uid': payload['bill_uid']}
+    #     print("Key: ", key)
+    #     bills = {k: v for k, v in payload.items()}
+    #     print("KV Pairs: ", bills)
+    #     with connect() as db:
+    #         print("In actual PUT")
+    #         response = db.update('bills', key, bills)
+    #     return response
+    
+
+    def put(self):
+        print("\nIn Bills PUT")
+        response = {}
+
+        payload = request.form.to_dict()
+        print("Bills Update Payload: ", payload)
+        
+         # Verify uid has been included in the data
         if payload.get('bill_uid') in {None, '', 'null'}:
             print("No bill_uid")
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'bill_uid': payload['bill_uid']}
-        print("Key: ", key)
-        bills = {k: v for k, v in payload.items()}
-        print("KV Pairs: ", bills)
+        
+        # bill_uid = payload.get('bill_uid')
+        key = {'bill_uid': payload.pop('bill_uid')}
+        print("Bill Key: ", key) 
+
+
+        # --------------- PROCESS IMAGES ------------------
+
+        processImage(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS IMAGES ------------------
+        
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
+
+
+
+        # Write to Database
         with connect() as db:
-            print("In actual PUT")
-            response = db.update('bills', key, bills)
+            print("Checking Inputs: ", key, payload)
+            response['bill_info'] = db.update('bills', key, payload)
+            print("Response:" , response)
+            
         return response
         
     def delete(self):
