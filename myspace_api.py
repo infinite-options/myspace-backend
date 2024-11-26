@@ -2730,4 +2730,5 @@ api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 # api.add_resource(UserSocialSignup, '/userSocialSignup')
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=4000)
+    app.run(host='0.0.0.0', port=4000)
+    # app.run(host='127.0.0.1', port=4000)
