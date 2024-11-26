@@ -591,8 +591,8 @@ def processDocument(key, payload):
 
             try:
                 list2_dict = {doc['link']: doc for doc in changed_documents}
-                print("List2: ", list)
-                current_documents = [list2_dict.get(doc['link'], doc) for doc in current_documents]
+                print("List2: ", list2_dict)
+                current_documents = [list2_dict.get(doc['link'], doc) for doc in changed_documents]
                 print(current_documents)
             except:
                 print("No Current Documents")
