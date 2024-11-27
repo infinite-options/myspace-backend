@@ -244,12 +244,15 @@ class Bills(Resource):
                             #FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
                             #POST MAINTENANCE-PM PURCHASE
                             #  Get New PURCHASE UID
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']  
-                            print("New Purchase ID: ", new_purchase_uid)                        
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id'] 
+                            purchase_group =  new_purchase_uid
+                            print("New Purchase ID: ", new_purchase_uid) 
+
 
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
@@ -281,6 +284,7 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
@@ -314,12 +318,14 @@ class Bills(Resource):
                             print("Tenant Responsible")
                             pur_cf_type = "revenue"
 
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']   
+                            purchase_group =  new_purchase_uid                       
                             print("New PM-OWNER Purchase ID: ", new_purchase_uid)  
 
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
@@ -355,6 +361,7 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
