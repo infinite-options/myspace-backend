@@ -454,11 +454,32 @@ class Bills(Resource):
 
 
 
-        # Write to Database
+        # Write to Databaseè
         with connect() as db:
-            print("Checking Inputs: ", key, payload)
+            # print("Checking Inputs: ", key, payload)
             response['bill_info'] = db.update('bills', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
+
+
+
+        # Update PURCHASES Table to reflect new values
+        if payload.get('bill_notes') not in {None, '', 'null'} or payload.get('bill_amount') not in {None, '', 'null'}:
+            print("purchase table needs to change")
+
+            with connect() as db:
+                bill_purchase_query = db.execute(""" SELECT * FROM space.purchases WHERE pur_bill_id = \'""" + key['bill_uid'] + """\' """)     # Current Purchase associated with Bill
+                # print(bill_purchase_query)
+
+                for purchase in bill_purchase_query["result"]:
+                    #  print(purchase)
+                    #  print("Purchase UID: ", purchase["purchase_uid"], type(purchase["purchase_uid"]))
+                     bill_pur_update = {}
+                     bill_pur_update["pur_amount_due"] = payload.get('bill_amount')
+                     bill_pur_update["pur_notes"] = payload.get('bill_notes')
+                    #  print(bill_pur_update)
+
+                     response['bill_update'] = db.update('purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
+
             
         return response
         
