@@ -491,13 +491,14 @@ class LeaseApplication(Resource):
                 # READ THE LEASE FEES
                 # INSERT EACH LEASE FEE INTO PURCHASES TABLE
                 fees = db.execute(""" 
-                        SELECT leaseFees.* -- , leases.*
+                        SELECT -- *,
+                            leaseFees.* -- , leases.*
                             ,lease_property_id, lease_start, lease_status
-                            , contract_uid, contract_business_id, property_owner_id, lt_tenant_id
+                            , contract_uid, contract_status, contract_business_id, property_owner_id, lt_tenant_id
                         FROM space.leaseFees
                         LEFT JOIN space.leases ON fees_lease_id = lease_uid
                         LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
-                        LEFT JOIN space.contracts ON lease_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON lease_property_id = contract_property_id
                         LEFT JOIN space.property_owner ON lease_property_id = property_id
                         -- WHERE fees_lease_id = '300-000005'
                         WHERE fees_lease_id = \'""" + lease_uid + """\'
