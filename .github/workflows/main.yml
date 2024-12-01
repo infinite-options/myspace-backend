@@ -54,8 +54,9 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > ssh_key.pem
           chmod 600 ssh_key.pem
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem $EC2_USER@$EC2_HOST << EOF
-            cd /home/ec2-user/myspace/myspace-backend
-
+            cd /home/ec2-user/myspace
+            source .venv/bin/activate
+            cd myspace-backend
             git pull origin master
 
             pkill -f "python3 myspace_api.py" || echo "No existing app running"
