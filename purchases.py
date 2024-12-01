@@ -244,12 +244,15 @@ class Bills(Resource):
                             #FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
                             #POST MAINTENANCE-PM PURCHASE
                             #  Get New PURCHASE UID
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']  
-                            print("New Purchase ID: ", new_purchase_uid)                        
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id'] 
+                            purchase_group =  new_purchase_uid
+                            print("New Purchase ID: ", new_purchase_uid) 
+
 
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
@@ -281,6 +284,7 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
@@ -314,12 +318,14 @@ class Bills(Resource):
                             print("Tenant Responsible")
                             pur_cf_type = "revenue"
 
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']   
+                            purchase_group =  new_purchase_uid                       
                             print("New PM-OWNER Purchase ID: ", new_purchase_uid)  
 
                             purchaseQuery = (""" 
                                 INSERT INTO space.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                    , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
@@ -355,6 +361,7 @@ class Bills(Resource):
                         purchaseQuery = (""" 
                             INSERT INTO space.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
+                                , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
@@ -402,21 +409,85 @@ class Bills(Resource):
             # response["purchase_ids added"] = json.dumps(pur_ids)
             return response
 
-    def put(self):
-        print('in bills')
+    # def put(self):
+    #     print('in bills')
 
-        payload = request.form
+    #     payload = request.form
         
+    #     if payload.get('bill_uid') in {None, '', 'null'}:
+    #         print("No bill_uid")
+    #         raise BadRequest("Request failed, no UID in payload.")
+    #     key = {'bill_uid': payload['bill_uid']}
+    #     print("Key: ", key)
+    #     bills = {k: v for k, v in payload.items()}
+    #     print("KV Pairs: ", bills)
+    #     with connect() as db:
+    #         print("In actual PUT")
+    #         response = db.update('bills', key, bills)
+    #     return response
+    
+
+    def put(self):
+        print("\nIn Bills PUT")
+        response = {}
+
+        payload = request.form.to_dict()
+        print("Bills Update Payload: ", payload)
+        
+         # Verify uid has been included in the data
         if payload.get('bill_uid') in {None, '', 'null'}:
             print("No bill_uid")
             raise BadRequest("Request failed, no UID in payload.")
-        key = {'bill_uid': payload['bill_uid']}
-        print("Key: ", key)
-        bills = {k: v for k, v in payload.items()}
-        print("KV Pairs: ", bills)
+        
+        # bill_uid = payload.get('bill_uid')
+        key = {'bill_uid': payload.pop('bill_uid')}
+        print("Bill Key: ", key) 
+
+
+        # --------------- PROCESS IMAGES ------------------
+
+        processImage(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS IMAGES ------------------
+        
+
+        # --------------- PROCESS DOCUMENTS ------------------
+
+        processDocument(key, payload)
+        print("Payload after function: ", payload)
+        
+        # --------------- PROCESS DOCUMENTS ------------------
+
+
+
+        # Write to Databaseè
         with connect() as db:
-            print("In actual PUT")
-            response = db.update('bills', key, bills)
+            # print("Checking Inputs: ", key, payload)
+            response['bill_info'] = db.update('bills', key, payload)
+            # print("Response:" , response)
+
+
+
+        # Update PURCHASES Table to reflect new values
+        if payload.get('bill_notes') not in {None, '', 'null'} or payload.get('bill_amount') not in {None, '', 'null'}:
+            print("purchase table needs to change")
+
+            with connect() as db:
+                bill_purchase_query = db.execute(""" SELECT * FROM space.purchases WHERE pur_bill_id = \'""" + key['bill_uid'] + """\' """)     # Current Purchase associated with Bill
+                # print(bill_purchase_query)
+
+                for purchase in bill_purchase_query["result"]:
+                    #  print(purchase)
+                    #  print("Purchase UID: ", purchase["purchase_uid"], type(purchase["purchase_uid"]))
+                     bill_pur_update = {}
+                     bill_pur_update["pur_amount_due"] = payload.get('bill_amount')
+                     bill_pur_update["pur_notes"] = payload.get('bill_notes')
+                    #  print(bill_pur_update)
+
+                     response['bill_update'] = db.update('purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
+
+            
         return response
         
     def delete(self):

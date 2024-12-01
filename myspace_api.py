@@ -1170,7 +1170,7 @@ class LateFees_CLASS(Resource):
 
 
                 # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
-                # Run Query to get all late fees
+                # Run Query to get all late fees.  This will be used later to update existing rows
                 lateFees = db.execute("""
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
@@ -1241,7 +1241,9 @@ class LateFees_CLASS(Resource):
 
             # CALCULATE THE LATE FEE AMOUNT
                         late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
-                        # print("Late Fee: ", late_fee, type(late_fee))
+                        print("Late Fee: ", late_fee, type(late_fee))
+                    
+            # return  # Use this for debug purposes
 
             # APPEND TO CRON OUTPUT
                         CronPostings.append(
@@ -1300,8 +1302,8 @@ class LateFees_CLASS(Resource):
                                 # else:
                                 #     print("No existing Late Fee found")
                                 continue
+
             # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
-                        
                         if putFlag == 0 and late_fee > 0:
                             print("POST Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
 
@@ -1759,7 +1761,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 print("\n Next i: ", response['result'][i]['leaseFees_uid'])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
-                # Check if lease_fee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
+                # Check if leaseFee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
                 if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
                     continue
 
