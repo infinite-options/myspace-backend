@@ -39,6 +39,7 @@ jobs:
       - name: Run app to test
         id: test
         run: |
+          cd myspace-backend
           python3 myspace_api.py &
           sleep 10
           if ! pgrep -f "python3 myspace_api.py"; then
