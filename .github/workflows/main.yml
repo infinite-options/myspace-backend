@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - ss_1112
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # - name: Checkout Code
+      #   uses: actions/checkout@v3
+
+      - name: Clone Repository
+        run: |
+          git clone https://github.com/infinite-options/myspace-backend.git
+          cd myspace-backend
+      
+      - name: Set Up Python
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip
+          python3 --version
+      
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: 3.8
+      
+      - name: Install Dependencies
+        run: |
+          pip3 install -r req.txt
+
+      - name: Run app to test
+        id: test
+        run: |
+          python3 myspace_api.py &
+          sleep 10
+          if ! pgrep -f "python3 myspace_api.py"; then
+            echo "App failed to start"
+            exit 1
+          fi
+      
+      - name: Deploy to EC2
+        if: success()
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER}}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem $EC2_USER@$EC2_HOST << EOF
+            cd /home/ec2-user/myspace/myspace-backend
+
+            git pull origin master
+
+            pkill -f "python3 myspace_api.py" || echo "No existing app running"
+            nohup python3 myspace_api.py
+          EOF
