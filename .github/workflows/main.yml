@@ -57,11 +57,15 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > ssh_key.pem
           chmod 600 ssh_key.pem
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem $EC2_USER@$EC2_HOST << EOF
+            echo "Connected to EC2 instance"
             cd /home/ec2-user/myspace
             source .venv/bin/activate
             cd myspace-backend
+            echo "Pulling latest code..."
             git pull origin master
-
+            echo "Restarting application..."
             pkill -f "python3 myspace_api.py" || echo "No existing app running"
-            nohup python3 myspace_api.py
+            nohup python3 myspace_api.py >> myspace.log 2>&1 &
+            echo "Application started"
+            exit 0
           EOF
