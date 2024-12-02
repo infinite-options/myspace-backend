@@ -1284,7 +1284,8 @@ class LateFees_CLASS(Resource):
                                         for fee in fees:
                                             # print("Fee: ", fee)
                                             # Extract only the monthly fees
-                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                            # if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:    
                                                 print("In Update PM Fee if statement")
                                                 charge = fee['charge']
                                                 charge_type = fee['fee_type']
@@ -1378,7 +1379,7 @@ class LateFees_CLASS(Resource):
                             for fee in fees:
                                 # print(fee)
                                 # Extract only the monthly fees
-                                if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
+                                if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
                                     charge = fee['charge']
                                     charge_type = fee['fee_type']
                                     # print("\nCharge: ", charge, charge_type)
@@ -1575,7 +1576,7 @@ def LateFees_CRON(Resource):
                                         for fee in fees:
                                             # print("Fee: ", fee)
                                             # Extract only the monthly fees
-                                            if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
                                                 print("In Update PM Fee if statement")
                                                 charge = fee['charge']
                                                 charge_type = fee['fee_type']
@@ -1669,7 +1670,7 @@ def LateFees_CRON(Resource):
                             for fee in fees:
                                 # print(fee)
                                 # Extract only the monthly fees
-                                if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
+                                if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
                                     charge = fee['charge']
                                     charge_type = fee['fee_type']
                                     # print("\nCharge: ", charge, charge_type)
@@ -1871,6 +1872,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     owner = response['result'][i]['property_owner_id']
                     manager = response['result'][i]['contract_business_id']
                     fee_name = response['result'][i]['fee_name']
+                    fee_type = response['result'][i]['fee_type']
                     # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
 
@@ -1906,7 +1908,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = "Rent"
+                        newRequest['purchase_type'] = fee_type
                         newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
@@ -1922,7 +1924,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = "Rent due Owner"
+                        newRequest['purchase_type'] = f"{fee_type} Due Owner"
                         newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
@@ -1931,7 +1933,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         db.insert('purchases', newRequest)
 
 
-
+                        # Owner-PM Payments for Management Fees
                         # For each entry posted to the purchases table, post any contract fees based on Rent
                         # Find contract fees based rent
                         manager_fees = db.execute("""

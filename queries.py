@@ -1081,3 +1081,54 @@ def MaintenanceDetails(user_id):
         return response
     except:
         print("Error in Maintenance Query ")
+
+
+def ProfileInfo(user_id):
+    print("In Profile Info Query FUNCTION CALL")
+
+    query = """
+            SELECT * FROM {table} 
+            LEFT JOIN (
+                SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
+                    ('paymentMethod_uid', paymentMethod_uid,
+                    'paymentMethod_type', paymentMethod_type,
+                    'paymentMethod_name', paymentMethod_name,
+                    'paymentMethod_acct', paymentMethod_acct,
+                    'paymentMethod_routing_number', paymentMethod_routing_number,
+                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
+                    'paymentMethod_exp_date', paymentMethod_exp_date,
+                    'paymentMethod_cvv', paymentMethod_cvv,
+                    'paymentMethod_billingzip', paymentMethod_billingzip,
+                    'paymentMethod_status', paymentMethod_status
+                    )) AS paymentMethods
+                    FROM space.paymentMethods
+                    GROUP BY paymentMethod_profile_id) as p ON {column} = paymentMethod_profile_id
+            -- WHERE owner_uid = '110-000003'
+            -- WHERE business_uid = '600-000003'
+            -- WHERE tenant_uid = '350-000003'
+            WHERE {column} = \'""" + user_id + """\'
+            """
+    print(query)
+
+    if user_id.startswith("110"):
+        query = query.format(column='owner_uid', table = 'space.ownerProfileInfo')
+    elif user_id.startswith("600"):
+        query = query.format(column='business_uid', table = 'space.businessProfileInfo')
+    elif user_id.startswith("350"):
+        query = query.format(column='tenant_uid', table = 'space.tenantProfileInfo')
+    else:
+        print("Invalid condition type")
+        return None
+
+    # print(query)
+
+    try:
+        # Run query to find Announcements Received
+        with connect() as db:  
+            print(query)
+            response = db.execute(query)
+            print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in Profile Info Query ")

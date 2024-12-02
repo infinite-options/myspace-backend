@@ -11,27 +11,8 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
+from queries import ProfileInfo
 
-
-
-# def clean_json_data(data):
-#     # print(data)
-#     for field, value in data.items():
-#         if value == '':
-#             value = None
-#         elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
-#             data[field] = json.dumps(value)
-    
-#     # data = {key: value for key, value in data.items() if "-DNU" not in key}
-
-#     # print("Cleaned data: ", data)
-#     return data
-
-# ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
-
-# def allowed_file(filename):
-#     return '.' in filename and \
-#            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class BusinessProfile(Resource):   
@@ -43,100 +24,17 @@ class BusinessProfile(Resource):
             response = db.select('businessProfileInfo', where)
         return response
 
-# class BusinessProfileList(Resource):
-#     def get(self, business_type):
-#         response = {}
-#         with connect() as db:
-#             business = db.execute("""
-#                             SELECT business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, 
-#                              business_locations, business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-#                             FROM space.businessProfileInfo 
-#                             WHERE business_type = \'""" + business_type + """\' 
-#             """)
-#         response["Businesses"] = business
-#         return response
-
-# class BusinessProfileByUid(Resource):
-    # def get(self, business_uid):
-    #     print('in BusinessProfileByUid')
-    #     with connect() as db:
-    #         response = db.select('businessProfileInfo', {"business_uid": business_uid})
-    #     return response
 
 
 class Profile(Resource):
     def get(self, user_id):
         print("In Profile Endpoint", user_id)
         with connect() as db:
-            if user_id.startswith("110"):
-                ownerQuery = db.execute("""
-                            SELECT * FROM space.ownerProfileInfo 
-                            LEFT JOIN (
-                                SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
-                                    ('paymentMethod_uid', paymentMethod_uid,
-                                    'paymentMethod_type', paymentMethod_type,
-                                    'paymentMethod_name', paymentMethod_name,
-                                    'paymentMethod_acct', paymentMethod_acct,
-                                    'paymentMethod_routing_number', paymentMethod_routing_number,
-                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
-                                    'paymentMethod_exp_date', paymentMethod_exp_date,
-                                    'paymentMethod_cvv', paymentMethod_cvv,
-                                    'paymentMethod_billingzip', paymentMethod_billingzip,
-                                    'paymentMethod_status', paymentMethod_status
-                                    )) AS paymentMethods
-                                    FROM space.paymentMethods
-                                    GROUP BY paymentMethod_profile_id) as p ON owner_uid = paymentMethod_profile_id
-                            WHERE owner_uid = \'""" + user_id + """\'
-                        """)
-                response = {}
-                response["profile"] = ownerQuery
+            response = {}
 
-            elif user_id.startswith("600"):
-                businessQuery = db.execute("""
-                            SELECT * FROM space.businessProfileInfo 
-                            LEFT JOIN (
-                                SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
-                                    ('paymentMethod_uid', paymentMethod_uid,
-                                    'paymentMethod_type', paymentMethod_type,
-                                    'paymentMethod_name', paymentMethod_name,
-                                    'paymentMethod_acct', paymentMethod_acct,
-                                    'paymentMethod_routing_number', paymentMethod_routing_number,
-                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
-                                    'paymentMethod_exp_date', paymentMethod_exp_date,
-                                    'paymentMethod_cvv', paymentMethod_cvv,
-                                    'paymentMethod_billingzip', paymentMethod_billingzip,
-                                    'paymentMethod_status', paymentMethod_status
-                                    )) AS paymentMethods
-                                FROM space.paymentMethods
-                                GROUP BY paymentMethod_profile_id) as p ON business_uid = paymentMethod_profile_id
-                            -- WHERE business_uid = '600-000003'
-                            WHERE business_uid = \'""" + user_id + """\'
-                            """)
-                response = {}
-                response["profile"] = businessQuery
+            if user_id.startswith(("110", "600", "350")):
+                response["profile"] = ProfileInfo(user_id)
 
-            elif user_id.startswith("350"):
-                tenantQuery = db.execute("""
-                            SELECT * FROM space.tenantProfileInfo 
-                            LEFT JOIN (
-                                SELECT paymentMethod_profile_id, JSON_ARRAYAGG(JSON_OBJECT
-                                    ('paymentMethod_uid', paymentMethod_uid,
-                                    'paymentMethod_type', paymentMethod_type,
-                                    'paymentMethod_name', paymentMethod_name,
-                                    'paymentMethod_acct', paymentMethod_acct,
-                                    'paymentMethod_routing_number', paymentMethod_routing_number,
-                                    'paymentMethod_micro_deposits', paymentMethod_micro_deposits,
-                                    'paymentMethod_exp_date', paymentMethod_exp_date,
-                                    'paymentMethod_cvv', paymentMethod_cvv,
-                                    'paymentMethod_billingzip', paymentMethod_billingzip,
-                                    'paymentMethod_status', paymentMethod_status
-                                    )) AS paymentMethods
-                                    FROM space.paymentMethods
-                                    GROUP BY paymentMethod_profile_id) as p ON tenant_uid = paymentMethod_profile_id
-                            WHERE tenant_uid = \'""" + user_id + """\'
-                            """)
-                response = {}
-                response["profile"] = tenantQuery
 
             elif user_id.startswith("120"):
                     # response["profile"] = db.select('employees', {"employee_uid": user_id})
@@ -183,7 +81,7 @@ class Profile(Resource):
                 print(employeeQuery)
                     
                 if len(employeeQuery["result"]) > 0:
-                    response = {}
+                    # response = {}
                     response["profile"] = employeeQuery
                     
             else:
@@ -363,150 +261,4 @@ class Profile(Resource):
                     response['employee'] = db.update('employees', employee_key, employee_payload)
 
         return response
-   
-   
-    # def put(self):
-    #     print("\nIn Profile PUT")
-    #     response = {}
-    #     payload = request.form.to_dict()
-    #     print("Profile Update Payload: ", payload)
-        
-    #     # Profile Picture is Unique to Profile 
-    #     if payload.get('business_uid'):
-    #         print("In Business")  # Need valid-columns since business can be updated with employee
-    #         valid_columns = {"business_uid", "business_user_id", "business_type", "business_name", "business_phone_number", "business_email", "business_ein_number", "business_services_fees", "business_locations", "business_documents", 'business_address', "business_unit", "business_city", "business_state", "business_zip", "business_photo_url", 'business_documents_details', 'delete_documents'}
-    #         filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-    #         print("Filtered Payload: ", filtered_payload)
-    #         key = {'business_uid': filtered_payload.pop('business_uid')}
-    #         print("Business Key: ", key)
 
-    #         file = request.files.get("business_photo")
-    #         if file:
-    #             key1 = f'businessProfileInfo/{key["business_uid"]}/business_photo'
-
-    #             try:
-    #                 deleteImage(key1)
-    #                 print(f"Deleted existing file {key1}")
-    #             except s3.exceptions.ClientError as e:
-    #                 if e.response['Error']['Code'] == '404':
-    #                     print(f"File {key1} does not exist")
-    #                 else:
-    #                     print(f"Error deleting file {key1}: {e}")
-
-    #             filtered_payload["business_photo_url"] = uploadImage(file, key1, '')
-    #             # print("business photo: ", filtered_payload["business_photo_url"] )
-
-    #         # --------------- PROCESS DOCUMENTS ------------------
-
-    #         processDocument(key, filtered_payload)
-    #         print("Payload after function: ", filtered_payload)
-            
-    #         # --------------- PROCESS DOCUMENTS ------------------
-
-
-    #         with connect() as db:
-    #             # print("Checking Inputs: ", key, filtered_payload)
-    #             response = db.update('businessProfileInfo', key, filtered_payload)
-        
-        
-    #     if payload.get('tenant_uid'):
-    #         print("In Tenant")
-    #         # tenant_uid = payload.get('tenant_uid')
-    #         key = {'tenant_uid': payload.pop('tenant_uid')}
-    #         print("Tenant Key: ", key)
-
-    #         file = request.files.get("tenant_photo_url")
-    #         if file:
-    #             key1 = f'tenantProfileInfo/{key["tenant_uid"]}/tenant_photo'
-                
-    #             try:    
-    #                 deleteImage(key1)
-    #                 print(f"Deleted existing file {key1}")
-    #             except s3.exceptions.ClientError as e:
-    #                 if e.response['Error']['Code'] == '404':
-    #                     print(f"File {key1} does not exist")
-    #                 else:
-    #                     print(f"Error deleting file {key1}: {e}")
-
-    #             payload["tenant_photo_url"] = uploadImage(file, key1, '')
-
-
-    #         # --------------- PROCESS DOCUMENTS ------------------
-
-    #         processDocument(key, payload)
-    #         print("Payload after function: ", payload)
-            
-    #         # --------------- PROCESS DOCUMENTS ------------------
-
-
-    #         # Update File List in Database        
-    #         # print("tenant")
-    #         # print("key: ", key )
-    #         # print("payload: ", payload)
-
-    #         with connect() as db:
-    #             # print("Checking Inputs: ", key, payload)
-    #             response['tenant_docs'] = db.update('tenantProfileInfo', key, payload)
-    #             # print("Response:" , response)
-
-
-    #     if payload.get('owner_uid'):
-    #         # print("In Owner")
-    #         key = {'owner_uid': payload.pop('owner_uid')}
-    #         # print("Owner Key: ", key)
-
-    #         file = request.files.get("owner_photo_url")
-    #         if file:
-    #             key1 = f'ownerProfileInfo/{key["owner_uid"]}/owner_photo'
-
-    #             try:
-    #                 deleteImage(key1)
-    #                 print(f"Deleted existing file {key1}")
-    #             except s3.exceptions.ClientError as e:
-    #                 if e.response['Error']['Code'] == '404':
-    #                     print(f"File {key1} does not exist")
-    #                 else:
-    #                     print(f"Error deleting file {key1}: {e}")
-
-    #             payload["owner_photo_url"] = uploadImage(file, key1, '')
-    #             # print("Owner Payload: ", payload)
-
-    #         with connect() as db:
-    #             # print("Checking Inputs: ", key, filtered_payload)
-    #             response = db.update('ownerProfileInfo', key, payload)
-    #             # print(response)
-
-        
-    #     if payload.get('employee_uid'):
-    #         # print("In Employee")
-    #         valid_columns = {"employee_uid", "employee_user_id", "employee_business_id", "employee_first_name", "employee_last_name", "employee_phone_number", "employee_email", "employee_role", "employee_photo_url", "employee_ssn", "employee_address", "employee_unit", "employee_city", "employee_state", "employee_zip", "employee_verification"}
-    #         filtered_payload = {key: value for key, value in payload.items() if key in valid_columns}
-    #         print("Filtered Payload: ", filtered_payload)
-    #         key = {'employee_uid': filtered_payload.pop('employee_uid')}
-    #         # print("Employee Key: ", key)
-
-    #         file = request.files.get("employee_photo_url")
-    #         if file:
-    #             key1 = f'employees/{key["employee_uid"]}/employee_photo'
-
-    #             try:
-    #                 deleteImage(key1)
-    #                 print(f"Deleted existing file {key1}")
-    #             except s3.exceptions.ClientError as e:
-    #                 if e.response['Error']['Code'] == '404':
-    #                     print(f"File {key1} does not exist")
-    #                 else:
-    #                     print(f"Error deleting file {key1}: {e}")
-
-    #             filtered_payload["employee_photo_url"] = uploadImage(file, key1, '')
-    #             # print("employee photo: ", filtered_payload["employee_photo_url"] )
-            
-            
-    #         with connect() as db:
-    #             # print("Checking Inputs: ", key, filtered_payload)
-    #             response = db.update('employees', key, filtered_payload)
-
-    #     # else:
-    #     #     raise BadRequest("Request failed, no UID in payload.")
-        
-    #     return response
