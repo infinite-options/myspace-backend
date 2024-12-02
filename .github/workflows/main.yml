@@ -18,6 +18,7 @@ jobs:
         run: |
           git clone https://github.com/infinite-options/myspace-backend.git
           cd myspace-backend
+          ls
       
       - name: Set Up Python
         run: |
@@ -32,11 +33,13 @@ jobs:
       
       - name: Install Dependencies
         run: |
+          cd myspace-backend
           pip3 install -r req.txt
 
       - name: Run app to test
         id: test
         run: |
+          cd myspace-backend
           python3 myspace_api.py &
           sleep 10
           if ! pgrep -f "python3 myspace_api.py"; then
@@ -54,11 +57,15 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > ssh_key.pem
           chmod 600 ssh_key.pem
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem $EC2_USER@$EC2_HOST << EOF
+            echo "Connected to EC2 instance"
             cd /home/ec2-user/myspace
             source .venv/bin/activate
             cd myspace-backend
+            echo "Pulling latest code..."
             git pull origin master
-
+            echo "Restarting application..."
             pkill -f "python3 myspace_api.py" || echo "No existing app running"
-            nohup python3 myspace_api.py
+            nohup python3 myspace_api.py >> myspace.log 2>&1 &
+            echo "Application started"
+            exit 0
           EOF
