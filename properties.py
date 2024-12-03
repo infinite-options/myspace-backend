@@ -182,9 +182,10 @@ class Properties(Resource):
         elif uid[:3] == '600':
             print("In Business ID")
 
-            # APPLICATIONS
             with connect() as db:
                 # print("in connect loop")
+
+                # APPLICATIONS
                 print("In Find Applications")
                 applicationQuery = db.execute("""
                 -- FIND APPLICATIONS CURRENTLY IN PROGRESS
@@ -216,6 +217,43 @@ class Properties(Resource):
                 AND contract_business_id = \'""" + uid + """\'                   
                 """)
                 response["Applications"] = applicationQuery
+
+                
+                # LEASES
+                print("In Find Leases")
+                leaseQuery = db.execute("""
+                -- FIND LEASES CURRENTLY IN PROGRESS
+                SELECT property_uid
+                    , leases.*
+                    , lease_fees
+                    , t_details.*
+                FROM space.properties
+                LEFT JOIN space.leases ON property_uid = lease_property_id
+                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                        ('leaseFees_uid', leaseFees_uid,
+                        'fee_name', fee_name,
+                        'fee_type', fee_type,
+                        'charge', charge,
+                        'due_by', due_by,
+                        'late_by', late_by,
+                        'late_fee',late_fee,
+                        'perDay_late_fee', perDay_late_fee,
+                        'frequency', frequency,
+                        'available_topay', available_topay,
+                        'due_by_date', due_by_date
+                        )) AS lease_fees
+                        FROM space.leaseFees
+                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                LEFT JOIN space.contracts ON contract_property_id = property_uid
+                WHERE contract_status = "ACTIVE"
+                -- AND contract_business_id = "600-000003"
+                AND contract_business_id = \'""" + uid + """\' 
+                -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                 
+                """)
+                response["Leases"] = leaseQuery
+
+
 
                 #PROPERTIES
                 response["Property"] = RentPropertiesQuery(uid)

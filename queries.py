@@ -727,18 +727,18 @@ def DashboardCashflowQuery(user_id):
         with connect() as db:    
             # NOT SURE WHY THIS DOES NOT WORK
             # response = db.execute("""
-            #         -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
-            #         SELECT pur_receiver, pur_payer
-            #             , SUM(pur_amount_due) AS pur_amount_due
-            #             , SUM(total_paid) AS total_paid
-            #             , cf_month, cf_month_num, cf_year
-            #             , pur_cf_type
-            #         FROM space.pp_status
-            #         -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
-            #         -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
-            #         WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
-            #         GROUP BY cf_month, cf_year, pur_cf_type
-            #         ORDER BY cf_month_num
+                    # -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
+                    # SELECT pur_receiver, pur_payer
+                    #     , SUM(pur_amount_due) AS pur_amount_due
+                    #     , SUM(total_paid) AS total_paid
+                    #     , cf_month, cf_month_num, cf_year
+                    #     , pur_cf_type
+                    # FROM space.pp_status
+                    # -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
+                    # -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                    # WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+                    # GROUP BY cf_month, cf_year, pur_cf_type
+                    # ORDER BY cf_month_num
             #         """)
             response = db.execute("""
                     -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
