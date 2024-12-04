@@ -154,36 +154,36 @@ class Appliances(Resource):
 
 
 
-class RemoveAppliance(Resource):
-    def put(self):
-        response = {}
-        with connect() as db:
-            data = request.form
-            # print(data)
-            property_uid = data.get('property_uid')
-            appliance = (data.get('appliance'))
+# class RemoveAppliance(Resource):
+#     def put(self):
+#         response = {}
+#         with connect() as db:
+#             data = request.form
+#             # print(data)
+#             property_uid = data.get('property_uid')
+#             appliance = (data.get('appliance'))
 
-            getAppliance = db.execute(
-                """SELECT appliances FROM pm.properties WHERE property_uid= \'""" + property_uid + """\'""")
-            getappLen = len(json.loads(
-                getAppliance['result'][0]['appliances']).keys())
-            existingApp = json.loads(
-                getAppliance['result'][0]['appliances'])
-            # print(existingApp)
-            if appliance in existingApp:
+#             getAppliance = db.execute(
+#                 """SELECT appliances FROM pm.properties WHERE property_uid= \'""" + property_uid + """\'""")
+#             getappLen = len(json.loads(
+#                 getAppliance['result'][0]['appliances']).keys())
+#             existingApp = json.loads(
+#                 getAppliance['result'][0]['appliances'])
+#             # print(existingApp)
+#             if appliance in existingApp:
 
-                del (existingApp[appliance])
-                # print(existingApp)
-                primaryKey = {
-                    'property_uid': property_uid
-                }
-                updatedProperty = {
-                    'appliances': json.dumps(existingApp)
-                }
+#                 del (existingApp[appliance])
+#                 # print(existingApp)
+#                 primaryKey = {
+#                     'property_uid': property_uid
+#                 }
+#                 updatedProperty = {
+#                     'appliances': json.dumps(existingApp)
+#                 }
 
-                response = db.update('properties', primaryKey, updatedProperty)
-            else:
-                response['message'] = 'No appliance'
-                response['code'] = 200
+#                 response = db.update('properties', primaryKey, updatedProperty)
+#             else:
+#                 response['message'] = 'No appliance'
+#                 response['code'] = 200
 
-        return response
+#         return response

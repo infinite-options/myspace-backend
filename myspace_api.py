@@ -12,7 +12,7 @@
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
-from appliances import Appliances, RemoveAppliance
+from appliances import Appliances #, RemoveAppliance
 from rents import Rents, RentDetails, RentTest
 from payments import NewPayments, PaymentMethod
 from properties import Properties

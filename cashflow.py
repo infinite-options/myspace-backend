@@ -303,117 +303,6 @@ class CashflowTransactions(Resource):
                         GROUP BY purchase_type
                     """)
                 
-            # if filter == 'type':
-            #     print("In PM Cashflow Purchase Type and Property")
-            
-            #     response["revenue"] = db.execute("""                          
-            #             -- Cashflow by PURCHASE TYPE and PROPERTY
-            #             -- BY USER, by Month, by Year, by Purchase Type, by Property
-            #             SELECT 
-            #                 cf_year,
-            #                 cf_month,
-            #                 SUM(pur_amount_due) AS received_expected,
-            #                 SUM(pur_amount_due-amt_remaining) AS received_actual,
-            #                 purchase_type,
-            #                 pur_property_id,
-            #                 pur_receiver,
-            #                 JSON_ARRAYAGG(
-            #                     JSON_OBJECT(
-            #                         'purchase_uid', purchase_uid,
-            #                         'pur_timestamp', pur_timestamp,
-            #                         'pur_description', pur_description,
-            #                         'pur_notes', pur_notes,
-            #                         'pur_cf_type', pur_cf_type,
-            #                         'pur_bill_id', pur_bill_id,
-            #                         'purchase_date', purchase_date,
-            #                         'pur_due_date', pur_due_date,
-            #                         'pur_amount_due', pur_amount_due,
-            #                         'purchase_status', purchase_status,
-            #                         'pur_status_value', pur_status_value,
-            #                         'pur_receiver', pur_receiver,
-            #                         'pur_initiator', pur_initiator,
-            #                         'pur_payer', pur_payer,
-            #                         'pur_late_Fee', pur_late_Fee,
-            #                         'pur_perDay_late_fee', pur_perDay_late_fee,
-            #                         'pur_due_by', pur_due_by,
-            #                         'pur_late_by', pur_late_by,
-            #                         'pur_group', pur_group,
-            #                         'pur_leaseFees_id', pur_leaseFees_id,
-            #                         'pay_purchase_id', pay_purchase_id,
-            #                         'latest_date', latest_date,
-            #                         'total_paid', total_paid,
-            #                         'verified', verified,
-            #                         'payment_status', payment_status,
-            #                         'amt_remaining', amt_remaining,
-            #                         'cf_month', cf_month,
-            #                         'cf_month_num', cf_month_num,
-            #                         'cf_year', cf_year
-            #                     )
-            #                 ) AS individual_transactions
-            #             FROM space.pp_status
-            #             WHERE cf_month = DATE_FORMAT(NOW(), '%M')
-            #                 AND cf_year = DATE_FORMAT(NOW(), '%Y')
-            #                 -- AND pur_receiver = '600-000003'  
-            #                 AND pur_receiver = \'""" + user_id + """\'
-            #                 -- AND pur_payer = '600-000003'  
-	        #                 -- AND pur_payer = \'""" + user_id + """\'
-            #             GROUP BY purchase_type, pur_property_id
-            #         """)
-                
-            #     response["expense"] = db.execute("""                          
-            #             -- Cashflow by PURCHASE TYPE and PROPERTY
-            #             -- BY USER, by Month, by Year, by Purchase Type, by Property
-            #             SELECT 
-            #                 cf_year,
-            #                 cf_month,
-            #                 SUM(pur_amount_due) AS received_expected,
-            #                 SUM(pur_amount_due-amt_remaining) AS received_actual,
-            #                 purchase_type,
-            #                 pur_property_id,
-            #                 pur_receiver,
-            #                 JSON_ARRAYAGG(
-            #                     JSON_OBJECT(
-            #                         'purchase_uid', purchase_uid,
-            #                         'pur_timestamp', pur_timestamp,
-            #                         'pur_description', pur_description,
-            #                         'pur_notes', pur_notes,
-            #                         'pur_cf_type', pur_cf_type,
-            #                         'pur_bill_id', pur_bill_id,
-            #                         'purchase_date', purchase_date,
-            #                         'pur_due_date', pur_due_date,
-            #                         'pur_amount_due', pur_amount_due,
-            #                         'purchase_status', purchase_status,
-            #                         'pur_status_value', pur_status_value,
-            #                         'pur_receiver', pur_receiver,
-            #                         'pur_initiator', pur_initiator,
-            #                         'pur_payer', pur_payer,
-            #                         'pur_late_Fee', pur_late_Fee,
-            #                         'pur_perDay_late_fee', pur_perDay_late_fee,
-            #                         'pur_due_by', pur_due_by,
-            #                         'pur_late_by', pur_late_by,
-            #                         'pur_group', pur_group,
-            #                         'pur_leaseFees_id', pur_leaseFees_id,
-            #                         'pay_purchase_id', pay_purchase_id,
-            #                         'latest_date', latest_date,
-            #                         'total_paid', total_paid,
-            #                         'verified', verified,
-            #                         'payment_status', payment_status,
-            #                         'amt_remaining', amt_remaining,
-            #                         'cf_month', cf_month,
-            #                         'cf_month_num', cf_month_num,
-            #                         'cf_year', cf_year
-            #                     )
-            #                 ) AS individual_transactions
-            #             FROM space.pp_status
-            #             WHERE cf_month = DATE_FORMAT(NOW(), '%M')
-            #                 AND cf_year = DATE_FORMAT(NOW(), '%Y')
-            #                 -- AND pur_receiver = '600-000003'  
-            #                 -- AND pur_receiver = \'""" + user_id + """\'
-            #                 -- AND pur_payer = '600-000003'  
-	        #                 AND pur_payer = \'""" + user_id + """\'
-            #             GROUP BY purchase_type, pur_property_id
-            #         """)
-                
             if filter == 'all':
                 print("In PM Cashflow All")
             
@@ -454,6 +343,7 @@ class CashflowTransactions(Resource):
                         -- WHERE pur_receiver = '600-000043' OR pur_payer = '600-000043';
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\';
                         """)
+            
             else:
                 print("In New Cashflow All")
                 response = db.execute("""                          
