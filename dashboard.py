@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
-from queries import DashboardCashflowQuery, AnnouncementReceiverQuery, AnnouncementSenderQuery, RentDashboardQuery
+from queries import DashboardCashflowQuery, AnnouncementReceiverQuery, AnnouncementSenderQuery, RentDashboardQuery, DashboardProfitQuery
 
 class Dashboard(Resource):
     def get(self, user_id):
@@ -139,6 +139,9 @@ class Dashboard(Resource):
                     # CASHFLOW
                     # print("Query: ", cashFlow)
                     response["cashflowStatus"] = DashboardCashflowQuery(user_id)
+
+                    # print("Query: ", profit)
+                    response["profitStatus"] = DashboardProfitQuery(user_id)
 
 
                     # HAPPINESS MATRIX - VACANCY AND CASHFLOW

@@ -559,7 +559,7 @@ def RentDashboardQuery(user_id):
         print("Invalid condition type")
         return None
 
-    print(query)
+    # print(query)
 
     try:
         # Run query to find Announcements Received
@@ -769,6 +769,48 @@ def DashboardCashflowQuery(user_id):
                     -- WHERE pur_payer = '600-000003' AND purchase_type != 'Deposit'
                     WHERE pur_payer = \'""" + user_id + """\' AND purchase_type != 'Deposit'
                     GROUP BY cf_month, cf_year                                  
+                    """)
+            # print("Function Query Complete")
+            # print("This is the Function response: ", response)
+        return response
+    except:
+        print("Error in DashboardCashflowQuery Query ")
+
+
+def DashboardProfitQuery(user_id):
+    # print("In DashboardCashflowQuery FUNCTION CALL")
+
+    try:
+        # Run query to find rents of ACTIVE leases
+        with connect() as db:    
+            # NOT SURE WHY THIS DOES NOT WORK
+            # response = db.execute("""
+                    # -- CASHFLOW FOR A PARTICULAR OWNER OR MANAGER
+                    # SELECT pur_receiver, pur_payer
+                    #     , SUM(pur_amount_due) AS pur_amount_due
+                    #     , SUM(total_paid) AS total_paid
+                    #     , cf_month, cf_month_num, cf_year
+                    #     , pur_cf_type
+                    # FROM space.pp_status
+                    # -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
+                    # -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
+                    # WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+                    # GROUP BY cf_month, cf_year, pur_cf_type
+                    # ORDER BY cf_month_num
+            #         """)
+            response = db.execute("""
+                    SELECT -- *
+                        pur_receiver, pur_payer
+                        , SUM(pur_amount_due) AS pur_amount_due
+                        , SUM(total_paid) AS total_paid
+                        , cf_month, cf_month_num, cf_year
+                        , purchase_type
+                        , pur_cf_type
+                    FROM space.pp_status
+                    -- WHERE (pur_receiver = '600-000050' OR pur_payer = '600-000050')
+                    WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
+                    GROUP BY cf_month, cf_year, pur_cf_type, purchase_type
+                    ORDER BY cf_month_num                                
                     """)
             # print("Function Query Complete")
             # print("This is the Function response: ", response)
