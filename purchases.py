@@ -238,7 +238,7 @@ class Bills(Resource):
 
                     if bill_utility_type == "maintenance":
                         print("In Maitenance Bill")
-                        pur_cf_type = "expense"
+                        
                         if bill_maintenance_quote_id[:3] == "900": 
                             print("In Maintenance Item performed by Maintenance Role")
                             #FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
@@ -256,7 +256,6 @@ class Bills(Resource):
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_property_id = \'""" + pur_property_id  + """\'
                                     , purchase_type = "MAINTENANCE"
-                                    , pur_cf_type = \'""" + pur_cf_type  + """\'
                                     , pur_bill_id = \'""" + new_bill_uid + """\'
                                     , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                     , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
@@ -265,6 +264,7 @@ class Bills(Resource):
                                     , pur_status_value = "0"
                                     , pur_notes = \'""" + bill_notes + """\'
                                     , pur_description = \'""" + bill_description + """\'
+                                    , pur_cf_type = "expense"
                                     , pur_receiver = \'""" + bill_created_by + """\'
                                     , pur_payer = \'""" + responsibleManager + """\'
                                     , pur_initiator = \'""" + bill_created_by + """\';
@@ -288,7 +288,6 @@ class Bills(Resource):
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + pur_property_id  + """\'
                                 , purchase_type = "MAINTENANCE"
-                                , pur_cf_type = \'""" + pur_cf_type  + """\'
                                 , pur_bill_id = \'""" + new_bill_uid + """\'
                                 , purchase_date = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_due_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 14 DAY), '%m-%d-%Y %H:%i')  
@@ -297,6 +296,7 @@ class Bills(Resource):
                                 , pur_status_value = "0"
                                 , pur_notes = \'""" + bill_notes + """\'
                                 , pur_description = \'""" + bill_description + """\'
+                                , pur_cf_type = "revenue"
                                 , pur_receiver = \'""" + responsibleManager + """\'
                                 , pur_payer = \'""" + responsibleOwner + """\'
                                 , pur_initiator = \'""" + bill_created_by + """\';
