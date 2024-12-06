@@ -1154,6 +1154,7 @@ class LateFees_CLASS(Resource):
 
         # Establish current day, month and year
         dt = date.today()
+        print("dt is: ", dt, type(dt))
 
         numCronPurchases = 0
         numCronUpdates = 0
@@ -1344,9 +1345,10 @@ class LateFees_CLASS(Resource):
 
                             if numDays ==  0:
                                 # print("\n", "Late Today")
-                                newRequest['pur_description'] = "Late Fee Applied"
+                                # newRequest['pur_description'] = f"Late Fee Applied for {purchase_notes}"
+                                 newRequest['pur_description'] = f"Late Fee Applied for {purchase_description}"
                             else:
-                                newRequest['pur_description'] = "Late Fee"
+                                newRequest['pur_description'] = f"Late Fee for {purchase_description}"
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
@@ -1393,7 +1395,7 @@ class LateFees_CLASS(Resource):
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
                                     newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee'
+                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee for {purchase_description}'
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)
@@ -1448,6 +1450,7 @@ def LateFees_CRON(Resource):
 
         # Establish current day, month and year
         dt = date.today()
+        print("dt is: ", dt, type(dt))
 
         numCronPurchases = 0
         numCronUpdates = 0
@@ -1464,7 +1467,7 @@ def LateFees_CRON(Resource):
 
 
                 # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
-                # Run Query to get all late fees
+                # Run Query to get all late fees.  This will be used later to update existing rows
                 lateFees = db.execute("""
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
@@ -1535,7 +1538,9 @@ def LateFees_CRON(Resource):
 
             # CALCULATE THE LATE FEE AMOUNT
                         late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
-                        # print("Late Fee: ", late_fee, type(late_fee))
+                        print("Late Fee: ", late_fee, type(late_fee))
+                    
+            # return  # Use this for debug purposes
 
             # APPEND TO CRON OUTPUT
                         CronPostings.append(
@@ -1576,7 +1581,8 @@ def LateFees_CRON(Resource):
                                         for fee in fees:
                                             # print("Fee: ", fee)
                                             # Extract only the monthly fees
-                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                            # if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:    
                                                 print("In Update PM Fee if statement")
                                                 charge = fee['charge']
                                                 charge_type = fee['fee_type']
@@ -1594,8 +1600,8 @@ def LateFees_CRON(Resource):
                                 # else:
                                 #     print("No existing Late Fee found")
                                 continue
+
             # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
-                        
                         if putFlag == 0 and late_fee > 0:
                             print("POST Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
 
@@ -1635,9 +1641,10 @@ def LateFees_CRON(Resource):
 
                             if numDays ==  0:
                                 # print("\n", "Late Today")
-                                newRequest['pur_description'] = "Late Fee Applied"
+                                # newRequest['pur_description'] = f"Late Fee Applied for {purchase_notes}"
+                                 newRequest['pur_description'] = f"Late Fee Applied for {purchase_description}"
                             else:
-                                newRequest['pur_description'] = "Late Fee"
+                                newRequest['pur_description'] = f"Late Fee for {purchase_description}"
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
@@ -1684,7 +1691,7 @@ def LateFees_CRON(Resource):
                                     newRequest['pur_payer'] = owner
                                     newRequest['pur_cf_type'] = "expense"
                                     newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee'
+                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee for {purchase_description}'
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
                                     
                                     # print(newRequest)
@@ -1732,7 +1739,7 @@ def LateFees_CRON(Resource):
                     'code': 500}
 
 
-        return response 
+        return response
 
 
 class MonthlyRentPurchase_CLASS(Resource):
@@ -1896,7 +1903,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_perDay_late_fee'] = perDay_late_fee
 
                     newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year}"
+                    newRequest['pur_description'] = f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -1964,8 +1971,14 @@ class MonthlyRentPurchase_CLASS(Resource):
                         for j in range(len(manager_fees['result'])):
                             print("J :", j)
 
+                            # Check frequency 
+                            valid_frequencies = ['monthly', 'bi-weekly', 'weekly', 'semi-monthly', 'semi-quarterly', 'bi weekly']
+
+                            if manager_fees['result'][j]['frequency_column'].lower() in valid_frequencies:
+
+
                             # Check if fees is monthly 
-                            if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
+                            # if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                                 # Check if charge is a % or Fixed $ Amount
                                 if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
@@ -2070,7 +2083,7 @@ def MonthlyRentPurchase_CRON(Resource):
                 print("\n Next i: ", response['result'][i]['leaseFees_uid'])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
-                # Check if lease_fee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
+                # Check if leaseFee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
                 if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
                     continue
 
@@ -2180,6 +2193,7 @@ def MonthlyRentPurchase_CRON(Resource):
                     owner = response['result'][i]['property_owner_id']
                     manager = response['result'][i]['contract_business_id']
                     fee_name = response['result'][i]['fee_name']
+                    fee_type = response['result'][i]['fee_type']
                     # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
 
@@ -2203,7 +2217,7 @@ def MonthlyRentPurchase_CRON(Resource):
                     newRequest['pur_perDay_late_fee'] = perDay_late_fee
 
                     newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"Rent for {next_due_date.strftime('%B')} {next_due_date.year}"
+                    newRequest['pur_description'] = f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
@@ -2215,7 +2229,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = "Rent"
+                        newRequest['purchase_type'] = fee_type
                         newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
                         # print(newRequest)
@@ -2231,7 +2245,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = "Rent due Owner"
+                        newRequest['purchase_type'] = f"{fee_type} Due Owner"
                         newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
                 
@@ -2240,7 +2254,7 @@ def MonthlyRentPurchase_CRON(Resource):
                         db.insert('purchases', newRequest)
 
 
-
+                        # Owner-PM Payments for Management Fees
                         # For each entry posted to the purchases table, post any contract fees based on Rent
                         # Find contract fees based rent
                         manager_fees = db.execute("""
@@ -2271,8 +2285,14 @@ def MonthlyRentPurchase_CRON(Resource):
                         for j in range(len(manager_fees['result'])):
                             print("J :", j)
 
+                            # Check frequency 
+                            valid_frequencies = ['monthly', 'bi-weekly', 'weekly', 'semi-monthly', 'semi-quarterly', 'bi weekly']
+
+                            if manager_fees['result'][j]['frequency_column'].lower() in valid_frequencies:
+
+
                             # Check if fees is monthly 
-                            if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
+                            # if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                                 # Check if charge is a % or Fixed $ Amount
                                 if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':

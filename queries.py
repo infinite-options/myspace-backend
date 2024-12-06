@@ -898,7 +898,7 @@ def NextDueDate():
                                     WHEN frequency = 'Weekly' THEN 
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
                                     WHEN frequency = 'Bi-Weekly' THEN
-                                        DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 7) % 7 DAY)
+                                        DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 14) % 14 DAY)
                                 END, '%m-%d-%Y %H:%i') AS next_due_date
                         FROM (
                             SELECT * FROM space.leases WHERE lease_status = 'ACTIVE'

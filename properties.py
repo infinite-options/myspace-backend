@@ -72,32 +72,32 @@ class Properties(Resource):
                 applicationQuery = db.execute("""
                     -- FIND APPLICATIONS CURRENTLY IN PROGRESS
                     SELECT property_uid
-                            , leases.*
-                            , lease_fees
-                            , t_details.*
-                        FROM space.properties
-                        LEFT JOIN space.leases ON property_uid = lease_property_id
-                        LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                                ('leaseFees_uid', leaseFees_uid,
-                                'fee_name', fee_name,
-                                'fee_type', fee_type,
-                                'charge', charge,
-                                'due_by', due_by,
-                                'late_by', late_by,
-                                'late_fee',late_fee,
-                                'perDay_late_fee', perDay_late_fee,
-                                'frequency', frequency,
-                                'available_topay', available_topay,
-                                'due_by_date', due_by_date
-                                )) AS lease_fees
-                                FROM space.leaseFees
-                                GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                        LEFT JOIN space.property_owner ON property_id = property_uid
-                        -- WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
-                        WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
-                            AND property_owner_id = \'""" + uid + """\'   
-                        """)
+                        , leases.*
+                        , lease_fees
+                        , t_details.*
+                    FROM space.properties
+                    LEFT JOIN space.leases ON property_uid = lease_property_id
+                    LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee',late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS lease_fees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.property_owner ON property_id = property_uid
+                    -- WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
+                    WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
+                        AND property_owner_id = \'""" + uid + """\'   
+                    """)
                 response["Applications"] = applicationQuery
                 # print("Query: ", applicationQuery)
 
@@ -105,39 +105,39 @@ class Properties(Resource):
                 # LEASES
                 print("In Find Leases")
                 leaseQuery = db.execute("""
-                -- FIND LEASES CURRENTLY IN PROGRESS
-                SELECT property_uid
-                    , leases.*
-                    , lease_fees
-                    , t_details.*
-                    , property_owner.*
-                FROM space.properties
-                LEFT JOIN space.leases ON property_uid = lease_property_id
-                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('leaseFees_uid', leaseFees_uid,
-                        'fee_name', fee_name,
-                        'fee_type', fee_type,
-                        'charge', charge,
-                        'due_by', due_by,
-                        'late_by', late_by,
-                        'late_fee',late_fee,
-                        'perDay_late_fee', perDay_late_fee,
-                        'frequency', frequency,
-                        'available_topay', available_topay,
-                        'due_by_date', due_by_date
-                        )) AS lease_fees
-                        FROM space.leaseFees
-                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                LEFT JOIN space.contracts ON contract_property_id = property_uid
-                LEFT JOIN space.property_owner ON property_id = property_uid
-                WHERE contract_status = "ACTIVE"
-                -- AND property_owner_id = "110-000003"
-                AND property_owner_id = \'""" + uid + """\' 
-                -- AND contract_business_id = "600-000003"
-                -- AND contract_business_id = \'""" + uid + """\' 
-                -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                   
-                                """)
+                    -- FIND LEASES CURRENTLY IN PROGRESS
+                    SELECT property_uid
+                        , leases.*
+                        , lease_fees
+                        , t_details.*
+                        , property_owner.*
+                    FROM space.properties
+                    LEFT JOIN space.leases ON property_uid = lease_property_id
+                    LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee',late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS lease_fees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space.property_owner ON property_id = property_uid
+                    WHERE contract_status = "ACTIVE"
+                    -- AND property_owner_id = "110-000003"
+                    AND property_owner_id = \'""" + uid + """\' 
+                    -- AND contract_business_id = "600-000003"
+                    -- AND contract_business_id = \'""" + uid + """\' 
+                    -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                   
+                    """)
                 response["Leases"] = leaseQuery
 
 
@@ -146,7 +146,6 @@ class Properties(Resource):
 
 
                 print("In Maintenance Requests")
-
                 maintenanceQuery = db.execute("""
                         SELECT *
                             -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
@@ -209,13 +208,12 @@ class Properties(Resource):
                                     ) AS qr_quoterank
                             ) AS quote_summary ON maintenance_request_uid = qmr_id
                         ) AS quotes
-                    LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        -- WHERE contract_business_id = \'""" + uid + """\'
-                        -- WHERE contract_business_id = "600-000003"
-                        -- WHERE owner_uid = "110-000003"
-                #       WHERE owner_uid = \'""" + uid + """\'
-                    """)
-
+                        LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                            -- WHERE contract_business_id = \'""" + uid + """\'
+                            -- WHERE contract_business_id = "600-000003"
+                            -- WHERE owner_uid = "110-000003"
+                            WHERE owner_uid = \'""" + uid + """\'
+                        """)
                 # print("Query: ", maintenanceQuery)
                 response["MaintenanceRequests"] = maintenanceQuery
         
@@ -228,75 +226,74 @@ class Properties(Resource):
                 # APPLICATIONS
                 print("In Find Applications")
                 applicationQuery = db.execute("""
-                -- FIND APPLICATIONS CURRENTLY IN PROGRESS
-                SELECT property_uid
-                    , leases.*
-                    , lease_fees
-                    , t_details.*
-                FROM space.properties
-                LEFT JOIN space.leases ON property_uid = lease_property_id
-                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('leaseFees_uid', leaseFees_uid,
-                        'fee_name', fee_name,
-                        'fee_type', fee_type,
-                        'charge', charge,
-                        'due_by', due_by,
-                        'late_by', late_by,
-                        'late_fee',late_fee,
-                        'perDay_late_fee', perDay_late_fee,
-                        'frequency', frequency,
-                        'available_topay', available_topay,
-                        'due_by_date', due_by_date
-                        )) AS lease_fees
-                        FROM space.leaseFees
-                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                LEFT JOIN space.contracts ON contract_property_id = property_uid
-                WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
-                AND contract_status = "ACTIVE"
-                AND contract_business_id = \'""" + uid + """\'                   
-                """)
+                    -- FIND APPLICATIONS CURRENTLY IN PROGRESS
+                    SELECT property_uid
+                        , leases.*
+                        , lease_fees
+                        , t_details.*
+                    FROM space.properties
+                    LEFT JOIN space.leases ON property_uid = lease_property_id
+                    LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee',late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS lease_fees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.contracts ON contract_property_id = property_uid
+                    WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
+                    AND contract_status = "ACTIVE"
+                    AND contract_business_id = \'""" + uid + """\'                   
+                    """)
                 response["Applications"] = applicationQuery
 
                 
                 # LEASES
                 print("In Find Leases")
                 leaseQuery = db.execute("""
-                -- FIND LEASES CURRENTLY IN PROGRESS
-                SELECT property_uid
-                    , leases.*
-                    , lease_fees
-                    , t_details.*
-                    , property_owner.*
-                FROM space.properties
-                LEFT JOIN space.leases ON property_uid = lease_property_id
-                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('leaseFees_uid', leaseFees_uid,
-                        'fee_name', fee_name,
-                        'fee_type', fee_type,
-                        'charge', charge,
-                        'due_by', due_by,
-                        'late_by', late_by,
-                        'late_fee',late_fee,
-                        'perDay_late_fee', perDay_late_fee,
-                        'frequency', frequency,
-                        'available_topay', available_topay,
-                        'due_by_date', due_by_date
-                        )) AS lease_fees
-                        FROM space.leaseFees
-                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                LEFT JOIN space.contracts ON contract_property_id = property_uid
-                LEFT JOIN space.property_owner ON property_id = property_uid
-                WHERE contract_status = "ACTIVE"
-                -- AND property_owner_id = "110-000003"
-                -- AND property_owner_id = \'""" + uid + """\' 
-                -- AND contract_business_id = "600-000003"
-                AND contract_business_id = \'""" + uid + """\' 
-                -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                  
-                """)
+                    -- FIND LEASES CURRENTLY IN PROGRESS
+                    SELECT property_uid
+                        , leases.*
+                        , lease_fees
+                        , t_details.*
+                        , property_owner.*
+                    FROM space.properties
+                    LEFT JOIN space.leases ON property_uid = lease_property_id
+                    LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee',late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS lease_fees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space.property_owner ON property_id = property_uid
+                    WHERE contract_status = "ACTIVE"
+                    -- AND property_owner_id = "110-000003"
+                    -- AND property_owner_id = \'""" + uid + """\' 
+                    -- AND contract_business_id = "600-000003"
+                    AND contract_business_id = \'""" + uid + """\' 
+                    -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                  
+                    """)
                 response["Leases"] = leaseQuery
-
 
 
                 #PROPERTIES
@@ -399,7 +396,7 @@ class Properties(Resource):
                         WHERE contract_business_id = \'""" + uid + """\'
                         -- WHERE contract_business_id = "600-000003"
                         -- WHERE owner_uid = "110-000003"
-                #       -- WHERE owner_uid = \'""" + uid + """\'
+                        -- WHERE owner_uid = \'""" + uid + """\'
                     """)
 
                 # print("Query: ", maintenanceQuery)
@@ -412,34 +409,75 @@ class Properties(Resource):
                 print("In Find Applications")
                 applicationQuery = db.execute("""
                     -- FIND APPLICATIONS CURRENTLY IN PROGRESS
-               SELECT property_uid
-                    , leases.*
-                    , lease_fees
-                    , t_details.*
-                FROM space.properties
-                LEFT JOIN space.leases ON property_uid = lease_property_id
-                LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-                        ('leaseFees_uid', leaseFees_uid,
-                        'fee_name', fee_name,
-                        'fee_type', fee_type,
-                        'charge', charge,
-                        'due_by', due_by,
-                        'late_by', late_by,
-                        'late_fee',late_fee,
-                        'perDay_late_fee', perDay_late_fee,
-                        'frequency', frequency,
-                        'available_topay', available_topay,
-                        'due_by_date', due_by_date
-                        )) AS lease_fees
-                        FROM space.leaseFees
-                        GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-                WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
-                AND lt_tenant_id = \'""" + uid + """\';
-                """)
-            response["Applications"] = applicationQuery
-            with connect() as db:
+                    SELECT property_uid
+                            , leases.*
+                            , lease_fees
+                            , t_details.*
+                        FROM space.properties
+                        LEFT JOIN space.leases ON property_uid = lease_property_id
+                        LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                                ('leaseFees_uid', leaseFees_uid,
+                                'fee_name', fee_name,
+                                'fee_type', fee_type,
+                                'charge', charge,
+                                'due_by', due_by,
+                                'late_by', late_by,
+                                'late_fee',late_fee,
+                                'perDay_late_fee', perDay_late_fee,
+                                'frequency', frequency,
+                                'available_topay', available_topay,
+                                'due_by_date', due_by_date
+                                )) AS lease_fees
+                                FROM space.leaseFees
+                                GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                        LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                        WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
+                        AND lt_tenant_id = \'""" + uid + """\';
+                        """)
+                response["Applications"] = applicationQuery
+            # with connect() as db:
                 # print("Query: ", propertiesQuery)
+
+
+                # LEASES
+                print("In Find Leases")
+                leaseQuery = db.execute("""
+                    -- FIND LEASES CURRENTLY IN PROGRESS
+                    SELECT property_uid
+                        , leases.*
+                        , lease_fees
+                        , t_details.*
+                        , property_owner.*
+                    FROM space.properties
+                    LEFT JOIN space.leases ON property_uid = lease_property_id
+                    LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
+                            ('leaseFees_uid', leaseFees_uid,
+                            'fee_name', fee_name,
+                            'fee_type', fee_type,
+                            'charge', charge,
+                            'due_by', due_by,
+                            'late_by', late_by,
+                            'late_fee',late_fee,
+                            'perDay_late_fee', perDay_late_fee,
+                            'frequency', frequency,
+                            'available_topay', available_topay,
+                            'due_by_date', due_by_date
+                            )) AS lease_fees
+                            FROM space.leaseFees
+                            GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
+                    LEFT JOIN space.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space.property_owner ON property_id = property_uid
+                    WHERE contract_status = "ACTIVE"
+                    -- AND property_owner_id = "110-000003"
+                    -- AND property_owner_id = \'""" + uid + """\' 
+                    -- AND contract_business_id = "600-000003"
+                    -- AND contract_business_id = \'""" + uid + """\' 
+                    AND lt_tenant_id = \'""" + uid + """\';
+                    -- AND leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')                  
+                    """)
+                response["Leases"] = leaseQuery
+
 
                 propertiesQuery = db.execute(""" 
                         -- PROPERTIES BY TENANT
@@ -482,9 +520,9 @@ class Properties(Resource):
                             order by lease_status; 
                         """)  
 
-            # print("Query: ", propertiesQuery)
-            response["Property"] = propertiesQuery
-            # return response
+                # print("Query: ", propertiesQuery)
+                response["Property"] = propertiesQuery
+                # return response
         
         elif uid[:3] == '200':
             print("In Property ID")
