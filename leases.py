@@ -331,9 +331,28 @@ class LeaseApplication(Resource):
             # --------------- PROCESS DOCUMENTS ------------------
 
 
-            # Insert data into leaseFees table
+            # Pop input data not used in lease table insert
             lease_fees = payload.pop('lease_fees', None)
             # print("lease_fees in data: ", lease_fees)
+            # print("Tenants: ", payload.get('tenant_uid').split(','), type(payload.get('tenant_uid').split(',')))
+            tenants = payload.pop('tenant_uid').split(',')
+
+
+            # Verify LIST variables are not empty
+            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income", "lease_utilities"]
+            for field in fields_with_lists:
+                # print("field list", field)
+                if payload.get(field) in [None, '', 'undefined']:
+                    # print(field,"Is None")
+                    payload[field] = '[]' 
+
+            # Actual Insert Statement
+            # print("About to insert: ", payload)
+            response["lease"] = db.insert('leases', payload)
+            # print("Data inserted into space.leases", response)
+
+
+            # Insert data into lease-Tenants table
             if lease_fees != None:
                 json_object = json.loads(lease_fees)
                 # print("lease fees json_object", json_object)
@@ -343,7 +362,7 @@ class LeaseApplication(Resource):
                     # Get new leaseFees_uid
                     new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
                     for item in fees:
-                        print("Item: ", item)
+                        # print("Item: ", item)
                         if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
                             if not any('due_by_date' in fee for fee in fees):  # Check if 'due_by_date' does NOT exist
                                 new_leaseFees['due_by_date'] = datetime.today().strftime('%m-%d-%Y %H:%M')
@@ -356,11 +375,7 @@ class LeaseApplication(Resource):
                     # print("response: ", response["lease_fees"])
 
 
-        
             # Insert data into lease-Tenants table
-            # print("Tenants: ", payload.get('tenant_uid').split(','), type(payload.get('tenant_uid').split(',')))
-            tenants = payload.pop('tenant_uid').split(',')
-
             tenant_responsibiity = str(1/len(tenants))
             for tenant_uid in tenants:
                 # print("Add record in lease_tenant table", lease_uid, tenant_uid, tenant_responsibiity)
@@ -376,20 +391,7 @@ class LeaseApplication(Resource):
                 response["lease_tenant"] = db.execute(ltQuery, [], 'post')
                 # print("Added tenant: ", response)
             # print("Data inserted into space.lease_tenant")
-            
 
-            # Verify LIST variables are not empty
-            fields_with_lists = ["lease_adults", "lease_children", "lease_pets", "lease_vehicles", "lease_referred", "lease_assigned_contacts" , "lease_documents", "lease_income", "lease_utilities"]
-            for field in fields_with_lists:
-                # print("field list", field)
-                if payload.get(field) in [None, '', 'undefined']:
-                    # print(field,"Is None")
-                    payload[field] = '[]' 
-
-            # Actual Insert Statement
-            # print("About to insert: ", payload)
-            response["lease"] = db.insert('leases', payload)
-            # print("Data inserted into space.leases", response)
 
         return response
 
