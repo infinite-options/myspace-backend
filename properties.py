@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import ast
-from queries import RentPropertiesQuery
+from queries import RentPropertiesQuery, MaintenanceRequests
 
 
 
@@ -141,82 +141,15 @@ class Properties(Resource):
                 response["Leases"] = leaseQuery
 
 
+                #PROPERTIES
                 response["Property"] = RentPropertiesQuery(uid)
 
 
-
-                print("In Maintenance Requests")
-                maintenanceQuery = db.execute("""
-                        SELECT *
-                            -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                            , CASE
-                                    WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'       THEN "NEW REQUEST"
-                                    WHEN maintenance_request_status = "SCHEDULED"                                        THEN "SCHEDULED"
-                                    WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"           THEN "COMPLETED"
-                                    WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                    OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN"                         THEN "QUOTES REQUESTED"
-                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                          THEN "QUOTES ACCEPTED"
-                                    WHEN quote_status = "COMPLETED"                                                      THEN "PAID"     
-                                    ELSE quote_status
-                                END AS maintenance_status
-                        FROM (
-                            SELECT * 
-                            FROM space.maintenanceRequests
-                            LEFT JOIN (
-                                SELECT *,
-                                    CASE
-                                        WHEN max_quote_rank = "10" THEN "REQUESTED"
-                                        WHEN max_quote_rank = "11" THEN "REFUSED"
-                                        WHEN max_quote_rank = "20" THEN "SENT"
-                                        WHEN max_quote_rank = "21" THEN "REJECTED"
-                                        WHEN max_quote_rank = "22" THEN "WITHDRAWN"
-                                        WHEN max_quote_rank = "30" THEN "ACCEPTED"
-                                        WHEN max_quote_rank = "40" THEN "SCHEDULE"
-                                        WHEN max_quote_rank = "50" THEN "SCHEDULED"
-                                        WHEN max_quote_rank = "60" THEN "RESCHEDULED"
-                                        WHEN max_quote_rank = "70" THEN "FINISHED"
-                                        WHEN max_quote_rank = "80" THEN "COMPLETED"
-                                        ELSE "0"
-                                    END AS quote_status
-                                FROM 
-                                (
-                                    SELECT -- maintenance_quote_uid, 
-                                        quote_maintenance_request_id AS qmr_id
-                                        -- , quote_status
-                                        , MAX(quote_rank) AS max_quote_rank
-                                    FROM (
-                                        SELECT -- *,
-                                            maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
-                                        CASE
-                                            WHEN quote_status = "REQUESTED" THEN "10"
-                                            WHEN quote_status = "REFUSED" THEN "11"
-                                            WHEN quote_status = "SENT" THEN "20"
-                                            WHEN quote_status = "REJECTED" THEN "21"
-                                            WHEN quote_status = "WITHDRAWN"  THEN "22"
-                                            WHEN quote_status = "ACCEPTED" THEN "30"
-                                            WHEN quote_status = "SCHEDULE" THEN "40"
-                                            WHEN quote_status = "SCHEDULED" THEN "50"
-                                            WHEN quote_status = "RESCHEDULED" THEN "60"
-                                            WHEN quote_status = "FINISHED" THEN "70"
-                                            WHEN quote_status = "COMPLETED" THEN "80"     
-                                            ELSE 0
-                                        END AS quote_rank
-                                        FROM space.maintenanceQuotes
-                                        ) AS qr
-                                    GROUP BY quote_maintenance_request_id
-                                    ) AS qr_quoterank
-                            ) AS quote_summary ON maintenance_request_uid = qmr_id
-                        ) AS quotes
-                        LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                            -- WHERE contract_business_id = \'""" + uid + """\'
-                            -- WHERE contract_business_id = "600-000003"
-                            -- WHERE owner_uid = "110-000003"
-                            WHERE owner_uid = \'""" + uid + """\'
-                        """)
+                # MAINTENANCE REQUESTS
                 # print("Query: ", maintenanceQuery)
-                response["MaintenanceRequests"] = maintenanceQuery
+                response["MaintenanceRequests"] = MaintenanceRequests(uid)
         
+
         elif uid[:3] == '600':
             print("In Business ID")
 
@@ -320,87 +253,13 @@ class Properties(Resource):
                     GROUP BY announcement_properties) as t ON announcement_properties = property_uid
                     WHERE contract_business_id = \'""" + uid + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                     """)
-
                 # print("Query: ", contractsQuery)
                 response["NewPMRequests"] = contractsQuery
 
                 # MAINTENANCE REQUESTS
-                print("In Maintenance Requests")
-                maintenanceQuery = db.execute("""
-                        SELECT *
-                            -- quote_business_id, quote_status, maintenance_request_status, quote_total_estimate
-                            , CASE
-                                    WHEN maintenance_request_status = 'NEW' OR maintenance_request_status = 'INFO'              THEN "NEW REQUEST"
-                                    WHEN maintenance_request_status = "SCHEDULED"                                               THEN "SCHEDULED"
-                                    WHEN maintenance_request_status = 'CANCELLED' or quote_status = "FINISHED"                  THEN "COMPLETED"
-                                    WHEN quote_status = "SENT" OR quote_status = "REFUSED" OR quote_status = "REQUESTED"
-                                    OR quote_status = "REJECTED" OR quote_status = "WITHDRAWN" OR quote_status = "MORE INFO"    THEN "QUOTES REQUESTED"
-                                    WHEN quote_status = "ACCEPTED" OR quote_status = "SCHEDULE"                                 THEN "QUOTES ACCEPTED"
-                                    WHEN quote_status = "COMPLETED"                                                             THEN "PAID"     
-                                    ELSE quote_status
-                                END AS maintenance_status
-                        FROM (
-                            SELECT * 
-                            FROM space.maintenanceRequests
-                            LEFT JOIN (
-                                SELECT *,
-                                    CASE
-                                        WHEN max_quote_rank = "10" THEN "REQUESTED"
-                                        WHEN max_quote_rank = "11" THEN "REFUSED"
-                                        WHEN max_quote_rank = "12" THEN "MORE INFO"     
-                                        WHEN max_quote_rank = "20" THEN "SENT"
-                                        WHEN max_quote_rank = "21" THEN "REJECTED"
-                                        WHEN max_quote_rank = "22" THEN "WITHDRAWN"
-                                        WHEN max_quote_rank = "30" THEN "ACCEPTED"
-                                        WHEN max_quote_rank = "40" THEN "SCHEDULE"
-                                        WHEN max_quote_rank = "50" THEN "SCHEDULED"
-                                        WHEN max_quote_rank = "60" THEN "RESCHEDULED"
-                                        WHEN max_quote_rank = "65" THEN "CANCELLED"
-                                        WHEN max_quote_rank = "70" THEN "FINISHED"
-                                        WHEN max_quote_rank = "80" THEN "COMPLETED"
-                                        ELSE "0"
-                                    END AS quote_status
-                                FROM 
-                                (
-                                    SELECT -- maintenance_quote_uid, 
-                                        quote_maintenance_request_id AS qmr_id
-                                        -- , quote_status
-                                        , MAX(quote_rank) AS max_quote_rank
-                                    FROM (
-                                        SELECT -- *,
-                                            maintenance_quote_uid, quote_maintenance_request_id, quote_status,
-                                            -- , quote_pm_notes, quote_business_id, quote_services_expenses, quote_earliest_available_date,quote_earliest_available_time, quote_event_type, quote_event_duration, quote_notes, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
-                                        CASE
-                                            WHEN quote_status = "REQUESTED" THEN "10"
-                                            WHEN quote_status = "REFUSED" THEN "11"
-                                            WHEN quote_status = "MORE INFO" THEN "12"
-                                            WHEN quote_status = "SENT" THEN "20"
-                                            WHEN quote_status = "REJECTED" THEN "21"
-                                            WHEN quote_status = "WITHDRAWN"  THEN "22"
-                                            WHEN quote_status = "ACCEPTED" THEN "30"
-                                            WHEN quote_status = "SCHEDULE" THEN "40"
-                                            WHEN quote_status = "SCHEDULED" THEN "50"
-                                            WHEN quote_status = "RESCHEDULED" THEN "60"
-                                            WHEN quote_status = "CANCELLED" THEN "65"
-                                            WHEN quote_status = "FINISHED" THEN "70"
-                                            WHEN quote_status = "COMPLETED" THEN "80"     
-                                            ELSE 0
-                                        END AS quote_rank
-                                        FROM space.maintenanceQuotes
-                                        ) AS qr
-                                    GROUP BY quote_maintenance_request_id
-                                    ) AS qr_quoterank
-                            ) AS quote_summary ON maintenance_request_uid = qmr_id
-                        ) AS quotes
-                    LEFT JOIN ( SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        WHERE contract_business_id = \'""" + uid + """\'
-                        -- WHERE contract_business_id = "600-000003"
-                        -- WHERE owner_uid = "110-000003"
-                        -- WHERE owner_uid = \'""" + uid + """\'
-                    """)
-
                 # print("Query: ", maintenanceQuery)
-                response["MaintenanceRequests"] = maintenanceQuery
+                response["MaintenanceRequests"] = MaintenanceRequests(uid)
+        
         
         elif uid[:3] == '350':
             print("In Tenant ID")
