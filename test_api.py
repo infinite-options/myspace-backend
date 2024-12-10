@@ -251,7 +251,7 @@ class endPointTest_CLASS(Resource):
 
             insert_leases_query = """
                                     INSERT INTO `space`.`leases` (`lease_uid`, `lease_property_id`, `lease_application_date`, `lease_start`, `lease_end`, `lease_status`, `lease_assigned_contacts`, `lease_documents`, `lease_renew_status`, `lease_move_in_date`, `lease_adults`, `lease_children`, `lease_pets`, `lease_vehicles`, `lease_referred`, `lease_effective_date`, `lease_docuSign`, `lease_end_notice_period`, `lease_income`, `lease_m2m`, `lease_utilities`) 
-                                    VALUES ('300-000000', '200-000000', '11-15-2024', '11-19-2024', '11-19-2025', 'NEW', '[\"350-000000\"]', '[]', 'TRUE', '11-19-2024', '[]', '[]', '[]', '[]', '[]', '11-19-2024', 'null', '30', '[]', '1', '[]');
+                                    VALUES ('300-000000', '200-000000', '11-15-2024 00:00:00', '11-19-2024', '11-19-2025', 'NEW', '[\"350-000000\"]', '[]', 'TRUE', '11-19-2024', '[]', '[]', '[]', '[]', '[]', '11-19-2024', 'null', '30', '[]', '1', '[]');
                                 """
             update_leases_query = """
                                     UPDATE `space`.`leases` 
@@ -662,7 +662,7 @@ class endPointTest_CLASS(Resource):
                     "lease_property_id":"200-000000",
                     "lease_start":"01-31-2024",
                     "lease_end":"01-30-2025",
-                    "lease_application_date":"06-27-2024",
+                    "lease_application_date":"06-27-2024 00:00:00",
                     "tenant_uid":"350-000000",
                     "lease_status":"NEW"
                 }
