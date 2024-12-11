@@ -400,7 +400,7 @@ class LeaseApplication(Resource):
         print("\nIn Lease Application PUT")
         response = {}
         payload = request.form.to_dict()
-        # print("Lease Application Payload: ", payload)
+        print("Lease Application Payload: ", payload)
 
         # Verify lease_uid has been included in the data
         if payload.get('lease_uid') in {None, '', 'null', 'undefined'}:
@@ -476,6 +476,10 @@ class LeaseApplication(Resource):
             if "lease_end" in payload:
                 print("In lease_end")
                 payload["lease_early_end_date"] = payload["lease_end"]
+
+            for key, value in payload.items():
+                if value == "":
+                    payload[key] = None
 
             print("Leases Payload: ", payload)
             response['lease_docs'] = db.update('leases', key, payload)
