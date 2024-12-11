@@ -400,7 +400,7 @@ class LeaseApplication(Resource):
         print("\nIn Lease Application PUT")
         response = {}
         payload = request.form.to_dict()
-        print("Lease Application Payload: ", payload)
+        print("Lease Application Payload: ", payload, type(payload))
 
         # Verify lease_uid has been included in the data
         if payload.get('lease_uid') in {None, '', 'null', 'undefined'}:
@@ -415,7 +415,7 @@ class LeaseApplication(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        print("Payload after function: ", payload)
+        print("Payload after function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
 
@@ -477,11 +477,14 @@ class LeaseApplication(Resource):
                 print("In lease_end")
                 payload["lease_early_end_date"] = payload["lease_end"]
 
-            for key, value in payload.items():
-                if value == "":
-                    payload[key] = None
+            # print("Just before for loop", payload, type(payload))
+            for key1, value in payload.items():
+                print(f"{key1}: {value}")
+                if value == '':
+                    # print("inside condition")
+                    payload[key1] = None
 
-            print("Leases Payload: ", payload)
+            print("Leases Payload: ", payload, type(payload))
             response['lease_docs'] = db.update('leases', key, payload)
             # print("Response:" , response)
        
