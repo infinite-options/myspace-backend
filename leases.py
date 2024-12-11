@@ -423,7 +423,7 @@ class LeaseApplication(Resource):
             print("Connection Established")
 
             # DEL FEES  Typically if PM is modifying the lease for Tenant
-            print("delete fees: ", payload.get('delete_fees'))
+            # print("delete fees: ", payload.get('delete_fees'))
             if "delete_fees" in payload:
                 print("In delete fees")
                 json_object = json.loads(payload.pop('delete_fees'))
