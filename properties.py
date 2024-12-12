@@ -260,7 +260,7 @@ class Properties(Resource):
                 # print("Query: ", maintenanceQuery)
                 response["MaintenanceRequests"] = MaintenanceRequests(uid)
         
-        
+
         elif uid[:3] == '350':
             print("In Tenant ID")
             with connect() as db:
