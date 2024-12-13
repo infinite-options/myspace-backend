@@ -1,37 +1,37 @@
-SELECT * FROM space.users;
-SELECT * FROM space.user_profile;
+SELECT * FROM space_prod.users;
+SELECT * FROM space_prod.user_profile;
 
-SELECT * FROM space.ownerProfileInfo;
-SELECT * FROM space.property_owner;
-SELECT * FROM space.properties;
-SELECT * FROM space.appliances;
-SELECT * FROM space.maintenanceRequests;
-SELECT * FROM space.maintenanceQuotes;
+SELECT * FROM space_prod.ownerProfileInfo;
+SELECT * FROM space_prod.property_owner;
+SELECT * FROM space_prod.properties;
+SELECT * FROM space_prod.appliances;
+SELECT * FROM space_prod.maintenanceRequests;
+SELECT * FROM space_prod.maintenanceQuotes;
 
-SELECT * FROM space.tenantProfileInfo;
-SELECT * FROM space.lease_tenant;
-SELECT * FROM space.leases;
-SELECT * FROM space.leaseFees;
-SELECT * FROM space.leaseDocuments;
+SELECT * FROM space_prod.tenantProfileInfo;
+SELECT * FROM space_prod.lease_tenant;
+SELECT * FROM space_prod.leases;
+SELECT * FROM space_prod.leaseFees;
+SELECT * FROM space_prod.leaseDocuments;
 
-SELECT * FROM space.businessProfileInfo;
-SELECT * FROM space.contracts;
-SELECT * FROM space.contractFees;
+SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_prod.contracts;
+SELECT * FROM space_prod.contractFees;
 
-SELECT * FROM space.purchases;
-SELECT * FROM space.payments;
-SELECT * FROM space.bills;
-SELECT * FROM space.lists;
-SELECT * FROM space.property_utility;
+SELECT * FROM space_prod.purchases;
+SELECT * FROM space_prod.payments;
+SELECT * FROM space_prod.bills;
+SELECT * FROM space_prod.lists;
+SELECT * FROM space_prod.property_utility;
 
-SELECT * FROM space.o_details;
-SELECT * FROM space.p_details;
-SELECT * FROM space.pp_details;
-SELECT * FROM space.pp_status;
-SELECT * FROM space.t_details;
-SELECT * FROM space.user_profiles;
+SELECT * FROM space_prod.o_details;
+SELECT * FROM space_prod.p_details;
+SELECT * FROM space_prod.pp_details;
+SELECT * FROM space_prod.pp_status;
+SELECT * FROM space_prod.t_details;
+SELECT * FROM space_prod.user_profiles;
 
-SELECT * FROM space.tenantDocuments;
+SELECT * FROM space_prod.tenantDocuments;
 
 
 
@@ -49,9 +49,9 @@ SELECT * FROM space.tenantDocuments;
 --         ) AS r;
 
 -- SELECT *
--- FROM space.leases;
+-- FROM space_prod.leases;
 
--- CREATE TABLE space.leaseFees AS
+-- CREATE TABLE space_prod.leaseFees AS
 -- SELECT a AS leaseFees_uid, lease_uid AS fees_lease_id
 -- 	, lease_rent, of_, charge
 -- , due_by
@@ -62,7 +62,7 @@ SELECT * FROM space.tenantDocuments;
 -- , frequency
 -- , available_topay
 -- , perDay_late_fee
--- FROM space.leases,
+-- FROM space_prod.leases,
 -- JSON_TABLE(leases.lease_rent, '$[*]'
 -- 	COLUMNS (
 -- 		a FOR ORDINALITY,
@@ -125,13 +125,13 @@ SELECT -- *,
     , ld_created_date, ld_type, ld_name, ld_description, ld_shared, ld_link
     , lt_tenant_id, lt_responsibility, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
     , contract_uid, contract_status, business_uid
-FROM space.leases
-LEFT JOIN space.o_details ON property_id = lease_property_id
-LEFT JOIN space.properties ON property_uid = lease_property_id
-LEFT JOIN space.leaseFees ON lease_uid = fees_lease_id
-LEFT JOIN space.leaseDocuments ON lease_uid = ld_lease_id
-LEFT JOIN space.t_details ON lease_uid = lt_lease_id
-LEFT JOIN space.b_details ON contract_property_id = lease_property_id
+FROM space_prod.leases
+LEFT JOIN space_prod.o_details ON property_id = lease_property_id
+LEFT JOIN space_prod.properties ON property_uid = lease_property_id
+LEFT JOIN space_prod.leaseFees ON lease_uid = fees_lease_id
+LEFT JOIN space_prod.leaseDocuments ON lease_uid = ld_lease_id
+LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
+LEFT JOIN space_prod.b_details ON contract_property_id = lease_property_id
 WHERE lease_status = "ACTIVE"
 	AND contract_status = "ACTIVE"
 	AND fee_name = "RENT"
@@ -146,7 +146,7 @@ WHERE lease_status = "ACTIVE"
 
 -- EXTRACT lease_documents info from leases_documents Table
 
--- CREATE TABLE space.leaseDocuments AS
+-- CREATE TABLE space_prod.leaseDocuments AS
 
 -- SELECT a AS ld_uid, lease_uid AS ld_lease_id
 -- , link
@@ -154,7 +154,7 @@ WHERE lease_status = "ACTIVE"
 -- , shared
 -- , description
 -- , created_date
--- FROM space.leases,
+-- FROM space_prod.leases,
 -- JSON_TABLE(leases.lease_documents, '$[*]'
 -- 	COLUMNS (
 -- 		a FOR ORDINALITY,
