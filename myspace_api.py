@@ -55,11 +55,11 @@ import pytz
 # import requests
 # import stripe
 # import urllib.request
-# import base64
+import base64
 # import math
 # import string
 # import random
-# import hashlib
+import hashlib
 # import binascii
 # import csv
 # import re  # regex
@@ -70,7 +70,7 @@ from dotenv import load_dotenv
 # from datetime import timezone as dtz
 # from datetime import datetime, date, timedelta
 from datetime import datetime, date, timedelta, timezone
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, url_for, redirect, jsonify
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
@@ -90,6 +90,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 
 # used for serializer email and error handling
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
+from cryptography.fernet import Fernet
 
 
 
@@ -128,6 +129,63 @@ app.config['DEBUG'] = True
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 
 ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
+
+# ENCRYPTION & DECRYPTION
+SECRET_KEY = os.getenv("REACT_APP_MYSPACE_KEY")
+print("Secret Key: ", SECRET_KEY, type(SECRET_KEY))
+
+# Step 1: Convert your secret key to a 32-byte Fernet key
+def generate_fernet_key(secret_key):
+    # Hash the secret key to ensure it is 32 bytes
+    sha256_hash = hashlib.sha256(secret_key.encode()).digest()
+    # Encode the hash as a Base64 string
+    return base64.urlsafe_b64encode(sha256_hash)
+
+# Generate a Fernet-compatible key
+fernet_key = generate_fernet_key(SECRET_KEY)
+print(f"Fernet Key: {fernet_key}")
+
+# Initialize Fernet cipher
+cipher = Fernet(fernet_key)
+print("Cipher: ", cipher, type(cipher))
+
+# Step 2: Define an endpoint to handle encryption
+@app.route('/encrypt', methods=['POST'])
+def encrypt_data():
+    try:
+        # Get the payload from the request body
+        data = request.json.get('data')
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Encrypt the data
+        encrypted_data = cipher.encrypt(data.encode())
+        return jsonify({"encrypted_data": encrypted_data.decode()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Step 3: Define an endpoint to handle decryption
+@app.route('/decrypt', methods=['POST'])
+def decrypt_data():
+    try:
+        # Get the encrypted data from the request body
+        encrypted_data = request.json.get('encrypted_data')
+        if not encrypted_data:
+            return jsonify({"error": "No encrypted_data provided"}), 400
+
+        # Decrypt the data
+        decrypted_data = cipher.decrypt(encrypted_data.encode()).decode()
+        return jsonify({"decrypted_data": decrypted_data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Step 4: Add a health check route (optional)
+@app.route('/')
+def health_check():
+    return jsonify({"message": "API is running!"})
+
+
+
 
 # --------------- Google Scopes and Credentials------------------
 # SCOPES = "https://www.googleapis.com/auth/calendar"
