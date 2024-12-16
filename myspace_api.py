@@ -2904,7 +2904,7 @@ api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 
 
 
-@app.route('/decrypt', methods=['POST'])
+# @app.route('/decrypt', methods=['POST'])
 def decrypt_data():
     try:
         # Get the encrypted data from the request body
