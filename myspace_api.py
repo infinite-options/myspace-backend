@@ -77,7 +77,7 @@ from flask import Flask, request, render_template, url_for, redirect, jsonify
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, jwt_required, create_access_token 
 from pytz import timezone as ptz  # Not sure what the difference is
 from decimal import Decimal
 from hashlib import sha512
@@ -2922,6 +2922,8 @@ def decrypt_data():
 # @app.before_request
 
 def check_jwt_token():
+    if request.path == '/auth/refreshToken':
+        return
     try:
         if request.method == 'OPTIONS':  
             return '', 200
@@ -2987,13 +2989,20 @@ def setup_middlewares(app):
 # Apply middlewares
 setup_middlewares(app)
 
-
-
-
-
-
-
-
+#This method is to refresh the jwt token
+@app.route('/auth/refreshToken', methods=['POST'])
+@jwt_required(refresh=True)  # This ensures that only refresh tokens can be used here
+def refreshToken():
+    try:
+        print('Inside refresh token')
+        current_user = get_jwt_identity()  # Get user identity from refresh token
+        new_access_token = create_access_token(identity=current_user)  # Create new access token
+        print('New token is', new_access_token)
+        return jsonify(access_token=new_access_token)
+    except Exception as e:
+        print('Error refreshing token:', e)
+        return jsonify({'message': 'Could not refresh token'}), 401
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4010)
     # app.run(host='127.0.0.1', port=4000)
