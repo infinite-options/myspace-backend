@@ -13,8 +13,12 @@ from werkzeug.datastructures import FileStorage
 import mimetypes
 import ast
 
-s3 = boto3.client('s3')
-
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('S3_KEY'),
+    aws_secret_access_key=os.getenv('S3_SECRET'),
+    region_name=os.getenv('S3_REGION')
+)
 
 def pmDueDate(due_date):
     print("\nIn pmDueDate: ", due_date, type(due_date))
