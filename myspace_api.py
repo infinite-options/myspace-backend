@@ -95,6 +95,139 @@ from werkzeug.exceptions import BadRequest, NotFound
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
 
 
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import base64
+import json
+
+# AES encryption key (must be 16, 24, or 32 bytes)
+AES_KEY = b'IO95120secretkey'  # 16 bytes
+BLOCK_SIZE = 16  # AES block size
+
+# Encrypt dictionary
+def encrypt_dict(data_dict):
+    try:
+        print("In encrypt_dict: ", data_dict)
+        # Convert dictionary to JSON string
+        json_data = json.dumps(data_dict)
+
+        # Create a new AES cipher with a random IV
+        cipher = AES.new(AES_KEY, AES.MODE_CBC)
+        iv = cipher.iv  # Initialization vector
+
+        # Pad and encrypt the JSON data
+        padded_data = pad(json_data.encode(), BLOCK_SIZE)
+        encrypted_data = cipher.encrypt(padded_data)
+
+        # Combine IV and encrypted data, then Base64 encode
+        encrypted_blob = base64.b64encode(iv + encrypted_data).decode()
+        return encrypted_blob
+    except Exception as e:
+        print(f"Encryption error: {e}")
+        return None
+
+# Decrypt dictionary
+def decrypt_dict(encrypted_blob):
+    try:
+        # Base64 decode the encrypted blob
+        encrypted_data = base64.b64decode(encrypted_blob)
+
+        # Extract the IV (first BLOCK_SIZE bytes) and the encrypted content
+        iv = encrypted_data[:BLOCK_SIZE]
+        encrypted_content = encrypted_data[BLOCK_SIZE:]
+
+        # Create a new AES cipher with the extracted IV
+        cipher = AES.new(AES_KEY, AES.MODE_CBC, iv=iv)
+
+        # Decrypt and unpad the content
+        decrypted_padded_data = cipher.decrypt(encrypted_content)
+        decrypted_data = unpad(decrypted_padded_data, BLOCK_SIZE).decode()
+
+        # Convert the JSON string back to a dictionary
+        return json.loads(decrypted_data)
+    except Exception as e:
+        print(f"Decryption error: {e}")
+        return None
+
+# # Encryption code from ChatGPT
+# from Crypto.Cipher import AES
+# from Crypto.Util.Padding import pad, unpad
+# import base64
+
+# # AES Encryption Key
+# AES_KEY = b'IO95120secretkey'  # Must be 16, 24, or 32 bytes long
+
+
+# def encrypt_payload(payload):
+#     # print("In encrypt payload: ", payload)
+#     print("In encrypt payload: ", type(payload))
+
+#     # Convert to payload to JSON Object
+#     payload = json.dumps(payload)
+#     print("After conversion: ", type(payload))
+
+#     print("AES.block_size: ", AES.block_size)
+#     try:
+#         cipher = AES.new(AES_KEY, AES.MODE_CBC)
+#         print(cipher)
+#         iv = cipher.iv  # Initialization vector
+#         print(iv)
+#         encrypted_data = cipher.encrypt(pad(payload.encode('utf-8'), AES.block_size))
+#         return base64.b64encode(iv + encrypted_data).decode('utf-8')  # Encode IV + Encrypted data
+#     except Exception as e:
+#         print(f"Encryption error: {e}")
+#         raise
+
+# def decrypt_payload(encrypted_payload):
+#     print("In decrypt payload: ", type(encrypted_payload))
+#     # print("encrypted_payload: ", encrypted_payload)
+
+
+#     # AES encryption key (must be 16, 24, or 32 bytes)
+#     AES_KEY = b'IO95120secretkey'  # 16 bytes
+#     BLOCK_SIZE = 16  # AES block size
+
+#     try:
+#         # Base64 decode the encrypted blob
+#         encrypted_data = base64.b64decode(encrypted_blob)
+
+#         # Extract the IV (first BLOCK_SIZE bytes) and the encrypted content
+#         iv = encrypted_data[:BLOCK_SIZE]
+#         encrypted_content = encrypted_data[BLOCK_SIZE:]
+
+#         # Create a new AES cipher with the extracted IV
+#         cipher = AES.new(AES_KEY, AES.MODE_CBC, iv=iv)
+
+#         # Decrypt and unpad the content
+#         decrypted_padded_data = cipher.decrypt(encrypted_content)
+#         decrypted_data = unpad(decrypted_padded_data, BLOCK_SIZE).decode()
+
+#         # Convert the JSON string back to a dictionary
+#         return json.loads(decrypted_data)
+    
+#     # try:
+#     #     cipher = AES.new(AES_KEY, AES.MODE_CBC)
+#     #     print("cipher: ", cipher)
+#     #     # iv = data[:16]  # Extract IV
+#     #     iv = cipher.iv
+#     #     print("iv: ", iv)
+#     #     data = base64.b64decode(encrypted_payload)
+#     #     encrypted_data = data[16:]
+#     #     # print("encrypted_data: ", encrypted_data)
+        
+#     #     decrypted_data = unpad(cipher.decrypt(data), AES.block_size)
+#     #     return decrypted_data.decode('utf-8')
+#     except Exception as e:
+#         print(f"Decryption error: {e}")
+#         raise
+
+
+
+
+
+
+
+
 
 # NEED to figure out where the NotFound or InternalServerError is displayed
 # from werkzeug.exceptions import BadRequest, InternalServerError
@@ -2767,7 +2900,27 @@ api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 # api.add_resource(UserSocialSignup, '/userSocialSignup')
 
 
-@app.before_request
+
+
+
+
+@app.route('/decrypt', methods=['POST'])
+def decrypt_data():
+    try:
+        # Get the encrypted data from the request body
+        encrypted_data_base64 = request.json.get('encrypted_data')
+        # print("encrypted_data: ", encrypted_data_base64)
+        decrypted_data = decrypt_dict(encrypted_data_base64)
+        print("Decrypted Data: ", decrypt_data)
+        
+        return jsonify({"decrypted_data": decrypted_data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# Flask runs this code BEFORE running the actual endpoint code
+# @app.before_request
+
 def check_jwt_token():
     try:
         if request.method == 'OPTIONS':  
@@ -2778,16 +2931,68 @@ def check_jwt_token():
         current_user = get_jwt_identity() 
         print(f"Current User ID: {current_user}")
     except jwt.ExpiredSignatureError:
-        print('Expired')
+        print('JWT Expired')
         return jsonify({'message': 'Token is expired!'}), 401
 
     except jwt.InvalidTokenError:
+        print('JWT Invalid')
         return jsonify({'message': 'Invalid token!'}), 401
 
     except Exception as e:
         # This will catch any other exception, including missing token
-        print('Missing or invalid')
-        return jsonify({'message': 'Missing or invalid token!'}), 401
+        print('JWT Missing')
+        return jsonify({'message': 'Missing token!'}), 401
+
+
+# Middleware for decrypting incoming request data
+def decrypt_request():
+    if request.is_json:
+        encrypted_data = request.get_json().get('encrypted_data')
+        if encrypted_data:
+            decrypted_data = decrypt_dict(encrypted_data)
+            request._cached_json = decrypted_data  # Override the request JSON
+    else:
+        print("no JSON object received")
+
+# Middleware to encrypt response data
+def encrypt_response(data):
+    encrypted_data = encrypt_dict(data)
+    return jsonify({'encrypted_data': encrypted_data})
+
+
+# Step 4: Add a health check route (optional)
+@app.route('/')
+def health_check():
+    print("In Health Check")
+    return jsonify({"message": "API is running!"})
+
+
+# Example middleware using app.before_request for decryption
+def setup_middlewares(app):
+    @app.before_request 
+    def before_request():
+        print("In Middleware before_request")
+        check_jwt_token()
+        decrypt_request()
+
+    
+    @app.after_request
+    def after_request(response):
+        print("In Middleware after_request")
+        print("Actual endpoint response: ", type(response))
+        print("Actual endpoint response2: ", type(response.get_json()))
+        response = encrypt_response(response.get_json()) if response.is_json else response
+        return response
+
+# Apply middlewares
+setup_middlewares(app)
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4010)
