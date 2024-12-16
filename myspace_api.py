@@ -40,6 +40,9 @@ from users import UserInfo
 from password import Password
 from data_pm import connect, uploadImage, s3
 from queries import NextDueDate, UnpaidRents, ApprovedContracts
+# from jwtToken import JwtToken
+from functools import wraps
+import jwt
 
 from test_api import endPointTest_CLASS
 from extract_api import Extract_API, CleanUpDatabase
@@ -70,11 +73,11 @@ from dotenv import load_dotenv
 # from datetime import timezone as dtz
 # from datetime import datetime, date, timedelta
 from datetime import datetime, date, timedelta, timezone
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, url_for, redirect, jsonify
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
-# from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
 from pytz import timezone as ptz  # Not sure what the difference is
 from decimal import Decimal
 from hashlib import sha512
@@ -123,6 +126,13 @@ CORS(app)
 # Set this to false when deploying to live application
 app.config['DEBUG'] = True
 
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
+app.config['JWT_HEADER_NAME'] = 'Authorization' 
+app.config['JWT_HEADER_TYPE'] = 'Bearer'
+
+jwtManager = JWTManager(app)
 
 
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
@@ -2721,6 +2731,9 @@ api.add_resource(SearchManager, '/searchManager')
 
 api.add_resource(Password, '/password')
 
+# #JWT Token
+# api.add_resource(JwtToken, '/jwtToken/<string:user_id>')
+
 #CRON JOBS
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 # api.add_resource(Rent_CLASS, '/MonthlyRent')
@@ -2752,6 +2765,29 @@ api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 # socialLogin
 # api.add_resource(UserSocialLogin, '/userSocialLogin/<string:email>')
 # api.add_resource(UserSocialSignup, '/userSocialSignup')
+
+
+@app.before_request
+def check_jwt_token():
+    try:
+        if request.method == 'OPTIONS':  
+            return '', 200
+        
+        print('Request Headers:', request.headers['Authorization'])
+        verify_jwt_in_request()
+        current_user = get_jwt_identity() 
+        print(f"Current User ID: {current_user}")
+    except jwt.ExpiredSignatureError:
+        print('Expired')
+        return jsonify({'message': 'Token is expired!'}), 401
+
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token!'}), 401
+
+    except Exception as e:
+        # This will catch any other exception, including missing token
+        print('Missing or invalid')
+        return jsonify({'message': 'Missing or invalid token!'}), 401
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4010)
