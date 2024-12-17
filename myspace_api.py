@@ -90,6 +90,7 @@ from dateutil.relativedelta import relativedelta
 from dateutil.relativedelta import *
 from math import ceil
 from werkzeug.exceptions import BadRequest, NotFound
+from werkzeug.datastructures import FileStorage  # For file handling
 
 # used for serializer email and error handling
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
@@ -2950,9 +2951,37 @@ def check_jwt_token():
 def decrypt_request():
     if request.is_json:
         encrypted_data = request.get_json().get('encrypted_data')
-        if encrypted_data:
+        form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
+        if encrypted_data and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
             request._cached_json = decrypted_data  # Override the request JSON
+        elif encrypted_data and form_data == True:
+            decrypted_data = decrypt_dict(encrypted_data)
+            # Convert JSON to Form Data
+            form_data = {}
+            for key, value in decrypted_data.items():
+                if isinstance(value, dict) and 'fileName' in value and 'fileType' in value:
+                    print("File Received: ", value['fileName'], value['fileType'])
+                    # Check for 'fileData' field and simulate a file stream
+                    file_stream = None
+                    if 'fileData' in value:
+                        print("Actual conversion started")
+                        file_binary = base64.b64decode(value['fileData'])
+                        print("Binary created")
+                        file_stream = BytesIO(file_binary)  # Simulated file stream
+                        print("File Stream created")
+                    # If the value represents a file, simulate a FileStorage object
+                    form_data[key] = FileStorage(
+                        stream=file_stream,  # Set to actual stream if available
+                        filename=value['fileName'],
+                        content_type=value['fileType']
+                    ) 
+                else:
+                    form_data[key] = value
+            print("Form Data: ", form_data)
+            request._cached_json = form_data  # Override the request JSON
+        else:
+            print("Data issue")
     else:
         print("no JSON object received")
 
@@ -2962,34 +2991,34 @@ def encrypt_response(data):
     return jsonify({'encrypted_data': encrypted_data})
 
 
-# Step 4: Add a health check route (optional)
+# Health check route (optional)
 @app.route('/')
 def health_check():
     print("In Health Check")
     return jsonify({"message": "API is running!"})
 
 
-# Example middleware using app.before_request for decryption
-def setup_middlewares(app):
-    @app.before_request 
-    def before_request():
-        print("In Middleware before_request")
-        check_jwt_token()
-        decrypt_request()
+# Actual middleware.  Commands before request (check JWT and then decrypt data) and after request (encrypt response before passing to FrontEnd)
+# def setup_middlewares(app):
+@app.before_request 
+def before_request():
+    print("In Middleware before_request")
+    check_jwt_token()
+    decrypt_request()
 
-    
-    @app.after_request
-    def after_request(response):
-        print("In Middleware after_request")
-        print("Actual endpoint response: ", type(response))
-        print("Actual endpoint response2: ", type(response.get_json()))
-        response = encrypt_response(response.get_json()) if response.is_json else response
-        return response
+
+@app.after_request
+def after_request(response):
+    print("In Middleware after_request")
+    print("Actual endpoint response: ", type(response))
+    print("Actual endpoint response2: ", type(response.get_json()))
+    response = encrypt_response(response.get_json()) if response.is_json else response
+    return response
 
 # Apply middlewares
-setup_middlewares(app)
+# setup_middlewares(app)
 
-#This method is to refresh the jwt token
+#This method is to refresh the jwt token from the FrontEnd
 @app.route('/auth/refreshToken', methods=['POST'])
 @jwt_required(refresh=True)  # This ensures that only refresh tokens can be used here
 def refreshToken():
