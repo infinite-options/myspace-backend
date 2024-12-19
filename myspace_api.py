@@ -46,7 +46,7 @@ import jwt
 
 from test_api import endPointTest_CLASS
 from extract_api import Extract_API, CleanUpDatabase
-import requests
+# from flask import Request
 
 import os
 import boto3
@@ -91,6 +91,7 @@ from dateutil.relativedelta import *
 from math import ceil
 from werkzeug.exceptions import BadRequest, NotFound
 from werkzeug.datastructures import FileStorage  # For file handling
+from werkzeug.datastructures import ImmutableMultiDict
 
 # used for serializer email and error handling
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
@@ -108,7 +109,7 @@ BLOCK_SIZE = 16  # AES block size
 # Encrypt dictionary
 def encrypt_dict(data_dict):
     try:
-        print("In encrypt_dict: ", data_dict)
+        print("In encrypt_dict: ")
         # Convert dictionary to JSON string
         json_data = json.dumps(data_dict)
 
@@ -525,7 +526,7 @@ class Announcements(Resource):
         print("In Announcements POST ", user_id)
         response = {}
         payload = request.get_json()
-        # print("Post Announcement Payload: ", payload)
+        print("Post Announcement Payload: ", payload)
         manager_id = user_id
         # print("Manager ID: ", manager_id)
         if isinstance(payload["announcement_receiver"], list):
@@ -2954,36 +2955,50 @@ def decrypt_request():
         form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
         if encrypted_data and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
-            request._cached_json = decrypted_data  # Override the request JSON
-        elif encrypted_data and form_data == True:
-            decrypted_data = decrypt_dict(encrypted_data)
-            # Convert JSON to Form Data
-            form_data = {}
-            for key, value in decrypted_data.items():
-                if isinstance(value, dict) and 'fileName' in value and 'fileType' in value:
-                    print("File Received: ", value['fileName'], value['fileType'])
-                    # Check for 'fileData' field and simulate a file stream
-                    file_stream = None
-                    if 'fileData' in value:
-                        print("Actual conversion started")
-                        file_binary = base64.b64decode(value['fileData'])
-                        print("Binary created")
-                        file_stream = BytesIO(file_binary)  # Simulated file stream
-                        print("File Stream created")
-                    # If the value represents a file, simulate a FileStorage object
-                    form_data[key] = FileStorage(
-                        stream=file_stream,  # Set to actual stream if available
-                        filename=value['fileName'],
-                        content_type=value['fileType']
-                    ) 
-                else:
-                    form_data[key] = value
-            print("Form Data: ", form_data)
-            request._cached_json = form_data  # Override the request JSON
+
+            # Override request.get_json() to return decrypted data
+            def get_json_override(*args, **kwargs):
+                return decrypted_data
+
+            request.get_json = get_json_override
         else:
             print("Data issue")
+    elif request.content_type and request.content_type.startswith('multipart/form-data'):
+        # For FormData directly in the request
+        encrypted_data = request.form.get('encrypted_data')
+
+        if encrypted_data:
+            decrypted_data = decrypt_dict(encrypted_data)
+            # print("decrypted_data: ", decrypted_data)
+            fields = {}
+            files = {}
+
+            for key, value in decrypted_data.items():
+                if isinstance(value, dict) and 'fileName' in value and 'fileType' in value:
+                    # Handle file-specific data
+                    # print("image - ", value)
+                    file_binary = base64.b64decode(value['fileData'])
+                    file_stream = BytesIO(file_binary)
+                    files[key] = FileStorage(
+                        stream=file_stream,
+                        filename=value['fileName'],
+                        content_type=value['fileType']
+                    )
+                else:
+                    fields[key] = value
+
+            # Update `request.form` and `request.files`
+
+            # print(" Fields: ", fields)
+            request.form = ImmutableMultiDict(fields)
+            request.files = ImmutableMultiDict(files)
+
+            # print("Updated Form Data:", request.form)
+            # print("Updated Files:", request.files)
+        else:
+            print("No encrypted data found in multipart/form-data request")
     else:
-        print("no JSON object received")
+        print("GET Request, no JSON object received")
 
 # Middleware to encrypt response data
 def encrypt_response(data):
