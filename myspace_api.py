@@ -3073,6 +3073,7 @@ def decrypt_request():
 
 # Middleware to encrypt response data
 def encrypt_response(data):
+    print("data: ",data)
     encrypted_data = encrypt_dict(data)
     return jsonify({'encrypted_data': encrypted_data})
 
@@ -3092,14 +3093,19 @@ def before_request():
     check_jwt_token()
     decrypt_request()
 
-
 @app.after_request
 def after_request(response):
     print("In Middleware after_request")
     print("Actual endpoint response: ", type(response))
     print("Actual endpoint response2: ", type(response.get_json()))
+    original_status_code = response.status_code
+
     response = encrypt_response(response.get_json()) if response.is_json else response
+    
+    response.status_code = original_status_code
+
     return response
+
 
 # Apply middlewares
 # setup_middlewares(app)
