@@ -1,18 +1,15 @@
-name: CI/CD Pipeline
+name: MySpace CI/CD Pipeline
 
 on:
   push:
     branches:
       - master
-      - ss_1112
 
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Checkout Code
-      #   uses: actions/checkout@v3
 
       - name: Clone Repository
         run: |
@@ -26,15 +23,10 @@ jobs:
           sudo apt install -y python3 python3-pip
           python3 --version
       
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: 3.8
-      
       - name: Install Dependencies
         run: |
           cd myspace-backend
-          pip3 install -r req.txt
+          pip3 install -r requirements.txt
 
       - name: Run app to test
         id: test
@@ -58,13 +50,15 @@ jobs:
           chmod 600 ssh_key.pem
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem $EC2_USER@$EC2_HOST << EOF
             echo "Connected to EC2 instance"
-            cd /home/ec2-user/myspace
+            cd /home/ec2-user/myspace-backend
             source .venv/bin/activate
             cd myspace-backend
             echo "Pulling latest code..."
             git pull origin master
             echo "Restarting application..."
             pkill -f "python3 myspace_api.py" || echo "No existing app running"
+            echo "Installing dependencies..."
+            pip3 install -r requirements.txt --no-deps
             nohup python3 myspace_api.py >> myspace.log 2>&1 &
             echo "Application started"
             exit 0
