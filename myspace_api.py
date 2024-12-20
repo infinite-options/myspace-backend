@@ -73,7 +73,7 @@ from dotenv import load_dotenv
 # from datetime import timezone as dtz
 # from datetime import datetime, date, timedelta
 from datetime import datetime, date, timedelta, timezone
-from flask import Flask, request, render_template, url_for, redirect, jsonify
+from flask import Flask, request, render_template, url_for, redirect, jsonify, abort
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
@@ -3012,12 +3012,12 @@ def check_jwt_token():
 
     except jwt.InvalidTokenError:
         print('JWT Invalid')
-        return jsonify({'message': 'Invalid token!'}), 401
+        return jsonify({'message': 'Invalid token!'}), 404
 
     except Exception as e:
         # This will catch any other exception, including missing token
         print('JWT Missing')
-        return jsonify({'message': 'Missing token!'}), 401
+        return jsonify({'message': 'Missing token!'}), 404
 
 
 # Middleware for decrypting incoming request data
@@ -3091,12 +3091,14 @@ def health_check():
 @app.before_request 
 def before_request():
     print("In Middleware before_request")
-    response = check_jwt_token()
-    if response.code == '201':
+    response,code = check_jwt_token()
+    print("User response: ", response, type(response))
+    if code == '201':
         decrypt_request()
     else:
+        print("Response Code: ", code)
         response = encrypt_response(response.get_json()) if response.is_json else response
-        response.status_code = '401'
+        response.status_code = code
         return response
 
 @app.after_request
