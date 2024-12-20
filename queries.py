@@ -1251,7 +1251,7 @@ def ProfileInfo(user_id):
             -- WHERE tenant_uid = '350-000003'
             WHERE {column} = \'""" + user_id + """\'
             """
-    print(query)
+    # print(query)
 
     if user_id.startswith("110"):
         query = query.format(column='owner_uid', table = 'space.ownerProfileInfo')
