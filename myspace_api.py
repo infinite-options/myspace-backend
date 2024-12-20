@@ -3005,6 +3005,7 @@ def check_jwt_token():
         verify_jwt_in_request()
         current_user = get_jwt_identity() 
         print(f"Current User ID: {current_user}")
+        return jsonify({'message': 'JWT is present!'}), 201
     except jwt.ExpiredSignatureError:
         print('JWT Expired')
         return jsonify({'message': 'Token is expired!'}), 401
@@ -3090,8 +3091,13 @@ def health_check():
 @app.before_request 
 def before_request():
     print("In Middleware before_request")
-    check_jwt_token()
-    decrypt_request()
+    response = check_jwt_token()
+    if response.code == '201':
+        decrypt_request()
+    else:
+        response = encrypt_response(response.get_json()) if response.is_json else response
+        response.status_code = '401'
+        return response
 
 @app.after_request
 def after_request(response):
