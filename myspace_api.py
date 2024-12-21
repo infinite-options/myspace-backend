@@ -2998,9 +2998,6 @@ def check_jwt_token():
     if request.path == '/auth/refreshToken':
         return
     try:
-        if request.method == 'OPTIONS':  
-            return '', 200
-        
         print('Request Headers:', request.headers['Authorization'])
         verify_jwt_in_request()
         current_user = get_jwt_identity() 
@@ -3023,15 +3020,18 @@ def check_jwt_token():
 # Middleware for decrypting incoming request data
 def decrypt_request():
     if request.is_json:
+        print('Inside is_json')
+
         encrypted_data = request.get_json().get('encrypted_data')
         form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
         if encrypted_data and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
+            # print('decrypted data', decrypted_data)
 
             # Override request.get_json() to return decrypted data
             def get_json_override(*args, **kwargs):
                 return decrypted_data
-
+            
             request.get_json = get_json_override
         else:
             print("Data issue")
@@ -3090,22 +3090,35 @@ def health_check():
 # def setup_middlewares(app):
 @app.before_request 
 def before_request():
-    print("In Middleware before_request")
-    response,code = check_jwt_token()
-    print("User response: ", response, type(response))
-    if code == '201':
-        decrypt_request()
-    else:
-        print("Response Code: ", code)
-        response = encrypt_response(response.get_json()) if response.is_json else response
-        response.status_code = code
-        return response
+    if request.method != 'OPTIONS':  
+        print("In Middleware before_request")
+        response,code = check_jwt_token()
+        if code == 201:
+            decrypt_request()
+            # print('Inside 201 code')
+            # try:
+            #     if request.is_json:
+            #         print('Inside is_json in before req')
+            #         decrypt_request()
+            #     else:
+            #         print("It is a get request")
+
+            # except Exception as e:
+            #     print('error', e)
+
+            # # decrypt_request()
+            # print('Inside 201 after')
+        else:
+            print("Response Code: ", code)
+            response = encrypt_response(response.get_json()) if response.is_json else response
+            response.status_code = code
+            return response
 
 @app.after_request
 def after_request(response):
     print("In Middleware after_request")
-    print("Actual endpoint response: ", type(response))
-    print("Actual endpoint response2: ", type(response.get_json()))
+    # print("Actual endpoint response: ", type(response))
+    # print("Actual endpoint response2: ", type(response.get_json()))
     original_status_code = response.status_code
 
     response = encrypt_response(response.get_json()) if response.is_json else response
