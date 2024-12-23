@@ -3132,7 +3132,7 @@ def after_request(response):
 # setup_middlewares(app)
 
 #This method is to refresh the jwt token from the FrontEnd
-@app.route('/auth/refreshToken', methods=['POST'])
+@app.route('/auth/refreshToken', methods=['GET'])
 @jwt_required(refresh=True)  # This ensures that only refresh tokens can be used here
 def refreshToken():
     try:
