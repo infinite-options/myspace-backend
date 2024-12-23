@@ -102,66 +102,22 @@ from cryptography.hazmat.backends import default_backend
 import json
 import base64
 
-# from Crypto.Cipher import AES
-# from Crypto.Util.Padding import pad, unpad
-# import base64
-# import json
-
-# # AES encryption key (must be 16, 24, or 32 bytes)
-# AES_KEY = b'IO95120secretkey'  # 16 bytes
-# BLOCK_SIZE = 16  # AES block size
-
-# # Encrypt dictionary
-# def encrypt_dict(data_dict):
-#     try:
-#         print("In encrypt_dict: ")
-#         # Convert dictionary to JSON string
-#         json_data = json.dumps(data_dict)
-
-#         # Create a new AES cipher with a random IV
-#         cipher = AES.new(AES_KEY, AES.MODE_CBC)
-#         iv = cipher.iv  # Initialization vector
-
-#         # Pad and encrypt the JSON data
-#         padded_data = pad(json_data.encode(), BLOCK_SIZE)
-#         encrypted_data = cipher.encrypt(padded_data)
-
-#         # Combine IV and encrypted data, then Base64 encode
-#         encrypted_blob = base64.b64encode(iv + encrypted_data).decode()
-#         return encrypted_blob
-#     except Exception as e:
-#         print(f"Encryption error: {e}")
-#         return None
-
-# # Decrypt dictionary
-# def decrypt_dict(encrypted_blob):
-#     try:
-#         # Base64 decode the encrypted blob
-#         encrypted_data = base64.b64decode(encrypted_blob)
-
-#         # Extract the IV (first BLOCK_SIZE bytes) and the encrypted content
-#         iv = encrypted_data[:BLOCK_SIZE]
-#         encrypted_content = encrypted_data[BLOCK_SIZE:]
-
-#         # Create a new AES cipher with the extracted IV
-#         cipher = AES.new(AES_KEY, AES.MODE_CBC, iv=iv)
-
-#         # Decrypt and unpad the content
-#         decrypted_padded_data = cipher.decrypt(encrypted_content)
-#         decrypted_data = unpad(decrypted_padded_data, BLOCK_SIZE).decode()
-
-#         # Convert the JSON string back to a dictionary
-#         return json.loads(decrypted_data)
-#     except Exception as e:
-#         print(f"Decryption error: {e}")
-#         return None
 
 
 
 # == Using Cryptography library for AES encryption ==
 
-AES_KEY = b'IO95120secretkey'  # 16 bytes
-BLOCK_SIZE = 16  # AES block size
+# AES_KEY = b'IO95120secretkey'  # 16 bytes
+# BLOCK_SIZE = 16  # AES block size
+
+# load_dotenv()
+AES_SECRET_KEY = os.getenv('AES_SECRET_KEY')
+# print("AES Secret Key: ", AES_SECRET_KEY)
+AES_KEY = AES_SECRET_KEY.encode('utf-8')
+BLOCK_SIZE = int(os.getenv('BLOCK_SIZE'))
+# print("Block Size: ", BLOCK_SIZE)
+POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
+# print("POSTMAN_SECRET: ", POSTMAN_SECRET)
 
 # Encrypt dictionary
 def encrypt_dict(data_dict):
@@ -218,87 +174,6 @@ def decrypt_dict(encrypted_blob):
     except Exception as e:
         print(f"Decryption error: {e}")
         return None
-
-
-
-
-# # Encryption code from ChatGPT
-# from Crypto.Cipher import AES
-# from Crypto.Util.Padding import pad, unpad
-# import base64
-
-# # AES Encryption Key
-# AES_KEY = b'IO95120secretkey'  # Must be 16, 24, or 32 bytes long
-
-
-# def encrypt_payload(payload):
-#     # print("In encrypt payload: ", payload)
-#     print("In encrypt payload: ", type(payload))
-
-#     # Convert to payload to JSON Object
-#     payload = json.dumps(payload)
-#     print("After conversion: ", type(payload))
-
-#     print("AES.block_size: ", AES.block_size)
-#     try:
-#         cipher = AES.new(AES_KEY, AES.MODE_CBC)
-#         print(cipher)
-#         iv = cipher.iv  # Initialization vector
-#         print(iv)
-#         encrypted_data = cipher.encrypt(pad(payload.encode('utf-8'), AES.block_size))
-#         return base64.b64encode(iv + encrypted_data).decode('utf-8')  # Encode IV + Encrypted data
-#     except Exception as e:
-#         print(f"Encryption error: {e}")
-#         raise
-
-# def decrypt_payload(encrypted_payload):
-#     print("In decrypt payload: ", type(encrypted_payload))
-#     # print("encrypted_payload: ", encrypted_payload)
-
-
-#     # AES encryption key (must be 16, 24, or 32 bytes)
-#     AES_KEY = b'IO95120secretkey'  # 16 bytes
-#     BLOCK_SIZE = 16  # AES block size
-
-#     try:
-#         # Base64 decode the encrypted blob
-#         encrypted_data = base64.b64decode(encrypted_blob)
-
-#         # Extract the IV (first BLOCK_SIZE bytes) and the encrypted content
-#         iv = encrypted_data[:BLOCK_SIZE]
-#         encrypted_content = encrypted_data[BLOCK_SIZE:]
-
-#         # Create a new AES cipher with the extracted IV
-#         cipher = AES.new(AES_KEY, AES.MODE_CBC, iv=iv)
-
-#         # Decrypt and unpad the content
-#         decrypted_padded_data = cipher.decrypt(encrypted_content)
-#         decrypted_data = unpad(decrypted_padded_data, BLOCK_SIZE).decode()
-
-#         # Convert the JSON string back to a dictionary
-#         return json.loads(decrypted_data)
-    
-#     # try:
-#     #     cipher = AES.new(AES_KEY, AES.MODE_CBC)
-#     #     print("cipher: ", cipher)
-#     #     # iv = data[:16]  # Extract IV
-#     #     iv = cipher.iv
-#     #     print("iv: ", iv)
-#     #     data = base64.b64decode(encrypted_payload)
-#     #     encrypted_data = data[16:]
-#     #     # print("encrypted_data: ", encrypted_data)
-        
-#     #     decrypted_data = unpad(cipher.decrypt(data), AES.block_size)
-#     #     return decrypted_data.decode('utf-8')
-#     except Exception as e:
-#         print(f"Decryption error: {e}")
-#         raise
-
-
-
-
-
-
 
 
 
@@ -2965,6 +2840,8 @@ api.add_resource(EndPoint_CLASS, "/testapi")
 api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
 api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 
+
+
 # refresh
 # api.add_resource(Refresh, '/refresh')
 
@@ -3090,43 +2967,37 @@ def health_check():
 # def setup_middlewares(app):
 @app.before_request 
 def before_request():
-    if request.method != 'OPTIONS':  
-        print("In Middleware before_request")
-        response,code = check_jwt_token()
-        if code == 201:
-            decrypt_request()
-            # print('Inside 201 code')
-            # try:
-            #     if request.is_json:
-            #         print('Inside is_json in before req')
-            #         decrypt_request()
-            #     else:
-            #         print("It is a get request")
+    # all_headers = dict(request.headers)
+    # print(all_headers)
+    # print("Before Postman Secret: ", request.headers.get("Postman-Secret"))
+    if request.headers.get("Postman-Secret") != POSTMAN_SECRET:
+        if request.method != 'OPTIONS':  
+            print("In Middleware before_request")
+            response,code = check_jwt_token()
+            if code == 201:
+                decrypt_request()
 
-            # except Exception as e:
-            #     print('error', e)
-
-            # # decrypt_request()
-            # print('Inside 201 after')
-        else:
-            print("Response Code: ", code)
-            response = encrypt_response(response.get_json()) if response.is_json else response
-            response.status_code = code
-            return response
+            else:
+                print("Response Code: ", code)
+                response = encrypt_response(response.get_json()) if response.is_json else response
+                response.status_code = code
+                return response
 
 @app.after_request
 def after_request(response):
-    print("In Middleware after_request")
-    # print("Actual endpoint response: ", type(response))
-    # print("Actual endpoint response2: ", type(response.get_json()))
-    original_status_code = response.status_code
+    # print("After Postman Secret: ", request.headers.get("Postman-Secret"))
+    if request.headers.get("Postman-Secret") != POSTMAN_SECRET:
+        print("In Middleware after_request")
+        # print("Actual endpoint response: ", type(response))
+        # print("Actual endpoint response2: ", type(response.get_json()))
+        original_status_code = response.status_code
 
-    response = encrypt_response(response.get_json()) if response.is_json else response
-    
-    response.status_code = original_status_code
+        response = encrypt_response(response.get_json()) if response.is_json else response
+        
+        response.status_code = original_status_code
 
     return response
-
+    
 
 # Apply middlewares
 # setup_middlewares(app)
