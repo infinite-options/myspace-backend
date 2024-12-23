@@ -2995,8 +2995,8 @@ def decrypt_data():
 # @app.before_request
 
 def check_jwt_token():
-    if request.path == '/auth/refreshToken':
-        return
+    if request.path == '/auth/refreshToken' or request.path.startswith('/userInfo/') or request.path.startswith('/businessProfile'):
+        return jsonify({'message': 'JWT not required!'}), 201
     try:
         print('Request Headers:', request.headers['Authorization'])
         verify_jwt_in_request()
