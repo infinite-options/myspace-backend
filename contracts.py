@@ -81,7 +81,7 @@ class Contracts(Resource):
                 print("About to insert: ", payload)
                 payload["contract_property_id"] = property
                 response["contract"] = db.insert('contracts', payload)
-                print("Data inserted into space.contracts", response)
+                print("Data inserted into space_prod.contracts", response)
 
         return response
 

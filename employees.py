@@ -10,7 +10,7 @@ class Employee(Resource):
         if user_id[:3] == '120':
             with connect() as db:
                 empQuery = db.execute("""
-                                        SELECT * FROM space.employees WHERE 
+                                        SELECT * FROM space_prod.employees WHERE 
                                         employee_uid = \'""" + user_id + """\'
                 """)
 
@@ -19,7 +19,7 @@ class Employee(Resource):
         elif user_id[:3] == '600':
             with connect() as db:
                 empQuery = db.execute("""
-                                        SELECT * FROM space.employees WHERE 
+                                        SELECT * FROM space_prod.employees WHERE 
                                         employee_business_id = \'""" + user_id + """\'
                 """)
 

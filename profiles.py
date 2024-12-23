@@ -42,8 +42,8 @@ class Profile(Resource):
                 employeeQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS
                             SELECT *
-                            FROM space.employees
-                            LEFT JOIN space.businessProfileInfo ON employee_business_id = business_uid
+                            FROM space_prod.employees
+                            LEFT JOIN space_prod.businessProfileInfo ON employee_business_id = business_uid
                             LEFT JOIN (
                                 SELECT paymentMethod_profile_id AS pm_employee_id, JSON_ARRAYAGG(JSON_OBJECT
                                     ('paymentMethod_uid', paymentMethod_uid,
@@ -57,7 +57,7 @@ class Profile(Resource):
                                     'paymentMethod_billingzip', paymentMethod_billingzip,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS employeePaymentMethods
-                                FROM space.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id) as e ON employee_uid = e.pm_employee_id
                             LEFT JOIN (
                                 SELECT paymentMethod_profile_id AS pm_business_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -72,7 +72,7 @@ class Profile(Resource):
                                     'paymentMethod_billingzip', paymentMethod_billingzip,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS paymentMethods
-                                FROM space.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id) as p ON business_uid = p.pm_business_id
                             -- WHERE employee_uid = '120-000441';
                             WHERE employee_uid = \'""" + user_id + """\'
