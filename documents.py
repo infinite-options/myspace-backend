@@ -160,7 +160,7 @@ class Documents(Resource):
             for field in fields:
                 if data.get(field) is not None:
                     newDocument[field] = data.get(field)
-            new_doc_id = db.call('new_document_uid')['result'][0]['new_id']
+            new_doc_id = db.call('space_prod.new_document_uid')['result'][0]['new_id']
             newDocument['document_uid'] = new_doc_id
             newDocument['document_profile_id'] = user_id
 

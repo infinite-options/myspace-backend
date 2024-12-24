@@ -63,7 +63,7 @@ class Contracts(Resource):
                 print("In loop processing: ", property)
 
 
-                contract_uid = db.call('new_contract_uid')['result'][0]['new_id']
+                contract_uid = db.call('space_prod.new_contract_uid')['result'][0]['new_id']
                 key = {'contract_uid': contract_uid}
                 response['contract_uid'] = contract_uid 
                 print("Contract Key: ", key)

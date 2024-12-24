@@ -108,7 +108,7 @@ class LeaseApplication(Resource):
         with connect() as db: 
 
             # Get New Lease UID    
-            lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
+            lease_uid = db.call('space_prod.new_lease_uid')['result'][0]['new_id']
             key = {'lease_uid': lease_uid}
             response['lease_uid'] = lease_uid
             print("Contract Key: ", key)
@@ -151,7 +151,7 @@ class LeaseApplication(Resource):
                     print("fees",fees)
                     new_leaseFees = {}
                     # Get new leaseFees_uid
-                    new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
+                    new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']  
                     for item in fees:
                         # print("Item: ", item)
                         if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
@@ -268,7 +268,7 @@ class LeaseApplication(Resource):
                     # FOR FIRST TIME FEES ARE BEING ADDED
                     else:
                         # print("In ELSE Statment ") 
-                        new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
+                        new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']    
                         # print('New Lease Fees Payload: ', new_leaseFees)
                         response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
 
@@ -433,7 +433,7 @@ class LeaseApplication(Resource):
 
                         # Create Tenant-PM Purchase
                         # Create JSON Object for Rent Purchase for Tenant-PM Purchase
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -460,7 +460,7 @@ class LeaseApplication(Resource):
 
                         # Create PM-Owner Purchase
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_cf_type'] = "expense"
@@ -539,7 +539,7 @@ class LeaseApplication(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 # print(newPMRequestID)
                                 
@@ -590,7 +590,7 @@ class LeaseApplication(Resource):
                         #     newRequest['pur_description'] = f"First Month {fee['fee_name']}"
 
                         #     # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #     grouping = newRequestID
                         #     newRequest['purchase_uid'] = newRequestID
                         #     newRequest['pur_group'] = grouping
@@ -608,7 +608,7 @@ class LeaseApplication(Resource):
 
                         #     # Create PM-Owner Payment
                         #     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #     newRequest['purchase_uid'] = newRequestID
                         #     # print(newRequestID)
                         #     newRequest['pur_receiver'] = owner
@@ -670,7 +670,7 @@ class LeaseApplication(Resource):
 
                         #             # Create JSON Object for Fee Purchase
                         #             newPMRequest = {}
-                        #             newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #             newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #             newPMRequest['purchase_uid'] = newPMRequestID
                         #             # print(newPMRequestID)
                                     
@@ -714,7 +714,7 @@ class LeaseApplication(Resource):
                     else: 
                         print("Not Rent")
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping

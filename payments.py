@@ -56,7 +56,7 @@ class NewPayments(Resource):
 
                 # GET NEW PAYMENT UID
                 # print("Get New Request UID")
-                newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                 print(newPaymentRequestID)
 
                 if total_paid > round(float(item['pur_amount_due']), 2):
@@ -209,7 +209,7 @@ class NewPayments(Resource):
 
                     # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
-                    newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    newPurchaseRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                     # print("Part 2A: ", newPurchaseRequestID)
 
                     # DETERMINE HOW MUCH OF THE CONVENIENCE FEES WAS DUE TO EACH PURCHASE
@@ -255,7 +255,7 @@ class NewPayments(Resource):
                     # INSERT INTO PAYMENTS TABLE
                     # GET NEW UID
                     # print("Get New Request UID")
-                    newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                    newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                     # print(newPaymentRequestID)
 
                     feePaymentQuery = (""" 
@@ -280,7 +280,7 @@ class NewPayments(Resource):
 
                     # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
-                    newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    newPurchaseRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                     # print("Part 2B: ", newPurchaseRequestID)
 
                     feePurchaseQuery = (""" 
@@ -312,7 +312,7 @@ class NewPayments(Resource):
                     # INSERT INTO PAYMENTS TABLE
                     # GET NEW UID
                     # print("Get New Request UID")
-                    newPaymentRequestID = db.call('new_payment_uid')['result'][0]['new_id']
+                    newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                     # print(newPaymentRequestID)
 
                     feePaymentQuery = (""" 

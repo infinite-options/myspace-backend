@@ -50,7 +50,7 @@ class Appliances(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newApplianceUID = db.call('new_appliance_uid')['result'][0]['new_id']
+            newApplianceUID = db.call('space_prod.new_appliance_uid')['result'][0]['new_id']
             key = {'appliance_uid': newApplianceUID}
             print("Appliance Key: ", key)
            

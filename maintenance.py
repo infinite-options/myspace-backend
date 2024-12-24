@@ -231,7 +231,7 @@ class MaintenanceRequests(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newMaintenanceReqUID = db.call('new_request_uid')['result'][0]['new_id']
+            newMaintenanceReqUID = db.call('space_prod.new_request_uid')['result'][0]['new_id']
             key = {'maintenance_request_uid': newMaintenanceReqUID}
             print("Maintenance Req Key: ", key)
            

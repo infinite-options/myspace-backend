@@ -532,7 +532,7 @@ class AddPurchase(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newPurchaseUID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newPurchaseUID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             key = {'purchase_uid': newPurchaseUID}
             print("Purchase Key: ", key)
 
@@ -742,7 +742,7 @@ class AddPurchaseJSON(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)
@@ -813,7 +813,7 @@ class AddExpense(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)
@@ -884,7 +884,7 @@ class AddRevenue(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)

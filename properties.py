@@ -419,7 +419,7 @@ class Properties(Resource):
             raise BadRequest("Request failed, UID found in payload.")
 
         with connect() as db:
-            newPropertyUID = db.call('new_property_uid')['result'][0]['new_id']
+            newPropertyUID = db.call('space_prod.new_property_uid')['result'][0]['new_id']
             key = {'property_uid': newPropertyUID}
             print("Property Key: ", key)
 
@@ -443,9 +443,9 @@ class Properties(Resource):
                         # appliances is now a list of strings
                         for appliance in appliances:
                             print(f"Appliance: {appliance}")
-                            # newRequestID = db.call('new_property_uid')['result'][0]['new_id']
+                            # newRequestID = db.call('space_prod.new_property_uid')['result'][0]['new_id']
                             # print(newRequestID)
-                            NewApplianceID = db.call('new_appliance_uid')['result'][0]['new_id']
+                            NewApplianceID = db.call('space_prod.new_appliance_uid')['result'][0]['new_id']
                             newAppliance['appliance_uid'] = NewApplianceID
                             print(NewApplianceID)
                             newAppliance['appliance_property_id'] = newPropertyUID

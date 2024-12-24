@@ -1998,7 +1998,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -2016,7 +2016,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
@@ -2080,7 +2080,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                                 # print(newPMRequestID)
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
@@ -2312,7 +2312,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -2330,7 +2330,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
@@ -2394,7 +2394,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                                 # print(newPMRequestID)
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")

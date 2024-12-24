@@ -251,7 +251,7 @@ class Profile(Resource):
         with connect() as db:
                 # print("Checking Inputs: ", key)
                 if payload.get('tenant_uid'):
-                    # response['tenant_docs'] = db.update('space_prod.space_prod.tenantProfileInfo', key, filtered_payload)
+                    # response['tenant_docs'] = db.update('space_prod.tenantProfileInfo', key, filtered_payload)
                     response = db.update('space_prod.tenantProfileInfo', key, filtered_payload)
                 if payload.get('owner_uid'):
                     response = db.update('space_prod.ownerProfileInfo', key, filtered_payload)
