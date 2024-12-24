@@ -46,6 +46,7 @@ import jwt
 
 from test_api import endPointTest_CLASS
 from extract_api import Extract_API, CleanUpDatabase
+from test_api_space_dev_db import endPointTest_space_dev_db_CLASS
 # from flask import Request
 
 import os
@@ -2837,6 +2838,7 @@ api.add_resource(SendEmail, "/sendEmail")
 api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
 
 api.add_resource(EndPoint_CLASS, "/testapi")
+api.add_resource(endPointTest_space_dev_db_CLASS, "/testapi_space_dev_db")
 api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
 api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 
