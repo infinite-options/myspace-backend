@@ -431,10 +431,18 @@ class LeaseApplication(Resource):
                 for delete_uid in json_object:
                     print("Fee to delete: ", delete_uid)
 
-                    response["delete_fees"] = db.delete(""" 
-                            DELETE FROM leaseFees
+                    leaseQuery = ("""
+                            DELETE FROM space_prod.leaseFees
                             WHERE leaseFees_uid = \'""" + delete_uid + """\'
                             """)
+
+                    response["delete_fees"] = db.delete(leaseQuery)
+
+                    # response["delete_fees"] = db.delete(""" 
+                    #         DELETE FROM space_prod.leaseFees
+                    #         WHERE leaseFees_uid = \'""" + delete_uid + """\'
+                    #         """)
+                            
 
             # POST TO LEASE FEES.  Need to post Lease Fees into leaseFees Table.  Typically when PM sends lease to Tenant
             if "lease_fees" in payload:

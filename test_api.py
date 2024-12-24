@@ -469,7 +469,7 @@ class endPointTest_CLASS(Resource):
                 with connect() as db:
                     if maintenance_request_uid != "":
                         delQuery_maintenance_req = ("""
-                                        DELETE space_prod.maintenanceRequests
+                                        DELETE maintenanceRequests
                                         FROM space_prod.maintenanceRequests
                                         WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
                                     """)
@@ -477,7 +477,7 @@ class endPointTest_CLASS(Resource):
 
                     if maintenance_quote_uid != "":
                         delQuery_maintenance_quotes = ("""
-                                        DELETE space_prod.maintenanceQuotes
+                                        DELETE maintenanceQuotes
                                         FROM space_prod.maintenanceQuotes
                                         WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
                                     """)
