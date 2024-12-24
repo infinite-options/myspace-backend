@@ -543,7 +543,7 @@ class MaintenanceQuotesByUid(Resource):
     def get(self, maintenance_quote_uid):
         print('in MaintenanceQuotesByUid')
         with connect() as db:
-            response = db.select('maintenanceQuotes', {"maintenance_quote_uid": maintenance_quote_uid})
+            response = db.select('space_prod.maintenanceQuotes', {"maintenance_quote_uid": maintenance_quote_uid})
         return response
 
 

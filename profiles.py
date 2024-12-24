@@ -21,7 +21,7 @@ class BusinessProfile(Resource):
         where = request.args.to_dict()
         print("Where: ", where)
         with connect() as db:
-            response = db.select('businessProfileInfo', where)
+            response = db.select('space_prod.businessProfileInfo', where)
         return response
 
 
@@ -37,7 +37,7 @@ class Profile(Resource):
 
 
             elif user_id.startswith("120"):
-                    # response["profile"] = db.select('employees', {"employee_uid": user_id})
+                    # response["profile"] = db.select('space_prod.employees', {"employee_uid": user_id})
                 print ('    -in Get Employee Profile')
                 employeeQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS
@@ -87,7 +87,7 @@ class Profile(Resource):
             else:
                 where = request.args.to_dict()
                 with connect() as db:
-                    response = db.select('businessProfileInfo', where)
+                    response = db.select('space_prod.businessProfileInfo', where)
                 return response
                 # raise BadRequest("Request failed, no UID in payload.")
 

@@ -14,7 +14,7 @@ class Password(Resource):
         if not user_uid:
             raise BadRequest("Request failed, no UID in payload.")
         with connect() as db:
-            response = db.select('users', {"user_uid": user_uid})
+            response = db.select('space_prod.users', {"user_uid": user_uid})
         try:
             user = response.get('result')[0]
         except IndexError as e:

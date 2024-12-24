@@ -11,7 +11,7 @@ class StatusUpdate(Resource):
         if payload.get('maintenance_quote_uid'):
             if payload.get('quote_status') == 'REQUESTED':
                 with connect() as db:
-                    maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
+                    maintenance_quote = db.select('space_prod.maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
                     response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},
@@ -19,14 +19,14 @@ class StatusUpdate(Resource):
 
             elif payload.get('quote_status') == 'SCHEDULED':
                 with connect() as db:
-                    maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
+                    maintenance_quote = db.select('space_prod.maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
                     response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},
                                          {'maintenance_request_status': 'SCHEDULED'})
             elif payload.get('quote_status') == 'FINISHED':
                 with connect() as db:
-                    maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
+                    maintenance_quote = db.select('space_prod.maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
                     response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},

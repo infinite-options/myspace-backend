@@ -16,5 +16,5 @@ class Account(Resource):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('accounts', where)
+            response = db.select('space_prod.accounts', where)
         return response

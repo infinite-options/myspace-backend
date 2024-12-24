@@ -9,5 +9,5 @@ class List(Resource):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('lists', where)
+            response = db.select('space_prod.lists', where)
         return response

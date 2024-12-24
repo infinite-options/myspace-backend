@@ -11,7 +11,7 @@ class Utilities(Resource):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('property_utility', where )
+            response = db.select('space_prod.property_utility', where )
         return response
 
     
