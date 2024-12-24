@@ -423,7 +423,7 @@ class Bills(Resource):
     #     print("KV Pairs: ", bills)
     #     with connect() as db:
     #         print("In actual PUT")
-    #         response = db.update('bills', key, bills)
+    #         response = db.update('space_prod.bills', key, bills)
     #     return response
     
 
@@ -464,7 +464,7 @@ class Bills(Resource):
         # Write to Databaseè
         with connect() as db:
             # print("Checking Inputs: ", key, payload)
-            response['bill_info'] = db.update('bills', key, payload)
+            response['bill_info'] = db.update('space_prod.bills', key, payload)
             # print("Response:" , response)
 
 
@@ -485,7 +485,7 @@ class Bills(Resource):
                      bill_pur_update["pur_notes"] = payload.get('bill_notes')
                     #  print(bill_pur_update)
 
-                     response['bill_update'] = db.update('purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
+                     response['bill_update'] = db.update('space_prod.purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
 
             
         return response
@@ -627,7 +627,7 @@ class AddPurchase(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
     
 
@@ -777,7 +777,7 @@ class AddPurchaseJSON(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
 
         
@@ -848,7 +848,7 @@ class AddExpense(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
     
 
@@ -919,5 +919,5 @@ class AddRevenue(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response

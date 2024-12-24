@@ -57,6 +57,6 @@ class EmployeeVerification(Resource):
                 raise BadRequest("Request failed, no UID in payload.")
             key = {'employee_uid': payload[i].pop('employee_uid')}
             with connect() as db:
-                response["employee_update"] = db.update('employees',key,payload[i])
+                response["employee_update"] = db.update('space_prod.employees',key,payload[i])
 
         return response

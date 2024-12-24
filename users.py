@@ -50,7 +50,7 @@ class UserInfo(Resource):
             # print(payload)
             
             with connect() as db:
-                response = db.update('users', key, payload)
+                response = db.update('space_prod.users', key, payload)
             return response
 
 

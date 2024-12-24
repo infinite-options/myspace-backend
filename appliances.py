@@ -122,7 +122,7 @@ class Appliances(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['appliance_info'] = db.update('appliances', key, payload)
+            response['appliance_info'] = db.update('space_prod.appliances', key, payload)
             print("Response:" , response)
             
         return response
@@ -181,7 +181,7 @@ class Appliances(Resource):
 #                     'appliances': json.dumps(existingApp)
 #                 }
 
-#                 response = db.update('properties', primaryKey, updatedProperty)
+#                 response = db.update('space_prod.properties', primaryKey, updatedProperty)
 #             else:
 #                 response['message'] = 'No appliance'
 #                 response['code'] = 200

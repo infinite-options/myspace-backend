@@ -286,7 +286,7 @@ class MaintenanceRequests(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response["request_update"] = db.update('maintenanceRequests', key, payload)
+            response["request_update"] = db.update('space_prod.maintenanceRequests', key, payload)
             print("Response:" , response)
 
         return response
@@ -533,7 +533,7 @@ class MaintenanceQuotes(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response["request_update"] = db.update('maintenanceQuotes', key, payload)
+            response["request_update"] = db.update('space_prod.maintenanceQuotes', key, payload)
             print("Response:" , response)
 
         return response

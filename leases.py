@@ -465,7 +465,7 @@ class LeaseApplication(Resource):
                         fee_key = {'leaseFees_uid': fees['leaseFees_uid']}
                         # print("fee_key",fee_key, type(fee_key))
                         # print("new_leaseFees: ", new_leaseFees)
-                        response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
+                        response['lease_fees'] = db.update('space_prod.leaseFees', fee_key, new_leaseFees)
                     # FOR FIRST TIME FEES ARE BEING ADDED
                     else:
                         # print("In ELSE Statment ") 
@@ -485,7 +485,7 @@ class LeaseApplication(Resource):
                     payload[key1] = None
 
             print("Leases Payload: ", payload, type(payload))
-            response['lease_docs'] = db.update('leases', key, payload)
+            response['lease_docs'] = db.update('space_prod.leases', key, payload)
             # print("Response:" , response)
        
 

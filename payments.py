@@ -155,8 +155,8 @@ class NewPayments(Resource):
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
-                response['purchase_table_update'] = db.update('purchases', key, payload)
-                response['purchase_status_update'] = db.update('purchases', key, payload2)
+                response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                response['purchase_status_update'] = db.update('space_prod.purchases', key, payload2)
                 # print(response)
                 
 
@@ -194,8 +194,8 @@ class NewPayments(Resource):
                         # print(key, payload)
 
                         # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
-                        response['purchase_table_update'] = db.update('purchases', key, payload)
-                        response['purchase_status_update'] = db.update('purchases', key, payload2)
+                        response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                        response['purchase_status_update'] = db.update('space_prod.purchases', key, payload2)
                         # print(response)
 
 
@@ -389,7 +389,7 @@ class PaymentMethod(Resource):
                         print(item)
                         key = {'paymentMethod_uid': item.pop('paymentMethod_uid')}
                         print("Key: ", type(key), key)
-                        query_response = db.update('paymentMethods', key, item)
+                        query_response = db.update('space_prod.paymentMethods', key, item)
                         print(query_response)
                         response[i] = query_response
                         i += 1
@@ -399,7 +399,7 @@ class PaymentMethod(Resource):
                     print("No paymentMethod_uid")
                     raise BadRequest("Request failed, no UID in payload.")
                 key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
-                query_response = db.update('paymentMethods', key, payload)
+                query_response = db.update('space_prod.paymentMethods', key, payload)
                 print(query_response)
                 response = query_response
 

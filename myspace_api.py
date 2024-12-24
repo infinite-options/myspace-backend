@@ -604,7 +604,7 @@ class Announcements(Resource):
                     key = {'announcement_uid': each}
                     print("Annoucement Key: ", key)
                     with connect() as db:
-                        response = db.update('announcements', key, payload)
+                        response = db.update('space_prod.announcements', key, payload)
                         i = i + 1
                     response["rows affected"] = i
 

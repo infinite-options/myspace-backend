@@ -116,7 +116,7 @@ class Contracts(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['contract_info'] = db.update('contracts', key, payload)
+            response['contract_info'] = db.update('space_prod.contracts', key, payload)
             # print("Response:" , response)
         
         return response

@@ -65,7 +65,7 @@ class PaymentVerification(Resource):
             # Write to Database
             with connect() as db:
                 print("Checking Inputs: ", key, payload)
-                response['payment_info'] = db.update('payments', key, payload)
+                response['payment_info'] = db.update('space_prod.payments', key, payload)
                 update_counter = update_counter + 1
                 print("Response:" , response)
         

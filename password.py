@@ -32,7 +32,7 @@ class Password(Resource):
         new_password_hash = createHash(new_password, new_salt)
 
         with connect() as db:
-            response = db.update('users', {"user_uid": user_uid},
+            response = db.update('space_prod.users', {"user_uid": user_uid},
                                  {
                                      "password_salt": new_salt,
                                      "password_hash": new_password_hash

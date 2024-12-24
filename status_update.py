@@ -13,7 +13,7 @@ class StatusUpdate(Resource):
                 with connect() as db:
                     maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
-                    response = db.update('maintenanceRequests',
+                    response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},
                                          {'maintenance_request_status': 'PROCESSING'})
 
@@ -21,18 +21,18 @@ class StatusUpdate(Resource):
                 with connect() as db:
                     maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
-                    response = db.update('maintenanceRequests',
+                    response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},
                                          {'maintenance_request_status': 'SCHEDULED'})
             elif payload.get('quote_status') == 'FINISHED':
                 with connect() as db:
                     maintenance_quote = db.select('maintenanceQuotes', {'maintenance_quote_uid': payload.get('maintenance_quote_uid')})
                     maintenance_request_uid = maintenance_quote.get('result')[0]['quote_maintenance_request_id']
-                    response = db.update('maintenanceRequests',
+                    response = db.update('space_prod.maintenanceRequests',
                                          {'maintenance_request_uid': maintenance_request_uid},
                                          {'maintenance_request_status': 'COMPLETED'})
             with connect() as db:
-                response_2 = db.update('maintenanceQuotes',
+                response_2 = db.update('space_prod.maintenanceQuotes',
                                        {'maintenance_quote_uid': payload.get('maintenance_quote_uid')},
                                        {'quote_status': payload.get('quote_status')})
 
@@ -40,11 +40,11 @@ class StatusUpdate(Resource):
             if payload.get('maintenance_request_status') == 'CANCELLED':
                 with connect() as db:
                     maintenance_request_uid = payload.get('maintenance_request_uid')
-                    response = db.update('maintenanceQuotes',
+                    response = db.update('space_prod.maintenanceQuotes',
                                          {'quote_maintenance_request_id': maintenance_request_uid},
                                          {'quote_status': 'WITHDRAWN'})
             with connect() as db:
-                response_2 = db.update('maintenanceRequests',
+                response_2 = db.update('space_prod.maintenanceRequests',
                                        {'maintenance_request_uid': payload.get('maintenance_request_uid')},
                                        {'maintenance_request_status': payload.get('maintenance_request_status')})
 

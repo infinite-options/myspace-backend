@@ -533,7 +533,7 @@ class Properties(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['property_info'] = db.update('properties', key, payload)
+            response['property_info'] = db.update('space_prod.properties', key, payload)
             # print("Response:" , response)
         return response
 
