@@ -1466,6 +1466,7 @@ class endPointTest_CLASS(Resource):
             purchase_uids = []
             try:
                 # -------- test POST Bills --------
+                print("\nIn POST Bills")
                 post_bill_payload = {
                     "bill_created_by":"600-000000",
                     "bill_description":"Test Bill Description",
@@ -1487,6 +1488,7 @@ class endPointTest_CLASS(Resource):
                 response['No of APIs tested'] += 1
 
                 # -------- test GET after POST Bills --------
+                print("\nIn GET after POST Bills")
                 get_post_response = requests.get(ENDPOINT + f"/bills/{bill_uid}", headers=headers)
                 data = get_post_response.json()['result'][0]
                 if data['bill_description'] != "Test Bill Description":
@@ -1498,6 +1500,7 @@ class endPointTest_CLASS(Resource):
                 response['No of APIs tested'] += 1
 
                 # -------- test PUT Bills --------
+                print("\nIn PUT Bills")
                 put_bill_payload = {
                     "bill_uid":f"{bill_uid}",
                     "bill_description":"Test Bill Description 1"
@@ -1510,6 +1513,7 @@ class endPointTest_CLASS(Resource):
                 response['No of APIs tested'] += 1
 
                 # -------- test GET after PUT Bills --------
+                print("\nIn GET after PUT Bills")
                 get_put_response = requests.get(ENDPOINT + f"/bills/{bill_uid}", headers=headers)
                 data = get_put_response.json()['result'][0]
                 if data['bill_description'] != "Test Bill Description 1":
@@ -1525,7 +1529,7 @@ class endPointTest_CLASS(Resource):
             
             finally:
                 # -------- test DELETE Bills --------
-                print("\nIn DELETE Bill")
+                print("\nIn DELETE Bills")
                 print(f"\nDeleting bill_uid: {bill_uid} from Bills Table and purchase_uids: {purchase_uids} from Purchases Table")
                 with connect() as db:
                     if bill_uid != "":
