@@ -28,7 +28,7 @@ class UserInfo(Resource):
                     -- WHERE user_uid = 'anureetksandhu7@gmail.com' OR email = 'anureetksandhu7@gmail.com'   ;                   
                     WHERE user_uid = \'""" + user_id + """\' OR email = \'""" + user_id + """\'  ;
                     """)
-            print(userQuery)                                    
+            # print(userQuery)                                    
 
             if userQuery['code'] == 200 and int(len(userQuery['result']) > 0):                
                 print(userQuery['result'][0]['user_uid'])
