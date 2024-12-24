@@ -9,7 +9,7 @@ class Template(Resource):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('lists', where)
+            response = db.select('space_prod.lists', where)
         return response
     
 class Listings (Resource):
@@ -24,18 +24,18 @@ class Listings (Resource):
                     -- AVAILABLE LISTINGS EXCLUDING ACTIVE LEASES EXPIRING MORE THAT 2 MONTH FROM NOW
                     SELECT * 
                     FROM (
-                        SELECT * FROM space.properties
+                        SELECT * FROM space_prod.properties
                         RIGHT JOIN (
-                            SELECT * FROM space.contracts 
+                            SELECT * FROM space_prod.contracts 
                             WHERE contract_status = "ACTIVE") AS c 
                         ON contract_property_id = property_uid
                         WHERE property_available_to_rent = 1 ) AS p
                     LEFT JOIN ( 
-                        SELECT * FROM space.u_details                                                 
+                        SELECT * FROM space_prod.u_details                                                 
                         ) AS u                                       
                     ON utility_property_id = property_uid
                     LEFT JOIN ( 
-                        SELECT * FROM space.leases 
+                        SELECT * FROM space_prod.leases 
                         -- WHERE lease_status = "ACTIVE"
                         WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
                         ) AS l
@@ -52,8 +52,8 @@ class Listings (Resource):
             print("in tenant loop")
             tenantsQuery = db.execute(""" 
                     -- SHOW TENANT LEASES
-                    SELECT * FROM space.lease_tenant
-                    LEFT JOIN space.leases ON lease_uid = lt_lease_id
+                    SELECT * FROM space_prod.lease_tenant
+                    LEFT JOIN space_prod.leases ON lease_uid = lt_lease_id
                     LEFT JOIN (
                         SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
@@ -68,7 +68,7 @@ class Listings (Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space.leaseFees
+                            FROM space_prod.leaseFees
                             GROUP BY fees_lease_id) as t ON lt_lease_id = fees_lease_id
                             WHERE lt_tenant_id = \'""" + tenant_id + """\';
                     """)

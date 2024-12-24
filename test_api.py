@@ -1918,16 +1918,16 @@ class endPointTest_CLASS(Resource):
 #     print(f"Deleting {maintenance_request_uid} from Maintenance Requests and {maintenance_quote_uid} from Maintenance Quotes")
 #     with connect() as db:
 #         delQuery_maintenance_req = ("""
-#                         DELETE space.maintenanceRequests
-#                         FROM space.maintenanceRequests
+#                         DELETE space_prod.maintenanceRequests
+#                         FROM space_prod.maintenanceRequests
 #                         WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
 #                     """)
 
 #         response = db.delete(delQuery_maintenance_req)
 
 #         delQuery_maintenance_quotes = ("""
-#                         DELETE space.maintenanceQuotes
-#                         FROM space.maintenanceQuotes
+#                         DELETE space_prod.maintenanceQuotes
+#                         FROM space_prod.maintenanceQuotes
 #                         WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
 #                     """)
 
@@ -2091,7 +2091,7 @@ class endPointTest_CLASS(Resource):
 #     print(f"Deleting {contract_uid} from Contract Table")
 #     with connect() as db:
 #         delQuery_contracts = ("""
-#                         DELETE FROM space.contracts
+#                         DELETE FROM space_prod.contracts
 #                         WHERE contract_uid = \'""" + contract_uid + """\';
 #                     """)
 
@@ -2156,11 +2156,11 @@ class endPointTest_CLASS(Resource):
 #     print(f"Deleting {lease_uid} from Lease Table & {lease_uid} from Lease_tenant")
 #     with connect() as db:
 #         delQuery_leases = ("""
-#                         DELETE FROM space.leases
+#                         DELETE FROM space_prod.leases
 #                         WHERE lease_uid = \'""" + lease_uid + """\';
 #                     """)
 #         delQuery_lease_tenant = ("""
-#                         DELETE FROM space.lease_tenant
+#                         DELETE FROM space_prod.lease_tenant
 #                         WHERE lt_lease_id = \'""" + lease_uid + """\';
 #                     """)
 
@@ -2298,14 +2298,14 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_add_purchase = ("""
-#                         DELETE FROM space.purchases
+#                         DELETE FROM space_prod.purchases
 #                         WHERE purchase_uid = \'""" + purchase_uid + """\';
 #                     """)
 
 #         del_add_purchase_response = db.delete(delQuery_add_purchase)
 
 #         delQuery_payment = ("""
-#                         DELETE FROM space.payments
+#                         DELETE FROM space_prod.payments
 #                         WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
 #                     """)
 
@@ -2474,19 +2474,19 @@ class endPointTest_CLASS(Resource):
 #     print(f"Deleting {owner_uid} from Owner Table, {business_uid} from Business Table, {employee_uid} from Employee Table & {tenant_uid} from Tenant Table")
 #     with connect() as db:
 #         delQuery_owner = ("""
-#                         DELETE FROM space.ownerProfileInfo
+#                         DELETE FROM space_prod.ownerProfileInfo
 #                         WHERE owner_uid = \'""" + owner_uid + """\';
 #                     """)
 #         delQuery_business = ("""
-#                         DELETE FROM space.businessProfileInfo
+#                         DELETE FROM space_prod.businessProfileInfo
 #                         WHERE business_uid = \'""" + business_uid + """\';
 #                     """)
 #         delQuery_employee = ("""
-#                         DELETE FROM space.employees
+#                         DELETE FROM space_prod.employees
 #                         WHERE employee_uid = \'""" + employee_uid + """\';
 #                     """)
 #         delQuery_tenant = ("""
-#                         DELETE FROM space.tenantProfileInfo
+#                         DELETE FROM space_prod.tenantProfileInfo
 #                         WHERE tenant_uid = \'""" + tenant_uid + """\';
 #                     """)
         
@@ -2583,14 +2583,14 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_add_expense = ("""
-#                         DELETE FROM space.purchases
+#                         DELETE FROM space_prod.purchases
 #                         WHERE purchase_uid = \'""" + expense_uid + """\';
 #                     """)
 
 #         del_add_expense_response = db.delete(delQuery_add_expense)
         
 #         delQuery_add_revenue = ("""
-#                         DELETE FROM space.purchases
+#                         DELETE FROM space_prod.purchases
 #                         WHERE purchase_uid = \'""" + revenue_uid + """\';
 #                     """)
 
@@ -2738,7 +2738,7 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_employee = ("""
-#                         DELETE FROM space.employees
+#                         DELETE FROM space_prod.employees
 #                         WHERE employee_uid = \'""" + employee_uid + """\';
 #                     """)
 
@@ -2817,7 +2817,7 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_property_utility = ("""
-#                         DELETE FROM space.property_utility
+#                         DELETE FROM space_prod.property_utility
 #                         WHERE utility_property_id = "200-000000"
 #                         AND utility_type_id = "050-000000"
 #                         AND utility_payer_id = "050-100000";
@@ -2888,7 +2888,7 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_bill = ("""
-#                         DELETE FROM space.bills
+#                         DELETE FROM space_prod.bills
 #                         WHERE bill_uid = \'""" + bill_uid + """\';
 #                     """)
 
@@ -2896,7 +2896,7 @@ class endPointTest_CLASS(Resource):
 
 #         for pur_id in purchase_uids:
 #             delQuery_purchase = ("""
-#                         DELETE FROM space.purchases
+#                         DELETE FROM space_prod.purchases
 #                         WHERE purchase_uid = \'""" + pur_id + """\';
 #                     """)
 
@@ -2965,7 +2965,7 @@ class endPointTest_CLASS(Resource):
 
 #     with connect() as db:
 #         delQuery_announcement = ("""
-#                         DELETE FROM space.announcements
+#                         DELETE FROM space_prod.announcements
 #                         WHERE announcement_uid = \'""" + announcement_uid + """\';
 #                     """)
 #         del_announcement_response = db.delete(delQuery_announcement)

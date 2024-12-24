@@ -55,215 +55,6 @@ class LeaseDetails(Resource):
         return
 
 
-# class LeaseDetails(Resource):
-#     # decorators = [jwt_required()]
-
-#     def get(self, filter_id):
-#         print('in Lease Details', filter_id)
-#         response = {}
-
-#         with connect() as db:
-#             if filter_id[:3] == "110":
-#                 print('in Owner Lease Details')
-
-#                 leaseQuery = db.execute(""" 
-#                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-#                         SELECT * 
-#                         FROM (
-#                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
-#                             SELECT *,
-#                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
-#                             CASE
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
-#                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
-#                             END AS lease_end_month
-#                             FROM space.leases 
-#                             WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
-#                             ) AS l
-#                         LEFT JOIN (
-#                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('leaseFees_uid', leaseFees_uid,
-#                                 'fee_name', fee_name,
-#                                 'fee_type', fee_type,
-#                                 'charge', charge,
-#                                 'due_by', due_by,
-#                                 'late_by', late_by,
-#                                 'late_fee', late_fee,
-#                                 'perDay_late_fee', perDay_late_fee,
-#                                 'frequency', frequency,
-#                                 'available_topay', available_topay,
-#                                 'due_by_date', due_by_date
-#                                 )) AS lease_fees
-#                                 FROM space.leaseFees
-#                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
-#                         LEFT JOIN space.properties ON property_uid = lease_property_id
-#                         LEFT JOIN space.o_details ON property_id = lease_property_id
-#                         LEFT JOIN (
-#                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('tenant_uid', tenant_uid,
-#                                 'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
-#                                 'tenant_first_name', tenant_first_name,
-#                                 'tenant_last_name', tenant_last_name,
-#                                 'tenant_phone_number', tenant_phone_number,
-#                                 'tenant_email', tenant_email,
-#                                 'tenant_drivers_license_number', tenant_drivers_license_number,
-#                                 'tenant_drivers_license_state', tenant_drivers_license_state,
-#                                 'tenant_ssn', tenant_ssn,
-#                                 'tenant_current_salary', tenant_current_salary,
-#                                 'tenant_salary_frequency', tenant_salary_frequency,
-#                                 'tenant_current_job_title', tenant_current_job_title,
-#                                 'tenant_current_job_company', tenant_current_job_company
-#                                 )) AS tenants
-#                                 FROM space.t_details 
-#                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-#                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-#                         LEFT JOIN space.u_details ON utility_property_id = lease_property_id
-#                         -- WHERE owner_uid = "110-000003"
-#                         -- WHERE contract_business_id = "600-000003"
-#                         -- WHERE tenants LIKE "%350-000040%"
-#                         WHERE owner_uid = \'""" + filter_id + """\'
-#                         -- WHERE contract_business_id = \'""" + filter_id + """\'
-#                         -- WHERE tenants LIKE '%""" + filter_id + """%'
-#                         ;
-#                         """)
-                
-#             elif filter_id[:3] == "600":
-#                 print('in PM Lease Details')
-
-#                 leaseQuery = db.execute(""" 
-#                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-#                         SELECT * 
-#                         FROM (
-#                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
-#                             SELECT *,
-#                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
-#                             CASE
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
-#                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
-#                             END AS lease_end_month
-#                             FROM space.leases 
-#                             WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
-#                             ) AS l
-#                         LEFT JOIN (
-#                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('leaseFees_uid', leaseFees_uid,
-#                                 'fee_name', fee_name,
-#                                 'fee_type', fee_type,
-#                                 'charge', charge,
-#                                 'due_by', due_by,
-#                                 'late_by', late_by,
-#                                 'late_fee', late_fee,
-#                                 'perDay_late_fee', perDay_late_fee,
-#                                 'frequency', frequency,
-#                                 'available_topay', available_topay,
-#                                 'due_by_date', due_by_date
-#                                 )) AS lease_fees
-#                                 FROM space.leaseFees
-#                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
-#                         LEFT JOIN space.properties ON property_uid = lease_property_id
-#                         LEFT JOIN space.o_details ON property_id = lease_property_id
-#                         LEFT JOIN (
-#                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('tenant_uid', tenant_uid,
-#                                 'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
-#                                 'tenant_first_name', tenant_first_name,
-#                                 'tenant_last_name', tenant_last_name,
-#                                 'tenant_phone_number', tenant_phone_number,
-#                                 'tenant_email', tenant_email,
-#                                 'tenant_drivers_license_number', tenant_drivers_license_number,
-#                                 'tenant_drivers_license_state', tenant_drivers_license_state,
-#                                 'tenant_ssn', tenant_ssn
-#                                 )) AS tenants
-#                                 FROM space.t_details 
-#                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-#                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-#                         LEFT JOIN space.u_details ON utility_property_id = lease_property_id
-#                         -- WHERE owner_uid = "110-000003"
-#                         -- WHERE contract_business_id = "600-000003"
-#                         -- WHERE tenants LIKE "%350-000040%"
-#                         -- WHERE owner_uid = \'""" + filter_id + """\'
-#                         WHERE contract_business_id = \'""" + filter_id + """\'
-#                         -- WHERE tenants LIKE '%""" + filter_id + """%'
-#                         ;
-#                         """)
-                
-#                 # print(leaseQuery)
-
-#             elif filter_id[:3] == "350":
-#                 print('in Tenant Lease Details')
-
-#                 leaseQuery = db.execute(""" 
-#                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
-#                         SELECT * 
-#                         FROM (
-#                             -- FIND ALL ACTIVE/ENDED LEASES WITH OR WITHOUT A MOVE OUT DATE
-#                             SELECT *,
-#                             DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) AS lease_days_remaining,
-#                             CASE
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) > DATEDIFF(LAST_DAY(DATE_ADD(NOW(), INTERVAL 11 MONTH)), NOW()) THEN 'FUTURE' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'FUTURE'
-#                                     WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
-#                                     ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
-#                             END AS lease_end_month
-#                             FROM space.leases 
-                              
-#                             ) AS l
-#                         LEFT JOIN (
-#                             SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('leaseFees_uid', leaseFees_uid,
-#                                 'fee_name', fee_name,
-#                                 'fee_type', fee_type,
-#                                 'charge', charge,
-#                                 'due_by', due_by,
-#                                 'late_by', late_by,
-#                                 'late_fee', late_fee,
-#                                 'perDay_late_fee', perDay_late_fee,
-#                                 'frequency', frequency,
-#                                 'available_topay', available_topay,
-#                                 'due_by_date', due_by_date
-#                                 )) AS lease_fees
-#                                 FROM space.leaseFees
-#                                 GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
-#                         LEFT JOIN space.properties ON property_uid = lease_property_id
-#                         LEFT JOIN space.o_details ON property_id = lease_property_id
-#                         LEFT JOIN (
-#                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
-#                                 ('tenant_uid', tenant_uid,
-#                                 'lt_responsibility', if(lt_responsibility IS NOT NULL, lt_responsibility, "1"),
-#                                 'tenant_first_name', tenant_first_name,
-#                                 'tenant_last_name', tenant_last_name,
-#                                 'tenant_phone_number', tenant_phone_number,
-#                                 'tenant_email', tenant_email,
-#                                 'tenant_drivers_license_number', tenant_drivers_license_number,
-#                                 'tenant_drivers_license_state', tenant_drivers_license_state,
-#                                 'tenant_ssn', tenant_ssn
-#                                 )) AS tenants
-#                                 FROM space.t_details 
-#                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-#                         LEFT JOIN (SELECT * FROM space.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-#                         LEFT JOIN space.u_details ON utility_property_id = lease_property_id
-#                         -- WHERE owner_uid = "110-000003"
-#                         -- WHERE contract_business_id = "600-000003"
-#                         -- WHERE tenants LIKE "%350-000040%"
-#                         -- WHERE owner_uid = \'""" + filter_id + """\'
-#                         -- WHERE contract_business_id = \'""" + filter_id + """\'
-#                         WHERE tenants LIKE '%""" + filter_id + """%'
-#                         ;
-#                         """)
-            
-#             else:
-#                 leaseQuery = "UID Not Found"
-
-#             # print("Lease Query: ", leaseQuery)
-#             # items = execute(leaseQuery, "get", conn)
-#             # print(items)
-
-#             response["Lease_Details"] = leaseQuery
-
-#             return response
-
-
 class LeaseApplication(Resource):
 
     def __call__(self):
@@ -280,8 +71,8 @@ class LeaseApplication(Resource):
             leaseQuery = db.execute(""" 
                     -- FIND LEASE-TENANT APPLICATION
                     SELECT *
-                    FROM space.lease_tenant
-                    LEFT JOIN space.leases ON lt_lease_id = lease_uid
+                    FROM space_prod.lease_tenant
+                    LEFT JOIN space_prod.leases ON lt_lease_id = lease_uid
                     WHERE lt_tenant_id = \'""" + tenant_id + """\' AND lease_property_id = \'""" + property_id + """\';
                     """)
             # print(leaseQuery)
@@ -317,7 +108,7 @@ class LeaseApplication(Resource):
         with connect() as db: 
 
             # Get New Lease UID    
-            lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
+            lease_uid = db.call('space_prod.new_lease_uid')['result'][0]['new_id']
             key = {'lease_uid': lease_uid}
             response['lease_uid'] = lease_uid
             print("Contract Key: ", key)
@@ -348,8 +139,8 @@ class LeaseApplication(Resource):
 
             # Actual Insert Statement
             # print("About to insert: ", payload)
-            response["lease"] = db.insert('leases', payload)
-            # print("Data inserted into space.leases", response)
+            response["lease"] = db.insert('space_prod.leases', payload)
+            # print("Data inserted into space_prod.leases", response)
 
 
             # Insert data into lease-Tenants table
@@ -360,7 +151,7 @@ class LeaseApplication(Resource):
                     print("fees",fees)
                     new_leaseFees = {}
                     # Get new leaseFees_uid
-                    new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
+                    new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']  
                     for item in fees:
                         # print("Item: ", item)
                         if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
@@ -371,7 +162,7 @@ class LeaseApplication(Resource):
                     # print("Payload: ", new_leaseFees)
                     # print("lease_uid: ", lease_uid)
                     new_leaseFees["fees_lease_id"] = lease_uid
-                    response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                    response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
                     # print("response: ", response["lease_fees"])
 
 
@@ -382,7 +173,7 @@ class LeaseApplication(Resource):
                 # lt_employment = tenant_employment if tenant_employment else []
 
                 ltQuery = (""" 
-                    INSERT INTO space.lease_tenant
+                    INSERT INTO space_prod.lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
                         , lt_tenant_id = \'""" + tenant_uid + """\'
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
@@ -390,7 +181,7 @@ class LeaseApplication(Resource):
                 # print("Made it to here")
                 response["lease_tenant"] = db.execute(ltQuery, [], 'post')
                 # print("Added tenant: ", response)
-            # print("Data inserted into space.lease_tenant")
+            # print("Data inserted into space_prod.lease_tenant")
 
 
         return response
@@ -431,10 +222,18 @@ class LeaseApplication(Resource):
                 for delete_uid in json_object:
                     print("Fee to delete: ", delete_uid)
 
-                    response["delete_fees"] = db.delete(""" 
-                            DELETE FROM leaseFees
+                    leaseQuery = ("""
+                            DELETE FROM space_prod.leaseFees
                             WHERE leaseFees_uid = \'""" + delete_uid + """\'
                             """)
+
+                    response["delete_fees"] = db.delete(leaseQuery)
+
+                    # response["delete_fees"] = db.delete(""" 
+                    #         DELETE FROM space_prod.leaseFees
+                    #         WHERE leaseFees_uid = \'""" + delete_uid + """\'
+                    #         """)
+                            
 
             # POST TO LEASE FEES.  Need to post Lease Fees into leaseFees Table.  Typically when PM sends lease to Tenant
             if "lease_fees" in payload:
@@ -465,13 +264,13 @@ class LeaseApplication(Resource):
                         fee_key = {'leaseFees_uid': fees['leaseFees_uid']}
                         # print("fee_key",fee_key, type(fee_key))
                         # print("new_leaseFees: ", new_leaseFees)
-                        response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
+                        response['lease_fees'] = db.update('space_prod.leaseFees', fee_key, new_leaseFees)
                     # FOR FIRST TIME FEES ARE BEING ADDED
                     else:
                         # print("In ELSE Statment ") 
-                        new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
+                        new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']    
                         # print('New Lease Fees Payload: ', new_leaseFees)
-                        response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                        response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
 
             if "lease_end" in payload:
                 print("In lease_end")
@@ -485,7 +284,7 @@ class LeaseApplication(Resource):
                     payload[key1] = None
 
             print("Leases Payload: ", payload, type(payload))
-            response['lease_docs'] = db.update('leases', key, payload)
+            response['lease_docs'] = db.update('space_prod.leases', key, payload)
             # print("Response:" , response)
        
 
@@ -504,11 +303,11 @@ class LeaseApplication(Resource):
                             leaseFees.* -- , leases.*
                             ,lease_property_id, lease_start, lease_status
                             , contract_uid, contract_status, contract_business_id, property_owner_id, lt_tenant_id
-                        FROM space.leaseFees
-                        LEFT JOIN space.leases ON fees_lease_id = lease_uid
-                        LEFT JOIN space.lease_tenant ON fees_lease_id = lt_lease_id
-                        LEFT JOIN (SELECT * FROM space.contracts WHERE contract_status = "ACTIVE") AS c ON lease_property_id = contract_property_id
-                        LEFT JOIN space.property_owner ON lease_property_id = property_id
+                        FROM space_prod.leaseFees
+                        LEFT JOIN space_prod.leases ON fees_lease_id = lease_uid
+                        LEFT JOIN space_prod.lease_tenant ON fees_lease_id = lt_lease_id
+                        LEFT JOIN (SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") AS c ON lease_property_id = contract_property_id
+                        LEFT JOIN space_prod.property_owner ON lease_property_id = property_id
                         -- WHERE fees_lease_id = '300-000005'
                         WHERE fees_lease_id = \'""" + lease_uid + """\'
                             AND contract_status = 'ACTIVE';
@@ -545,6 +344,36 @@ class LeaseApplication(Resource):
 
                     print("Lease Start: ", lease_start, type(lease_start))
 
+                    newRequest = {}
+
+                    # SET THE COMMON VARIABLES
+                    manager = fee['contract_business_id']
+                    owner = fee['property_owner_id']
+                    tenant = fee['lt_tenant_id']
+
+
+                    # Common JSON Object Attributes
+                    
+                    
+                    newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
+                    newRequest['pur_property_id'] = fee['lease_property_id']
+                    newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
+
+                    newRequest['purchase_type'] = fee['fee_type']
+                    
+                
+                    newRequest['purchase_status'] = "UNPAID"
+                    newRequest['pur_status_value'] = "0"
+                    newRequest['pur_notes'] = fee['fee_name']
+
+                    # newRequest['pur_due_by'] = fee['due_by']
+                    newRequest['pur_late_by'] = fee['late_by']
+                    newRequest['pur_late_fee'] = fee['late_fee']
+                    newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
+
+                    newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                    newRequest['pur_description'] = f"Initial {fee['fee_name']}"
+
 
                     # 2. ESTABLISH WHEN PAYMENT IS DUE
                     if fee['fee_name'] == 'Rent':     # Is it important to check if fee_name is Rent OR should we check if frequency is Monthly (or repetitive)?
@@ -579,7 +408,7 @@ class LeaseApplication(Resource):
                         print("Final Due Date: ", due_date, type(due_date))
 
 
-                        newRequest = {}
+                        # newRequest = {}
                       
                         # 3. CALCULATE PRO-RATED AMOUNT
                         pro_rate_days = (due_date - lease_start).days
@@ -602,39 +431,39 @@ class LeaseApplication(Resource):
 
 
 
-                        # SET THE COMMON VARIABLES
-                        manager = fee['contract_business_id']
-                        owner = fee['property_owner_id']
-                        tenant = fee['lt_tenant_id']
+                        # # SET THE COMMON VARIABLES
+                        # manager = fee['contract_business_id']
+                        # owner = fee['property_owner_id']
+                        # tenant = fee['lt_tenant_id']
 
 
-                        # Common JSON Object Attributes
+                        # # Common JSON Object Attributes
                         
                         
-                        newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
-                        newRequest['pur_property_id'] = fee['lease_property_id']
-                        newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
+                        # newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
+                        # newRequest['pur_property_id'] = fee['lease_property_id']
+                        # newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
 
-                        newRequest['purchase_type'] = fee['fee_type']
+                        # newRequest['purchase_type'] = fee['fee_type']
                         
                     
-                        newRequest['purchase_status'] = "UNPAID"
-                        newRequest['pur_status_value'] = "0"
-                        newRequest['pur_notes'] = fee['fee_name']
+                        # newRequest['purchase_status'] = "UNPAID"
+                        # newRequest['pur_status_value'] = "0"
+                        # newRequest['pur_notes'] = fee['fee_name']
 
-                        # newRequest['pur_due_by'] = fee['due_by']
-                        newRequest['pur_late_by'] = fee['late_by']
-                        newRequest['pur_late_fee'] = fee['late_fee']
-                        newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
+                        # # newRequest['pur_due_by'] = fee['due_by']
+                        # newRequest['pur_late_by'] = fee['late_by']
+                        # newRequest['pur_late_fee'] = fee['late_fee']
+                        # newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
 
-                        newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
-                        newRequest['pur_description'] = f"Initial {fee['fee_name']}"
+                        # newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                        # newRequest['pur_description'] = f"Initial {fee['fee_name']}"
 
 
 
                         # Create Tenant-PM Purchase
                         # Create JSON Object for Rent Purchase for Tenant-PM Purchase
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -651,7 +480,7 @@ class LeaseApplication(Resource):
 
                         print("Input to purchases Tenant-PM: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
                         print("Tenant-PM Fee Inserted")
 
 
@@ -661,7 +490,7 @@ class LeaseApplication(Resource):
 
                         # Create PM-Owner Purchase
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_cf_type'] = "expense"
@@ -691,7 +520,7 @@ class LeaseApplication(Resource):
                         
                         print("Input to purchases PM-Owner: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
                         print("PM-Owner Fee Inserted")
 
 
@@ -708,7 +537,7 @@ class LeaseApplication(Resource):
                                     -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                     , jt.*
                                 FROM 
-                                    space.contracts,
+                                    space_prod.contracts,
                                     JSON_TABLE(
                                         contract_fees,
                                         "$[*]" COLUMNS (
@@ -740,7 +569,7 @@ class LeaseApplication(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 # print(newPMRequestID)
                                 
@@ -775,7 +604,7 @@ class LeaseApplication(Resource):
                                 newPMRequest['pur_due_date'] =  newRequest['pur_due_date']
                                 
                                 # print(newPMRequest)
-                                db.insert('purchases', newPMRequest)
+                                db.insert('space_prod.purchases', newPMRequest)
 
 
 
@@ -791,7 +620,7 @@ class LeaseApplication(Resource):
                         #     newRequest['pur_description'] = f"First Month {fee['fee_name']}"
 
                         #     # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #     grouping = newRequestID
                         #     newRequest['purchase_uid'] = newRequestID
                         #     newRequest['pur_group'] = grouping
@@ -803,13 +632,13 @@ class LeaseApplication(Resource):
                             
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('purchases', newRequest)
+                        #     db.insert('space_prod.purchases', newRequest)
 
 
 
                         #     # Create PM-Owner Payment
                         #     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #     newRequest['purchase_uid'] = newRequestID
                         #     # print(newRequestID)
                         #     newRequest['pur_receiver'] = owner
@@ -825,7 +654,7 @@ class LeaseApplication(Resource):
 
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('purchases', newRequest)
+                        #     db.insert('space_prod.purchases', newRequest)
 
 
 
@@ -839,7 +668,7 @@ class LeaseApplication(Resource):
                         #                 -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                         #                 , jt.*
                         #             FROM 
-                        #                 space.contracts,
+                        #                 space_prod.contracts,
                         #                 JSON_TABLE(
                         #                     contract_fees,
                         #                     "$[*]" COLUMNS (
@@ -871,7 +700,7 @@ class LeaseApplication(Resource):
 
                         #             # Create JSON Object for Fee Purchase
                         #             newPMRequest = {}
-                        #             newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        #             newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         #             newPMRequest['purchase_uid'] = newPMRequestID
                         #             # print(newPMRequestID)
                                     
@@ -904,7 +733,7 @@ class LeaseApplication(Resource):
                         #             print("Next Months PM-Owner Due: ", newPMRequest['pur_due_date'], type(newPMRequest['pur_due_date'])) 
 
                         #             # print(newPMRequest)
-                        #             db.insert('purchases', newPMRequest)
+                        #             db.insert('space_prod.purchases', newPMRequest)
                             
                             
                         # else: 
@@ -915,7 +744,7 @@ class LeaseApplication(Resource):
                     else: 
                         print("Not Rent")
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -935,7 +764,7 @@ class LeaseApplication(Resource):
                         newRequest['pur_amount_due'] = fee['charge']
                         # print(newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
         return response
 
@@ -960,7 +789,7 @@ class LeaseReferal(Resource):
 
         with connect() as db: 
 
-            lease_uid = db.call('space.new_lease_uid')['result'][0]['new_id']
+            lease_uid = db.call('space_prod.new_lease_uid')['result'][0]['new_id']
             print("New Lease UID: ", lease_uid)
 
             # IF tenant_uid ==> POST
@@ -979,7 +808,7 @@ class LeaseReferal(Resource):
                 try:
                     tenantID = (""" 
                         SELECT * 
-                        FROM space.tenantProfileInfo
+                        FROM space_prod.tenantProfileInfo
                         WHERE tenant_email = \'""" + tenant["email"] + """\'
                     """)
 
@@ -1002,7 +831,7 @@ class LeaseReferal(Resource):
 
                         userID = (""" 
                             SELECT *
-                            FROM space.users
+                            FROM space_prod.users
                             WHERE email = \'""" + tenant["email"] + """\'
                         """)
 
@@ -1019,7 +848,7 @@ class LeaseReferal(Resource):
                         print('New Roles: ', roles)
 
 
-                        response = db.update('space.users', {"user_uid": user_uid}, {'role': roles})
+                        response = db.update('space_prod.users', {"user_uid": user_uid}, {'role': roles})
                         print("MYSPACE response: ", response)
                         print("MYSPACE response code: ", response['code'])
 
@@ -1035,18 +864,18 @@ class LeaseReferal(Resource):
 
                         # Create UserID
 
-                        # query = ["CALL space.new_user_uid;"]
+                        # query = ["CALL space_prod.new_user_uid;"]
                         # NewIDresponse = db.execute(query[0], [], 'get')
                     
                         # newUserID = NewIDresponse["result"][0]["new_id"]
                         if user_uid == 0:
                             print("UserID not found")
-                            user_uid = db.call('space.new_user_uid')['result'][0]['new_id']
+                            user_uid = db.call('space_prod.new_user_uid')['result'][0]['new_id']
                         
                             print("MySpace userID: ", user_uid)
 
                             userQuery = ("""
-                                    INSERT INTO space.users SET
+                                    INSERT INTO space_prod.users SET
                                         user_uid = \'""" + user_uid + """\',
                                         first_name = \'""" + tenant["first_name"] + """\',
                                         last_name = \'""" + tenant["last_name"] + """\',
@@ -1064,11 +893,11 @@ class LeaseReferal(Resource):
                         # Create Tenant ID
 
                         print("create tenant ID")
-                        # newTenantID = db.call('space.new_tenant_uid')['result'][0]['new_id']
+                        # newTenantID = db.call('space_prod.new_tenant_uid')['result'][0]['new_id']
                         # print("MySpace tenantID: ", newTenantID)
 
                         # tenantQuery = ("""
-                        #         INSERT INTO space.tenantProfileInfo SET
+                        #         INSERT INTO space_prod.tenantProfileInfo SET
                         #             tenant_uid = \'""" + newTenantID + """\',
                         #             tenant_user_id = \'""" + newUserID + """\',
                         #             tenant_first_name = \'""" + tenant["first_name"] + """\',
@@ -1083,7 +912,7 @@ class LeaseReferal(Resource):
 
                         profile_info = {}
 
-                        tenant_uid = db.call('space.new_tenant_uid')['result'][0]['new_id']
+                        tenant_uid = db.call('space_prod.new_tenant_uid')['result'][0]['new_id']
                         print("MySpace tenantID: ", tenant_uid)
 
                         profile_info["tenant_uid"] = tenant_uid
@@ -1106,7 +935,7 @@ class LeaseReferal(Resource):
 
                         
 
-                        response = db.insert('tenantProfileInfo', profile_info)
+                        response = db.insert('space_prod.tenantProfileInfo', profile_info)
                         response["tenant_uid"] = profile_info["tenant_uid"]
                         print("MYSPACE Tenant response: ", response)
 
@@ -1115,7 +944,7 @@ class LeaseReferal(Resource):
                 # Add Tenant to Lease Contacts
                 print(tenant_uid)
                 ltQuery = (""" 
-                    INSERT INTO space.lease_tenant
+                    INSERT INTO space_prod.lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
                         , lt_tenant_id = \'""" + tenant_uid + """\'
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
@@ -1144,8 +973,8 @@ class LeaseReferal(Resource):
 
             # Actual Insert Statement
             print("About to insert: ", payload)
-            response["lease"] = db.insert('leases', payload)
-            print("Data inserted into space.leases", response)
+            response["lease"] = db.insert('space_prod.leases', payload)
+            print("Data inserted into space_prod.leases", response)
 
         
             response["msg"] = "Lease Referal Endpoint"

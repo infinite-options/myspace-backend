@@ -1,45 +1,45 @@
--- CREATE TABLE space.bills AS
+-- CREATE TABLE space_prod.bills AS
 -- SELECT * FROM pm.bills;
 -- SELECT * FROM pm.leaseTenants;
 
-SELECT * FROM space.users;
-SELECT * FROM space.user_profiles;
+SELECT * FROM space_prod.users;
+SELECT * FROM space_prod.user_profiles;
 
-SELECT * FROM space.ownerProfileInfo;
-SELECT * FROM space.property_owner;
-SELECT * FROM space.properties;
-SELECT * FROM space.appliances;
-SELECT * FROM space.maintenanceRequests;
-SELECT * FROM space.maintenanceQuotes;
+SELECT * FROM space_prod.ownerProfileInfo;
+SELECT * FROM space_prod.property_owner;
+SELECT * FROM space_prod.properties;
+SELECT * FROM space_prod.appliances;
+SELECT * FROM space_prod.maintenanceRequests;
+SELECT * FROM space_prod.maintenanceQuotes;
 
-SELECT * FROM space.tenantProfileInfo;
-SELECT * FROM space.property_tenant;
-SELECT * FROM space.lease_tenant;
-SELECT * FROM space.leases;
+SELECT * FROM space_prod.tenantProfileInfo;
+SELECT * FROM space_prod.property_tenant;
+SELECT * FROM space_prod.lease_tenant;
+SELECT * FROM space_prod.leases;
 
-SELECT * FROM space.businessProfileInfo;
-SELECT * FROM space.contracts;
-SELECT * FROM space.contractFees;
+SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_prod.contracts;
+SELECT * FROM space_prod.contractFees;
 
-SELECT * FROM space.purchases;
-SELECT * FROM space.payments;
-SELECT * FROM space.bills;
-SELECT * FROM space.lists;
-SELECT * FROM space.property_utility;
+SELECT * FROM space_prod.purchases;
+SELECT * FROM space_prod.payments;
+SELECT * FROM space_prod.bills;
+SELECT * FROM space_prod.lists;
+SELECT * FROM space_prod.property_utility;
 
-SELECT * FROM space.pp_status;
-SELECT * FROM space.pp_details;
+SELECT * FROM space_prod.pp_status;
+SELECT * FROM space_prod.pp_details;
 
 
 
 -- ALL PURCHASE TRANSACTIONS BY OWNER
-SELECT * FROM space.pp_details
+SELECT * FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND pur_property_id = '200-000029';
 
 
 -- TRANSACTIONS BY OWNER BY PROPERTY
-SELECT * FROM space.pp_details
+SELECT * FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND pur_property_id = '200-000029';
 
@@ -57,12 +57,12 @@ FROM (
 		, sum(pay_amount) AS paid_amount
 		, IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 		, (pur_amount_due - sum(pay_amount)) AS delta
-	FROM space.purchases
-	LEFT JOIN space.payments ON pay_purchase_id = purchase_uid
+	FROM space_prod.purchases
+	LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 	GROUP BY purchase_uid
     ) AS pp
-LEFT JOIN space.properties ON property_uid = pur_property_id
-LEFT JOIN space.property_owner ON property_uid = property_id
+LEFT JOIN space_prod.properties ON property_uid = pur_property_id
+LEFT JOIN space_prod.property_owner ON property_uid = property_id
 WHERE property_owner_id = "110-000003" AND
 	(pur_receiver = "100-000003" OR
     pur_initiator = "100-000003"OR
@@ -85,9 +85,9 @@ SELECT -- *
     , property_listed_rent, property_deposit, property_images, property_taxes, property_mortgages, property_insurance, property_description, property_notes
     , property_owner_id, po_owner_percent
     , purchase_uid, pur_timestamp, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-FROM space.properties
-LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-LEFT JOIN space.purchases ON pur_property_id = property_uid
+FROM space_prod.properties
+LEFT JOIN space_prod.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+LEFT JOIN space_prod.purchases ON pur_property_id = property_uid
 -- ADDITIONAL FILTERS
 WHERE property_owner_id = "110-000003"											-- BY OWNER
 	-- AND property_id = "200-000029" 									-- BY PROPERTY ID
@@ -103,10 +103,10 @@ SELECT -- *
     -- , SUM(pay_amount) AS paid_amount
     -- , SUM(pay_amount)-pay_amount
     -- , payments.*
-FROM space.properties
-LEFT JOIN space.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
-LEFT JOIN space.purchases ON pur_property_id = property_uid
-LEFT JOIN space.payments ON pay_purchase_id = purchase_uid
+FROM space_prod.properties
+LEFT JOIN space_prod.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+LEFT JOIN space_prod.purchases ON pur_property_id = property_uid
+LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 GROUP BY pay_purchase_id
 
 
@@ -122,15 +122,15 @@ GROUP BY MONTH(pur_due_date),
  
 -- NEW CASHFLOW --------------------------------------------------------------------------------
 
-SELECT * FROM space.payments;
-SELECT * FROM space.purchases;
+SELECT * FROM space_prod.payments;
+SELECT * FROM space_prod.purchases;
 
 -- ALL PURCHASE & PAYMENT TRANSACTIONS
 SELECT *
 -- 	, sum(pay_amount) AS paid_amount
 --     , IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 --     , (pur_amount_due - sum(pay_amount)) AS delta
-FROM space.purchases;
+FROM space_prod.purchases;
 
 
 
@@ -146,8 +146,8 @@ FROM (
 		, sum(pay_amount) AS paid_amount
 		, IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 		, (pur_amount_due - sum(pay_amount)) AS delta
-	FROM space.purchases
-	LEFT JOIN space.payments ON pay_purchase_id = purchase_uid
+	FROM space_prod.purchases
+	LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 	GROUP BY purchase_uid
     ) AS pp
 
@@ -164,8 +164,8 @@ FROM (
 		, sum(pay_amount) AS paid_amount
 		, IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 		, (pur_amount_due - sum(pay_amount)) AS delta
-	FROM space.purchases
-	LEFT JOIN space.payments ON pay_purchase_id = purchase_uid
+	FROM space_prod.purchases
+	LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 	GROUP BY purchase_uid
     ) AS pp
 
@@ -182,8 +182,8 @@ FROM (
 		, sum(pay_amount) AS paid_amount
 		, IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 		, (pur_amount_due - sum(pay_amount)) AS delta
-	FROM space.purchases
-	LEFT JOIN space.payments ON pay_purchase_id = purchase_uid
+	FROM space_prod.purchases
+	LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 	GROUP BY purchase_uid
     ) AS pp
 
@@ -192,7 +192,7 @@ GROUP BY MONTH(pur_due_date),
             pur_cf_type;
 
 
--- UPDATE space.purchases
+-- UPDATE space_prod.purchases
 -- SET purchase_status = "COMPLETED"
 -- WHERE purchase_status != "DELETED";
  
@@ -214,9 +214,9 @@ GROUP BY MONTH(pur_due_date),
 
 
 -- CREATE NEW PURCHASE
-SELECT * FROM space.purchases;
+SELECT * FROM space_prod.purchases;
 
-INSERT INTO space.purchases
+INSERT INTO space_prod.purchases
 SET purchase_uid = "400-000528"
 	, pur_timestamp = CURRENT_TIMESTAMP()
     , pur_property_id = "200-000041"
@@ -233,9 +233,9 @@ SET purchase_uid = "400-000528"
     , pur_initiator = "100-000003";
     
 -- CREATE NEW BILL
-SELECT * FROM space.bills;
+SELECT * FROM space_prod.bills;
 
-INSERT INTO space.bills
+INSERT INTO space_prod.bills
 SET bill_uid = '040-000061'
 , bill_timestamp = CURRENT_TIMESTAMP()
 , bill_description = 'PG&E'
@@ -246,11 +246,11 @@ SET bill_uid = '040-000061'
 , bill_property_id = '[{"property_uid": "200-000041"}, {"property_uid": "200-000042"}]'
 , bill_docs = NULL;
 
-DELETE FROM space.bills WHERE bill_uid = "040-000055";
+DELETE FROM space_prod.bills WHERE bill_uid = "040-000055";
 
 
  -- CREATE NEW BILL UID (STORED PROCEDURE)
-CALL space.new_bill_uid;
+CALL space_prod.new_bill_uid;
 
 
 
@@ -274,18 +274,18 @@ FROM (
 			, contract_business_id, contract_status, contract_start_date, contract_end_date
 			, lease_status, lease_start, lease_end
 			, lt_tenant_id, lt_responsibility 
-		FROM space.properties
-		LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
+		FROM space_prod.properties
+		LEFT JOIN space_prod.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
 
-		LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
-		LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
-		LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
-		LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
-		LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+		LEFT JOIN space_prod.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
+		LEFT JOIN space_prod.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
+		LEFT JOIN space_prod.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
+		LEFT JOIN space_prod.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
+		LEFT JOIN space_prod.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
 		WHERE contract_status = "ACTIVE"
 		) u 
 
-	LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
+	LEFT JOIN space_prod.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
     ) u_all
 
 WHERE property_uid = "200-000029"
@@ -301,7 +301,7 @@ WHERE property_uid = "200-000029"
 
 -- THIS OPENS UP THE IMAGE_URL
 SELECT *
-FROM space.properties, 
+FROM space_prod.properties, 
 JSON_TABLE(property_images, '$[*]' 
 	COLUMNS (
 	a FOR ORDINALITY,
@@ -312,7 +312,7 @@ JSON_TABLE(property_images, '$[*]'
 
 --  THIS RETURNS EACH ITEM AS AN INDIVIDUAL COLUMN
 SELECT property_uid, property_utilities, a, gas, wifi, water, electricity
-FROM space.properties, 
+FROM space_prod.properties, 
 JSON_TABLE(properties.property_utilities, '$' 
 	COLUMNS (
 	a FOR ORDINALITY,
@@ -323,10 +323,10 @@ JSON_TABLE(properties.property_utilities, '$'
  
 
 -- UPDATE COMMAND TO UPDATE DATABASE
-	SELECT * FROM space.purchases
+	SELECT * FROM space_prod.purchases
 	WHERE ISNULL(pur_cf_type);
 
-	UPDATE space.purchases
+	UPDATE space_prod.purchases
 	SET pur_payer = 'expense'
 	WHERE purchase_type = "MANAGEMENT"
 	AND pur_payer LIKE '100-%';

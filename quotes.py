@@ -18,8 +18,8 @@ class QuotesStatusByBusiness(Resource):
             query = """ 
                 SELECT maintenance_request_uid, maintenance_title, maintenance_priority, maintenance_images,
                     maintenance_quote_uid, quote_business_id, property_uid, property_address, quote_status
-                FROM space.m_details
-                    LEFT JOIN space.properties ON property_uid = maintenance_property_id
+                FROM space_prod.m_details
+                    LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
                 WHERE""" + last_30_days + """ quote_business_id = \'""" + business_id + """\'
             """
             query_result = db.execute(query)
@@ -42,10 +42,10 @@ class QuotesByBusiness(Resource):
                     maintenance_request_type, maintenance_priority, maintenance_request_created_date, maintenance_quote_uid,
                     quote_business_id,quote_earliest_available_date, quote_earliest_available_time, quote_event_duration, quote_notes, quote_status,
                     quote_total_estimate, property_uid, property_address, CONCAT(first_name, ' ', last_name) AS manager_name
-                FROM space.m_details
-                    LEFT JOIN space.properties ON property_uid = maintenance_property_id
-                    LEFT JOIN space.businessProfileInfo ON quote_business_id = business_uid
-                    LEFT JOIN space.users ON business_user_id = user_uid
+                FROM space_prod.m_details
+                    LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
+                    LEFT JOIN space_prod.businessProfileInfo ON quote_business_id = business_uid
+                    LEFT JOIN space_prod.users ON business_user_id = user_uid
                 WHERE quote_business_id = \'""" + business_id + """\'
             """
             query_result = db.execute(query)
@@ -66,7 +66,7 @@ class QuotesByRequest(Resource):
         with connect() as db:
             query = """ 
                 SELECT *
-                FROM space.maintenanceQuotes
+                FROM space_prod.maintenanceQuotes
                 WHERE quote_maintenance_request_id = \'""" + request_id + """\' AND quote_status = 'SENT'
             """
             response = db.execute(query)
@@ -87,7 +87,7 @@ class Quotes(Resource):
             for quote_business_id in quote_maintenance_contacts:
                 # print("Business ID: ", quote_business_id)
                 quote = {}
-                quote["maintenance_quote_uid"] = db.call('space.new_quote_uid')['result'][0]['new_id']
+                quote["maintenance_quote_uid"] = db.call('space_prod.new_quote_uid')['result'][0]['new_id']
                 quote["quote_business_id"] = quote_business_id
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
@@ -112,7 +112,7 @@ class Quotes(Resource):
                     i += 1
 
                 quote["quote_maintenance_images"] = json.dumps(images)
-                query_response = db.insert('maintenanceQuotes', quote)
+                query_response = db.insert('space_prod.maintenanceQuotes', quote)
                 response.append(query_response)
 
         return response

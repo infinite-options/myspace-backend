@@ -24,14 +24,14 @@ class PaymentVerification(Resource):
                         , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
                         , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num
                         , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%Y") AS cf_year
-                    FROM space.payments
+                    FROM space_prod.payments
                     LEFT JOIN (
                         SELECT payment_intent AS pi, payment_method AS pm, payment_date AS pd, SUM(pay_amount) AS total_paid
-                        FROM space.payments
+                        FROM space_prod.payments
                         WHERE paid_by LIKE '350%'
                         GROUP BY payment_intent, payment_date
                         ) AS cp ON payment_intent = pi AND payment_method = pm AND payment_date = pd
-                    LEFT JOIN space.purchases ON pay_purchase_id = purchase_uid
+                    LEFT JOIN space_prod.purchases ON pay_purchase_id = purchase_uid
                     -- WHERE pur_receiver = '600-000043' AND pur_payer LIKE '350%'
                     WHERE pur_receiver = \'""" + user_id + """\' AND pur_payer LIKE '350%'
                         AND payment_verify = 'Unverified'
@@ -65,7 +65,7 @@ class PaymentVerification(Resource):
             # Write to Database
             with connect() as db:
                 print("Checking Inputs: ", key, payload)
-                response['payment_info'] = db.update('payments', key, payload)
+                response['payment_info'] = db.update('space_prod.payments', key, payload)
                 update_counter = update_counter + 1
                 print("Response:" , response)
         
@@ -131,7 +131,7 @@ class CashflowTransactions(Resource):
                                     'cf_year', cf_year
                                 )
                             ) AS individual_transactions
-                        FROM space.pp_status
+                        FROM space_prod.pp_status
                         WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                             AND cf_year = DATE_FORMAT(NOW(), '%Y')
                             -- AND pur_receiver = '600-000003'  
@@ -184,7 +184,7 @@ class CashflowTransactions(Resource):
                                     'cf_year', cf_year
                                 )
                             ) AS individual_transactions
-                        FROM space.pp_status
+                        FROM space_prod.pp_status
                         WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                             AND cf_year = DATE_FORMAT(NOW(), '%Y')
                             -- AND pur_receiver = '600-000003'  
@@ -240,7 +240,7 @@ class CashflowTransactions(Resource):
                                     'cf_year', cf_year
                                 )
                             ) AS individual_transactions
-                        FROM space.pp_status
+                        FROM space_prod.pp_status
                         WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                             AND cf_year = DATE_FORMAT(NOW(), '%Y')
                             -- AND pur_receiver = '600-000003'  
@@ -293,7 +293,7 @@ class CashflowTransactions(Resource):
                                     'cf_year', cf_year
                                 )
                             ) AS individual_transactions
-                        FROM space.pp_status
+                        FROM space_prod.pp_status
                         WHERE cf_month = DATE_FORMAT(NOW(), '%M')
                             AND cf_year = DATE_FORMAT(NOW(), '%Y')
                             -- AND pur_receiver = '600-000003'  
@@ -311,7 +311,7 @@ class CashflowTransactions(Resource):
                         SELECT *,
                             property_address, property_unit
                             , property_owner_id
-                        FROM space.pp_status
+                        FROM space_prod.pp_status
                         LEFT JOIN properties ON pur_property_id = property_uid
                         LEFT JOIN property_owner ON pur_property_id = property_id
                         -- WHERE pur_receiver = '350-000007'  OR pur_payer = '350-000007'
@@ -337,9 +337,9 @@ class CashflowTransactions(Resource):
                                 WHEN purchase_type = 'Management' THEN 3
                                 ELSE 5
                             END AS pur_type_code
-                        FROM space.pp_details
-                        -- LEFT JOIN space.properties ON property_uid = pur_property_id
-                        LEFT JOIN space.p_details ON property_uid = pur_property_id
+                        FROM space_prod.pp_details
+                        -- LEFT JOIN space_prod.properties ON property_uid = pur_property_id
+                        LEFT JOIN space_prod.p_details ON property_uid = pur_property_id
                         -- WHERE pur_receiver = '600-000043' OR pur_payer = '600-000043';
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\';
                         """)
@@ -384,9 +384,9 @@ class CashflowTransactions(Resource):
                                 )
                             ) AS transactions
                             , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
-                        FROM space.pp_status
-                        LEFT JOIN space.properties ON pur_property_id = property_uid
-                        LEFT JOIN space.property_owner ON pur_property_id = property_id
+                        FROM space_prod.pp_status
+                        LEFT JOIN space_prod.properties ON pur_property_id = property_uid
+                        LEFT JOIN space_prod.property_owner ON pur_property_id = property_id
                         -- WHERE pur_receiver = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         WHERE pur_receiver = \'""" + user_id + """\'
                         GROUP BY cf_month, cf_year, purchase_type, pur_property_id, pur_group
@@ -423,9 +423,9 @@ class CashflowTransactions(Resource):
                                 )
                             ) AS transactions
                             , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
-                        FROM space.pp_status
-                        LEFT JOIN space.properties ON pur_property_id = property_uid
-                        LEFT JOIN space.property_owner ON pur_property_id = property_id
+                        FROM space_prod.pp_status
+                        LEFT JOIN space_prod.properties ON pur_property_id = property_uid
+                        LEFT JOIN space_prod.property_owner ON pur_property_id = property_id
                         -- WHERE pur_payer = "600-000003" -- AND pur_property_id LIKE '200-000034'
                         WHERE pur_payer = \'""" + user_id + """\'
                         GROUP BY cf_month, cf_year, purchase_type, pur_property_id, pur_group

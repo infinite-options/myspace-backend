@@ -32,7 +32,7 @@ class Bills(Resource):
                 queryResponse = (""" 
                         
                         SELECT *
-                        FROM space.bills
+                        FROM space_prod.bills
                         WHERE bill_uid = \'""" + user_id + """\';
                         """)
                 response = db.execute(queryResponse)
@@ -42,7 +42,7 @@ class Bills(Resource):
             with connect() as db:
                 queryResponse = ("""                
                         SELECT * 
-                        FROM space.bills 
+                        FROM space_prod.bills 
                         WHERE bill_maintenance_quote_id = \'""" + user_id + """\';
                         """)
                 response = db.execute(queryResponse)
@@ -60,7 +60,7 @@ class Bills(Resource):
             raise BadRequest("Request failed, UID found in payload.")
 
         with connect() as db:
-            newBillUID = db.call('space.new_bill_uid')['result'][0]['new_id']
+            newBillUID = db.call('space_prod.new_bill_uid')['result'][0]['new_id']
             key = {'bill_uid': newBillUID}
             new_bill_uid = newBillUID
             print("Bill Key: ", key)
@@ -90,7 +90,7 @@ class Bills(Resource):
 
             payload["bill_uid"] = newBillUID  
             payload["bill_timestamp"] = datetime.today().date().strftime("%m-%d-%Y")
-            response['Add Bill'] = db.insert('bills', payload)
+            response['Add Bill'] = db.insert('space_prod.bills', payload)
             response['maibill_uidtenance_request_uid'] = newBillUID 
             response['Bill Images Added'] = payload.get('bill_images', "None")
             print("\nNew Bill Added")
@@ -130,10 +130,10 @@ class Bills(Resource):
                             -- MAINTENANCE REPOSONSIBILITY BY PROPERTY 
                             SELECT *, 
                                 IF(contract_status = "ACTIVE",contract_business_id,property_owner_id) AS responsible_party
-                            FROM space.property_owner
+                            FROM space_prod.property_owner
                             LEFT JOIN (
                                 SELECT * 
-                                FROM space.contracts
+                                FROM space_prod.contracts
                                 WHERE contract_status = 'ACTIVE'
                                 ) as c
                             ON property_id = contract_property_id
@@ -161,18 +161,18 @@ class Bills(Resource):
                         #                 , contract_business_id, contract_status, contract_start_date, contract_end_date
                         #                 , lease_status, lease_start, lease_end
                         #                 , lt_tenant_id, lt_responsibility 
-                        #             FROM space.properties
-                        #             LEFT JOIN space.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
+                        #             FROM space_prod.properties
+                        #             LEFT JOIN space_prod.property_utility ON property_uid = utility_property_id		-- TO FIND WHICH UTILITES TO PAY AND WHO PAYS THEM
 
-                        #             LEFT JOIN space.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
-                        #             LEFT JOIN space.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
-                        #             LEFT JOIN space.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
-                        #             LEFT JOIN space.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
-                        #             LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+                        #             LEFT JOIN space_prod.lists ON utility_payer_id = list_uid				-- TO TRANSLATE WHO PAYS UTILITIES TO ENGLISH
+                        #             LEFT JOIN space_prod.property_owner ON property_uid = property_id		-- TO FIND PROPERTY OWNER
+                        #             LEFT JOIN space_prod.contracts ON property_uid = contract_property_id    -- TO FIND PROPERTY MANAGER
+                        #             LEFT JOIN space_prod.leases ON property_uid = lease_property_id			-- TO FIND CONTRACT START AND END DATES
+                        #             LEFT JOIN space_prod.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
                         #             WHERE contract_status = "ACTIVE"
                         #             ) u 
 
-                        #         LEFT JOIN space.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
+                        #         LEFT JOIN space_prod.lists ON utility_type_id = list_uid					-- TO TRANSLATE WHICH UTILITY TO ENGLISH
                         #         ) u_all
 
                         #     WHERE property_uid = \'""" + pur_property_id + """\'
@@ -200,13 +200,13 @@ class Bills(Resource):
                                 , contracts.contract_business_id
                             --     , l.lease_assigned_contacts
                                 , lease_tenant.*
-                            FROM space.property_utility
-                            LEFT JOIN space.lists AS utility ON utility_type_id = utility.list_uid
-                            LEFT JOIN space.lists AS payer ON utility_payer_id = payer.list_uid
-                            LEFT JOIN (SELECT * FROM space.leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON utility_property_id = lease_property_id
-                            LEFT JOIN space.property_owner ON utility_property_id = property_id		-- TO FIND PROPERTY OWNER
-                            LEFT JOIN space.contracts ON utility_property_id = contract_property_id    -- TO FIND PROPERTY MANAGER
-                            LEFT JOIN space.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
+                            FROM space_prod.property_utility
+                            LEFT JOIN space_prod.lists AS utility ON utility_type_id = utility.list_uid
+                            LEFT JOIN space_prod.lists AS payer ON utility_payer_id = payer.list_uid
+                            LEFT JOIN (SELECT * FROM space_prod.leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON utility_property_id = lease_property_id
+                            LEFT JOIN space_prod.property_owner ON utility_property_id = property_id		-- TO FIND PROPERTY OWNER
+                            LEFT JOIN space_prod.contracts ON utility_property_id = contract_property_id    -- TO FIND PROPERTY MANAGER
+                            LEFT JOIN space_prod.lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES
                             ) AS rp
                             WHERE utility_property_id = '200-000002' AND utility = 'electricity';
                             """)
@@ -244,13 +244,13 @@ class Bills(Resource):
                             #FOR MAINTENANCE ITEM, POST MAINTENACE-PM AND PM-OWNER
                             #POST MAINTENANCE-PM PURCHASE
                             #  Get New PURCHASE UID
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id'] 
+                            new_purchase_uid = db.call('space_prod.new_purchase_uid')['result'][0]['new_id'] 
                             purchase_group =  new_purchase_uid
                             print("New Purchase ID: ", new_purchase_uid) 
 
 
                             purchaseQuery = (""" 
-                                INSERT INTO space.purchases
+                                INSERT INTO space_prod.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
                                     , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -279,10 +279,10 @@ class Bills(Resource):
 
 
                         #POST PM-OWNER OR FOR PM MAINTENANCE ITEM, POST PM-OWNER
-                        new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                        new_purchase_uid = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']                          
                         print("New PM-OWNER Purchase ID: ", new_purchase_uid)                
                         purchaseQuery = (""" 
-                            INSERT INTO space.purchases
+                            INSERT INTO space_prod.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
                                 , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -318,12 +318,12 @@ class Bills(Resource):
                             print("Tenant Responsible")
                             pur_cf_type = "revenue"
 
-                            new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']   
+                            new_purchase_uid = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']   
                             purchase_group =  new_purchase_uid                       
                             print("New PM-OWNER Purchase ID: ", new_purchase_uid)  
 
                             purchaseQuery = (""" 
-                                INSERT INTO space.purchases
+                                INSERT INTO space_prod.purchases
                                 SET purchase_uid = \'""" + new_purchase_uid + """\'
                                     , pur_group = \'""" + purchase_group + """\'
                                     , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -355,11 +355,11 @@ class Bills(Resource):
                         #POST OWNER-PM REIMBURSEMENT
                         pur_cf_type = "expense"
 
-                        new_purchase_uid = db.call('space.new_purchase_uid')['result'][0]['new_id']                          
+                        new_purchase_uid = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']                          
                         print("New PM-OWNER Purchase ID: ", new_purchase_uid)
 
                         purchaseQuery = (""" 
-                            INSERT INTO space.purchases
+                            INSERT INTO space_prod.purchases
                             SET purchase_uid = \'""" + new_purchase_uid + """\'
                                 , pur_group = \'""" + purchase_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -423,7 +423,7 @@ class Bills(Resource):
     #     print("KV Pairs: ", bills)
     #     with connect() as db:
     #         print("In actual PUT")
-    #         response = db.update('bills', key, bills)
+    #         response = db.update('space_prod.bills', key, bills)
     #     return response
     
 
@@ -464,7 +464,7 @@ class Bills(Resource):
         # Write to Databaseè
         with connect() as db:
             # print("Checking Inputs: ", key, payload)
-            response['bill_info'] = db.update('bills', key, payload)
+            response['bill_info'] = db.update('space_prod.bills', key, payload)
             # print("Response:" , response)
 
 
@@ -474,7 +474,7 @@ class Bills(Resource):
             print("purchase table needs to change")
 
             with connect() as db:
-                bill_purchase_query = db.execute(""" SELECT * FROM space.purchases WHERE pur_bill_id = \'""" + key['bill_uid'] + """\' """)     # Current Purchase associated with Bill
+                bill_purchase_query = db.execute(""" SELECT * FROM space_prod.purchases WHERE pur_bill_id = \'""" + key['bill_uid'] + """\' """)     # Current Purchase associated with Bill
                 # print(bill_purchase_query)
 
                 for purchase in bill_purchase_query["result"]:
@@ -485,7 +485,7 @@ class Bills(Resource):
                      bill_pur_update["pur_notes"] = payload.get('bill_notes')
                     #  print(bill_pur_update)
 
-                     response['bill_update'] = db.update('purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
+                     response['bill_update'] = db.update('space_prod.purchases', {'purchase_uid':purchase["purchase_uid"]}, bill_pur_update)
 
             
         return response
@@ -506,7 +506,7 @@ class Bills(Resource):
             # Query
             delBillQuery = (""" 
                     -- DELETE BILL
-                    DELETE FROM space.bills 
+                    DELETE FROM space_prod.bills 
                     WHERE bill_uid = \'""" + bill_uid + """\';         
                     """)
 
@@ -532,7 +532,7 @@ class AddPurchase(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newPurchaseUID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newPurchaseUID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             key = {'purchase_uid': newPurchaseUID}
             print("Purchase Key: ", key)
 
@@ -567,7 +567,7 @@ class AddPurchase(Resource):
             payer = payload.get('pur_payer') 
             payload['pur_cf_type'] = 'revenue' if payer.startswith(('110', '350')) else 'expense'
 
-            response['Add Purchase'] = db.insert('purchases', payload)
+            response['Add Purchase'] = db.insert('space_prod.purchases', payload)
             response['purchase_UID'] = newPurchaseUID 
         
             # response['Purchase Documents Added'] = payload.get('purchase_documents', "None")
@@ -627,7 +627,7 @@ class AddPurchase(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
     
 
@@ -742,7 +742,7 @@ class AddPurchaseJSON(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)
@@ -760,7 +760,7 @@ class AddPurchaseJSON(Resource):
 
             # print(datetime.date.today())
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response
@@ -777,7 +777,7 @@ class AddPurchaseJSON(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
 
         
@@ -813,7 +813,7 @@ class AddExpense(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)
@@ -831,7 +831,7 @@ class AddExpense(Resource):
 
             # print(datetime.date.today())
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response
@@ -848,7 +848,7 @@ class AddExpense(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
     
 
@@ -884,7 +884,7 @@ class AddRevenue(Resource):
 
             # # GET NEW UID
             # print("Get New Request UID")
-            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
             newRequest['purchase_uid'] = newRequestID
             newRequest['pur_group'] = newRequestID
             # print(newRequestID)
@@ -902,7 +902,7 @@ class AddRevenue(Resource):
             
             # print(newRequest)
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response
@@ -919,5 +919,5 @@ class AddRevenue(Resource):
         print("KV Pairs: ", purchases)
         with connect() as db:
             print("In actual PUT")
-            response = db.update('purchases', key, purchases)
+            response = db.update('space_prod.purchases', key, purchases)
         return response
