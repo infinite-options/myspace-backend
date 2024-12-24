@@ -344,6 +344,36 @@ class LeaseApplication(Resource):
 
                     print("Lease Start: ", lease_start, type(lease_start))
 
+                    newRequest = {}
+
+                    # SET THE COMMON VARIABLES
+                    manager = fee['contract_business_id']
+                    owner = fee['property_owner_id']
+                    tenant = fee['lt_tenant_id']
+
+
+                    # Common JSON Object Attributes
+                    
+                    
+                    newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
+                    newRequest['pur_property_id'] = fee['lease_property_id']
+                    newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
+
+                    newRequest['purchase_type'] = fee['fee_type']
+                    
+                
+                    newRequest['purchase_status'] = "UNPAID"
+                    newRequest['pur_status_value'] = "0"
+                    newRequest['pur_notes'] = fee['fee_name']
+
+                    # newRequest['pur_due_by'] = fee['due_by']
+                    newRequest['pur_late_by'] = fee['late_by']
+                    newRequest['pur_late_fee'] = fee['late_fee']
+                    newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
+
+                    newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                    newRequest['pur_description'] = f"Initial {fee['fee_name']}"
+
 
                     # 2. ESTABLISH WHEN PAYMENT IS DUE
                     if fee['fee_name'] == 'Rent':     # Is it important to check if fee_name is Rent OR should we check if frequency is Monthly (or repetitive)?
@@ -378,7 +408,7 @@ class LeaseApplication(Resource):
                         print("Final Due Date: ", due_date, type(due_date))
 
 
-                        newRequest = {}
+                        # newRequest = {}
                       
                         # 3. CALCULATE PRO-RATED AMOUNT
                         pro_rate_days = (due_date - lease_start).days
@@ -401,33 +431,33 @@ class LeaseApplication(Resource):
 
 
 
-                        # SET THE COMMON VARIABLES
-                        manager = fee['contract_business_id']
-                        owner = fee['property_owner_id']
-                        tenant = fee['lt_tenant_id']
+                        # # SET THE COMMON VARIABLES
+                        # manager = fee['contract_business_id']
+                        # owner = fee['property_owner_id']
+                        # tenant = fee['lt_tenant_id']
 
 
-                        # Common JSON Object Attributes
+                        # # Common JSON Object Attributes
                         
                         
-                        newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
-                        newRequest['pur_property_id'] = fee['lease_property_id']
-                        newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
+                        # newRequest['pur_timestamp'] = datetime.now().strftime("%m-%d-%Y %H:%M")
+                        # newRequest['pur_property_id'] = fee['lease_property_id']
+                        # newRequest['pur_leaseFees_id'] = fee['leaseFees_uid']
 
-                        newRequest['purchase_type'] = fee['fee_type']
+                        # newRequest['purchase_type'] = fee['fee_type']
                         
                     
-                        newRequest['purchase_status'] = "UNPAID"
-                        newRequest['pur_status_value'] = "0"
-                        newRequest['pur_notes'] = fee['fee_name']
+                        # newRequest['purchase_status'] = "UNPAID"
+                        # newRequest['pur_status_value'] = "0"
+                        # newRequest['pur_notes'] = fee['fee_name']
 
-                        # newRequest['pur_due_by'] = fee['due_by']
-                        newRequest['pur_late_by'] = fee['late_by']
-                        newRequest['pur_late_fee'] = fee['late_fee']
-                        newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
+                        # # newRequest['pur_due_by'] = fee['due_by']
+                        # newRequest['pur_late_by'] = fee['late_by']
+                        # newRequest['pur_late_fee'] = fee['late_fee']
+                        # newRequest['pur_perDay_late_fee'] = fee['perDay_late_fee']
 
-                        newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
-                        newRequest['pur_description'] = f"Initial {fee['fee_name']}"
+                        # newRequest['purchase_date'] = datetime.today().date().strftime('%m-%d-%Y %H:%M')
+                        # newRequest['pur_description'] = f"Initial {fee['fee_name']}"
 
 
 
