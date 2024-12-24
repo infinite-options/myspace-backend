@@ -9,7 +9,7 @@ class Account(Resource):
         response = {}
         payload = request.get_json()
         with connect() as db:
-            response = db.insert('accounts', payload)
+            response = db.insert('space_prod.accounts', payload)
         return response
     
     def get(self):

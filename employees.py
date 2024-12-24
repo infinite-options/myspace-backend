@@ -38,7 +38,7 @@ class Employee(Resource):
             if file:
                 key = f'employees/{employee["employee_uid"]}/employee_photo'
                 employee["employee_photo_url"] = uploadImage(file, key, '')
-            response = db.insert('employees', employee)
+            response = db.insert('space_prod.employees', employee)
             response["employee_uid"] = employee["employee_uid"]
         # print(response)
         return response

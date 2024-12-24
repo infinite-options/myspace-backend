@@ -358,13 +358,13 @@ class PaymentMethod(Resource):
             if isinstance(payload, list):
                 for item in payload:
                     print(item)
-                    query_response = db.insert('paymentMethods', item)
+                    query_response = db.insert('space_prod.paymentMethods', item)
                     print(query_response)
                     response[i] = query_response
                     i += 1
 
             else:
-                query_response = db.insert('paymentMethods', payload)
+                query_response = db.insert('space_prod.paymentMethods', payload)
                 print(query_response)
                 response = query_response
 

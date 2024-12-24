@@ -90,7 +90,7 @@ class Bills(Resource):
 
             payload["bill_uid"] = newBillUID  
             payload["bill_timestamp"] = datetime.today().date().strftime("%m-%d-%Y")
-            response['Add Bill'] = db.insert('bills', payload)
+            response['Add Bill'] = db.insert('space_prod.bills', payload)
             response['maibill_uidtenance_request_uid'] = newBillUID 
             response['Bill Images Added'] = payload.get('bill_images', "None")
             print("\nNew Bill Added")
@@ -567,7 +567,7 @@ class AddPurchase(Resource):
             payer = payload.get('pur_payer') 
             payload['pur_cf_type'] = 'revenue' if payer.startswith(('110', '350')) else 'expense'
 
-            response['Add Purchase'] = db.insert('purchases', payload)
+            response['Add Purchase'] = db.insert('space_prod.purchases', payload)
             response['purchase_UID'] = newPurchaseUID 
         
             # response['Purchase Documents Added'] = payload.get('purchase_documents', "None")
@@ -760,7 +760,7 @@ class AddPurchaseJSON(Resource):
 
             # print(datetime.date.today())
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response
@@ -831,7 +831,7 @@ class AddExpense(Resource):
 
             # print(datetime.date.today())
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response
@@ -902,7 +902,7 @@ class AddRevenue(Resource):
             
             # print(newRequest)
 
-            response = db.insert('purchases', newRequest)
+            response = db.insert('space_prod.purchases', newRequest)
             response['Purchases_UID'] = newRequestID
 
         return response

@@ -348,7 +348,7 @@ class LeaseApplication(Resource):
 
             # Actual Insert Statement
             # print("About to insert: ", payload)
-            response["lease"] = db.insert('leases', payload)
+            response["lease"] = db.insert('space_prod.leases', payload)
             # print("Data inserted into space_prod.leases", response)
 
 
@@ -371,7 +371,7 @@ class LeaseApplication(Resource):
                     # print("Payload: ", new_leaseFees)
                     # print("lease_uid: ", lease_uid)
                     new_leaseFees["fees_lease_id"] = lease_uid
-                    response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                    response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
                     # print("response: ", response["lease_fees"])
 
 
@@ -471,7 +471,7 @@ class LeaseApplication(Resource):
                         # print("In ELSE Statment ") 
                         new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
                         # print('New Lease Fees Payload: ', new_leaseFees)
-                        response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
+                        response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
 
             if "lease_end" in payload:
                 print("In lease_end")
@@ -651,7 +651,7 @@ class LeaseApplication(Resource):
 
                         print("Input to purchases Tenant-PM: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
                         print("Tenant-PM Fee Inserted")
 
 
@@ -691,7 +691,7 @@ class LeaseApplication(Resource):
                         
                         print("Input to purchases PM-Owner: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
                         print("PM-Owner Fee Inserted")
 
 
@@ -775,7 +775,7 @@ class LeaseApplication(Resource):
                                 newPMRequest['pur_due_date'] =  newRequest['pur_due_date']
                                 
                                 # print(newPMRequest)
-                                db.insert('purchases', newPMRequest)
+                                db.insert('space_prod.purchases', newPMRequest)
 
 
 
@@ -803,7 +803,7 @@ class LeaseApplication(Resource):
                             
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('purchases', newRequest)
+                        #     db.insert('space_prod.purchases', newRequest)
 
 
 
@@ -825,7 +825,7 @@ class LeaseApplication(Resource):
 
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('purchases', newRequest)
+                        #     db.insert('space_prod.purchases', newRequest)
 
 
 
@@ -904,7 +904,7 @@ class LeaseApplication(Resource):
                         #             print("Next Months PM-Owner Due: ", newPMRequest['pur_due_date'], type(newPMRequest['pur_due_date'])) 
 
                         #             # print(newPMRequest)
-                        #             db.insert('purchases', newPMRequest)
+                        #             db.insert('space_prod.purchases', newPMRequest)
                             
                             
                         # else: 
@@ -935,7 +935,7 @@ class LeaseApplication(Resource):
                         newRequest['pur_amount_due'] = fee['charge']
                         # print(newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
         return response
 
@@ -1106,7 +1106,7 @@ class LeaseReferal(Resource):
 
                         
 
-                        response = db.insert('tenantProfileInfo', profile_info)
+                        response = db.insert('space_prod.tenantProfileInfo', profile_info)
                         response["tenant_uid"] = profile_info["tenant_uid"]
                         print("MYSPACE Tenant response: ", response)
 
@@ -1144,7 +1144,7 @@ class LeaseReferal(Resource):
 
             # Actual Insert Statement
             print("About to insert: ", payload)
-            response["lease"] = db.insert('leases', payload)
+            response["lease"] = db.insert('space_prod.leases', payload)
             print("Data inserted into space_prod.leases", response)
 
         

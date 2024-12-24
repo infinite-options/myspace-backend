@@ -250,7 +250,7 @@ class MaintenanceRequests(Resource):
 
 
             payload["maintenance_request_uid"] = newMaintenanceReqUID  
-            response['Add Maintenance Req'] = db.insert('maintenanceRequests', payload)
+            response['Add Maintenance Req'] = db.insert('space_prod.maintenanceRequests', payload)
             response['maintenance_request_uid'] = newMaintenanceReqUID 
             response['Maintenance Req Images Added'] = payload.get('maintenance_images', "None")
             print("\nNew Maintenance Request Added")
@@ -491,7 +491,7 @@ class MaintenanceQuotes(Resource):
                 payload["quote_status"] = "REQUESTED"
                 payload["quote_requested_date"] = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
                 payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
-                response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
+                response['Add Maintenance Quote'] = db.insert('space_prod.maintenanceQuotes', payload)
                 response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
                 response['Maintenance Quote Images Added'] = payload.get('quote_maintenance_images', "None")
                 print("\nNew Maintenance Quote Added")

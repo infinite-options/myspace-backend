@@ -452,7 +452,7 @@ class Properties(Resource):
                             newAppliance['appliance_type'] = appliance
                             newAppliance['appliance_images'] = '[]'
                             newAppliance['appliance_documents'] = '[]'
-                            response['Add Appliance'] = db.insert('appliances', newAppliance)
+                            response['Add Appliance'] = db.insert('space_prod.appliances', newAppliance)
                             print(response['Add Appliance'])
                 else:
                     print("No appliances provided in the form.")
@@ -484,7 +484,7 @@ class Properties(Resource):
             newPropertyOwner['property_owner_id'] = property_owner_id
             newPropertyOwner['po_owner_percent'] = payload.pop("po_owner_percent", 1)
             print("newPropertyOwner Payload: ", newPropertyOwner)
-            response['Add Owner'] = db.insert('property_owner', newPropertyOwner)
+            response['Add Owner'] = db.insert('space_prod.property_owner', newPropertyOwner)
             print("\nNew Property-Owner Relationship Added")
          
 
@@ -494,7 +494,7 @@ class Properties(Resource):
             payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
             # payload.pop('property_listed')
             payload["property_uid"] = newPropertyUID
-            response['Add Property'] = db.insert('properties', payload)
+            response['Add Property'] = db.insert('space_prod.properties', payload)
             response['property_UID'] = newPropertyUID
             response['Images Added'] = payload.get('property_images', "None")
 

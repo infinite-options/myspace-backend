@@ -114,7 +114,7 @@ def allowed_file(filename):
 #             #             WHERE owner_uid = \'""" + owner_id + """\';"""
 #             # print(sql)
 #             # response = db.execute(sql, cmd='post')
-#             response = db.insert('documents', newDocument)
+#             response = db.insert('space_prod.documents', newDocument)
 
 #         return response
 
@@ -232,7 +232,7 @@ def allowed_file(filename):
 #                 #             WHERE owner_uid = \'""" + owner_id + """\';"""
 #                 # print(sql)
 #                 # response = db.execute(sql, cmd='post')
-#                 response = db.insert('quoteDocuments', newDocument)
+#                 response = db.insert('space_prod.quoteDocuments', newDocument)
 #             else:
 #                 response['error'] = "Please enter the quote id in the correct format"
 
@@ -385,6 +385,6 @@ class Documents(Resource):
             #             WHERE owner_uid = \'""" + owner_id + """\';"""
             # print(sql)
             # response = db.execute(sql, cmd='post')
-            response = db.insert('documents', newDocument)
+            response = db.insert('space_prod.documents', newDocument)
 
         return response

@@ -113,7 +113,7 @@ class Profile(Resource):
                     key = f'ownerProfileInfo/{profile_info["owner_uid"]}/owner_photo'
                     profile_info["owner_photo_url"] = uploadImage(file, key, '')
                 profile_info['owner_documents'] = '[]' if profile_info.get('owner_documents') in {None, '', 'null'} else profile_info.get('owner_documents', '[]')
-                response = db.insert('ownerProfileInfo', profile_info)
+                response = db.insert('space_prod.ownerProfileInfo', profile_info)
                 response["owner_uid"] = profile_info["owner_uid"]
             elif tenant:
                 print("tenant")
@@ -133,7 +133,7 @@ class Profile(Resource):
                 if file:
                     key = f'tenantProfileInfo/{profile_info["tenant_uid"]}/tenant_photo'
                     profile_info["tenant_photo_url"] = uploadImage(file, key, '')
-                response = db.insert('tenantProfileInfo', profile_info)
+                response = db.insert('space_prod.tenantProfileInfo', profile_info)
                 response["tenant_uid"] = profile_info["tenant_uid"]
             elif business:
                 print("manager")

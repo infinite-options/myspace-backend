@@ -571,7 +571,7 @@ class Announcements(Resource):
                     # if payload["announcement_type"][j] == "App":
                     #     newRequest['App'] = "1"
                 newRequest['App'] = "1"                
-                response["App"] = db.insert('announcements', newRequest)
+                response["App"] = db.insert('space_prod.announcements', newRequest)
 
         return response           
 
@@ -2011,7 +2011,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
 
 
@@ -2028,7 +2028,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 
                         # print(newRequest)
                         print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
 
                         # Owner-PM Payments for Management Fees
@@ -2108,7 +2108,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 
                                 # print("PM Fees:", newPMRequest)
                                 # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('purchases', newPMRequest)
+                                db.insert('space_prod.purchases', newPMRequest)
                                 print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table
@@ -2325,7 +2325,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
 
 
@@ -2342,7 +2342,7 @@ def MonthlyRentPurchase_CRON(Resource):
                 
                         # print(newRequest)
                         print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        db.insert('space_prod.purchases', newRequest)
 
 
                         # Owner-PM Payments for Management Fees
@@ -2422,7 +2422,7 @@ def MonthlyRentPurchase_CRON(Resource):
                                 
                                 # print("PM Fees:", newPMRequest)
                                 # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('purchases', newPMRequest)
+                                db.insert('space_prod.purchases', newPMRequest)
                                 print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table

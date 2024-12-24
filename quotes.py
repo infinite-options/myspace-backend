@@ -112,7 +112,7 @@ class Quotes(Resource):
                     i += 1
 
                 quote["quote_maintenance_images"] = json.dumps(images)
-                query_response = db.insert('maintenanceQuotes', quote)
+                query_response = db.insert('space_prod.maintenanceQuotes', quote)
                 response.append(query_response)
 
         return response
