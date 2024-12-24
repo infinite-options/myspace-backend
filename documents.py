@@ -41,10 +41,10 @@ def allowed_file(filename):
 #                         , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
 #                         , contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
 #                         , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status
-#                     FROM space.property_owner
-#                     LEFT JOIN space.properties ON property_uid = property_id
-#                     LEFT JOIN space.contracts ON property_uid = contract_property_id
-#                     LEFT JOIN space.leases ON property_uid = lease_property_id
+#                     FROM space_prod.property_owner
+#                     LEFT JOIN space_prod.properties ON property_uid = property_id
+#                     LEFT JOIN space_prod.contracts ON property_uid = contract_property_id
+#                     LEFT JOIN space_prod.leases ON property_uid = lease_property_id
 #                     WHERE property_owner_id = \'""" + owner_id + """\';
 #                     """)
 
@@ -105,7 +105,7 @@ def allowed_file(filename):
 #             newDocument['document_uid'] = new_doc_id
 #             newDocument['document_profile_id'] = owner_id
 
-#             # sql = f"""UPDATE space.ownerProfileInfo
+#             # sql = f"""UPDATE space_prod.ownerProfileInfo
 #             #             SET owner_documents = JSON_ARRAY_APPEND(
 #             #                 IFNULL(owner_documents, JSON_ARRAY()),
 #             #                 '$',
@@ -134,9 +134,9 @@ def allowed_file(filename):
 #                         ,lease_uid, lease_property_id, lease_end, lease_status
 #                         ,tenant_documents
 #                         ,lease_documents
-#                     FROM space.tenantProfileInfo
-#                     LEFT JOIN space.lease_tenant ON tenant_uid = lt_tenant_id
-#                     LEFT JOIN space.leases ON lease_uid = lt_lease_id
+#                     FROM space_prod.tenantProfileInfo
+#                     LEFT JOIN space_prod.lease_tenant ON tenant_uid = lt_tenant_id
+#                     LEFT JOIN space_prod.leases ON lease_uid = lt_lease_id
 #                     WHERE tenant_uid = \'""" + tenant_id + """\';
 #                     """)
 
@@ -158,7 +158,7 @@ def allowed_file(filename):
 #         with connect() as db:
 #             print("in connect loop")
 #             quoteQuery = db.execute(""" 
-#             SELECT * From space.quoteDocuments 
+#             SELECT * From space_prod.quoteDocuments 
 #             WHERE qd_quote_id = \'""" + quote_id + """\';
 #             """)
 
@@ -223,7 +223,7 @@ def allowed_file(filename):
 #                 newDocument['qd_uid'] = new_doc_id
                
 
-#                 # sql = f"""UPDATE space.ownerProfileInfo
+#                 # sql = f"""UPDATE space_prod.ownerProfileInfo
 #                 #             SET owner_documents = JSON_ARRAY_APPEND(
 #                 #                 IFNULL(owner_documents, JSON_ARRAY()),
 #                 #                 '$',
@@ -255,10 +255,10 @@ class Documents(Resource):
                             , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
                             , contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                             , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status
-                        FROM space.property_owner
-                        LEFT JOIN space.properties ON property_uid = property_id
-                        LEFT JOIN space.contracts ON property_uid = contract_property_id
-                        LEFT JOIN space.leases ON property_uid = lease_property_id
+                        FROM space_prod.property_owner
+                        LEFT JOIN space_prod.properties ON property_uid = property_id
+                        LEFT JOIN space_prod.contracts ON property_uid = contract_property_id
+                        LEFT JOIN space_prod.leases ON property_uid = lease_property_id
                         WHERE property_owner_id = \'""" + user_id + """\';
                         """)
                 response["Documents"] = documentQuery
@@ -270,9 +270,9 @@ class Documents(Resource):
                             ,lease_uid, lease_property_id, lease_end, lease_status
                             ,tenant_documents
                             ,lease_documents
-                        FROM space.tenantProfileInfo
-                        LEFT JOIN space.lease_tenant ON tenant_uid = lt_tenant_id
-                        LEFT JOIN space.leases ON lease_uid = lt_lease_id
+                        FROM space_prod.tenantProfileInfo
+                        LEFT JOIN space_prod.lease_tenant ON tenant_uid = lt_tenant_id
+                        LEFT JOIN space_prod.leases ON lease_uid = lt_lease_id
                         WHERE tenant_uid = \'""" + user_id + """\';
                         """)
                 response["Documents"] = documentQuery
@@ -284,9 +284,9 @@ class Documents(Resource):
                         SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
                             , contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date                            
                             , owner_first_name, owner_last_name, owner_phone_number, owner_email                
-                            FROM space.b_details
-                            LEFT JOIN space.properties ON property_uid = contract_property_id
-                            LEFT JOIN space.o_details ON property_id = contract_property_id                                                        
+                            FROM space_prod.b_details
+                            LEFT JOIN space_prod.properties ON property_uid = contract_property_id
+                            LEFT JOIN space_prod.o_details ON property_id = contract_property_id                                                        
                             WHERE business_uid = \'""" + user_id + """\'  AND contract_status = "ACTIVE";
                         """)
                 documents["Contracts"] = contractsQuery["result"]
@@ -296,10 +296,10 @@ class Documents(Resource):
                         SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type                            
                             , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults, lease_children, lease_pets, lease_application_date
                             , tenant_first_name, tenant_last_name
-                            FROM space.b_details
-                            LEFT JOIN space.properties ON property_uid = contract_property_id
-                            LEFT JOIN space.leases ON lease_property_id = contract_property_id
-                            LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            FROM space_prod.b_details
+                            LEFT JOIN space_prod.properties ON property_uid = contract_property_id
+                            LEFT JOIN space_prod.leases ON lease_property_id = contract_property_id
+                            LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
                             WHERE business_uid = \'""" + user_id + """\' AND lease_status = "NEW" AND contract_status = "ACTIVE";
                         """)
                 documents["Applications"] = applicationsQuery["result"]
@@ -309,10 +309,10 @@ class Documents(Resource):
                         SELECT property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
                             , lease_uid, lease_start, lease_end, lease_status, lease_documents, lease_early_end_date, lease_renew_status, lease_adults, lease_children, lease_pets, lease_application_date, lease_actual_rent
                             , tenant_first_name, tenant_last_name
-                            FROM space.b_details
-                            LEFT JOIN space.properties ON property_uid = contract_property_id
-                            LEFT JOIN space.leases ON lease_property_id = contract_property_id
-                            LEFT JOIN space.t_details ON lt_lease_id = lease_uid
+                            FROM space_prod.b_details
+                            LEFT JOIN space_prod.properties ON property_uid = contract_property_id
+                            LEFT JOIN space_prod.leases ON lease_property_id = contract_property_id
+                            LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
                             WHERE business_uid = \'""" + user_id + """\' AND lease_status <> "NEW" AND contract_status = "ACTIVE";
                         """)
                 documents["Leases"] = leasesQuery["result"]
@@ -376,7 +376,7 @@ class Documents(Resource):
             newDocument['document_uid'] = new_doc_id
             newDocument['document_profile_id'] = user_id
 
-            # sql = f"""UPDATE space.ownerProfileInfo
+            # sql = f"""UPDATE space_prod.ownerProfileInfo
             #             SET owner_documents = JSON_ARRAY_APPEND(
             #                 IFNULL(owner_documents, JSON_ARRAY()),
             #                 '$',

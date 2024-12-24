@@ -22,15 +22,15 @@ class Appliances(Resource):
             if uid[:3] == "200":
                 response = db.execute("""
                     SELECT *
-                    FROM space.appliances 
-                    LEFT JOIN space.lists ON appliance_type = list_uid
+                    FROM space_prod.appliances 
+                    LEFT JOIN space_prod.lists ON appliance_type = list_uid
                     -- WHERE appliance_property_id = '200-000001'
                     WHERE appliance_property_id= \'""" + uid + """\'
                     """)
                 print(response)
             elif uid[:3] == "ALL":
                 response = db.execute("""
-                    SELECT * FROM space.appliances
+                    SELECT * FROM space_prod.appliances
                     """)
                 print(response)
 
@@ -134,7 +134,7 @@ class Appliances(Resource):
         with connect() as db:
             applianceQuery = ("""
                 DELETE 
-                FROM space.appliances
+                FROM space_prod.appliances
                 -- WHERE appliance_uid = '060-000005'
                 WHERE appliance_uid = \'""" + uid + """\';
                 """)
