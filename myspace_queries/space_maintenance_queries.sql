@@ -1,42 +1,42 @@
--- CREATE TABLE space_prod.bills AS
+-- CREATE TABLE space_dev.bills AS
 -- SELECT * FROM pm.bills;
 -- SELECT * FROM pm.leaseTenants;
 
-SELECT * FROM space_prod.users;
-SELECT * FROM space_prod.user_profiles;
+SELECT * FROM space_dev.users;
+SELECT * FROM space_dev.user_profiles;
 
-SELECT * FROM space_prod.ownerProfileInfo;
-SELECT * FROM space_prod.property_owner;
-SELECT * FROM space_prod.properties;
-SELECT * FROM space_prod.appliances;
-SELECT * FROM space_prod.maintenanceRequests;
-SELECT * FROM space_prod.maintenanceQuotes;
+SELECT * FROM space_dev.ownerProfileInfo;
+SELECT * FROM space_dev.property_owner;
+SELECT * FROM space_dev.properties;
+SELECT * FROM space_dev.appliances;
+SELECT * FROM space_dev.maintenanceRequests;
+SELECT * FROM space_dev.maintenanceQuotes;
 
-SELECT * FROM space_prod.tenantProfileInfo;
-SELECT * FROM space_prod.property_tenant;
-SELECT * FROM space_prod.lease_tenant;
-SELECT * FROM space_prod.leases;
+SELECT * FROM space_dev.tenantProfileInfo;
+SELECT * FROM space_dev.property_tenant;
+SELECT * FROM space_dev.lease_tenant;
+SELECT * FROM space_dev.leases;
 
-SELECT * FROM space_prod.businessProfileInfo;
-SELECT * FROM space_prod.contracts;
-SELECT * FROM space_prod.contractFees;
+SELECT * FROM space_dev.businessProfileInfo;
+SELECT * FROM space_dev.contracts;
+SELECT * FROM space_dev.contractFees;
 
-SELECT * FROM space_prod.purchases;
-SELECT * FROM space_prod.payments;
-SELECT * FROM space_prod.bills;
-SELECT * FROM space_prod.lists;
-SELECT * FROM space_prod.property_utility;
+SELECT * FROM space_dev.purchases;
+SELECT * FROM space_dev.payments;
+SELECT * FROM space_dev.bills;
+SELECT * FROM space_dev.lists;
+SELECT * FROM space_dev.property_utility;
 
-SELECT * FROM space_prod.pp_status;
-SELECT * FROM space_prod.pp_details;
+SELECT * FROM space_dev.pp_status;
+SELECT * FROM space_dev.pp_details;
 
 -- MAINTENANCE STATUS BY OWNER
 SELECT property_owner.property_owner_id
 	, maintenanceRequests.maintenance_request_status
     -- , COUNT(maintenanceRequests.maintenance_request_status) AS num
-FROM space_prod.properties
-LEFT JOIN space_prod.property_owner ON property_id = property_uid
-LEFT JOIN space_prod.maintenanceRequests ON maintenance_property_id = property_uid
+FROM space_dev.properties
+LEFT JOIN space_dev.property_owner ON property_id = property_uid
+LEFT JOIN space_dev.maintenanceRequests ON maintenance_property_id = property_uid
 WHERE property_owner_id = '110-000003'
 GROUP BY maintenance_request_status;
 
@@ -51,9 +51,9 @@ SELECT property_owner.property_owner_id
            ELSE default_result
        END AS new_column
     , COUNT(maintenanceRequests.maintenance_request_status) AS num
-FROM space_prod.properties
-LEFT JOIN space_prod.property_owner ON property_id = property_uid
-LEFT JOIN space_prod.maintenanceRequests ON maintenance_property_id = property_uid
+FROM space_dev.properties
+LEFT JOIN space_dev.property_owner ON property_id = property_uid
+LEFT JOIN space_dev.maintenanceRequests ON maintenance_property_id = property_uid
 WHERE property_owner_id = '110-000003'
 GROUP BY maintenance_request_status;
 
@@ -64,8 +64,8 @@ GROUP BY maintenance_request_status;
 SELECT -- *
 	property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area
     , maintenance_request_uid, maintenance_property_id, maintenance_request_status, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-FROM space_prod.properties
-LEFT JOIN space_prod.maintenanceRequests ON maintenance_property_id = property_uid
+FROM space_dev.properties
+LEFT JOIN space_dev.maintenanceRequests ON maintenance_property_id = property_uid
 WHERE property_uid = '200-000029';
 
 
@@ -79,10 +79,10 @@ SELECT property_owner_id
 	, property_uid, property_available_to_rent, property_active_date, property_address -- , property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
     , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
 	, quote_earliest_availability, quote_event_duration, quote_notes, quote_total_estimate
-FROM space_prod.maintenanceRequests 
-LEFT JOIN space_prod.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
-LEFT JOIN space_prod.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
-LEFT JOIN space_prod.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
+FROM space_dev.maintenanceRequests 
+LEFT JOIN space_dev.maintenanceQuotes ON quote_maintenance_request_id = maintenance_request_uid
+LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid	-- ASSOCIATE PROPERTY DETAILS WITH MAINTENANCE DETAILS
+LEFT JOIN space_dev.property_owner ON property_id = property_uid 			-- SO WE CAN SORT BY OWNER
 WHERE property_owner_id = '110-000003'
 ORDER BY maintenance_request_status;
 
@@ -90,9 +90,9 @@ ORDER BY maintenance_request_status;
 SELECT property_uid, property_address
 	, property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type, property_num_beds, property_num_baths, property_area, property_listed_rent, property_images
     , maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule, maintenance_assigned_business, maintenance_assigned_worker, maintenance_scheduled_date, maintenance_scheduled_time, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
-FROM space_prod.properties
-LEFT JOIN space_prod.maintenanceRequests ON maintenance_property_id = property_uid		-- SO WE HAVE MAINTENANCE INFO
-LEFT JOIN space_prod.property_owner ON property_id = property_uid 						-- SO WE CAN SORT BY OWNER
+FROM space_dev.properties
+LEFT JOIN space_dev.maintenanceRequests ON maintenance_property_id = property_uid		-- SO WE HAVE MAINTENANCE INFO
+LEFT JOIN space_dev.property_owner ON property_id = property_uid 						-- SO WE CAN SORT BY OWNER
 WHERE property_owner_id = '110-000003';
 
 
@@ -109,10 +109,10 @@ SELECT -- *
     , maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
     , property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
     , o_details.*
-FROM space_prod.m_details
-LEFT JOIN space_prod.user_profiles ON maintenance_request_created_by = profile_uid
-LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
-LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
+FROM space_dev.m_details
+LEFT JOIN space_dev.user_profiles ON maintenance_request_created_by = profile_uid
+LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
+LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
 WHERE property_owner_id = "110-000003";
 
 
@@ -124,19 +124,19 @@ SELECT -- *
 	, maintenance_request_created_date, maintenance_request_closed_date, maintenance_request_adjustment_date
 	, maintenance_quote_uid, quote_maintenance_request_id, quote_business_id, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_event_duration, quote_notes, quote_status, quote_created_date, quote_total_estimate, quote_maintenance_images, quote_adjustment_date
 	, property_uid, property_address, property_unit, property_city, property_state, property_zip, property_type
-FROM space_prod.m_details
-LEFT JOIN space_prod.user_profiles ON maintenance_request_created_by = profile_uid
-LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
+FROM space_dev.m_details
+LEFT JOIN space_dev.user_profiles ON maintenance_request_created_by = profile_uid
+LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
 WHERE property_owner_id = "110-000003";
 -- ORDER BY maintenance_request_status;
 
 
 
 
-SELECT * FROM space_prod.maintenanceRequests;
+SELECT * FROM space_dev.maintenanceRequests;
 
 -- ADD NEW MAINTENACE REQUEST
-INSERT INTO space_prod.maintenanceRequests
+INSERT INTO space_dev.maintenanceRequests
 SET maintenance_request_uid = "800-000039"
 ,  maintenance_property_id = "200-000006"
 ,  maintenance_title = "SQL TEST"
@@ -159,11 +159,11 @@ SET maintenance_request_uid = "800-000039"
 
 
 -- DELETE REUQEST FROM MAINTENANCE TABLE
-DELETE FROM space_prod.maintenanceRequests
+DELETE FROM space_dev.maintenanceRequests
 WHERE maintenance_request_uid = "800-000039";
 
 -- THIS IS HOW TO FORMAT DATA USING THE NEW PYTHON ENTRY METHOD
-INSERT INTO space_prod.maintenanceRequests 
+INSERT INTO space_dev.maintenanceRequests 
 (maintenance_property_id
 , maintenance_title
 , maintenance_desc
@@ -205,8 +205,8 @@ VALUES ('200-000006'
 
 ;-- DEBUG maintenaceStatus
 
-SELECT * FROM space_prod.maintenanceRequests;
-SELECT * FROM space_prod.maintenanceQuotes;
+SELECT * FROM space_dev.maintenanceRequests;
+SELECT * FROM space_dev.maintenanceQuotes;
 
 SELECT -- *
 	maintenance_request_uid, maintenance_property_id, maintenance_title, maintenance_desc, maintenance_images, maintenance_request_type, maintenance_request_created_by, maintenance_priority, maintenance_can_reschedule
@@ -232,10 +232,10 @@ SELECT -- *
 -- 	payment_uid, pay_amount, payment_notes, payment_type,
 -- 	maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_request_type, maintenance_priority, maintenance_frequency, maintenance_notes, maintenance_request_status, maintenance_request_created_date,
 -- 	maintenance_quote_uid, quote_services_expenses, quote_earliest_availability, quote_event_type, quote_notes, quote_status
-FROM space_prod.m_details 
--- LEFT JOIN space_prod.properties ON maintenance_property_id = property_uid
-LEFT JOIN space_prod.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-LEFT JOIN space_prod.pp_details ON pur_bill_id = bill_uid
+FROM space_dev.m_details 
+-- LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid
+LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+LEFT JOIN space_dev.pp_details ON pur_bill_id = bill_uid
 WHERE quote_business_id = "600-000012" AND  quote_business_id IS NOT NULL
 ORDER BY maintenance_request_created_date;
 
@@ -243,10 +243,10 @@ ORDER BY maintenance_request_created_date;
 
 
 SELECT *
-FROM space_prod.user_profiles;
-SELECT * FROM space_prod.ownerProfileInfo;
-SELECT * FROM space_prod.tenantProfileInfo;
-SELECT * FROM space_prod.businessProfileInfo;
+FROM space_dev.user_profiles;
+SELECT * FROM space_dev.ownerProfileInfo;
+SELECT * FROM space_dev.tenantProfileInfo;
+SELECT * FROM space_dev.businessProfileInfo;
 
 
 SELECT o.owner_uid, property_id, o.owner_user_id, o.owner_first_name, o.owner_last_name, o.owner_phone_number, o.owner_email, o.owner_address, o.owner_unit, o.owner_city, o.owner_state, o.owner_zip
@@ -278,7 +278,7 @@ ORDER BY maintenance_request_created_date;
 -- CHECK BUSINESS TYPE
 SELECT -- *
 	business_uid, business_type
-FROM space_prod.businessProfileInfo
+FROM space_dev.businessProfileInfo
 WHERE business_uid = "600-000003";
 
 -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
@@ -299,13 +299,13 @@ SELECT -- * -- bill_property_id,  maintenance_property_id,
     , property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email, owner_ein_number, owner_ssn, owner_paypal, owner_apple_pay, owner_zelle, owner_venmo, owner_account_number, owner_routing_number, owner_address, owner_unit, owner_city, owner_state, owner_zip
     , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_ein_number, business_services_fees, business_locations, business_paypal, business_apple_pay, business_zelle, business_venmo, business_account_number, business_routing_number, business_documents, business_address, business_unit, business_city, business_state, business_zip
     , lease_uid, lease_property_id, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_rent_available_topay, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_rent, lease_actual_rent, lt_lease_id, lt_tenant_id, lt_responsibility, tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants
-FROM space_prod.m_details
-LEFT JOIN space_prod.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-LEFT JOIN space_prod.pp_status ON pur_bill_id = bill_uid
-LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
-LEFT JOIN space_prod.b_details ON maintenance_property_id = contract_property_id
-LEFT JOIN space_prod.leases ON maintenance_property_id = lease_property_id
-LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
+FROM space_dev.m_details
+LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+LEFT JOIN space_dev.pp_status ON pur_bill_id = bill_uid
+LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
+LEFT JOIN space_dev.b_details ON maintenance_property_id = contract_property_id
+LEFT JOIN space_dev.leases ON maintenance_property_id = lease_property_id
+LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
 -- WHERE owner_uid = "110-000002"
 -- WHERE business_uid = "600-000001"
 -- WHERE tenant_uid = "350-000006"
@@ -326,14 +326,14 @@ SELECT   * -- bill_property_id,  maintenance_property_id,
 -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
 -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
 -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-FROM space_prod.maintenanceRequests
-LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
--- LEFT JOIN space_prod.bills ON bill_maintenance_quote_id = maintenance_quote_uid
--- LEFT JOIN space_prod.pp_status ON pur_bill_id = bill_uid
-LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
-LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-LEFT JOIN (SELECT * FROM space_prod.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
-LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
+FROM space_dev.maintenanceRequests
+LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
+-- LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
+-- LEFT JOIN space_dev.pp_status ON pur_bill_id = bill_uid
+LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
+LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
+LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE") AS l ON maintenance_property_id = lease_property_id
+LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
 WHERE owner_uid = "110-000095"
 -- WHERE owner_uid = \'""" + uid + """\'
 -- WHERE business_uid = \'""" + uid + """\'

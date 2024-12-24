@@ -2,33 +2,33 @@
 
 -- VIEW CREATE PROPERTY-OWNER WITH OWNER PROFILE (po_details)
 SELECT *
-FROM space_prod.property_owner
-LEFT JOIN space_prod.ownerProfileInfo ON property_owner_id = owner_uid;
+FROM space_dev.property_owner
+LEFT JOIN space_dev.ownerProfileInfo ON property_owner_id = owner_uid;
 
 -- VIEW CREATE CONTRACT WITH BUSINESS PROFILE (b_details)
-SELECT * FROM space_prod.b_details;
+SELECT * FROM space_dev.b_details;
 SELECT *
-FROM space_prod.contracts
-LEFT JOIN space_prod.businessProfileInfo ON business_uid = contract_business_id
+FROM space_dev.contracts
+LEFT JOIN space_dev.businessProfileInfo ON business_uid = contract_business_id
 -- WHERE contract_status = 'ACTIVE' OR contract_status IS NULL;
 WHERE contract_status != 'INACTIVE' OR contract_status IS NULL;
 
 -- VIEW CREATE LEASE-TENANT WITH TENANT PROFILE (t_detail)
 SELECT *
-FROM space_prod.lease_tenant
-LEFT JOIN space_prod.tenantProfileInfo ON tenant_uid = lt_tenant_id;
+FROM space_dev.lease_tenant
+LEFT JOIN space_dev.tenantProfileInfo ON tenant_uid = lt_tenant_id;
 
 
 -- VIEW CREATE MAINTENANCE QUOTE & REQUESTS (m_detail)
 SELECT *
-FROM space_prod.maintenanceRequests
-LEFT JOIN space_prod.maintenanceQuotes ON maintenance_request_uid = quote_maintenance_request_id;
+FROM space_dev.maintenanceRequests
+LEFT JOIN space_dev.maintenanceQuotes ON maintenance_request_uid = quote_maintenance_request_id;
 
 
 -- VIEW CREATE PROPERTY-OWNER WITH OWNER PROFILE (o_detail)
 SELECT *
-FROM space_prod.property_owner
-LEFT JOIN space_prod.ownerProfileInfo ON owner_uid = property_owner_id;
+FROM space_dev.property_owner
+LEFT JOIN space_dev.ownerProfileInfo ON owner_uid = property_owner_id;
 
 
 
@@ -46,12 +46,12 @@ LEFT JOIN space_prod.ownerProfileInfo ON owner_uid = property_owner_id;
 --     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
 --     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num
 --     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%Y") AS cf_year
--- FROM space_prod.purchases
+-- FROM space_dev.purchases
 -- LEFT JOIN (
 -- 	SELECT *
 -- 		, MAX(payment_date) AS latest_date
 -- 		, SUM(pay_amount) AS total_paid
--- 	FROM space_prod.payments
+-- 	FROM space_dev.payments
 -- 	GROUP BY pay_purchase_id
 -- 	) pay  ON pay_purchase_id = purchase_uid
 -- GROUP BY purchase_uid;
@@ -71,7 +71,7 @@ SELECT *
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%Y") AS cf_year
-FROM space_prod.purchases
+FROM space_dev.purchases
 LEFT JOIN (
 	SELECT -- *, 
 		pay_purchase_id
@@ -79,7 +79,7 @@ LEFT JOIN (
 		, SUM(pay_amount) AS total_paid
         , IF( MIN(payment_verify) = 'verified', 'verified', 'unverified') AS verified
         , JSON_ARRAYAGG(payment_uid) AS payment_ids
-	FROM space_prod.payments
+	FROM space_dev.payments
 	GROUP BY pay_purchase_id
 	) pay  ON pay_purchase_id = purchase_uid
 GROUP BY purchase_uid;
@@ -100,7 +100,7 @@ SELECT *
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%M") AS cf_month
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%m") AS cf_month_num
     , DATE_FORMAT(STR_TO_DATE(pur_due_date, '%m-%d-%Y'), "%Y") AS cf_year
-FROM space_prod.purchases
+FROM space_dev.purchases
 LEFT JOIN (
 	SELECT -- *, 
 		pay_purchase_id
@@ -117,7 +117,7 @@ LEFT JOIN (
                 'payment_intent', payment_intent
 			)
 		) AS payment_ids
-	FROM space_prod.payments
+	FROM space_dev.payments
 	GROUP BY pay_purchase_id
 	) pay  ON pay_purchase_id = purchase_uid
 GROUP BY purchase_uid;
@@ -125,7 +125,7 @@ GROUP BY purchase_uid;
 -- VIEW CREATION PURCHASE-PAYMENT-STATUS ==> pp_details UPDATED
 -- pp_details is pp_status (Purchases with summed Payments) with additional receiver, payer, property, owner business and tenant details
 
--- SELECT * FROM space_prod.user_profiles;
+-- SELECT * FROM space_dev.user_profiles;
 
 -- SELECT  -- *
 -- 	purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
@@ -140,16 +140,16 @@ GROUP BY purchase_uid;
 --     , contract_start_date, contract_end_date, contract_status
 --     , business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
 --     , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
--- FROM space_prod.pp_status
--- LEFT JOIN space_prod.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
--- LEFT JOIN space_prod.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
--- LEFT JOIN space_prod.user_profiles AS payer ON pur_payer = payer.profile_uid
--- LEFT JOIN space_prod.properties ON pur_property_id = property_uid
--- LEFT JOIN space_prod.o_details ON pur_property_id = property_id
--- LEFT JOIN space_prod.b_details ON pur_property_id = contract_property_id
--- LEFT JOIN space_prod.leases ON pur_property_id = lease_property_id
+-- FROM space_dev.pp_status
+-- LEFT JOIN space_dev.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS payer ON pur_payer = payer.profile_uid
+-- LEFT JOIN space_dev.properties ON pur_property_id = property_uid
+-- LEFT JOIN space_dev.o_details ON pur_property_id = property_id
+-- LEFT JOIN space_dev.b_details ON pur_property_id = contract_property_id
+-- LEFT JOIN space_dev.leases ON pur_property_id = lease_property_id
 -- -- missing at least lease_fees
--- LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
+-- LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
 -- WHERE contract_status = "ACTIVE" OR ISNULL(contract_status);
 
 -- RECREATED WITH EVERYTHING - SEEMS TO WORK 9/20/2024
@@ -168,15 +168,15 @@ GROUP BY purchase_uid;
 --     , lease_uid, lease_property_id, lease_application_date, lease_start, lease_end, lease_status, lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, lease_move_in_date, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_docuSign, lease_consent, lease_actual_rent, lease_end_notice_period, lease_end_reason
 --     , lt_lease_id, lt_tenant_id, lt_responsibility
 --     , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
--- FROM space_prod.pp_status
--- LEFT JOIN space_prod.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
--- LEFT JOIN space_prod.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
--- LEFT JOIN space_prod.user_profiles AS payer ON pur_payer = payer.profile_uid
--- LEFT JOIN space_prod.properties ON pur_property_id = property_uid
--- LEFT JOIN space_prod.o_details ON pur_property_id = property_id
--- LEFT JOIN space_prod.b_details ON pur_property_id = contract_property_id
--- LEFT JOIN space_prod.leases ON pur_property_id = lease_property_id
--- LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
+-- FROM space_dev.pp_status
+-- LEFT JOIN space_dev.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS payer ON pur_payer = payer.profile_uid
+-- LEFT JOIN space_dev.properties ON pur_property_id = property_uid
+-- LEFT JOIN space_dev.o_details ON pur_property_id = property_id
+-- LEFT JOIN space_dev.b_details ON pur_property_id = contract_property_id
+-- LEFT JOIN space_dev.leases ON pur_property_id = lease_property_id
+-- LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
 -- WHERE contract_status = "ACTIVE" OR ISNULL(contract_status);
 
 
@@ -210,15 +210,15 @@ GROUP BY purchase_uid;
 --     , tenant_uid, tenant_user_id
 --     , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
 
--- FROM space_prod.pp_status
--- LEFT JOIN space_prod.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
--- LEFT JOIN space_prod.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
--- LEFT JOIN space_prod.user_profiles AS payer ON pur_payer = payer.profile_uid
--- LEFT JOIN space_prod.properties ON pur_property_id = property_uid
--- LEFT JOIN space_prod.o_details ON pur_property_id = property_id
--- LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = 'ACTIVE') AS b ON pur_property_id = contract_property_id
--- LEFT JOIN (SELECT * FROM space_prod.leases WHERE lease_status = 'ACTIVE') AS l ON pur_property_id = lease_property_id
--- LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
+-- FROM space_dev.pp_status
+-- LEFT JOIN space_dev.user_profiles AS receiver ON pur_receiver = receiver.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS initiator ON pur_initiator = initiator.profile_uid
+-- LEFT JOIN space_dev.user_profiles AS payer ON pur_payer = payer.profile_uid
+-- LEFT JOIN space_dev.properties ON pur_property_id = property_uid
+-- LEFT JOIN space_dev.o_details ON pur_property_id = property_id
+-- LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = 'ACTIVE') AS b ON pur_property_id = contract_property_id
+-- LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = 'ACTIVE') AS l ON pur_property_id = lease_property_id
+-- LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
 
 
 
@@ -235,12 +235,12 @@ GROUP BY purchase_uid;
 
 -- VIEW CREATION PROPERTY ==> p_details (UPDATED 6/19/2024)
 SELECT *  
-FROM space_prod.properties
-LEFT JOIN space_prod.u_details ON property_uid = utility_property_id
-LEFT JOIN space_prod.o_details ON property_uid = o_details.property_id
-LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = 'ACTIVE') AS pm ON property_uid = contract_property_id
-LEFT JOIN (SELECT * FROM space_prod.leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON property_uid = lease_property_id
-LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
+FROM space_dev.properties
+LEFT JOIN space_dev.u_details ON property_uid = utility_property_id
+LEFT JOIN space_dev.o_details ON property_uid = o_details.property_id
+LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = 'ACTIVE') AS pm ON property_uid = contract_property_id
+LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON property_uid = lease_property_id
+LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
 LEFT JOIN (
 	SELECT fees_lease_id,
 	JSON_ARRAYAGG(
@@ -259,7 +259,7 @@ LEFT JOIN (
                'available_topay', available_topay
            )
        ) AS lease_fees
-	FROM space_prod.leaseFees
+	FROM space_dev.leaseFees
 	GROUP BY fees_lease_id) AS f ON fees_lease_id = lease_uid
 LEFT JOIN (
 	SELECT appliance_property_id,
@@ -287,17 +287,17 @@ LEFT JOIN (
             'appliance_item', list_item
 		)
     ) AS appliances
-	FROM space_prod.appliances 
-	LEFT JOIN space_prod.lists ON appliance_type = list_uid 
+	FROM space_dev.appliances 
+	LEFT JOIN space_dev.lists ON appliance_type = list_uid 
     GROUP BY appliance_property_id) AS a ON property_uid = a.appliance_property_id
 
 
 ;
-SELECT * FROM space_prod.users;
-SELECT * FROM space_prod.user_profile;
-SELECT * FROM space_prod.ownerProfileInfo;
-SELECT * FROM space_prod.tenantProfileInfo;
-SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_dev.users;
+SELECT * FROM space_dev.user_profile;
+SELECT * FROM space_dev.ownerProfileInfo;
+SELECT * FROM space_dev.tenantProfileInfo;
+SELECT * FROM space_dev.businessProfileInfo;
 
 SELECT 
 	owner_user_id AS user_id
@@ -306,7 +306,7 @@ SELECT
     , CONCAT(owner_first_name, " ", owner_last_name) AS user_name
     , owner_phone_number AS user_phone
     , owner_email AS user_email
-    FROM space_prod.ownerProfileInfo
+    FROM space_dev.ownerProfileInfo
 UNION
 SELECT 
 	tenant_user_id AS user_id 
@@ -315,7 +315,7 @@ SELECT
     , CONCAT(tenant_first_name, " ", tenant_last_name) AS user_name
     , tenant_phone_number AS user_phone
     , tenant_email AS user_email
-    FROM space_prod.tenantProfileInfo
+    FROM space_dev.tenantProfileInfo
 UNION
 SELECT 
 	business_user_id AS user_id 
@@ -324,7 +324,7 @@ SELECT
     , business_name AS user_name
     , business_phone_number  AS user_phone
     , business_email AS user_email
-    FROM space_prod.businessProfileInfo;
+    FROM space_dev.businessProfileInfo;
 
 
 
@@ -338,7 +338,7 @@ SELECT
 	, td_description AS doc_desc
 	, td_shared AS doc_shared
 	, td_link AS doc_link
-	FROM space_prod.tenantDocuments
+	FROM space_dev.tenantDocuments
 UNION
 SELECT
 	ld_uid AS doc_uid
@@ -349,7 +349,7 @@ SELECT
 	, ld_description AS doc_desc
 	, ld_shared AS doc_shared
 	, ld_link AS doc_link
-FROM space_prod.leaseDocuments
+FROM space_dev.leaseDocuments
 UNION
 SELECT
 	'010-000011' AS doc_uid
@@ -361,7 +361,7 @@ SELECT
 	, 'false' AS doc_shared
 	, "https://s3-us-west-1.amazonaws.com/io-pm/contracts/010-000011/doc_0" AS doc_link;
 
-SELECT * FROM space_prod.doc_details;
+SELECT * FROM space_dev.doc_details;
 
 
 
@@ -376,9 +376,9 @@ SELECT utility_property_id,
 			) AS property_utilities
 FROM (
 	SELECT pu.*, l1.list_item AS utility , l2.list_item AS responsible_party
-	FROM space_prod.property_utility pu
-	LEFT JOIN space_prod.lists l1 ON utility_type_id = l1.list_uid
-    LEFT JOIN space_prod.lists l2 ON utility_payer_id = l2.list_uid
+	FROM space_dev.property_utility pu
+	LEFT JOIN space_dev.lists l1 ON utility_type_id = l1.list_uid
+    LEFT JOIN space_dev.lists l2 ON utility_payer_id = l2.list_uid
 	) AS u
 GROUP BY utility_property_id
 ;
@@ -389,8 +389,8 @@ GROUP BY utility_property_id
     
    -- VIEW CREATION UTILITIES ==> t_details 
 SELECT *
-FROM space_prod.lease_tenant
-LEFT JOIN space_prod.tenantProfileInfo ON tenant_uid = lt_tenant_id;
+FROM space_dev.lease_tenant
+LEFT JOIN space_dev.tenantProfileInfo ON tenant_uid = lt_tenant_id;
 
 
 
@@ -434,7 +434,7 @@ SELECT *,
 					WHEN quote_status = "COMPLETED" THEN "80"     
 					ELSE 0
 				END AS quote_rank
-				FROM space_prod.maintenanceQuotes
+				FROM space_dev.maintenanceQuotes
 				) AS qr
 			GROUP BY quote_maintenance_request_id
 			) AS qr_quoterank
