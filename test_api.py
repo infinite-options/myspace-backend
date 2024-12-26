@@ -294,7 +294,7 @@ class endPointTest_CLASS(Resource):
                 # update_lease_fees_query_response = db.execute(update_lease_fees_query, cmd='post')
 
             print("\n*** Completed ***\n")
-            response['insert_temporary_data'] = 'Passed'
+            response['insert_temporary_data'] = 'Passed / Inserted in space_dev'
 
         except:
             response['insert_temporary_data'] = 'Failed'
@@ -1751,7 +1751,7 @@ class endPointTest_CLASS(Resource):
                 # delete_lease_fees_query_response = db.delete(delete_lease_fees_query)
 
             print("\n*** Completed ***\n")
-            response['delete_temporary_data'] = 'Passed'
+            response['delete_temporary_data'] = 'Passed / deleted from space_dev'
             
         except:
             response['delete_temporary_data'] = 'Failed'
