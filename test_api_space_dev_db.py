@@ -1785,7 +1785,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
 #         cursor.execute("""
 #             SELECT TABLE_NAME 
 #             FROM information_schema.TABLES 
-#             WHERE TABLE_SCHEMA = 'space' AND TABLE_TYPE = 'BASE TABLE';
+#             WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
 #         """)
 #         tables = cursor.fetchall()
 

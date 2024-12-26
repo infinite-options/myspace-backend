@@ -2,7 +2,7 @@
 -- Consider deleting S3 Buckets in AWS before deleting tables
 
 -- Show Tables
-SHOW TABLES IN space;
+SHOW TABLES IN space_dev;
 
 -- Show Views
 SHOW FULL TABLES IN space WHERE TABLE_TYPE LIKE 'VIEW';
@@ -10,7 +10,7 @@ SHOW FULL TABLES IN space WHERE TABLE_TYPE LIKE 'VIEW';
 -- Show Stored Procedures
 SELECT routine_name
 FROM information_schema.ROUTINES
-WHERE routine_schema = 'space'
+WHERE routine_schema = 'space_dev'
 AND routine_type = 'PROCEDURE';
 
 
