@@ -299,7 +299,7 @@ class endPointTest_CLASS(Resource):
         except:
             response['insert_temporary_data'] = 'Failed'
 
-        if response['insert_temporary_data'] != 'Passed':
+        if response['insert_temporary_data'] != 'Passed / Inserted in space_dev':
             return response['insert_temporary_data']
         
         response['No of APIs tested'] = 0
