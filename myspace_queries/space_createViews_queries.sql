@@ -359,7 +359,8 @@ SELECT
 	, 'Williams Blvd Contract - All Units' AS doc_name
 	, 'Williams Blvd Contract - All Units' AS doc_desc
 	, 'false' AS doc_shared
-	, "https://s3-us-west-1.amazonaws.com/io-pm/contracts/010-000011/doc_0" AS doc_link;
+	-- , "https://s3-us-west-1.amazonaws.com/io-pm/contracts/010-000011/doc_0" AS doc_link;
+	, "https://s3-us-west-1.amazonaws.com/space-prod/contracts/010-000011/doc_0" AS doc_link;
 
 SELECT * FROM space_dev.doc_details;
 

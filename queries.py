@@ -15,7 +15,9 @@ def testQuery(user_id):
         like_pattern = '600%'
     else:
         print("Invalid condition type")
-        return None
+        # return None
+        response = "No Such User"
+        return response
 
     # print(query)
 
@@ -25,9 +27,12 @@ def testQuery(user_id):
             response = db.execute(query, (like_pattern,))
             print("Function Query Complete")
             # print("This is the Function response: ", response)
+            response["API Test"] = "Test Dev Env"
         return response
     except:
         print("Error in testQuery Query ")
+        response = "Error in testQuery Query"
+        return response
 
 # RENT QUERIES
 def LeaseDetailsQuery(user_id):

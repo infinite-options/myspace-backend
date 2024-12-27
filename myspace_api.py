@@ -1,6 +1,7 @@
 # MANIFEST MY space_dev (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
-# v1.0
+# https://qn4agnb0v9.execute-api.us-west-1.amazonaws.com/production/<enter_endpoint_details>
+
 
 # To run program:  python3 myspace_api.py
 
@@ -219,7 +220,8 @@ jwtManager = JWTManager(app)
 
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 
-ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
+# ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
+ENDPOINT = os.getenv('ENDPOINT')
 
 # --------------- Google Scopes and Credentials------------------
 # SCOPES = "https://www.googleapis.com/auth/calendar"

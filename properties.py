@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 from data_pm import connect, uploadImage, deleteImage, deleteFolder, s3, processImage
+import os
 import boto3
 import json
 from datetime import date, datetime, timedelta
@@ -24,8 +25,10 @@ def updateImages(imageFiles, property_uid):
     
         if type(imageFiles[filename]) == str:
     
-            bucket = 'io-pm'
-            key = imageFiles[filename].split('/io-pm/')[1]
+            # bucket = 'io-pm'
+            bucket = os.getenv('BUCKET_NAME')
+            # key = imageFiles[filename].split('/io-pm/')[1]
+            key = imageFiles[filename].split('/space-prod/')[1]
             data = s3.get_object(
                 Bucket=bucket,
                 Key=key
@@ -38,7 +41,8 @@ def updateImages(imageFiles, property_uid):
     
     
     s3Resource = boto3.resource('s3')
-    bucket = s3Resource.Bucket('io-pm')
+    # bucket = s3Resource.Bucket('io-pm')
+    bucket = s3Resource.Bucket('space-prod')
     bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
     images = []
     for i in range(len(imageFiles.keys())):

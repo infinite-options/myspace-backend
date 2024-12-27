@@ -22,6 +22,7 @@ s3 = boto3.client(
 )
 
 
+
 def pmDueDate(due_date):
     print("\nIn pmDueDate: ", due_date, type(due_date))
     # Calculate PM Due Date
@@ -49,7 +50,8 @@ def deleteFolder(folder, uid):
     #  Delete from S3 Bucket
     print("In Delete S3 Folder")
 
-    bucket_name = 'io-pm'
+    # bucket_name = 'io-pm'
+    bucket_name = os.getenv('BUCKET_NAME')
     folder_prefix = f'{folder}/{uid}/'
 
     # List all objects with the given prefix
@@ -67,7 +69,8 @@ def deleteFolder(folder, uid):
 
 
 def deleteImage(key):
-    bucket = 'io-pm'
+    # bucket = 'io-pm'
+    bucket = os.getenv('BUCKET_NAME')
     try:
         print("Before Delete: ", bucket, key)
         delete_file = s3.delete_object(
@@ -91,7 +94,8 @@ def uploadImage(file, key, content):
     # print("File: ", file)
     # print("Key: ", key)
     # print("Content: ", content)
-    bucket = 'io-pm'
+    # bucket = 'io-pm'
+    bucket = os.getenv('BUCKET_NAME')
 
     if isinstance(file, FileStorage): 
         print("In Upload Function isInstance File Storage: ", FileStorage)
@@ -416,7 +420,8 @@ def processImage(key, payload):
 
                 #  Delete from S3 Bucket
                 try:
-                    delete_key = image.split('io-pm/', 1)[1]
+                    # delete_key = image.split('io-pm/', 1)[1]
+                    delete_key = image.split('space-prod/', 1)[1]
                     # print("Delete key", delete_key)
                     deleteImage(delete_key)
                 except: 
@@ -697,7 +702,8 @@ def processDocument(key, payload):
 
                 #  Delete from S3 Bucket
                 try:
-                    delete_key = document.split('io-pm/', 1)[1]
+                    # delete_key = document.split('io-pm/', 1)[1]
+                    delete_key = document.split('space-prod/', 1)[1]
                     # print("Delete key", delete_key)
                     deleteImage(delete_key)
                 except: 

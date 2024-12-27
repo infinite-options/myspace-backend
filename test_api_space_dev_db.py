@@ -184,7 +184,8 @@ class DatabaseConnection:
         return response
 
 
-ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
+# ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
+ENDPOINT = os.getenv('ENDPOINT')
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
