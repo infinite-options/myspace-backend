@@ -4,7 +4,7 @@ from data_pm import connect, uploadImage, s3
 def testQuery(user_id):
     print("In testQuery FUNCTION CALL")
 
-    query = 'SELECT * FROM space_prod.purchases WHERE {column} LIKE %s'
+    query = 'SELECT * FROM space_dev.purchases WHERE {column} LIKE %s'
     # like_pattern = '600%'
 
     if user_id.startswith("110"):
@@ -38,7 +38,7 @@ def testQuery(user_id):
 def LeaseDetailsQuery(user_id):
     print("In RentDetailsQuery FUNCTION CALL")
 
-    # query = 'SELECT * FROM space_prod.purchases WHERE {column} LIKE %s'
+    # query = 'SELECT * FROM space_dev.purchases WHERE {column} LIKE %s'
     query = """
             -- OWNER, PROPERTY MANAGER, TENANT LEASES
             SELECT * 
@@ -51,7 +51,7 @@ def LeaseDetailsQuery(user_id):
                         WHEN DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) < 0 THEN 'M2M' -- DATEDIFF(STR_TO_DATE(lease_end, '%m-%d-%Y'), NOW()) -- 'M2M'
                         ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                 END AS lease_end_month
-                FROM space_prod.leases 
+                FROM space_dev.leases 
                 {cond}
                 -- WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                 ) AS l
@@ -69,10 +69,10 @@ def LeaseDetailsQuery(user_id):
                     'available_topay', available_topay,
                     'due_by_date', due_by_date
                     )) AS lease_fees
-                    FROM space_prod.leaseFees
+                    FROM space_dev.leaseFees
                     GROUP BY fees_lease_id) as f ON lease_uid = fees_lease_id
-            LEFT JOIN space_prod.properties ON property_uid = lease_property_id
-            LEFT JOIN space_prod.o_details ON property_id = lease_property_id
+            LEFT JOIN space_dev.properties ON property_uid = lease_property_id
+            LEFT JOIN space_dev.o_details ON property_id = lease_property_id
             LEFT JOIN (
                 SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                     ('tenant_uid', tenant_uid,
@@ -85,10 +85,10 @@ def LeaseDetailsQuery(user_id):
                     'tenant_drivers_license_state', tenant_drivers_license_state,
                     'tenant_ssn', tenant_ssn
                     )) AS tenants
-                    FROM space_prod.t_details 
+                    FROM space_dev.t_details 
                     GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-            LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
-            LEFT JOIN space_prod.u_details ON utility_property_id = lease_property_id
+            LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+            LEFT JOIN space_dev.u_details ON utility_property_id = lease_property_id
             -- WHERE owner_uid LIKE "%110-000003%"
             -- WHERE contract_business_id LIKE "%600-000003%"
             -- WHERE tenants LIKE "%350-000040%"
@@ -127,7 +127,7 @@ def LeaseDetailsQuery(user_id):
 def RentStatusQuery(user_id):
     print("In RentStatusQuery FUNCTION CALL")
 
-    # query = 'SELECT * FROM space_prod.purchases WHERE {column} LIKE %s'
+    # query = 'SELECT * FROM space_dev.purchases WHERE {column} LIKE %s'
     query = """
             -- PROPERTY RENT STATUS FOR RENTS PAGE
             SELECT -- *,
@@ -158,7 +158,7 @@ def RentStatusQuery(user_id):
                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
                         , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
-                FROM space_prod.p_details
+                FROM space_dev.p_details
                 -- WHERE tenant_uid = '350-000002'
                 -- WHERE business_uid = "600-000043"
                 -- WHERE owner_uid = "110-000003"
@@ -185,7 +185,7 @@ def RentStatusQuery(user_id):
                     , pur_description
                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
-                    FROM space_prod.purchases
+                    FROM space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         -- AND purchase_type = "Rent"
                         AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
@@ -223,7 +223,7 @@ def RentStatusQuery(user_id):
 def RentDetailsQuery(user_id):
     print("In RentDetailsQuery FUNCTION CALL")
 
-    # query = 'SELECT * FROM space_prod.purchases WHERE {column} LIKE %s'
+    # query = 'SELECT * FROM space_dev.purchases WHERE {column} LIKE %s'
     query = """
             -- PROPERTY RENT DETAILS FOR RENT DETAILS PAGE
             SELECT -- *,
@@ -266,7 +266,7 @@ def RentDetailsQuery(user_id):
                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
                         , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
-                FROM space_prod.p_details
+                FROM space_dev.p_details
                 -- WHERE business_uid = "600-000043"
                 -- WHERE owner_uid = "110-000003"
                 -- WHERE tenant_uid = "350-000003"
@@ -312,7 +312,7 @@ def RentDetailsQuery(user_id):
             --         SELECT *
                 FROM (
                     SELECT  *
-                    FROM space_prod.pp_status -- space_prod.purchases
+                    FROM space_dev.pp_status -- space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         -- AND purchase_type = "Rent"
                 ) AS ppr
@@ -328,7 +328,7 @@ def RentDetailsQuery(user_id):
                         , amt_remaining AS lf_amt_remaining
                         , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_month
                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_year
-                    FROM space_prod.pp_status -- space_prod.purchases
+                    FROM space_dev.pp_status -- space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         AND purchase_type = "Late Fee"
                 ) AS lf ON purchase_uid = lf_purchase_uid
@@ -382,7 +382,7 @@ def RentDetailsQuery(user_id):
                         , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
                         , tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number -- , tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                         -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
-                FROM space_prod.p_details
+                FROM space_dev.p_details
                 -- WHERE business_uid = "600-000003"
                 -- WHERE owner_uid = "110-000003"
                 -- WHERE owner_uid = \'""" + user_id + """\'
@@ -427,7 +427,7 @@ def RentDetailsQuery(user_id):
 
                 FROM (
                     SELECT  *
-                    FROM space_prod.pp_status -- space_prod.purchases
+                    FROM space_dev.pp_status -- space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         -- AND purchase_type = "Rent"
                 ) AS ppr
@@ -443,7 +443,7 @@ def RentDetailsQuery(user_id):
                         , amt_remaining AS lf_amt_remaining
                         , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_month
                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS lf_cf_year
-                    FROM space_prod.pp_status -- space_prod.purchases
+                    FROM space_dev.pp_status -- space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         AND purchase_type = "Late Fee"
                 ) AS lf ON purchase_uid = lf_purchase_uid
@@ -483,7 +483,7 @@ def RentDetailsQuery(user_id):
 def RentDashboardQuery(user_id):
     print("In RentDashboardQuery FUNCTION CALL")
 
-    # query = 'SELECT * FROM space_prod.purchases WHERE {column} LIKE %s'
+    # query = 'SELECT * FROM space_dev.purchases WHERE {column} LIKE %s'
     query = """
             -- PROPERTY RENT STATUS FOR DASHBOARD
             SELECT 
@@ -515,7 +515,7 @@ def RentDashboardQuery(user_id):
                             , lease_status -- , lease_assigned_contacts, lease_documents, lease_early_end_date, lease_renew_status, move_out_date, lease_adults, lease_children, lease_pets, lease_vehicles, lease_referred, lease_effective_date, lease_application_date, leaseFees, lt_lease_id, lt_tenant_id, lt_responsibility
                             , tenant_uid -- , tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number, tenant_ssn, tenant_current_salary, tenant_salary_frequency, tenant_current_job_title, tenant_current_job_company, tenant_drivers_license_number, tenant_drivers_license_state, tenant_address, tenant_unit, tenant_city, tenant_state, tenant_zip, tenant_previous_address, tenant_documents, tenant_adult_occupants, tenant_children_occupants, tenant_vehicle_info, tenant_references, tenant_pet_occupants, tenant_photo_url
                             -- , if(ISNULL(lease_status), "VACANT", lease_status) AS rent_status 
-                    FROM space_prod.p_details
+                    FROM space_dev.p_details
                     -- WHERE business_uid = "600-000043"
                     -- WHERE owner_uid = "110-000003"
                     -- WHERE owner_uid = \'""" + user_id + """\'
@@ -541,7 +541,7 @@ def RentDashboardQuery(user_id):
                         , pur_description
                         , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
                         , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
-                    FROM space_prod.purchases
+                    FROM space_dev.purchases
                     WHERE LEFT(pur_payer, 3) = '350'
                         -- AND purchase_type = "Rent"
                         AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
@@ -598,7 +598,7 @@ def RentPropertiesQuery(user_id):
                     END AS rent_status  
             FROM (
                 -- Find properties
-                SELECT * FROM space_prod.p_details
+                SELECT * FROM space_dev.p_details
                 -- WHERE business_uid = "600-000043"
                 -- WHERE owner_uid = "110-000012"
                 -- WHERE owner_uid = \'""" + user_id + """\'
@@ -624,7 +624,7 @@ def RentPropertiesQuery(user_id):
                     , pur_description
                     , MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_month
                     , YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS cf_year
-                FROM space_prod.purchases
+                FROM space_dev.purchases
                 WHERE LEFT(pur_payer, 3) = '350'
                     -- AND purchase_type = "Rent"
                     AND MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) = MONTH(CURRENT_DATE)
@@ -677,10 +677,10 @@ def AnnouncementReceiverQuery(user_id):
                             WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
                             ELSE 'Unknown'
                       END AS receiver_role
-                    FROM space_prod.announcements a
-                    LEFT JOIN space_prod.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
-                    LEFT JOIN space_prod.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
-                    LEFT JOIN space_prod.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    FROM space_dev.announcements a
+                    LEFT JOIN space_dev.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space_dev.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space_dev.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
                     WHERE announcement_sender = \'""" + user_id + """\';
                     """)
             # print("Function Query Complete")
@@ -710,10 +710,10 @@ def AnnouncementSenderQuery(user_id):
                             ELSE 'Unknown'
                         END AS sender_role
                     FROM 
-                        space_prod.announcements a
-                    LEFT JOIN space_prod.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
-                    LEFT JOIN space_prod.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
-                    LEFT JOIN space_prod.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                        space_dev.announcements a
+                    LEFT JOIN space_dev.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                    LEFT JOIN space_dev.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                    LEFT JOIN space_dev.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
                     WHERE 
                         announcement_receiver = \'""" + user_id + """\';
                     """)
@@ -738,7 +738,7 @@ def DashboardCashflowQuery(user_id):
                     #     , SUM(total_paid) AS total_paid
                     #     , cf_month, cf_month_num, cf_year
                     #     , pur_cf_type
-                    # FROM space_prod.pp_status
+                    # FROM space_dev.pp_status
                     # -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
                     # -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
                     # WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
@@ -756,7 +756,7 @@ def DashboardCashflowQuery(user_id):
                         cf_month, cf_month_num, cf_year,
                         -- IF(pur_receiver = '600-000003', 'revenue', "") AS pur_cf_type
                         IF(pur_receiver = \'""" + user_id + """\', 'revenue', "") AS pur_cf_type
-                    FROM space_prod.pp_status
+                    FROM space_dev.pp_status
                     -- WHERE pur_receiver = '600-000003' AND purchase_type != 'Deposit'
                     WHERE pur_receiver = \'""" + user_id + """\' AND purchase_type != 'Deposit'
                     GROUP BY cf_month, cf_year
@@ -770,7 +770,7 @@ def DashboardCashflowQuery(user_id):
                         cf_month, cf_month_num, cf_year,
                         -- IF(pur_payer = '600-000003', 'expense', "") AS pur_cf_type
                         IF(pur_payer = \'""" + user_id + """\', 'expense', "") AS pur_cf_type
-                    FROM space_prod.pp_status
+                    FROM space_dev.pp_status
                     -- WHERE pur_payer = '600-000003' AND purchase_type != 'Deposit'
                     WHERE pur_payer = \'""" + user_id + """\' AND purchase_type != 'Deposit'
                     GROUP BY cf_month, cf_year                                  
@@ -796,7 +796,7 @@ def DashboardProfitQuery(user_id):
                     #     , SUM(total_paid) AS total_paid
                     #     , cf_month, cf_month_num, cf_year
                     #     , pur_cf_type
-                    # FROM space_prod.pp_status
+                    # FROM space_dev.pp_status
                     # -- WHERE (pur_receiver = '110-000003' OR pur_payer = '110-000003')
                     # -- WHERE (pur_receiver = '600-000003' OR pur_payer = '600-000003')
                     # WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
@@ -811,7 +811,7 @@ def DashboardProfitQuery(user_id):
                         , cf_month, cf_month_num, cf_year
                         , purchase_type
                         , pur_cf_type
-                    FROM space_prod.pp_status
+                    FROM space_dev.pp_status
                     -- WHERE (pur_receiver = '600-000050' OR pur_payer = '600-000050')
                     WHERE (pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\')
                     GROUP BY cf_month, cf_year, pur_cf_type, purchase_type
@@ -834,9 +834,9 @@ def UnpaidRents():
                     -- DETERMINE WHICH RENTS ARE UNPAID OR PARTIALLY PAID
                     SELECT *
 						, DATE_FORMAT(DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i'), INTERVAL pur_late_by DAY), '%m-%d-%Y %H:%i') AS late_by_date
-					FROM space_prod.purchases
-					LEFT JOIN space_prod.contracts ON contract_property_id = pur_property_id
-					LEFT JOIN space_prod.property_owner ON property_id = pur_property_id
+					FROM space_dev.purchases
+					LEFT JOIN space_dev.contracts ON contract_property_id = pur_property_id
+					LEFT JOIN space_dev.property_owner ON property_id = pur_property_id
 					WHERE purchase_type = "RENT" AND
 						  contract_status = "ACTIVE" AND
                           DATE_ADD(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i'), INTERVAL pur_late_by DAY) < CURDATE() AND
@@ -906,18 +906,18 @@ def NextDueDate():
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 14) % 14 DAY)
                                 END, '%m-%d-%Y %H:%i') AS next_due_date
                         FROM (
-                            SELECT * FROM space_prod.leases WHERE lease_status = 'ACTIVE'
+                            SELECT * FROM space_dev.leases WHERE lease_status = 'ACTIVE'
                             ) AS l
                         LEFT JOIN (
-                            SELECT * FROM space_prod.leaseFees WHERE frequency != 'One Time'
+                            SELECT * FROM space_dev.leaseFees WHERE frequency != 'One Time'
                             ) AS lf ON fees_lease_id = lease_uid  				-- get lease fees
-                        LEFT JOIN space_prod.lease_tenant ON fees_lease_id = lt_lease_id            	-- get tenant responsible for rent
-                        LEFT JOIN space_prod.property_owner ON lease_property_id = property_id      	-- get property owner and ownership percentage
+                        LEFT JOIN space_dev.lease_tenant ON fees_lease_id = lt_lease_id            	-- get tenant responsible for rent
+                        LEFT JOIN space_dev.property_owner ON lease_property_id = property_id      	-- get property owner and ownership percentage
                         LEFT JOIN (
-                            SELECT * FROM space_prod.contracts WHERE contract_status = 'ACTIVE'
+                            SELECT * FROM space_dev.contracts WHERE contract_status = 'ACTIVE'
                             ) AS c ON lease_property_id = contract_property_id  				-- to make sure contract is active
                         ) AS ndd
-                    LEFT JOIN space_prod.purchases ON lease_property_id = pur_property_id
+                    LEFT JOIN space_dev.purchases ON lease_property_id = pur_property_id
                         AND fee_name = pur_notes
                         AND charge = pur_amount_due
                         AND lt_tenant_id = pur_payer
@@ -939,16 +939,16 @@ def ApprovedContracts():
         with connect() as db:    
             response = db.execute("""
                     SELECT * 
-                    FROM space_prod.contracts
+                    FROM space_dev.contracts
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
                     """)
 
             # response = db.execute("""
-            #         UPDATE space_prod.contracts AS c
+            #         UPDATE space_dev.contracts AS c
             #         JOIN (
             #             SELECT contract_property_id
-            #             FROM space_prod.contracts
+            #             FROM space_dev.contracts
             #             WHERE STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE()
             #             AND contract_status = 'APPROVED'
             #         ) AS approved_contracts
@@ -957,7 +957,7 @@ def ApprovedContracts():
             #         WHERE c.contract_status = 'ACTIVE';
 
             #         SELECT * 
-            #         FROM space_prod.contracts
+            #         FROM space_dev.contracts
             #         WHERE contract_status = 'APPROVED'
             #             AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
             #         """)
@@ -982,9 +982,9 @@ def ContractDetails(user_id):
                     , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_renew_status, contract_early_end_date, contract_end_notice_period, contract_m2m
                     , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_services_fees
                     -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-                FROM space_prod.o_details o
-                LEFT JOIN space_prod.properties p ON o.property_id =p.property_uid 
-                LEFT JOIN space_prod.b_details b ON o.property_id = b.contract_property_id
+                FROM space_dev.o_details o
+                LEFT JOIN space_dev.properties p ON o.property_id =p.property_uid 
+                LEFT JOIN space_dev.b_details b ON o.property_id = b.contract_property_id
                 -- WHERE b.business_uid = '600-000011'
                 -- WHERE o.owner_uid = '110-000003'
                 -- WHERE o.owner_uid = \'""" + user_id + """\';
@@ -1000,7 +1000,7 @@ def ContractDetails(user_id):
                 , contract_uid, contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_renew_status, contract_early_end_date, contract_end_notice_period, contract_m2m
                 , business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, business_services_fees
                 -- , business_address, business_unit, business_city, business_state, business_zip, business_photo_url
-            FROM space_prod.properties p
+            FROM space_dev.properties p
             LEFT JOIN (SELECT property_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('owner_uid', owner_uid,
                                 'owner_user_id', owner_user_id,
@@ -1011,9 +1011,9 @@ def ContractDetails(user_id):
                                 'owner_email', owner_email,
                                 'owner_photo_url', owner_photo_url
                                 )) AS owners
-                                FROM space_prod.o_details
+                                FROM space_dev.o_details
                                 GROUP BY property_id) as o ON o.property_id = p.property_uid 
-            LEFT JOIN space_prod.b_details b ON o.property_id = b.contract_property_id
+            LEFT JOIN space_dev.b_details b ON o.property_id = b.contract_property_id
             -- WHERE b.business_uid = '600-000003'
             -- WHERE o.owner_uid = '110-000003'
             -- WHERE o.owner_uid = \'""" + user_id + """\';
@@ -1061,7 +1061,7 @@ def MaintenanceRequests(user_id):
                     END AS maintenance_status
             FROM (
                 SELECT * 
-                FROM space_prod.maintenanceRequests
+                FROM space_dev.maintenanceRequests
                 LEFT JOIN (
                     SELECT *,
                         CASE
@@ -1106,14 +1106,14 @@ def MaintenanceRequests(user_id):
                                 WHEN quote_status = "COMPLETED" THEN "80"     
                                 ELSE 0
                             END AS quote_rank
-                            FROM space_prod.maintenanceQuotes
+                            FROM space_dev.maintenanceQuotes
                             ) AS qr
                         GROUP BY quote_maintenance_request_id
                         ) AS qr_quoterank
                 ) AS quote_summary ON maintenance_request_uid = qmr_id
             ) AS quotes
-            LEFT JOIN ( SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-            LEFT JOIN space_prod.property_owner ON contract_property_id = property_id
+            LEFT JOIN ( SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+            LEFT JOIN space_dev.property_owner ON contract_property_id = property_id
             -- WHERE contract_business_id = \'""" + user_id + """\'
             -- WHERE contract_business_id = "600-000003"
             -- WHERE property_owner_id = "110-000003"
@@ -1151,9 +1151,9 @@ def MaintenanceDetails(user_id):
             SELECT *
             FROM (
                 SELECT * 
-                FROM space_prod.maintenanceRequests
-                LEFT JOIN space_prod.property_owner ON maintenance_property_id = property_id
-                LEFT JOIN ( SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                FROM space_dev.maintenanceRequests
+                LEFT JOIN space_dev.property_owner ON maintenance_property_id = property_id
+                LEFT JOIN ( SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
                 -- WHERE property_owner_id = '110-000007'
                 -- WHERE maintenance_property_id = '200-000084'
                 -- WHERE maintenance_assigned_business = '600-000010'  -- THIS DOESN"T WORK IN ACTUAL QUERY
@@ -1201,7 +1201,7 @@ def MaintenanceDetails(user_id):
                                 WHEN quote_status = "COMPLETED" THEN "80"     
                                 ELSE 0
                             END AS quote_rank
-                            FROM space_prod.maintenanceQuotes
+                            FROM space_dev.maintenanceQuotes
                             ) AS qr
                         GROUP BY quote_maintenance_request_id
                         ) AS qr_quoterank
@@ -1249,7 +1249,7 @@ def ProfileInfo(user_id):
                     'paymentMethod_billingzip', paymentMethod_billingzip,
                     'paymentMethod_status', paymentMethod_status
                     )) AS paymentMethods
-                    FROM space_prod.paymentMethods
+                    FROM space_dev.paymentMethods
                     GROUP BY paymentMethod_profile_id) as p ON {column} = paymentMethod_profile_id
             -- WHERE owner_uid = '110-000003'
             -- WHERE business_uid = '600-000003'
@@ -1259,11 +1259,11 @@ def ProfileInfo(user_id):
     # print(query)
 
     if user_id.startswith("110"):
-        query = query.format(column='owner_uid', table = 'space_prod.ownerProfileInfo')
+        query = query.format(column='owner_uid', table = 'space_dev.ownerProfileInfo')
     elif user_id.startswith("600"):
-        query = query.format(column='business_uid', table = 'space_prod.businessProfileInfo')
+        query = query.format(column='business_uid', table = 'space_dev.businessProfileInfo')
     elif user_id.startswith("350"):
-        query = query.format(column='tenant_uid', table = 'space_prod.tenantProfileInfo')
+        query = query.format(column='tenant_uid', table = 'space_dev.tenantProfileInfo')
     else:
         print("Invalid condition type")
         return None

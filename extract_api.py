@@ -19,7 +19,7 @@ class Extract_API(Resource):
             my_space_api_url = "https://raw.githubusercontent.com/infinite-options/myspace-backend/refs/heads/master/myspace_api.py"
             my_space_api_response = requests.get(my_space_api_url)
             if my_space_api_response.status_code != 200:
-                raise Exception('Error in reading my space_prod api file')
+                raise Exception('Error in reading my space_dev api file')
 
             my_space_api_content = my_space_api_response.text
             lines = my_space_api_content.splitlines()
@@ -97,7 +97,7 @@ class CleanUpDatabase(Resource):
             cursor.execute("""
                 SELECT TABLE_NAME 
                 FROM information_schema.TABLES 
-                WHERE TABLE_SCHEMA = 'space_prod' AND TABLE_TYPE = 'BASE TABLE';
+                WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
             """)
             tables = cursor.fetchall()
 

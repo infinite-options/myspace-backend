@@ -22,15 +22,15 @@ class Appliances(Resource):
             if uid[:3] == "200":
                 response = db.execute("""
                     SELECT *
-                    FROM space_prod.appliances 
-                    LEFT JOIN space_prod.lists ON appliance_type = list_uid
+                    FROM space_dev.appliances 
+                    LEFT JOIN space_dev.lists ON appliance_type = list_uid
                     -- WHERE appliance_property_id = '200-000001'
                     WHERE appliance_property_id= \'""" + uid + """\'
                     """)
                 print(response)
             elif uid[:3] == "ALL":
                 response = db.execute("""
-                    SELECT * FROM space_prod.appliances
+                    SELECT * FROM space_dev.appliances
                     """)
                 print(response)
 
@@ -50,7 +50,7 @@ class Appliances(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newApplianceUID = db.call('space_prod.new_appliance_uid')['result'][0]['new_id']
+            newApplianceUID = db.call('space_dev.new_appliance_uid')['result'][0]['new_id']
             key = {'appliance_uid': newApplianceUID}
             print("Appliance Key: ", key)
            
@@ -76,7 +76,7 @@ class Appliances(Resource):
             print("Add Appliance Payload: ", payload)  
 
             payload["appliance_uid"] = newApplianceUID  
-            response['Add Appliance'] = db.insert('space_prod.appliances', payload)
+            response['Add Appliance'] = db.insert('space_dev.appliances', payload)
             response['appliance_UID'] = newApplianceUID 
             response['Appliance Images Added'] = payload.get('appliance_images', "None")
             response['Appliance Documents Added'] = payload.get('appliance_documents', "None")
@@ -122,7 +122,7 @@ class Appliances(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['appliance_info'] = db.update('space_prod.appliances', key, payload)
+            response['appliance_info'] = db.update('space_dev.appliances', key, payload)
             print("Response:" , response)
             
         return response
@@ -134,7 +134,7 @@ class Appliances(Resource):
         with connect() as db:
             applianceQuery = ("""
                 DELETE 
-                FROM space_prod.appliances
+                FROM space_dev.appliances
                 -- WHERE appliance_uid = '060-000005'
                 WHERE appliance_uid = \'""" + uid + """\';
                 """)
@@ -181,7 +181,7 @@ class Appliances(Resource):
 #                     'appliances': json.dumps(existingApp)
 #                 }
 
-#                 response = db.update('space_prod.properties', primaryKey, updatedProperty)
+#                 response = db.update('space_dev.properties', primaryKey, updatedProperty)
 #             else:
 #                 response['message'] = 'No appliance'
 #                 response['code'] = 200
