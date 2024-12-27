@@ -189,7 +189,7 @@ ENDPOINT = os.getenv('ENDPOINT')
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
-class endPointTest_space_prod_db_CLASS(Resource):
+class endPointTest_db_CLASS(Resource):
     def get(self):
         dt = datetime.today()
         response = {}
