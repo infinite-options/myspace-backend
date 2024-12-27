@@ -139,6 +139,7 @@ def processImage(key, payload):
     # print("\nIn Process Image: ", payload)
     # print("Key Passed into processImage: ", key)
     response = {}
+    bucket = os.getenv('BUCKET_NAME')
     with connect() as db:
 
         if 'appliance_uid' in key:
@@ -421,7 +422,8 @@ def processImage(key, payload):
                 #  Delete from S3 Bucket
                 try:
                     # delete_key = image.split('io-pm/', 1)[1]
-                    delete_key = image.split('space-prod/', 1)[1]
+                    # delete_key = image.split('space-prod/', 1)[1]
+                    delete_key = image.split(f'{bucket}/', 1)[1]
                     # print("Delete key", delete_key)
                     deleteImage(delete_key)
                 except: 
@@ -452,6 +454,7 @@ def processDocument(key, payload):
     print("\nIn Process Documents: ", payload)
     print("Key Passed into processDocuments: ", key)
     response = {}
+    bucket = os.getenv('BUCKET_NAME')
     with connect() as db:
 
         if 'contract_uid' in key:
@@ -703,7 +706,8 @@ def processDocument(key, payload):
                 #  Delete from S3 Bucket
                 try:
                     # delete_key = document.split('io-pm/', 1)[1]
-                    delete_key = document.split('space-prod/', 1)[1]
+                    # delete_key = document.split('space-prod/', 1)[1]
+                    delete_key = document.split(f'{bucket}/', 1)[1]
                     # print("Delete key", delete_key)
                     deleteImage(delete_key)
                 except: 

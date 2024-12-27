@@ -20,15 +20,17 @@ from queries import RentPropertiesQuery, MaintenanceRequests
 
 def updateImages(imageFiles, property_uid):
     content = []
+    bucket = os.getenv('BUCKET_NAME')
     
     for filename in imageFiles:
     
         if type(imageFiles[filename]) == str:
     
             # bucket = 'io-pm'
-            bucket = os.getenv('BUCKET_NAME')
+            # bucket = os.getenv('BUCKET_NAME')
             # key = imageFiles[filename].split('/io-pm/')[1]
-            key = imageFiles[filename].split('/space-prod/')[1]
+            # key = imageFiles[filename].split('/space-prod/')[1]
+            key = imageFiles[filename].split(f'/{bucket}/')[1]
             data = s3.get_object(
                 Bucket=bucket,
                 Key=key
@@ -42,7 +44,8 @@ def updateImages(imageFiles, property_uid):
     
     s3Resource = boto3.resource('s3')
     # bucket = s3Resource.Bucket('io-pm')
-    bucket = s3Resource.Bucket('space-prod')
+    # bucket = s3Resource.Bucket('space-prod')
+    bucket = s3Resource.Bucket(f'{bucket}')
     bucket.objects.filter(Prefix=f'properties/{property_uid}/').delete()
     images = []
     for i in range(len(imageFiles.keys())):
