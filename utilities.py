@@ -11,7 +11,7 @@ class Utilities(Resource):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('space_dev.property_utility', where )
+            response = db.select('space_prod.property_utility', where )
         return response
 
     
@@ -49,7 +49,7 @@ class Utilities(Resource):
                     print("in connect")
                     
                     utilityQuery = ("""
-                        INSERT INTO space_dev.property_utility
+                        INSERT INTO space_prod.property_utility
                         SET utility_property_id = \'""" + property_uid_value + """\',
                         utility_type_id = \'""" + key + """\',
                         utility_payer_id = \'""" + value + """\';
@@ -97,7 +97,7 @@ class Utilities(Resource):
 
                     response = db.execute("""
                     SELECT *
-                    FROM space_dev.property_utility
+                    FROM space_prod.property_utility
                     -- WHERE utility_property_id = '200-000001'
                     WHERE utility_property_id= \'""" + key['property_uid'] + """\'
                     """)
@@ -129,7 +129,7 @@ class Utilities(Resource):
                                 # print("in connect")
                                 
                                 utilityQuery = ("""
-                                    UPDATE space_dev.property_utility
+                                    UPDATE space_prod.property_utility
                                     SET utility_payer_id = \'""" + responsibility + """\'
                                     WHERE utility_property_id = \'""" + key['property_uid'] + """\'
                                         AND utility_type_id = \'""" + property_utility + """\';
@@ -147,7 +147,7 @@ class Utilities(Resource):
                         # print("in connect")
                         
                         utilityQuery = ("""
-                            INSERT INTO space_dev.property_utility
+                            INSERT INTO space_prod.property_utility
                             SET utility_property_id = \'""" +  key['property_uid'] + """\',
                             utility_type_id = \'""" + property_utility + """\',
                             utility_payer_id = \'""" + responsibility + """\';

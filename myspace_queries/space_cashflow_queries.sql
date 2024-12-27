@@ -1,34 +1,34 @@
--- CREATE TABLE space_dev.bills AS
+-- CREATE TABLE space_prod.bills AS
 -- SELECT * FROM pm.bills;
 -- SELECT * FROM pm.leaseTenants;
 
-SELECT * FROM space_dev.users;
-SELECT * FROM space_dev.user_profile;
+SELECT * FROM space_prod.users;
+SELECT * FROM space_prod.user_profile;
 
-SELECT * FROM space_dev.ownerProfileInfo;
-SELECT * FROM space_dev.property_owner;
-SELECT * FROM space_dev.properties;
-SELECT * FROM space_dev.appliances;
-SELECT * FROM space_dev.maintenanceRequests;
-SELECT * FROM space_dev.maintenanceQuotes;
+SELECT * FROM space_prod.ownerProfileInfo;
+SELECT * FROM space_prod.property_owner;
+SELECT * FROM space_prod.properties;
+SELECT * FROM space_prod.appliances;
+SELECT * FROM space_prod.maintenanceRequests;
+SELECT * FROM space_prod.maintenanceQuotes;
 
-SELECT * FROM space_dev.tenantProfileInfo;
-SELECT * FROM space_dev.property_tenant;
-SELECT * FROM space_dev.lease_tenant;
-SELECT * FROM space_dev.leases;
+SELECT * FROM space_prod.tenantProfileInfo;
+SELECT * FROM space_prod.property_tenant;
+SELECT * FROM space_prod.lease_tenant;
+SELECT * FROM space_prod.leases;
 
-SELECT * FROM space_dev.businessProfileInfo;
-SELECT * FROM space_dev.contracts;
-SELECT * FROM space_dev.contractFees;
+SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_prod.contracts;
+SELECT * FROM space_prod.contractFees;
 
-SELECT * FROM space_dev.purchases;
-SELECT * FROM space_dev.payments;
-SELECT * FROM space_dev.bills;
-SELECT * FROM space_dev.lists;
-SELECT * FROM space_dev.property_utility;
+SELECT * FROM space_prod.purchases;
+SELECT * FROM space_prod.payments;
+SELECT * FROM space_prod.bills;
+SELECT * FROM space_prod.lists;
+SELECT * FROM space_prod.property_utility;
 
-SELECT * FROM space_dev.pp_details;
-SELECT * FROM space_dev.pp_status;
+SELECT * FROM space_prod.pp_details;
+SELECT * FROM space_prod.pp_status;
 
 -- CASHFLOW BY BY OWNER BY MONTH
 SELECT pp.*
@@ -39,12 +39,12 @@ FROM (
 		, sum(pay_amount) AS paid_amount
 		, IF (pur_amount_due <= sum(pay_amount), "PAID", "UNPAID") AS payment_status
 		, (pur_amount_due - sum(pay_amount)) AS delta
-	FROM space_dev.purchases
-	LEFT JOIN space_dev.payments ON pay_purchase_id = purchase_uid
+	FROM space_prod.purchases
+	LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 	GROUP BY purchase_uid
     ) AS pp
-LEFT JOIN space_dev.properties ON property_uid = pur_property_id
-LEFT JOIN space_dev.property_owner ON property_uid = property_id
+LEFT JOIN space_prod.properties ON property_uid = pur_property_id
+LEFT JOIN space_prod.property_owner ON property_uid = property_id
 WHERE property_owner_id = "110-000003"
 GROUP BY purchase_type;
 
@@ -78,7 +78,7 @@ AND (YEAR(pur.next_payment) = '2023')
 ORDER BY address,unit ASC;
 
 -- CASHFLOW BY OWNER BY YEAR
-SELECT * FROM space_dev.pp_status
+SELECT * FROM space_prod.pp_status
 WHERE pur_receiver = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023';
@@ -86,7 +86,7 @@ WHERE pur_receiver = '110-000003'
     
 -- WHAT DID AN OWNER RECEIVE
 -- CASHFLOW BY OWNER BY MONTH, BY YEAR
-SELECT * FROM space_dev.pp_details; 
+SELECT * FROM space_prod.pp_details; 
 
 SELECT purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, purchase_status
 , pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
@@ -98,7 +98,7 @@ SELECT purchase_uid, pur_timestamp, pur_property_id, purchase_type, pur_cf_type,
 , business_name, business_phone_number, business_email, business_services_fees, business_locations, business_address, business_unit, business_city, business_state, business_zip
 , lease_start, lease_end, lease_status, lease_rent, lease_rent_due_by, lease_rent_late_by, lease_rent_late_fee, lease_rent_perDay_late_fee, lease_early_end_date, lease_renew_status, lease_actual_rent, lease_effective_date, lt_responsibility
 , tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number 
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -115,7 +115,7 @@ SELECT -- * ,
 	, purchase_type, pur_cf_type
     , pur_amount_due, sum_paid_amount, payment_status, amt_remaining
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023';
@@ -128,7 +128,7 @@ SELECT -- * ,
     , pur_cf_type
     , SUM(pur_amount_due), SUM(sum_paid_amount), payment_status, SUM(amt_remaining)
     -- , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -142,7 +142,7 @@ SELECT -- * ,
 	, purchase_type, pur_cf_type
     , SUM(pur_amount_due), SUM(sum_paid_amount), payment_status, SUM(amt_remaining)
     -- , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -160,7 +160,7 @@ SELECT -- * ,
     , pur_cf_type
     , SUM(pur_amount_due), SUM(sum_paid_amount), payment_status, SUM(amt_remaining)
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -174,7 +174,7 @@ SELECT -- * ,
     , pur_cf_type
     , SUM(pur_amount_due), SUM(sum_paid_amount), payment_status, SUM(amt_remaining)
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -194,7 +194,7 @@ SELECT -- * ,
 	, pur_cf_type, purchase_type
     , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -207,7 +207,7 @@ SELECT -- * ,
 	, pur_cf_type, purchase_type
     , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -220,7 +220,7 @@ SELECT -- * ,
 	, pur_cf_type, purchase_type
     , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -238,7 +238,7 @@ SELECT -- * ,
     -- , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
     , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -252,7 +252,7 @@ SELECT -- * ,
 	, pur_cf_type -- , purchase_type
     , sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -260,7 +260,7 @@ WHERE owner_uid = '110-000003'
     GROUP BY property_address, property_unit, cf_month
     ORDER BY property_address ASC, property_unit ASC, pur_due_date ASC;
 
-SELECT * FROM space_dev.pp_details WHERE pur_property_id = "200-000006" AND purchase_type = "RENT" -- AND cf_month = "September";
+SELECT * FROM space_prod.pp_details WHERE pur_property_id = "200-000006" AND purchase_type = "RENT" -- AND cf_month = "September";
    ;
    
 -- ALL REVENUE TRANSACTIONS AFFECTING A PARTICULAR OWNER BY PROPERTY BY MONTH BY PURCHASE TYPE
@@ -269,7 +269,7 @@ SELECT -- * ,
 	, pur_cf_type, purchase_type
     , sum(pur_amount_due), sum(sum_paid_amount), sum(amt_remaining) -- , payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND cf_year = '2023'
 	AND purchase_status != 'DELETED'
@@ -291,7 +291,7 @@ SELECT -- * ,
 	, pur_cf_type, purchase_type
     , pur_amount_due, sum_paid_amount, amt_remaining, payment_status
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND pur_due_date > DATE_SUB(NOW(), INTERVAL 365 DAY)
 	AND purchase_status != 'DELETED'
@@ -317,7 +317,7 @@ SELECT -- * ,
 	, purchase_type, pur_cf_type
     , pur_amount_due, sum_paid_amount, payment_status, amt_remaining
     , property_address, property_unit
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -327,7 +327,7 @@ ORDER BY pur_due_date ASC;
 
 -- CF BY CATEGORY
 SELECT * 
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE owner_uid = '110-000003'
 	AND purchase_status != 'DELETED'
     AND cf_year = '2023'
@@ -343,9 +343,9 @@ SELECT -- *
     , property_uid, property_address, property_unit, property_city, property_state, property_zip
     , purchase_type, pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due, sum_paid_amount, payment_status
     , purchase_status, pur_notes, pur_description, pur_receiver, pur_initiator, pur_payer
-FROM space_dev.properties
-LEFT JOIN space_dev.property_owner ON property_uid = property_id
-LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
+FROM space_prod.properties
+LEFT JOIN space_prod.property_owner ON property_uid = property_id
+LEFT JOIN space_prod.pp_status ON property_uid = pur_property_id;
 
 
 
@@ -358,7 +358,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type -- , purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE receiver_profile_uid = '110-000003'
 		-- receiver_profile_uid = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -373,7 +373,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type -- , purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE receiver_profile_uid = '110-000003'
 		-- receiver_profile_uid = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -389,7 +389,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type, purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE receiver_profile_uid = '110-000003'
 		-- receiver_profile_uid = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -427,9 +427,9 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 -- 		, pur_cf_type, purchase_type
 -- 		, pur_amount_due, total_paid, amt_remaining, payment_status
 -- 		, property_uid, property_address, property_unit
--- 		, space_dev.bills.*
-	FROM space_dev.pp_details
-	LEFT JOIN space_dev.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+-- 		, space_prod.bills.*
+	FROM space_prod.pp_details
+	LEFT JOIN space_prod.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
 	WHERE receiver_profile_uid = '110-000003'
 		-- receiver_profile_uid = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -445,7 +445,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type -- , purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE pur_payer = '110-000003'
 		-- pur_payer = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -461,7 +461,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type -- , purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE pur_payer = '110-000003'
 		-- pur_payer = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -476,7 +476,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type, purchase_type
 		, sum(pur_amount_due), sum(total_paid), sum(amt_remaining) -- , payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE pur_payer = '110-000003'
 		-- pur_payer = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -492,9 +492,9 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type, purchase_type
 		, pur_amount_due, total_paid, amt_remaining, payment_status
 		, property_address, property_unit
-		, space_dev.bills.*
-	FROM space_dev.pp_details
-	LEFT JOIN space_dev.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
+		, space_prod.bills.*
+	FROM space_prod.pp_details
+	LEFT JOIN space_prod.bills ON pur_bill_id = bill_uid AND pur_bill_id IS NOT NULL
 	WHERE pur_payer = '110-000003'
 		-- pur_payer = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -509,7 +509,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 		, pur_cf_type, purchase_type
 		, pur_amount_due, total_paid, amt_remaining, payment_status
 		, property_address, property_unit
-	FROM space_dev.pp_details
+	FROM space_prod.pp_details
 	WHERE receiver_profile_uid = '110-000003'
 		-- receiver_profile_uid = \'""" + user_id + """\'
 		AND STR_TO_DATE(pur_due_date, '%m-%d-%Y') > DATE_SUB(NOW(), INTERVAL 365 DAY)
@@ -527,7 +527,7 @@ LEFT JOIN space_dev.pp_status ON property_uid = pur_property_id;
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "EXPECTED REVENUE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '110-000003'
   AND pur_cf_type = 'revenue'
 
@@ -536,7 +536,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "ACTUAL REVENUE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '110-000003'
   AND pur_cf_type = 'revenue'
   AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
@@ -546,7 +546,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "EXPECTED EXPENSE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '110-000003'
   AND pur_cf_type = 'expense'
   
@@ -555,7 +555,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "ACTUAL EXPENSE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '110-000003'
   AND pur_cf_type = 'expense'
   AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
@@ -571,7 +571,7 @@ WHERE pur_payer = '110-000003'
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "EXPECTED REVENUE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'expense'
 
@@ -580,7 +580,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "ACTUAL REVENUE" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'expense'
   AND payment_status IN ("PAID", "PARTIALLY PAID", "PAID LATE")
@@ -590,7 +590,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "MAINTENANCE EXPECTED EXPENSE PAID" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '600-000003'
   AND pur_cf_type = 'expense'
   AND purchase_type = 'MAINTENANCE'
@@ -601,7 +601,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "RENT EXPECTED EXPENSE PAID" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '600-000003'
   AND pur_cf_type = 'revenue'
   AND purchase_type = 'RENT'  
@@ -611,7 +611,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "MAINTENANCE EXPECTED REVENUE RECEIVED" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'expense'
   AND purchase_type = 'MAINTENANCE'
@@ -622,7 +622,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "RENT EXPECTED REVENUE RECEIVED" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'revenue'
   AND purchase_type = 'RENT'  
@@ -632,7 +632,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "MAINTENANCE ACTUAL EXPENSE PAID" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '600-000003'
   AND pur_cf_type = 'expense'
   AND purchase_type = 'MAINTENANCE'
@@ -644,7 +644,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "RENT ACTUAL EXPENSE PAID" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_payer = '600-000003'
   AND pur_cf_type = 'revenue'
   AND purchase_type = 'RENT'  
@@ -655,7 +655,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "MAINTENANCE ACTUAL REVENUE RECEIVED" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'expense'
   AND purchase_type = 'MAINTENANCE'
@@ -667,7 +667,7 @@ UNION
 SELECT pur_cf_type, pur_receiver, pur_payer
 	, SUM(pur_amount_due) AS cf
     , "RENT ACTUAL REVENUE RECEIVED" AS cf_type
-FROM space_dev.pp_details
+FROM space_prod.pp_details
 WHERE pur_receiver = '600-000003'
   AND pur_cf_type = 'revenue'
   AND purchase_type = 'RENT'

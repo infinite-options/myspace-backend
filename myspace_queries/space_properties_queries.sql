@@ -1,46 +1,46 @@
--- CREATE TABLE space_dev.bills AS
+-- CREATE TABLE space_prod.bills AS
 -- SELECT * FROM pm.bills;
 -- SELECT * FROM pm.leaseTenants;
 
-SELECT * FROM space_dev.users;
-SELECT * FROM space_dev.user_profile;
-SELECT * FROM space_dev.businessProfileInfo;
-SELECT * FROM space_dev.tenantProfileInfo;
-SELECT * FROM space_dev.ownerProfileInfo;
-SELECT * FROM space_dev.property_owner;
-SELECT * FROM space_dev.properties;
-SELECT * FROM space_dev.appliances;
-SELECT * FROM space_dev.maintenanceRequests;
-SELECT * FROM space_dev.maintenanceQuotes;
+SELECT * FROM space_prod.users;
+SELECT * FROM space_prod.user_profile;
+SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_prod.tenantProfileInfo;
+SELECT * FROM space_prod.ownerProfileInfo;
+SELECT * FROM space_prod.property_owner;
+SELECT * FROM space_prod.properties;
+SELECT * FROM space_prod.appliances;
+SELECT * FROM space_prod.maintenanceRequests;
+SELECT * FROM space_prod.maintenanceQuotes;
 
-SELECT * FROM space_dev.tenantProfileInfo;
-SELECT * FROM space_dev.property_tenant;
-SELECT * FROM space_dev.lease_tenant;
-SELECT * FROM space_dev.leases;
+SELECT * FROM space_prod.tenantProfileInfo;
+SELECT * FROM space_prod.property_tenant;
+SELECT * FROM space_prod.lease_tenant;
+SELECT * FROM space_prod.leases;
 
-SELECT * FROM space_dev.businessProfileInfo;
-SELECT * FROM space_dev.contracts;
-SELECT * FROM space_dev.contractFees;
+SELECT * FROM space_prod.businessProfileInfo;
+SELECT * FROM space_prod.contracts;
+SELECT * FROM space_prod.contractFees;
 
-SELECT * FROM space_dev.purchases;
-SELECT * FROM space_dev.payments;
-SELECT * FROM space_dev.bills;
-SELECT * FROM space_dev.lists;
-SELECT * FROM space_dev.property_utility;
+SELECT * FROM space_prod.purchases;
+SELECT * FROM space_prod.payments;
+SELECT * FROM space_prod.bills;
+SELECT * FROM space_prod.lists;
+SELECT * FROM space_prod.property_utility;
 
 
 
 -- PROPERTIES BY OWNER
-SELECT * FROM space_dev.p_details
+SELECT * FROM space_prod.p_details
 WHERE  contract_status = 'ACTIVE'
 	AND owner_uid = '110-000003';
 
     
 
 -- PROPERTIES OWNED BY A USER
-SELECT * FROM space_dev.ownerProfileInfo;
-SELECT * FROM space_dev.property_owner;
-SELECT * FROM space_dev.properties;
+SELECT * FROM space_prod.ownerProfileInfo;
+SELECT * FROM space_prod.property_owner;
+SELECT * FROM space_prod.properties;
 
 -- PROPERTIES BY OWNER
 SELECT property_uid, property_available_to_rent, property_active_date, property_address, property_unit, property_city, property_state, property_zip, property_type
@@ -52,14 +52,14 @@ SELECT property_uid, property_available_to_rent, property_active_date, property_
 	, business_name, business_phone_number, business_email
     , purchases.*
     , payments.*
-FROM space_dev.properties
-LEFT JOIN space_dev.property_owner ON property_id = property_uid
-LEFT JOIN space_dev.ownerProfileInfo ON property_owner_id = owner_uid
-LEFT JOIN space_dev.leases ON lease_property_id = property_uid
-LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
-LEFT JOIN space_dev.businessProfileInfo ON contract_business_id = business_uid
-LEFT JOIN space_dev.purchases ON pur_property_id = property_uid
-LEFT JOIN space_dev.payments ON pay_purchase_id = purchase_uid
+FROM space_prod.properties
+LEFT JOIN space_prod.property_owner ON property_id = property_uid
+LEFT JOIN space_prod.ownerProfileInfo ON property_owner_id = owner_uid
+LEFT JOIN space_prod.leases ON lease_property_id = property_uid
+LEFT JOIN space_prod.contracts ON contract_property_id = property_uid
+LEFT JOIN space_prod.businessProfileInfo ON contract_business_id = business_uid
+LEFT JOIN space_prod.purchases ON pur_property_id = property_uid
+LEFT JOIN space_prod.payments ON pay_purchase_id = purchase_uid
 WHERE property_owner_id = '110-000003';
 
 
@@ -68,17 +68,17 @@ WHERE property_owner_id = '110-000003';
 
 
 -- OWNER ADDS NEW PROPERTY
-	SELECT * FROM space_dev.properties;
-	SELECT * FROM space_dev.property_owner;
+	SELECT * FROM space_prod.properties;
+	SELECT * FROM space_prod.property_owner;
 
 -- ADDS RELATIONSHIP BETWEEN PROPERTY AND OWNER
-INSERT INTO space_dev.property_owner
+INSERT INTO space_prod.property_owner
 SET property_id = "200-000064"
 	, property_owner_id = "100-000003"
 	, po_owner_percent = NULL;
 
 -- ADDS NEW PROPERTY DETAILS    
-INSERT INTO space_dev.properties
+INSERT INTO space_prod.properties
 SET property_uid = "200-000064"
 	, property_available_to_rent = 0
 	, property_active_date = CURRENT_TIMESTAMP()
@@ -105,7 +105,7 @@ SET property_uid = "200-000064"
 	, property_notes = "Test Again";
 
  -- ADDS NEW PROPERTY DETAILS 
-INSERT INTO space_dev.properties
+INSERT INTO space_prod.properties
 SET property_uid = '200-000065'
 	, property_available_to_rent =  '0'
 	, property_active_date = '8/1/2023'
@@ -131,6 +131,6 @@ SET property_uid = '200-000065'
 	, property_notes = 'This is a Really Tiny Home';
     
 -- DELETE PROPERTY FROM PROPERTY-OWNER TABLE
-	DELETE FROM space_dev.property_owner
+	DELETE FROM space_prod.property_owner
 	WHERE property_id = '200-000065'
 		AND property_owner_id = '100-000003';  

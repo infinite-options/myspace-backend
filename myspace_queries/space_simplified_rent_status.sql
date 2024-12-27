@@ -36,7 +36,7 @@ SELECT -- *,
 			WHEN ISNULL(lease_status) THEN 'VACANT'
 			ELSE purchase_status
 		END AS rent_status
-FROM space_dev.p_details
+FROM space_prod.p_details
 LEFT JOIN (
 		-- PROPERTY RENT STATUS
 		-- GROUP BY PROPERTY
@@ -58,14 +58,14 @@ LEFT JOIN (
 				, (pur_amount_due - total_paid) AS amt_remaining
 				, MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
 				, YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
-			FROM space_dev.purchases
+			FROM space_prod.purchases
 			LEFT JOIN (
 				-- GET PAYMENTS BY PURCHASE ID
 				SELECT pay_purchase_id
 					-- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
 					, MAX(payment_date) AS latest_pay_date
 					, SUM(pay_amount) AS total_paid
-				FROM space_dev.payments
+				FROM space_prod.payments
 				GROUP BY pay_purchase_id
 				) pay  ON pay_purchase_id = purchase_uid
 			) pp 
@@ -91,7 +91,7 @@ FROM (
 			WHEN ISNULL(lease_status) THEN 'VACANT'
 			ELSE purchase_status
 		END AS rent_status
-	FROM space_dev.p_details
+	FROM space_prod.p_details
 	LEFT JOIN (
 			-- PROPERTY RENT STATUS
 			-- GROUP BY PROPERTY
@@ -105,14 +105,14 @@ FROM (
 				SELECT *
 					, MONTH(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_month
 					, YEAR(STR_TO_DATE(pur_due_date, '%m-%d-%Y'))AS cf_year
-				FROM space_dev.purchases
+				FROM space_prod.purchases
 				LEFT JOIN (
 					-- GET PAYMENTS BY PURCHASE ID
 					SELECT pay_purchase_id
 						-- , pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret
 						, MAX(payment_date) AS latest_pay_date
 						, SUM(pay_amount) AS total_paid
-					FROM space_dev.payments
+					FROM space_prod.payments
 					GROUP BY pay_purchase_id
 					) pay  ON pay_purchase_id = purchase_uid
 				) pp 

@@ -28,7 +28,7 @@ class Contacts(Resource):
                 query = db.execute(""" 
                     -- FIND ALL CURRENT BUSINESS CONTACTS
                         SELECT business_type
-                        FROM space_dev.businessProfileInfo
+                        FROM space_prod.businessProfileInfo
                         WHERE business_uid = \'""" + uid + """\';
                         """)
                 
@@ -80,9 +80,9 @@ class Contacts(Resource):
                                         )) AS properties
                                 FROM (
                                     SELECT * 
-                                    FROM space_dev.b_details
-                                    LEFT JOIN space_dev.properties ON property_uid = contract_property_id
-                                    LEFT JOIN space_dev.o_details ON contract_property_id = property_id
+                                    FROM space_prod.b_details
+                                    LEFT JOIN space_prod.properties ON property_uid = contract_property_id
+                                    LEFT JOIN space_prod.o_details ON contract_property_id = property_id
                                     -- ADD RENT STATUS
                                     LEFT JOIN (
                                         SELECT  -- *,
@@ -90,7 +90,7 @@ class Contacts(Resource):
                                             , SUM(total_paid) AS total_paid
                                             , SUM(pur_amount_due) AS pur_amount_due
                                             , SUM(amt_remaining) AS amt_remaining
-                                        FROM space_dev.pp_status
+                                        FROM space_prod.pp_status
                                         WHERE purchase_type = "Rent"
                                             AND cf_month_num = MONTH(CURRENT_DATE)
                                             AND cf_year = YEAR(CURRENT_DATE)
@@ -101,7 +101,7 @@ class Contacts(Resource):
                                     LEFT JOIN (
                                         SELECT -- *, 
                                             maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
-                                        FROM space_dev.maintenanceRequests
+                                        FROM space_prod.maintenanceRequests
                                         WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
                                         GROUP BY maintenance_property_id
                                         ) AS m ON maintenance_property_id = property_uid
@@ -128,7 +128,7 @@ class Contacts(Resource):
                                     , pur_receiver -- , pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, payment_uid, pay_purchase_id, pay_amount, payment_notes, pay_charge_id, payment_type, payment_date, payment_verify, paid_by, payment_intent, payment_method, payment_date_cleared, payment_client_secret, latest_date
                                     , SUM(total_paid) AS total_paid -- , payment_status, amt_remaining
                                     , cf_month, cf_month_num, cf_year
-                                FROM space_dev.pp_status
+                                FROM space_prod.pp_status
                                 -- WHERE pur_payer = "600-000003"
                                 WHERE pur_payer = \'""" + uid + """\'
                                 GROUP BY pur_receiver, cf_month, cf_year
@@ -145,7 +145,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = owner_uid
                             """)
@@ -207,10 +207,10 @@ class Contacts(Resource):
                                         , property_favorite_image
                                         , r.*
                                         , maintenance_count
-                                    FROM space_dev.b_details
-                                    LEFT JOIN space_dev.leases ON contract_property_id = lease_property_id
-                                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
-                                    LEFT JOIN space_dev.properties ON contract_property_id = property_uid
+                                    FROM space_prod.b_details
+                                    LEFT JOIN space_prod.leases ON contract_property_id = lease_property_id
+                                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
+                                    LEFT JOIN space_prod.properties ON contract_property_id = property_uid
 
                                     -- ADD RENT BY PROPERTY BY TENANT
                                     LEFT JOIN (
@@ -233,7 +233,7 @@ class Contacts(Resource):
                                                 , SUM(total_paid) AS total_paid
                                                 , SUM(pur_amount_due) AS pur_amount_due
                                                 , SUM(amt_remaining) AS amt_remaining
-                                            FROM space_dev.pp_status
+                                            FROM space_prod.pp_status
                                             WHERE purchase_type = "Rent"
                                         -- 		AND cf_month_num = MONTH(CURRENT_DATE)
                                         -- 		AND cf_year = YEAR(CURRENT_DATE)
@@ -248,7 +248,7 @@ class Contacts(Resource):
                                     LEFT JOIN (
                                         SELECT -- *, 
                                             maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
-                                        FROM space_dev.maintenanceRequests
+                                        FROM space_prod.maintenanceRequests
                                         WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
                                         GROUP BY maintenance_property_id
                                         ) AS m ON maintenance_property_id = property_uid
@@ -270,7 +270,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                     """)
@@ -331,10 +331,10 @@ class Contacts(Resource):
                                             WHEN quote_status IN ("CANCELLED", "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED")      THEN "ARCHIVE"
                                             ELSE quote_status
                                         END AS maintenance_status
-                                    FROM space_dev.m_details
-                                    LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid
-                                    LEFT JOIN (SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") AS C ON contract_property_id = property_uid
-                                    LEFT JOIN space_dev.businessProfileInfo ON business_uid = quote_business_id
+                                    FROM space_prod.m_details
+                                    LEFT JOIN space_prod.properties ON maintenance_property_id = property_uid
+                                    LEFT JOIN (SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") AS C ON contract_property_id = property_uid
+                                    LEFT JOIN space_prod.businessProfileInfo ON business_uid = quote_business_id
                                     -- WHERE quote_business_id = '600-000012' 
                                     -- WHERE contract_business_id = '600-000051' 
                                     -- WHERE quote_business_id = \'""" + uid + """\'
@@ -350,7 +350,7 @@ class Contacts(Resource):
                                             'paymentMethod_name', paymentMethod_name
                                         )
                                     ) AS payment_method
-                                    FROM space_dev.paymentMethods
+                                    FROM space_prod.paymentMethods
                                     GROUP BY paymentMethod_profile_id
                                     ) AS pm ON pm.paymentMethod_profile_id = quote_business_id
                                 GROUP BY maintenance_status, quote_business_id
@@ -369,8 +369,8 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS FOR MANAGEMENT
                             SELECT * 
-                            FROM space_dev.employees
-                            LEFT JOIN space_dev.businessProfileInfo ON employee_business_id = business_uid
+                            FROM space_prod.employees
+                            LEFT JOIN space_prod.businessProfileInfo ON employee_business_id = business_uid
                             LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
@@ -381,7 +381,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = employee_uid
                             -- WHERE business_uid = '600-000012';
@@ -434,10 +434,10 @@ class Contacts(Resource):
                                     )
                                 ) AS properties,
                             payment_method
-                        FROM space_dev.t_details as t 
-                        LEFT JOIN space_dev.leases as l ON t.lt_lease_id = l.lease_uid
-                        LEFT JOIN space_dev.properties ON lease_property_id = property_uid
-                        LEFT JOIN space_dev.m_details as m ON l.lease_property_id = m.maintenance_property_id
+                        FROM space_prod.t_details as t 
+                        LEFT JOIN space_prod.leases as l ON t.lt_lease_id = l.lease_uid
+                        LEFT JOIN space_prod.properties ON lease_property_id = property_uid
+                        LEFT JOIN space_prod.m_details as m ON l.lease_property_id = m.maintenance_property_id
                         LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
@@ -447,7 +447,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                         -- WHERE quote_business_id = '600-000012'
@@ -477,8 +477,8 @@ class Contacts(Resource):
                             b.business_photo_url,
                             b.business_ein_number,
                             payment_method
-                        FROM space_dev.m_details as m
-                        LEFT JOIN space_dev.b_details as b ON m.maintenance_property_id = b.contract_property_id
+                        FROM space_prod.m_details as m
+                        LEFT JOIN space_prod.b_details as b ON m.maintenance_property_id = b.contract_property_id
                         LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
@@ -489,7 +489,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = business_uid
                         -- WHERE quote_business_id = '600-000012'
@@ -507,8 +507,8 @@ class Contacts(Resource):
                     profileQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS FOR MAINTENANCE
                             SELECT * 
-                            FROM space_dev.employees
-                            LEFT JOIN space_dev.businessProfileInfo ON employee_business_id = business_uid
+                            FROM space_prod.employees
+                            LEFT JOIN space_prod.businessProfileInfo ON employee_business_id = business_uid
                             -- WHERE business_uid = '600-000012';
                             WHERE business_uid = \'""" + uid + """\'
                     """)
@@ -555,11 +555,11 @@ class Contacts(Resource):
                             , payments.*
                             , m.*
                             , r.*
-                        FROM space_dev.property_owner
-                        LEFT JOIN space_dev.properties ON property_id = property_uid
+                        FROM space_prod.property_owner
+                        LEFT JOIN space_prod.properties ON property_id = property_uid
                         -- LEFT JOIN (SELECT * FROM contracts WHERE contract_status = 'ACTIVE') AS c ON contract_property_id = property_id
-                        LEFT JOIN space_dev.contracts ON contract_property_id = property_id
-                        LEFT JOIN space_dev.businessProfileInfo ON business_uid = contract_business_id
+                        LEFT JOIN space_prod.contracts ON contract_property_id = property_id
+                        LEFT JOIN space_prod.businessProfileInfo ON business_uid = contract_business_id
                         -- PROPERTY MANAGER PAYMENT METHODS
                         LEFT JOIN (
                             SELECT -- *,
@@ -569,7 +569,7 @@ class Contacts(Resource):
                                     'paymentMethod_name', paymentMethod_name,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS payment_method
-                            FROM space_dev.paymentMethods
+                            FROM space_prod.paymentMethods
                             GROUP BY paymentMethod_profile_id
                         ) as pm ON paymentMethod_profile_id = business_uid
                         -- AGGREGATED PAYMENTS BY PROPERTY MANAGER 
@@ -588,7 +588,7 @@ class Contacts(Resource):
                                     pur_payer, cf_month, cf_year
                                     , SUM(total_paid) AS total_paid
                                     , SUM(pur_amount_due) AS pur_amount_due
-                                FROM space_dev.pp_status
+                                FROM space_prod.pp_status
                                 -- WHERE pur_receiver = '110-000003'
                                 WHERE pur_receiver = \'""" + uid + """\'
                                 GROUP BY cf_month, cf_year, pur_payer
@@ -600,7 +600,7 @@ class Contacts(Resource):
                         LEFT JOIN (
                             SELECT -- *, 
                                 maintenance_property_id, COUNT(maintenance_property_id) AS maintenance_count
-                            FROM space_dev.maintenanceRequests
+                            FROM space_prod.maintenanceRequests
                             WHERE maintenance_request_status IN ('NEW','PROCESSING','SCHEDULED')
                             GROUP BY maintenance_property_id
                             ) AS m ON maintenance_property_id = property_id
@@ -614,7 +614,7 @@ class Contacts(Resource):
                                 WHEN MIN(pur_status_value) = 5 THEN "PAID"
                                 ELSE purchase_status
                             END AS purchase_status
-                            FROM space_dev.pp_status
+                            FROM space_prod.pp_status
                             WHERE purchase_type = "Rent"
                                 AND cf_month_num = MONTH(CURRENT_DATE)
                                 AND cf_year = YEAR(CURRENT_DATE)
@@ -662,10 +662,10 @@ class Contacts(Resource):
                                 )) AS properties
                     FROM (
                         SELECT * 
-                        FROM space_dev.o_details
-                        LEFT JOIN space_dev.leases ON lease_property_id = property_id
-                        LEFT JOIN space_dev.properties ON property_uid = property_id
-                        LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                        FROM space_prod.o_details
+                        LEFT JOIN space_prod.leases ON lease_property_id = property_id
+                        LEFT JOIN space_prod.properties ON property_uid = property_id
+                        LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
                         LEFT JOIN (
                             SELECT -- *,
                                 paymentMethod_profile_id
@@ -674,7 +674,7 @@ class Contacts(Resource):
                                     'paymentMethod_name', paymentMethod_name,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS payment_method
-                            FROM space_dev.paymentMethods
+                            FROM space_prod.paymentMethods
                             GROUP BY paymentMethod_profile_id
                             ) AS pm ON paymentMethod_profile_id = tenant_uid
                         -- ACTUAL PAYMENTS BY PROPERTY 
@@ -699,7 +699,7 @@ class Contacts(Resource):
                                     , SUM(amt_remaining) AS amt_remaining, cf_month, cf_month_num, cf_year
                                     , SUM(total_paid) AS total_paid
                                     , SUM(pur_amount_due) AS pur_amount_due
-                                FROM space_dev.pp_status
+                                FROM space_prod.pp_status
                                 WHERE LEFT(pur_payer,3) = '350'
                                 GROUP BY pur_payer, pur_property_id, cf_month, cf_year
                                 ORDER BY pur_property_id, cf_month_num, cf_year
@@ -752,10 +752,10 @@ class Contacts(Resource):
                                     'property_state', property_state,
                                     'property_zip', property_zip
                                     )) AS properties
-                        FROM space_dev.lease_tenant
-                        LEFT JOIN space_dev.leases ON lt_lease_id = lease_uid
-                        LEFT JOIN space_dev.properties ON lease_property_id = property_uid
-                        LEFT JOIN space_dev.b_details ON lease_property_id = contract_property_id
+                        FROM space_prod.lease_tenant
+                        LEFT JOIN space_prod.leases ON lt_lease_id = lease_uid
+                        LEFT JOIN space_prod.properties ON lease_property_id = property_uid
+                        LEFT JOIN space_prod.b_details ON lease_property_id = contract_property_id
                         -- WHERE lt_tenant_id = "350-000080"
                         -- WHERE lt_tenant_id = "350-000002"
                         WHERE lt_tenant_id = \'""" + uid + """\'
@@ -771,7 +771,7 @@ class Contacts(Resource):
                                 'paymentMethod_name', paymentMethod_name,
                                 'paymentMethod_status', paymentMethod_status
                                 )) AS payment_method
-                        FROM space_dev.paymentMethods
+                        FROM space_prod.paymentMethods
                         GROUP BY paymentMethod_profile_id
                     ) as pm ON paymentMethod_profile_id = business_uid
                     """)
@@ -824,11 +824,11 @@ class Contacts(Resource):
                                     WHEN quote_status IN ("CANCELLED", "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED")      THEN "ARCHIVE"
                                     ELSE quote_status
                                 END AS maintenance_status
-                            FROM space_dev.m_details
-                            LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid
-                            LEFT JOIN space_dev.businessProfileInfo ON business_uid = quote_business_id
-                            LEFT JOIN space_dev.leases ON lease_property_id = property_uid
-                            LEFT JOIN space_dev.lease_tenant ON lt_lease_id = lease_uid
+                            FROM space_prod.m_details
+                            LEFT JOIN space_prod.properties ON maintenance_property_id = property_uid
+                            LEFT JOIN space_prod.businessProfileInfo ON business_uid = quote_business_id
+                            LEFT JOIN space_prod.leases ON lease_property_id = property_uid
+                            LEFT JOIN space_prod.lease_tenant ON lt_lease_id = lease_uid
                             ) AS ms
                             WHERE maintenance_status IN ("ACCEPTED", "SCHEDULED") AND
                                 !ISNULL(maintenance_assigned_business) AND
@@ -847,7 +847,7 @@ class Contacts(Resource):
                                 'paymentMethod_name', paymentMethod_name,
                                 'paymentMethod_status', paymentMethod_status
                                 )) AS payment_method
-                        FROM space_dev.paymentMethods
+                        FROM space_prod.paymentMethods
                         GROUP BY paymentMethod_profile_id
                     ) as pm ON paymentMethod_profile_id = quote_business_id
                 """)
@@ -886,7 +886,7 @@ class Contacts(Resource):
                             business_photo_url AS contact_photo_url,
                             business_ein_number as contact_ein_number,
                             payment_method AS payment_method                             
-                        FROM space_dev.businessProfileInfo
+                        FROM space_prod.businessProfileInfo
                         LEFT JOIN (
                                 SELECT -- *,
                                     paymentMethod_profile_id
@@ -897,7 +897,7 @@ class Contacts(Resource):
                                         'paymentMethod_name', paymentMethod_name
                                     )
                                 ) AS payment_method
-                                FROM space_dev.paymentMethods
+                                FROM space_prod.paymentMethods
                                 GROUP BY paymentMethod_profile_id
                                 ) AS pm ON pm.paymentMethod_profile_id = business_uid
                         WHERE business_type = 'MAINTENANCE';

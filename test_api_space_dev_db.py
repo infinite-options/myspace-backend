@@ -16,7 +16,7 @@ def connect():
         user=os.getenv('RDS_USER'),
         port=int(os.getenv('RDS_PORT')),
         passwd=os.getenv('RDS_PW'),
-        db='space_dev',
+        db='space_prod',
         # db=os.getenv('RDS_DB'),
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
@@ -189,7 +189,7 @@ ENDPOINT = os.getenv('ENDPOINT')
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
-class endPointTest_space_dev_db_CLASS(Resource):
+class endPointTest_space_prod_db_CLASS(Resource):
     def get(self):
         dt = datetime.today()
         response = {}
@@ -197,81 +197,81 @@ class endPointTest_space_dev_db_CLASS(Resource):
         try:
             print("\n\n*** Inserting temporary data into the database ***\n")
             insert_property_query = """
-                                        INSERT INTO `space_dev`.`properties` (`property_uid`, `property_available_to_rent`, `property_active_date`, `property_listed_date`, `property_address`, `property_city`, `property_state`, `property_zip`, `property_longitude`, `property_latitude`, `property_type`, `property_num_beds`, `property_num_baths`, `property_value`, `property_value_year`, `property_area`, `property_listed_rent`, `property_deposit`, `property_pets_allowed`, `property_deposit_for_rent`, `property_featured`) 
+                                        INSERT INTO `space_prod`.`properties` (`property_uid`, `property_available_to_rent`, `property_active_date`, `property_listed_date`, `property_address`, `property_city`, `property_state`, `property_zip`, `property_longitude`, `property_latitude`, `property_type`, `property_num_beds`, `property_num_baths`, `property_value`, `property_value_year`, `property_area`, `property_listed_rent`, `property_deposit`, `property_pets_allowed`, `property_deposit_for_rent`, `property_featured`) 
                                         VALUES ('200-000000', '1', '10-28-2024', '10-28-2024', '123 Test Apt', 'San Jose', 'CA', '95119', '-121.7936071000', '37.2346668000', 'Single Family', '4', '2', '1500000', '2013', '2100', '2500', '1200', '1', '0', 'False');
                                     """
             
             insert_property_owner_query =   """
-                                                INSERT INTO `space_dev`.`property_owner` (`property_id`, `property_owner_id`, `po_owner_percent`) 
+                                                INSERT INTO `space_prod`.`property_owner` (`property_id`, `property_owner_id`, `po_owner_percent`) 
                                                 VALUES ('200-000000', '110-000000', '1');
                                             """
             
             insert_users_query = """
-                                    INSERT INTO `space_dev`.`users` (`user_uid`, `first_name`, `last_name`, `phone_number`, `email`, `role`, `notifications`, `dark_mode`, `cookies`) 
+                                    INSERT INTO `space_prod`.`users` (`user_uid`, `first_name`, `last_name`, `phone_number`, `email`, `role`, `notifications`, `dark_mode`, `cookies`) 
                                     VALUES ('100-000000', 'Test', 'Account', '(000) 000-0000', 'test@gmail.com', 'OWNER,MANAGER,TENANT,MAINTENANCE', 'true', 'false', 'true');
                                 """
             
             insert_business_profile_query = """
-                                                INSERT INTO `space_dev`.`businessProfileInfo` (`business_uid`, `business_user_id`, `business_type`, `business_name`, `business_phone_number`, `business_email`) 
+                                                INSERT INTO `space_prod`.`businessProfileInfo` (`business_uid`, `business_user_id`, `business_type`, `business_name`, `business_phone_number`, `business_email`) 
                                                 VALUES ('600-000000', '100-000000', 'MANAGEMENT', 'Reserved For Test', '(000) 000-0000', 'test@gmail.com');
                                             """
 
             insert_owner_profile_query = """
-                                            INSERT INTO `space_dev`.`ownerProfileInfo` (`owner_uid`, `owner_user_id`, `owner_first_name`, `owner_last_name`, `owner_phone_number`, `owner_email`) 
+                                            INSERT INTO `space_prod`.`ownerProfileInfo` (`owner_uid`, `owner_user_id`, `owner_first_name`, `owner_last_name`, `owner_phone_number`, `owner_email`) 
                                             VALUES ('110-000000', '100-000000', 'Test', 'Account', '(000) 000-0000', 'test@gmail.com');
                                         """
             
             insert_tenant_profile_query = """
-                                            INSERT INTO `space_dev`.`tenantProfileInfo` (`tenant_uid`, `tenant_user_id`, `tenant_first_name`, `tenant_last_name`, `tenant_email`, `tenant_phone_number`, `tenant_documents`, `tenant_adult_occupants`, `tenant_children_occupants`, `tenant_vehicle_info`, `tenant_references`, `tenant_pet_occupants`, `tenant_employment`) 
+                                            INSERT INTO `space_prod`.`tenantProfileInfo` (`tenant_uid`, `tenant_user_id`, `tenant_first_name`, `tenant_last_name`, `tenant_email`, `tenant_phone_number`, `tenant_documents`, `tenant_adult_occupants`, `tenant_children_occupants`, `tenant_vehicle_info`, `tenant_references`, `tenant_pet_occupants`, `tenant_employment`) 
                                             VALUES ('350-000000', '100-000000', 'Test', 'Account', 'test@gmail.com', '(000) 000-0000', '[]', '[]', '[]', '[]', '[]', '[]', '[]');
                                         """
 
             insert_purchases_query = """
-                                        INSERT INTO `space_dev`.`purchases` (`purchase_uid`, `pur_timestamp`, `pur_property_id`, `purchase_type`, `pur_description`, `pur_notes`, `pur_cf_type`, `purchase_date`, `pur_due_date`, `pur_amount_due`, `purchase_status`, `pur_status_value`, `pur_receiver`, `pur_initiator`, `pur_payer`, `pur_late_Fee`, `pur_group`) 
+                                        INSERT INTO `space_prod`.`purchases` (`purchase_uid`, `pur_timestamp`, `pur_property_id`, `purchase_type`, `pur_description`, `pur_notes`, `pur_cf_type`, `purchase_date`, `pur_due_date`, `pur_amount_due`, `purchase_status`, `pur_status_value`, `pur_receiver`, `pur_initiator`, `pur_payer`, `pur_late_Fee`, `pur_group`) 
                                         VALUES ('400-000000', '11-14-2024 00:00', '200-000000', 'Deposit', 'Test Deposit', 'Test Deposit Note', 'revenue', '11-15-2024 00:00', '11-30-2024 00:00', '299.00', 'UNPAID', '0', '110-000000', '350-000000', '350-000000', '0', '400-000000');
                                     """
             
             insert_maintenance_requests_query = """
-                                                    INSERT INTO `space_dev`.`maintenanceRequests` (`maintenance_request_uid`, `maintenance_property_id`, `maintenance_request_status`, `maintenance_title`, `maintenance_request_type`, `maintenance_request_created_by`, `maintenance_priority`, `maintenance_can_reschedule`) 
+                                                    INSERT INTO `space_prod`.`maintenanceRequests` (`maintenance_request_uid`, `maintenance_property_id`, `maintenance_request_status`, `maintenance_title`, `maintenance_request_type`, `maintenance_request_created_by`, `maintenance_priority`, `maintenance_can_reschedule`) 
                                                     VALUES ('800-000000', '200-000000', 'NEW', 'Test Maintenance Request', 'Plumbing', '600-000000', 'Medium', '1');
                                                 """
 
             insert_maintenance_quotes_query = """
-                                                INSERT INTO `space_dev`.`maintenanceQuotes` (`maintenance_quote_uid`, `quote_maintenance_request_id`, `quote_status`, `quote_business_id`, `quote_requested_date`) 
+                                                INSERT INTO `space_prod`.`maintenanceQuotes` (`maintenance_quote_uid`, `quote_maintenance_request_id`, `quote_status`, `quote_business_id`, `quote_requested_date`) 
                                                 VALUES ('900-000000', '800-000000', 'SCHEDULED', '600-000000', '11-12-2024 15:26:30');
                                             """
             
             insert_contracts_query = """
-                                        INSERT INTO `space_dev`.`contracts` (`contract_uid`, `contract_property_id`, `contract_business_id`, `contract_name`, `contract_status`, `contract_m2m`) 
+                                        INSERT INTO `space_prod`.`contracts` (`contract_uid`, `contract_property_id`, `contract_business_id`, `contract_name`, `contract_status`, `contract_m2m`) 
                                         VALUES ('010-000000', '200-000000', '600-000000', 'Test Contract Name', 'ACTIVE', '1');
                                     """
             update_contracts_query = """
-                                        UPDATE `space_dev`.`contracts` 
+                                        UPDATE `space_prod`.`contracts` 
                                         SET `contract_uid` = '010-000000' 
                                         WHERE (`contract_property_id` = '200-000000' AND `contract_business_id` = '600-000000' AND `contract_name` = 'Test Contract Name');
                                     """
 
             insert_leases_query = """
-                                    INSERT INTO `space_dev`.`leases` (`lease_uid`, `lease_property_id`, `lease_application_date`, `lease_start`, `lease_end`, `lease_status`, `lease_assigned_contacts`, `lease_documents`, `lease_renew_status`, `lease_move_in_date`, `lease_adults`, `lease_children`, `lease_pets`, `lease_vehicles`, `lease_referred`, `lease_effective_date`, `lease_docuSign`, `lease_end_notice_period`, `lease_income`, `lease_m2m`, `lease_utilities`) 
+                                    INSERT INTO `space_prod`.`leases` (`lease_uid`, `lease_property_id`, `lease_application_date`, `lease_start`, `lease_end`, `lease_status`, `lease_assigned_contacts`, `lease_documents`, `lease_renew_status`, `lease_move_in_date`, `lease_adults`, `lease_children`, `lease_pets`, `lease_vehicles`, `lease_referred`, `lease_effective_date`, `lease_docuSign`, `lease_end_notice_period`, `lease_income`, `lease_m2m`, `lease_utilities`) 
                                     VALUES ('300-000000', '200-000000', '11-15-2024', '11-19-2024', '11-19-2025', 'NEW', '[\"350-000000\"]', '[]', 'TRUE', '11-19-2024', '[]', '[]', '[]', '[]', '[]', '11-19-2024', 'null', '30', '[]', '1', '[]');
                                 """
             update_leases_query = """
-                                    UPDATE `space_dev`.`leases` 
+                                    UPDATE `space_prod`.`leases` 
                                     SET `lease_uid` = '300-000000' 
                                     WHERE (`lease_property_id` = '200-000000' AND `lease_status` = 'NEW');
                                 """
 
             insert_lease_tenant_query = """
-                                            INSERT INTO `space_dev`.`lease_tenant` (`lt_lease_id`, `lt_tenant_id`, `lt_responsibility`) 
+                                            INSERT INTO `space_prod`.`lease_tenant` (`lt_lease_id`, `lt_tenant_id`, `lt_responsibility`) 
                                             VALUES ('300-000000', '350-000000', '1');
                                         """
             
             insert_lease_fees_query = """
-                                        INSERT INTO `space_dev`.`leaseFees` (`leaseFees_uid`, `fees_lease_id`, `fee_name`, `fee_type`, `charge`, `frequency`, `available_topay`, `due_by`, `late_by`, `late_fee`, `perDay_late_fee`, `due_by_date`) 
+                                        INSERT INTO `space_prod`.`leaseFees` (`leaseFees_uid`, `fees_lease_id`, `fee_name`, `fee_type`, `charge`, `frequency`, `available_topay`, `due_by`, `late_by`, `late_fee`, `perDay_late_fee`, `due_by_date`) 
                                         VALUES ('370-000000', '300-000000', 'Rent', 'Rent', '900.00', 'Monthly', '10', '5', '0', '0', '0.00', '12-19-2024');
                                     """
             update_lease_fees_query = """
-                                    UPDATE `space_dev`.`leaseFees` 
+                                    UPDATE `space_prod`.`leaseFees` 
                                     SET `leaseFees_uid` = '370-000000' 
                                     WHERE (`fees_lease_id` = '300-000000' AND `fee_name` = 'Rent');
                                 """
@@ -479,16 +479,16 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if maintenance_request_uid != "":
                         delQuery_maintenance_req = ("""
-                                        DELETE space_dev.maintenanceRequests
-                                        FROM space_dev.maintenanceRequests
+                                        DELETE space_prod.maintenanceRequests
+                                        FROM space_prod.maintenanceRequests
                                         WHERE maintenance_request_uid = \'""" + maintenance_request_uid + """\';
                                     """)
                         maintenance_req_response = db.delete(delQuery_maintenance_req)
 
                     if maintenance_quote_uid != "":
                         delQuery_maintenance_quotes = ("""
-                                        DELETE space_dev.maintenanceQuotes
-                                        FROM space_dev.maintenanceQuotes
+                                        DELETE space_prod.maintenanceQuotes
+                                        FROM space_prod.maintenanceQuotes
                                         WHERE maintenance_quote_uid = \'""" + maintenance_quote_uid + """\';
                                     """)
                         maintenance_quotes_response = db.delete(delQuery_maintenance_quotes)
@@ -652,7 +652,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if contract_uid != "":
                         delQuery_contracts = ("""
-                                        DELETE FROM space_dev.contracts
+                                        DELETE FROM space_prod.contracts
                                         WHERE contract_uid = \'""" + contract_uid + """\';
                                     """)
                         contract_response = db.delete(delQuery_contracts)
@@ -737,11 +737,11 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if curr_lease_api != "" and curr_lease_api != "POST" and lease_uid != "":
                         delQuery_leases = ("""
-                                        DELETE FROM space_dev.leases
+                                        DELETE FROM space_prod.leases
                                         WHERE lease_uid = \'""" + lease_uid + """\';
                                     """)
                         delQuery_lease_tenant = ("""
-                                        DELETE FROM space_dev.lease_tenant
+                                        DELETE FROM space_prod.lease_tenant
                                         WHERE lt_lease_id = \'""" + lease_uid + """\';
                                     """)
                         leases_response = db.delete(delQuery_leases)
@@ -884,14 +884,14 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if purchase_uid != "":
                         delQuery_add_purchase = ("""
-                                        DELETE FROM space_dev.purchases
+                                        DELETE FROM space_prod.purchases
                                         WHERE purchase_uid = \'""" + purchase_uid + """\';
                                     """)
                         del_add_purchase_response = db.delete(delQuery_add_purchase)
 
                     if purchase_uid != "" and curr_pur_pay_api == "Completed":
                         delQuery_payment = ("""
-                                DELETE FROM space_dev.payments
+                                DELETE FROM space_prod.payments
                                 WHERE pay_purchase_id = \'""" + purchase_uid + """\' AND paid_by = '350-000000'
                             """)
                         del_payment_response = db.delete(delQuery_payment)
@@ -1040,25 +1040,25 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if owner_uid != "":
                         delQuery_owner = ("""
-                                        DELETE FROM space_dev.ownerProfileInfo
+                                        DELETE FROM space_prod.ownerProfileInfo
                                         WHERE owner_uid = \'""" + owner_uid + """\';
                                     """)
                         del_owner_profile_response = db.delete(delQuery_owner)
                     if business_uid != "":
                         delQuery_business = ("""
-                                        DELETE FROM space_dev.businessProfileInfo
+                                        DELETE FROM space_prod.businessProfileInfo
                                         WHERE business_uid = \'""" + business_uid + """\';
                                     """)
                         del_business_profile_response = db.delete(delQuery_business)
                     if employee_uid != "":
                         delQuery_employee = ("""
-                                        DELETE FROM space_dev.employees
+                                        DELETE FROM space_prod.employees
                                         WHERE employee_uid = \'""" + employee_uid + """\';
                                     """)
                         del_employee_profile_response = db.delete(delQuery_employee)
                     if tenant_uid != "":
                         delQuery_tenant = ("""
-                                        DELETE FROM space_dev.tenantProfileInfo
+                                        DELETE FROM space_prod.tenantProfileInfo
                                         WHERE tenant_uid = \'""" + tenant_uid + """\';
                                     """)
                         del_tenant_profile_response = db.delete(delQuery_tenant)
@@ -1151,13 +1151,13 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if expense_uid != "":
                         delQuery_add_expense = ("""
-                                        DELETE FROM space_dev.purchases
+                                        DELETE FROM space_prod.purchases
                                         WHERE purchase_uid = \'""" + expense_uid + """\';
                                     """)
                         del_add_expense_response = db.delete(delQuery_add_expense)
                     if revenue_uid != "":
                         delQuery_add_revenue = ("""
-                                        DELETE FROM space_dev.purchases
+                                        DELETE FROM space_prod.purchases
                                         WHERE purchase_uid = \'""" + revenue_uid + """\';
                                     """)
                         del_add_revenue_response = db.delete(delQuery_add_revenue)
@@ -1349,7 +1349,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if employee_uid != "":
                         delQuery_employee = ("""
-                                        DELETE FROM space_dev.employees
+                                        DELETE FROM space_prod.employees
                                         WHERE employee_uid = \'""" + employee_uid + """\';
                                     """)
                         del_employee_response = db.delete(delQuery_employee)
@@ -1455,7 +1455,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if curr_uti_api == "Completed":
                         delQuery_property_utility = ("""
-                                        DELETE FROM space_dev.property_utility
+                                        DELETE FROM space_prod.property_utility
                                         WHERE utility_property_id = "200-000000"
                                         AND utility_type_id = "050-000000"
                                         AND utility_payer_id = "050-100000";
@@ -1536,14 +1536,14 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if bill_uid != "":
                         delQuery_bill = ("""
-                                        DELETE FROM space_dev.bills
+                                        DELETE FROM space_prod.bills
                                         WHERE bill_uid = \'""" + bill_uid + """\';
                                     """)
                         del_bill_response = db.delete(delQuery_bill)
                     if purchase_uids != []:
                         for pur_id in purchase_uids:
                             delQuery_purchase = ("""
-                                        DELETE FROM space_dev.purchases
+                                        DELETE FROM space_prod.purchases
                                         WHERE purchase_uid = \'""" + pur_id + """\';
                                     """)
                             del_purchase_response = db.delete(delQuery_purchase)
@@ -1633,7 +1633,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
                 with connect() as db:
                     if announcement_uid != "":
                         delQuery_announcement = ("""
-                                        DELETE FROM space_dev.announcements
+                                        DELETE FROM space_prod.announcements
                                         WHERE announcement_uid = \'""" + announcement_uid + """\';
                                     """)
                         del_announcement_response = db.delete(delQuery_announcement)
@@ -1675,64 +1675,64 @@ class endPointTest_space_dev_db_CLASS(Resource):
         try:
             print("\n\n*** Deleting temporary data from the database ***\n")
             delete_property_query = """
-                                        DELETE FROM space_dev.properties
+                                        DELETE FROM space_prod.properties
                                         WHERE property_uid = "200-000000";
                                     """
             
             delete_property_owner_query = """
-                                        DELETE FROM space_dev.property_owner
+                                        DELETE FROM space_prod.property_owner
                                         WHERE property_id = "200-000000" AND property_owner_id = "110-000000";
                                     """
             
             delete_user_query = """
-                                        DELETE FROM space_dev.users
+                                        DELETE FROM space_prod.users
                                         WHERE user_uid = "100-000000";
                                     """
             
             delete_business_profile_query = """
-                                        DELETE FROM space_dev.businessProfileInfo
+                                        DELETE FROM space_prod.businessProfileInfo
                                         WHERE business_uid = "600-000000";
                                     """
             
             delete_owner_profile_query = """
-                                        DELETE FROM space_dev.ownerProfileInfo
+                                        DELETE FROM space_prod.ownerProfileInfo
                                         WHERE owner_uid = "110-000000";
                                     """
             
             delete_tenant_profile_query = """
-                                        DELETE FROM space_dev.tenantProfileInfo
+                                        DELETE FROM space_prod.tenantProfileInfo
                                         WHERE tenant_uid = "350-000000";
                                     """
             
             delete_purchases_query = """
-                                        DELETE FROM space_dev.purchases
+                                        DELETE FROM space_prod.purchases
                                         WHERE purchase_uid = "400-000000";
                                     """
             
             delete_maintenance_requests_query = """
-                                        DELETE FROM space_dev.maintenanceRequests
+                                        DELETE FROM space_prod.maintenanceRequests
                                         WHERE maintenance_request_uid = "800-000000";
                                     """
             
             delete_maintenance_quotes_query = """
-                                        DELETE FROM space_dev.maintenanceQuotes
+                                        DELETE FROM space_prod.maintenanceQuotes
                                         WHERE maintenance_quote_uid = "900-000000";
                                     """
             
             delete_contracts_query = """
-                                        DELETE FROM space_dev.contracts
+                                        DELETE FROM space_prod.contracts
                                         WHERE contract_uid = "010-000000";
                                     """
             delete_leases_query = """
-                                        DELETE FROM space_dev.leases
+                                        DELETE FROM space_prod.leases
                                         WHERE lease_uid = "300-000000";
                                     """
             delete_lease_tenant_query = """
-                                        DELETE FROM space_dev.lease_tenant
+                                        DELETE FROM space_prod.lease_tenant
                                         WHERE lt_lease_id = "300-000000" AND lt_tenant_id = "350-000000";
                                     """
             delete_lease_fees_query = """
-                                        DELETE FROM space_dev.leaseFees
+                                        DELETE FROM space_prod.leaseFees
                                         WHERE leaseFees_uid = "370-000000";
                                     """
             
@@ -1786,7 +1786,7 @@ class endPointTest_space_dev_db_CLASS(Resource):
 #         cursor.execute("""
 #             SELECT TABLE_NAME 
 #             FROM information_schema.TABLES 
-#             WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
+#             WHERE TABLE_SCHEMA = 'space_prod' AND TABLE_TYPE = 'BASE TABLE';
 #         """)
 #         tables = cursor.fetchall()
 
