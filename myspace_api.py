@@ -2902,7 +2902,7 @@ def check_jwt_token():
 def decrypt_request():
     if request.is_json:
         print('Inside is_json')
-
+        print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
         form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
         if encrypted_data and form_data == False:
@@ -2917,6 +2917,7 @@ def decrypt_request():
         else:
             print("Data issue")
     elif request.content_type and request.content_type.startswith('multipart/form-data'):
+        print('Inside form data - space_dev')
         # For FormData directly in the request
         encrypted_data = request.form.get('encrypted_data')
 
@@ -2966,10 +2967,22 @@ def health_check():
     print("In Health Check")
     return jsonify({"message": "API is running!"})
 
+@app.route('/decode', methods=['POST'])
+def decode():
+    print("In decode")
+    # data = request.get_json
+    decrypt_request()
+    print(request.get_json())
+    response = jsonify({'decode': request.get_json()})
+    return response
+
+
+
+
 
 # Actual middleware.  Commands before request (check JWT and then decrypt data) and after request (encrypt response before passing to FrontEnd)
 # def setup_middlewares(app):
-@app.before_request 
+@app.before_request
 def before_request():
     # all_headers = dict(request.headers)
     # print(all_headers)
