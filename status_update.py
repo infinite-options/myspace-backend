@@ -6,7 +6,7 @@ from data_pm import connect
 
 class StatusUpdate(Resource):
     def put(self):
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         response = {}
         if payload.get('maintenance_quote_uid'):
             if payload.get('quote_status') == 'REQUESTED':

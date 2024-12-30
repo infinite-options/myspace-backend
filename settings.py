@@ -7,7 +7,7 @@ from data_pm import connect
 class Account(Resource):
     def post(self):
         response = {}
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         with connect() as db:
             response = db.insert('space_prod.accounts', payload)
         return response

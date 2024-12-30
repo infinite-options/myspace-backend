@@ -349,7 +349,7 @@ class PaymentMethod(Resource):
     def post(self):
         print("In Payment Method POST")
         response = {}
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         print("POST Payload: ", type(payload), payload)
         i = 0
 
@@ -373,7 +373,7 @@ class PaymentMethod(Resource):
     def put(self):
         print("In Payment Method PUT")
         response = {}
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         print("PUT Payload: ", type(payload), payload)
         i = 0
 

@@ -39,7 +39,7 @@ class UserInfo(Resource):
     def put(self):
         print("In update User")
         with connect() as db:
-            payload = request.get_json()
+            payload = request.get_json(force=True)
             print(payload)
 
             if payload["user_uid"] is None:

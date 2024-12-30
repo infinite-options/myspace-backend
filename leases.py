@@ -781,7 +781,7 @@ class LeaseReferal(Resource):
         lease_assigned_contacts = []
         
 
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         print("Lease Referal Add Payload: ", payload)
         tenants = payload["tenants"]
         print("tenants: ", tenants)

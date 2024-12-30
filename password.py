@@ -9,7 +9,7 @@ from util import createHash, createSalt
 class Password(Resource):
     def put(self):
         print('in Password')
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         user_uid = payload.get('user_uid')
         if not user_uid:
             raise BadRequest("Request failed, no UID in payload.")

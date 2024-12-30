@@ -335,7 +335,7 @@ def sendEmail(recipient, subject, body):
     
 class SendEmail(Resource):
     def post(self):
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         print(payload)
 
         # Check if each field in the payload is not null
@@ -476,20 +476,11 @@ class Announcements(Resource):
     def post(self, user_id):
         print("In Announcements POST ", user_id)
         response = {}
-        payload = request.get_json()
-        print("Post Announcement Payload: ", payload, type(payload))
+        payload = request.get_json(force=True)
+        # print("Post Announcement Payload: ", payload, type(payload))
         manager_id = user_id
         print("Manager ID: ", manager_id)
 
-        # if isinstance(payload, str):
-        #     payload = json.loads(payload)
-        #     print("JSON Announcement Payload: ", payload, type(payload))
-
-        # print(payload.get("announcement_title"))
-        # print(payload["announcement_title"])
-        # print("announcement_receiver: ", payload.get("announcement_receiver"), type(payload.get("announcement_receiver")))
-        # payload.get("announcement_receiver")
-        # print("announcement_receiver: ", payload["announcement_receiver"], type(payload["announcement_receiver"]))
         
         if isinstance(payload["announcement_receiver"], list):
             print("In List")
@@ -596,7 +587,7 @@ class Announcements(Resource):
     def put(self):
         print("In Announcements PUT")
         response = {}
-        payload = request.get_json()
+        payload = request.get_json(force=True)
         print("Announcement Payload: ", payload, type(payload))
 
         if 'announcement_uid' in payload and payload['announcement_uid']:
@@ -2920,12 +2911,12 @@ def decrypt_request():
         print('Inside is_json - space_prod')
         print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
-        form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
-        if encrypted_data and form_data == False:
+        # form_data = request.get_json(force=True).get('data_type') # True = Form data, False = JSON data
+        if encrypted_data:  # and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
             print('decrypted data', decrypted_data, type(decrypted_data))
 
-            # Override request.get_json() to return decrypted data
+            # Override request.get_json(force=True) to return decrypted data
             def get_json_override(*args, **kwargs):
                 global decrypted_data
                 print("In function: ", decrypted_data, type(decrypted_data))
@@ -2994,8 +2985,8 @@ def decode():
     print("In decode")
     # data = request.get_json
     decrypt_request()
-    print(request.get_json())
-    response = jsonify({'decode': request.get_json()})
+    print(request.get_json(force=True))
+    response = jsonify({'decode': request.get_json(force=True)})
     return response
 
 
