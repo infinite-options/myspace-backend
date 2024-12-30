@@ -121,6 +121,8 @@ BLOCK_SIZE = int(os.getenv('BLOCK_SIZE'))
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 # print("POSTMAN_SECRET: ", POSTMAN_SECRET)
 
+decrypted_data = {}
+
 # Encrypt dictionary
 def encrypt_dict(data_dict):
     try:
@@ -475,26 +477,39 @@ class Announcements(Resource):
         print("In Announcements POST ", user_id)
         response = {}
         payload = request.get_json()
-        print("Post Announcement Payload: ", payload)
+        print("Post Announcement Payload: ", payload, type(payload))
         manager_id = user_id
-        # print("Manager ID: ", manager_id)
+        print("Manager ID: ", manager_id)
+
+        # if isinstance(payload, str):
+        #     payload = json.loads(payload)
+        #     print("JSON Announcement Payload: ", payload, type(payload))
+
+        # print(payload.get("announcement_title"))
+        # print(payload["announcement_title"])
+        # print("announcement_receiver: ", payload.get("announcement_receiver"), type(payload.get("announcement_receiver")))
+        # payload.get("announcement_receiver")
+        # print("announcement_receiver: ", payload["announcement_receiver"], type(payload["announcement_receiver"]))
+        
         if isinstance(payload["announcement_receiver"], list):
+            print("In List")
             receivers = payload["announcement_receiver"]
         else:
+            print("Not a list")
             receivers = [payload["announcement_receiver"]]  
-        # print("Receivers: ", receivers)
+        print("Receivers: ", receivers)
 
         if isinstance(payload["announcement_properties"], list):
             properties = payload["announcement_properties"]
         else:
             properties = [payload["announcement_properties"]]
-        # print("Properties: ", properties)
+        print("Properties: ", properties)
 
         receiverPropertiesMap = {}
 
         for propertyString in properties:
             propertyObj = json.loads(propertyString)
-            # print("Property: ", propertyObj)
+            print("Property: ", propertyObj)
 
             for key, value in propertyObj.items():
                 receiverPropertiesMap[key] = value        
@@ -514,7 +529,7 @@ class Announcements(Resource):
     
                 # Insert or update the "announcement_read" key with the current date and time
                 newRequest['announcement_date'] = current_datetime
-                # print("Announcement Date: ", newRequest['announcement_date'])
+                print("Announcement Date: ", newRequest['announcement_date'])
 
                 #  Get Receiver email
                 user_query = None                    
@@ -545,9 +560,9 @@ class Announcements(Resource):
                                         -- WHERE b.business_uid = '600-000005';
                                         WHERE b.business_uid = \'""" + receivers[i] + """\';
                                         """)                                        
-                # print("Notifications allowed: ", user_query['result'][0]['notifications'], type( user_query['result'][0]['notifications']))
+                print("Notifications allowed: ", user_query['result'][0]['notifications'], type( user_query['result'][0]['notifications']))
                 for j in range(len(payload["announcement_type"])):
-                    # print("Announcement Type: ", payload["announcement_type"][j])
+                    print("Announcement Type: ", payload["announcement_type"][j])
                     if payload["announcement_type"][j] == "Email":
                         newRequest['Email'] = "1"
                         user_email = user_query['result'][0]['email']
@@ -2901,22 +2916,30 @@ def check_jwt_token():
 # Middleware for decrypting incoming request data
 def decrypt_request():
     if request.is_json:
+        global decrypted_data
         print('Inside is_json')
-
+        print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
         form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
         if encrypted_data and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
-            # print('decrypted data', decrypted_data)
+            print('decrypted data', decrypted_data, type(decrypted_data))
 
             # Override request.get_json() to return decrypted data
             def get_json_override(*args, **kwargs):
+                global decrypted_data
+                print("In function: ", decrypted_data, type(decrypted_data))
+                if isinstance(decrypted_data, str):
+                    decrypted_data = json.loads(decrypted_data)
+                    print("JSON Announcement Payload: ", decrypted_data, type(decrypted_data))
                 return decrypted_data
             
             request.get_json = get_json_override
+            
         else:
             print("Data issue")
     elif request.content_type and request.content_type.startswith('multipart/form-data'):
+        print('Inside form data - space_dev')
         # For FormData directly in the request
         encrypted_data = request.form.get('encrypted_data')
 
@@ -2966,10 +2989,22 @@ def health_check():
     print("In Health Check")
     return jsonify({"message": "API is running!"})
 
+@app.route('/decode', methods=['POST'])
+def decode():
+    print("In decode")
+    # data = request.get_json
+    decrypt_request()
+    print(request.get_json())
+    response = jsonify({'decode': request.get_json()})
+    return response
+
+
+
+
 
 # Actual middleware.  Commands before request (check JWT and then decrypt data) and after request (encrypt response before passing to FrontEnd)
 # def setup_middlewares(app):
-@app.before_request 
+@app.before_request
 def before_request():
     # all_headers = dict(request.headers)
     # print(all_headers)
