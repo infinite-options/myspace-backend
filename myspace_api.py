@@ -2917,7 +2917,7 @@ def check_jwt_token():
 def decrypt_request():
     if request.is_json:
         global decrypted_data
-        print('Inside is_json')
+        print('Inside is_json - space_prod')
         print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
         form_data = request.get_json().get('data_type') # True = Form data, False = JSON data
@@ -2939,7 +2939,7 @@ def decrypt_request():
         else:
             print("Data issue")
     elif request.content_type and request.content_type.startswith('multipart/form-data'):
-        print('Inside form data - space_dev')
+        print('Inside form data - space_prod')
         # For FormData directly in the request
         encrypted_data = request.form.get('encrypted_data')
 
