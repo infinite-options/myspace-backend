@@ -11,5 +11,5 @@ class SearchManager(Resource):
             where = {'business_type': 'MANAGEMENT'}
             if field_name in args_dict:
                 where[field_name] = args_dict[field_name]
-            response = db.select('space_prod.businessProfileInfo', where, exact_match=False)
+            response = db.select('space_dev.businessProfileInfo', where, exact_match=False)
         return response
