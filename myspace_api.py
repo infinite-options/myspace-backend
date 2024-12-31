@@ -2985,8 +2985,21 @@ def decode():
     print("In decode")
     # data = request.get_json
     decrypt_request()
-    print(request.get_json(force=True))
-    response = jsonify({'decode': request.get_json(force=True)})
+    if request.is_json:
+        print(request.get_json(force=True))
+        response = jsonify({'decode': request.get_json(force=True)})
+    else:
+        print(request.form)
+        # print(request.files)
+        decode_files = {}
+        # decode_files['form']=request.form
+        for key, value in request.form.items():
+            decode_files[key] = value
+        for file_key, file_storage in request.files.items():
+            print(f"Key: {file_key}, Filename: {file_storage.filename}")
+            decode_files[file_key] = file_storage.filename
+        response = jsonify(decode_files)
+        # response = jsonify({'form': request.form})
     return response
 
 
