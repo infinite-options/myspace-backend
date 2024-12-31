@@ -89,6 +89,60 @@ def deleteImage(key):
         return False
 
 
+def upload_multipart(file_content, bucket, key, content_type):
+    print("\nIn Upload Multipart:")
+    try:
+        # Step 1: Initiate the multipart upload
+        multipart_upload = s3.create_multipart_upload(
+            Bucket=bucket,
+            Key=key,
+            ACL='public-read',
+            ContentType=content_type
+        )
+        upload_id = multipart_upload['UploadId']
+        print("Multipart upload initiated with UploadId:", upload_id)
+        # Step 2: Upload parts
+        parts = []
+        part_number = 1
+        chunk_size = 5 * 1024 * 1024  # Set chunk size (5 MB)
+        # Split file content into chunks
+        for i in range(0, len(file_content), chunk_size):
+            chunk = file_content[i:i + chunk_size]
+            response = s3.upload_part(
+                Bucket=bucket,
+                Key=key,
+                PartNumber=part_number,
+                UploadId=upload_id,
+                Body=chunk
+            )
+            parts.append({'PartNumber': part_number, 'ETag': response['ETag']})
+            print(f"Uploaded part {part_number}")
+            part_number += 1
+        # Step 3: Complete the multipart upload
+        response = s3.complete_multipart_upload(
+            Bucket=bucket,
+            Key=key,
+            UploadId=upload_id,
+            MultipartUpload={'Parts': parts}
+        )
+        print("Multipart upload completed successfully:", response)
+        # Return the S3 file URL
+        filename = f'https://{bucket}.s3.amazonaws.com/{key}'
+        print("Derived Filename:", filename)
+        return filename
+    except Exception as e:
+        # Abort the multipart upload in case of an error
+        if 'upload_id' in locals():
+            s3.abort_multipart_upload(
+                Bucket=bucket,
+                Key=key,
+                UploadId=upload_id
+            )
+            print("Multipart upload aborted.")
+        print("Error during multipart upload:", str(e))
+        return None
+
+
 def uploadImage(file, key, content):
     print("\nIn Upload Function: ")
     # print("File: ", file)
@@ -117,17 +171,22 @@ def uploadImage(file, key, content):
     if file_content:
         # print("file_content: ", file_content )   # Unnecessary print statement.  Return hexedemical file info
         filename = f'https://s3-us-west-1.amazonaws.com/{bucket}/{key}'
-        print("Before Upload: ", bucket, key, filename, contentType)
+        # print("Before Upload: ", bucket, key, filename, contentType)
+
         # This Statement Actually uploads the file into S3
-        upload_file = s3.put_object(
-            Bucket=bucket,
-            Body=file_content,
-            Key=key,
-            ACL='public-read',
-            ContentType=contentType
-        )
+        # upload_file = s3.put_object(
+        #     Bucket=bucket,
+        #     Body=file_content,
+        #     Key=key,
+        #     ACL='public-read',
+        #     ContentType=contentType
+        # )
+
+        # Call the multipart upload function
+        upload_file = upload_multipart(file_content, bucket, key, content_type)
+
         print("After Upload: ", upload_file)
-        print("After Upload Status Code: ", upload_file['ResponseMetadata']['HTTPStatusCode'])
+        # print("After Upload Status Code: ", upload_file['ResponseMetadata']['HTTPStatusCode'])
         print("Derived Filename: ", filename)
         return filename
     
