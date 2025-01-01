@@ -25,7 +25,7 @@ class Dashboard(Resource):
                 query = db.execute(""" 
                     -- FIND ALL CURRENT BUSINESS CONTACTS
                         SELECT business_type
-                        FROM space_dev.businessProfileInfo
+                        FROM space_prod.businessProfileInfo
                         WHERE business_uid = \'""" + user_id + """\';
                         """)
 
@@ -73,8 +73,8 @@ class Dashboard(Resource):
                                         WHEN quote_status IN ("CANCELLED", "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED")      THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status
-                                FROM space_dev.m_details
-                                LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid
+                                FROM space_prod.m_details
+                                LEFT JOIN space_prod.properties ON maintenance_property_id = property_uid
                                 -- WHERE quote_business_id = '600-000012' 
                                 WHERE quote_business_id = \'""" + user_id + """\'
                                 ) AS ms
@@ -95,7 +95,7 @@ class Dashboard(Resource):
                                             WHEN quote_status = "COMPLETED"   THEN "PAID"
                                             ELSE quote_status
                                         END AS maintenance_status
-                                FROM space_dev.m_details
+                                FROM space_prod.m_details
                                 WHERE quote_business_id = \'""" + user_id + """\'
                                     ) AS ms
                             ORDER BY maintenance_status;
@@ -120,9 +120,9 @@ class Dashboard(Resource):
                                         WHEN quote_status IN ("CANCELLED", "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW", "REFUSED" ,"REJECTED")      THEN "ARCHIVE"
                                         ELSE quote_status
                                     END AS maintenance_status 
-                            FROM space_dev.m_details
-                            LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN space_dev.b_details ON contract_property_id = maintenance_property_id
+                            FROM space_prod.m_details
+                            LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
+                            LEFT JOIN space_prod.b_details ON contract_property_id = maintenance_property_id
                             -- WHERE quote_business_id = '600-000012' 
                             WHERE quote_business_id = \'""" + user_id + """\'
                                 AND quote_status IN ("ACCEPTED", "SCHEDULE", "SCHEDULED" , "RESCHEDULE", "FINISHED", "COMPLETED");
@@ -160,18 +160,18 @@ class Dashboard(Resource):
                                 , if(SUM(pur_amount_due) != 0, SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)), 0)  AS delta_cashflow
                                 , if(SUM(pur_amount_due) != 0, ROUND((SUM(pur_amount_due) - if(SUM(total_paid) IS NULL, 0, SUM(total_paid)) )/SUM(pur_amount_due)*100, 0), 0) AS percent_delta_cashflow
                                 -- , pp.*
-                            FROM space_dev.contracts
+                            FROM space_prod.contracts
                             LEFT JOIN property_owner ON contract_property_id = property_id
                             -- LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
                             LEFT JOIN (SELECT lease_property_id
                                 , lease_status 
-                                FROM space_dev.leases 
+                                FROM space_prod.leases 
                                 WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON contract_property_id = lease_property_id
                             LEFT JOIN (SELECT pur_property_id
                                 , SUM(if(pur_receiver LIKE "110%", pur_amount_due, -pur_amount_due)) AS pur_amount_due
                                 , SUM(if(pur_receiver LIKE "110%", total_paid, -total_paid)) AS total_paid
                                 , JSON_ARRAYAGG(purchase_uid) AS purchase_ids
-                            FROM space_dev.pp_status
+                            FROM space_prod.pp_status
                             -- WHERE pur_payer LIKE "110%" OR pur_receiver LIKE "110%"
                             WHERE (pur_payer LIKE "110%" OR pur_receiver LIKE "110%")
                                 AND CAST(cf_year AS UNSIGNED) <= YEAR(CURDATE()) AND CAST(cf_month_num AS UNSIGNED) <= MONTH(CURDATE())
@@ -209,10 +209,10 @@ class Dashboard(Resource):
                                         ELSE maintenance_request_status -- "NEW REQUEST"
                                     END AS maintenance_status
 
-                                FROM space_dev.maintenanceRequests
+                                FROM space_prod.maintenanceRequests
                                 LEFT JOIN m_quote_rank AS quote_summary ON maintenance_request_uid = qmr_id
 
-                                LEFT JOIN space_dev.bills ON maintenance_request_uid = bill_maintenance_request_id
+                                LEFT JOIN space_prod.bills ON maintenance_request_uid = bill_maintenance_request_id
                                 LEFT JOIN (
                                     SELECT quote_maintenance_request_id, 
                                         JSON_ARRAYAGG(JSON_OBJECT
@@ -231,14 +231,14 @@ class Dashboard(Resource):
                                             'quote_earliest_available_date', quote_earliest_available_date,
                                             'quote_earliest_available_time', quote_earliest_available_time
                                             )) AS quote_info
-                                    FROM space_dev.maintenanceQuotes
+                                    FROM space_prod.maintenanceQuotes
                                     GROUP BY quote_maintenance_request_id) as qi ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
-                                LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                                LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                                LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                                LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                                LEFT JOIN space_prod.pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
+                                LEFT JOIN space_prod.properties ON property_uid = maintenance_property_id
+                                LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
+                                LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                                LEFT JOIN (SELECT * FROM space_prod.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN space_prod.t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
                                 -- WHERE business_uid = '600-000043' -- AND (pur_receiver = '600-000003' OR ISNULL(pur_receiver))
@@ -274,11 +274,11 @@ class Dashboard(Resource):
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
-                                    FROM space_dev.leases 
+                                    FROM space_prod.leases 
                                     WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
-                                LEFT JOIN space_dev.property_owner ON property_id = lease_property_id
-                                LEFT JOIN (SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                                LEFT JOIN space_prod.property_owner ON property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
                                 -- WHERE property_owner_id = "110-000003"
                                 -- WHERE contract_business_id = "600-000003"
                                 -- WHERE property_owner_id = \'""" + user_id + """\'
@@ -298,8 +298,8 @@ class Dashboard(Resource):
                     response["properties"] = db.execute("""
                             SELECT -- *,
                                 property_uid, property_address, property_unit
-                            FROM space_dev.contracts
-                            LEFT JOIN space_dev.properties ON contract_property_id = property_uid
+                            FROM space_prod.contracts
+                            LEFT JOIN space_prod.properties ON contract_property_id = property_uid
                             -- WHERE contract_business_id = '600-000003' AND
                             WHERE contract_business_id = \'""" + user_id + """\' AND
                                 contract_status = 'ACTIVE';
@@ -311,9 +311,9 @@ class Dashboard(Resource):
                     response["newPMRequests"] = db.execute("""
                             -- NEW PROPERTIES FOR MANAGER
                             SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
-                            FROM space_dev.o_details
-                            LEFT JOIN space_dev.properties ON property_id = property_uid
-                            LEFT JOIN space_dev.b_details ON contract_property_id = property_uid
+                            FROM space_prod.o_details
+                            LEFT JOIN space_prod.properties ON property_id = property_uid
+                            LEFT JOIN space_prod.b_details ON contract_property_id = property_uid
                             LEFT JOIN (
                             SELECT announcement_properties, JSON_ARRAYAGG(JSON_OBJECT
                             ('announcement_uid', announcement_uid,
@@ -323,7 +323,7 @@ class Dashboard(Resource):
                             'announcement_date', announcement_date,
                             'announcement_receiver', announcement_receiver
                             )) AS announcements
-                            FROM space_dev.announcements
+                            FROM space_prod.announcements
                             GROUP BY announcement_properties) as t ON announcement_properties = property_uid
                             WHERE contract_business_id = \'""" + user_id + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                         """)
@@ -358,8 +358,8 @@ class Dashboard(Resource):
                                 ELSE maintenance_request_status
                             END AS maintenance_status
                             , COUNT(maintenance_request_status) AS num
-                        FROM space_dev.maintenanceRequests
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
+                        FROM space_prod.maintenanceRequests
+                        LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
                         WHERE owner_uid = \'""" + user_id + """\'
                         GROUP BY maintenance_request_status;
                         """)
@@ -390,11 +390,11 @@ class Dashboard(Resource):
                                             ELSE MONTHNAME(STR_TO_DATE(LEFT(lease_end, 2), '%m'))
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
-                                    FROM space_dev.leases 
+                                    FROM space_prod.leases 
                                     WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
                                     ) AS l
-                                LEFT JOIN space_dev.property_owner ON property_id = lease_property_id
-                                LEFT JOIN (SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                                LEFT JOIN space_prod.property_owner ON property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM space_prod.contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
                                 -- WHERE property_owner_id = "110-000003"
                                 -- WHERE contract_business_id = "600-000003"
                                 WHERE property_owner_id = \'""" + user_id + """\'
@@ -414,8 +414,8 @@ class Dashboard(Resource):
                                 property_owner_id,
                                 property_uid,
                                 property_address
-                            FROM space_dev.property_owner
-                            LEFT JOIN space_dev.properties ON property_id = property_uid
+                            FROM space_prod.property_owner
+                            LEFT JOIN space_prod.properties ON property_id = property_uid
                             -- WHERE property_owner_id = "110-000003"
                             WHERE property_owner_id = \'""" + user_id + """\';
                         """)
@@ -436,7 +436,7 @@ class Dashboard(Resource):
                 response["tenantTransactions"] = db.execute("""
                         -- All Cashflow Transactions
                         SELECT *
-                        FROM space_dev.pp_status
+                        FROM space_prod.pp_status
                         -- WHERE pur_receiver = '350-000003'  OR pur_payer = '350-000003'
                         WHERE pur_receiver = \'""" + user_id + """\' OR pur_payer = \'""" + user_id + """\'
                             -- AND cf_month = DATE_FORMAT(NOW(), '%M')
@@ -452,8 +452,8 @@ class Dashboard(Resource):
                             , pur_property_id, purchase_type, pur_description, pur_notes 
                             -- , pur_cf_type, pur_bill_id, purchase_date, pur_due_date, pur_amount_due
                             , purchase_status, pur_status_value -- , pur_receiver, pur_initiator, pur_payer, pur_late_Fee, pur_perDay_late_fee, pur_due_by, pur_late_by, pur_group, pur_leaseFees_id
-                        FROM space_dev.payments
-                        LEFT JOIN space_dev.purchases ON pay_purchase_id = purchase_uid
+                        FROM space_prod.payments
+                        LEFT JOIN space_prod.purchases ON pay_purchase_id = purchase_uid
                         -- WHERE paid_by = "350-000007";
                         WHERE paid_by = \'""" + user_id + """\' 
                     """)
@@ -462,7 +462,7 @@ class Dashboard(Resource):
                 response["leaseDetails"] = db.execute(""" 
                         -- OWNER, PROPERTY MANAGER, TENANT LEASES
                         SELECT * 
-                        FROM space_dev.leases
+                        FROM space_prod.leases
                         LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
                                 'fee_name', fee_name,
@@ -476,10 +476,10 @@ class Dashboard(Resource):
                                 'available_topay', available_topay,
                                 'due_by_date', due_by_date
                                 )) AS lease_fees
-                                FROM space_dev.leaseFees
+                                FROM space_prod.leaseFees
                                 GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                        LEFT JOIN space_dev.properties ON property_uid = lease_property_id
-                        LEFT JOIN space_dev.o_details ON property_id = lease_property_id
+                        LEFT JOIN space_prod.properties ON property_uid = lease_property_id
+                        LEFT JOIN space_prod.o_details ON property_id = lease_property_id
                         LEFT JOIN (
                             SELECT lt_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('tenant_uid', tenant_uid,
@@ -489,9 +489,9 @@ class Dashboard(Resource):
                                 'tenant_phone_number', tenant_phone_number,
                                 'tenant_email', tenant_email
                                 )) AS tenants
-                                FROM space_dev.t_details 
+                                FROM space_prod.t_details 
                                 GROUP BY lt_lease_id) as t ON lease_uid = lt_lease_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM space_prod.b_details WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
                         -- WHERE owner_uid = \'""" + user_id + """\'
                         -- WHERE owner_uid = "110-000003"
                         -- WHERE contract_business_id = \'""" + user_id + """\'
@@ -506,9 +506,9 @@ class Dashboard(Resource):
                         -- TENENT PROPERTY INFO
                         -- NEED TO WORK OUT THE CASE WHAT A TENANT RENTS MULITPLE PROPERTIES
                         SELECT *
-                        FROM space_dev.lease_tenant
-                        LEFT JOIN space_dev.leases ON lease_uid = lt_lease_id
-                        LEFT JOIN space_dev.properties l ON lease_property_id = property_uid
+                        FROM space_prod.lease_tenant
+                        LEFT JOIN space_prod.leases ON lease_uid = lt_lease_id
+                        LEFT JOIN space_prod.properties l ON lease_property_id = property_uid
                         LEFT JOIN (
                             SELECT 
                                 pur_property_id
@@ -517,7 +517,7 @@ class Dashboard(Resource):
                                 , SUM( amt_remaining) AS balance
                                 , MIN(STR_TO_DATE(pur_due_date, '%m-%d-%Y %H:%i')) AS earliest_due_date
                                 , MIN(pur_status_value) AS pur_status_value
-                            FROM space_dev.pp_status
+                            FROM space_prod.pp_status
                             WHERE purchase_status IN ('UNPAID', 'PARTIALLY PAID') AND LEFT(pur_payer,3) = '350'
                             GROUP BY pur_property_id
                             ) AS pp ON pur_property_id = property_uid AND lease_status IN ('ACTIVE')
@@ -538,14 +538,14 @@ class Dashboard(Resource):
                                 ELSE maintenance_request_status
                             END AS maintenance_status
                             , COUNT(maintenance_request_status) AS num
-                        FROM space_dev.maintenanceRequests
+                        FROM space_prod.maintenanceRequests
                         LEFT JOIN (
                             SELECT * 
-                            FROM space_dev.leases 
+                            FROM space_prod.leases 
                             WHERE lease_status = 'ACTIVE'
                             ) AS l ON lease_property_id = maintenance_property_id
-                        LEFT JOIN space_dev.lease_tenant ON lease_uid = lt_lease_id
-                        LEFT JOIN space_dev.businessProfileInfo ON business_uid = maintenance_assigned_business
+                        LEFT JOIN space_prod.lease_tenant ON lease_uid = lt_lease_id
+                        LEFT JOIN space_prod.businessProfileInfo ON business_uid = maintenance_assigned_business
                         -- WHERE lt_tenant_id = '350-000007'
                         WHERE lt_tenant_id = \'""" + user_id + """\'
                         GROUP BY maintenance_request_status, lease_property_id;
@@ -561,14 +561,14 @@ class Dashboard(Resource):
                                 ELSE maintenance_request_status
                             END AS maintenance_status
                             -- , COUNT(maintenance_request_status) AS num
-                        FROM space_dev.maintenanceRequests
+                        FROM space_prod.maintenanceRequests
                         LEFT JOIN (
                             SELECT * 
-                            FROM space_dev.leases 
+                            FROM space_prod.leases 
                             WHERE lease_status = 'ACTIVE'
                             ) AS l ON lease_property_id = maintenance_property_id
-                        LEFT JOIN space_dev.lease_tenant ON lease_uid = lt_lease_id
-                        LEFT JOIN space_dev.businessProfileInfo ON business_uid = maintenance_assigned_business
+                        LEFT JOIN space_prod.lease_tenant ON lease_uid = lt_lease_id
+                        LEFT JOIN space_prod.businessProfileInfo ON business_uid = maintenance_assigned_business
                         -- WHERE lt_tenant_id = '350-000005'
                         WHERE lt_tenant_id = \'""" + user_id + """\'
                         -- GROUP BY maintenance_request_status;
