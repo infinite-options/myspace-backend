@@ -10,6 +10,8 @@
 # README:  if there are errors, make sure you have all requirements are loaded
 # pip3 install -r requirements.txt
 
+print("-------------------- New Program Run --------------------")
+
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
@@ -798,7 +800,7 @@ class Lease_CLASS(Resource):
                 # print("\nExpired Leases: ", expired_leases)
 
                 for lease in expired_leases:
-                    if lease["lease_m2m"] == "1":
+                    if lease["lease_m2m"] == 1:
                         m2m_lease = ("""
                                 UPDATE space_prod.leases
                                 SET lease_status = 'ACTIVE M2M'
@@ -949,7 +951,7 @@ def Lease_CRON(Resource):
                 # print("\nExpired Leases: ", expired_leases)
 
                 for lease in expired_leases:
-                    if lease["lease_m2m"] == "1":
+                    if lease["lease_m2m"] == 1:
                         m2m_lease = ("""
                                 UPDATE space_prod.leases
                                 SET lease_status = 'ACTIVE M2M'
@@ -1863,7 +1865,7 @@ class MonthlyRentPurchase_CLASS(Resource):
             headers = ["Fee Num", "Lease Fee", "Property", "Due Date", "Available to Pay Date", "Today", "Rent Due", "Purchase ID"]
             print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
 
-            # print(len(response['result']), range(len(response['result'])))
+            print(len(response['result']), range(len(response['result'])))
 
             for i in range(len(response['result'])):
                 print("\n Next i: ", response['result'][i]['leaseFees_uid'])
@@ -2725,144 +2727,7 @@ def Delete_six_0s_from_database_CRON():
 
 
 
-#  -- ACTUAL ENDPOINTS    -----------------------------------------
-
-# Dashboard Queries
-
-api.add_resource(Dashboard, '/dashboard/<string:user_id>')
-
-
-# Owner Queries
-
-
-# Payment Endpoints
-api.add_resource(stripe_key, "/stripe_key/<string:desc>")
-api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>','/paymentMethod/<string:user_id>//<string:payment_id>')
-api.add_resource(NewPayments, '/makePayment')
-
-
-
-# Maintenance Endpoints
-api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:user_id>')
-api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
-api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
-api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
-
-
-
-api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
-api.add_resource(Rents, '/rents/<string:user_id>')
-api.add_resource(RentDetails, '/rentDetails/<string:user_id>')
-api.add_resource(RentTest, '/rentTest/<string:user_id>')
-
-
-
-
-
-# appliances
-api.add_resource(Appliances, '/appliances', '/appliances/<string:uid>')
-# api.add_resource(Appliances_SB, '/appliancesSB')
-# api.add_resource(RemoveAppliance, "/RemoveAppliance")
-
-
-
-api.add_resource(Bills, '/bills','/bills/<string:user_id>')
-api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
-api.add_resource(AddExpense, '/addExpense')
-api.add_resource(AddRevenue, '/addRevenue')
-api.add_resource(AddPurchase, '/addPurchase')
-
-
-api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>', '/paymentVerification')
-api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<string:filter>')
-
-
-
-# api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
-
-
-api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
-
-# Can we delete these?
-# api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
-# api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
-# api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
-# api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
-# api.add_resource(TenantProfile, '/tenantProfile')
-api.add_resource(BusinessProfile, '/businessProfile')
-# api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
-# api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
-
-
-
-api.add_resource(Employee, '/employee','/employee/<string:user_id>')
-api.add_resource(EmployeeVerification, '/employeeVerification')
-# api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
-# api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
-# api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
-api.add_resource(Documents, '/documents','/documents/<string:user_id>')
-api.add_resource(LeaseDetails, '/leaseDetails/<string:user_id>', '/leaseDetails')
-api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
-api.add_resource(LeaseReferal, '/leaseReferal')
-
-
-api.add_resource(Contacts, '/contacts/<string:uid>')
-api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
-
-
-api.add_resource(List, '/lists')
-api.add_resource(Listings, '/listings/<string:tenant_id>')
-api.add_resource(Utilities, '/utilities')
-
-api.add_resource(Account, '/account')
-# api.add_resource(HappinessMatrix,'/happinessMatrix/<string:user_id>')
-
-api.add_resource(SearchManager, '/searchManager')
-
-api.add_resource(Password, '/password')
-
-# #JWT Token
-# api.add_resource(JwtToken, '/jwtToken/<string:user_id>')
-
-#CRON JOBS
-# api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
-# api.add_resource(Rent_CLASS, '/MonthlyRent')
-api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
-# api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
-# api.add_resource(RentPurchase, '/rentPurchase')
-api.add_resource(LateFees_CLASS, '/LateFees')
-api.add_resource(Contract_CLASS, '/contractCRON')
-# api.add_resource(CRONTest_CLASS, '/CRONRent')
-api.add_resource(Lease_CLASS, '/leaseCRON')
-
-
-# api.add_resource(ExtendLease, '/ExtendLease')
-# api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
-
-api.add_resource(SendEmail_CLASS, "/sendEmail_CLASS")
-
-api.add_resource(SendEmail, "/sendEmail")
-
-api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
-
-api.add_resource(EndPoint_CLASS, "/testapi")
-api.add_resource(endPointTest_db_CLASS, "/testapi_db")
-api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
-api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
-
-
-
-# refresh
-# api.add_resource(Refresh, '/refresh')
-
-# socialLogin
-# api.add_resource(UserSocialLogin, '/userSocialLogin/<string:email>')
-# api.add_resource(UserSocialSignup, '/userSocialSignup')
-
-
-
-
-
+#  -- ENCRYPTION MIDDLEWARE    -----------------------------------------
 
 # @app.route('/decrypt', methods=['POST'])
 def decrypt_data():
@@ -3004,8 +2869,6 @@ def decode():
 
 
 
-
-
 # Actual middleware.  Commands before request (check JWT and then decrypt data) and after request (encrypt response before passing to FrontEnd)
 # def setup_middlewares(app):
 @app.before_request
@@ -3059,6 +2922,139 @@ def refreshToken():
         print('Error refreshing token:', e)
         return jsonify({'message': 'Could not refresh token'}), 401
     
+
+
+
+#  -- ACTUAL ENDPOINTS    -----------------------------------------
+
+# Dashboard Queries
+
+api.add_resource(Dashboard, '/dashboard/<string:user_id>')
+
+
+# Owner Queries
+
+
+# Payment Endpoints
+api.add_resource(stripe_key, "/stripe_key/<string:desc>")
+api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>','/paymentMethod/<string:user_id>//<string:payment_id>')
+api.add_resource(NewPayments, '/makePayment')
+
+
+
+# Maintenance Endpoints
+api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:user_id>')
+api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
+api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
+api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+
+
+
+api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
+api.add_resource(Rents, '/rents/<string:user_id>')
+api.add_resource(RentDetails, '/rentDetails/<string:user_id>')
+api.add_resource(RentTest, '/rentTest/<string:user_id>')
+
+
+# appliances
+api.add_resource(Appliances, '/appliances', '/appliances/<string:uid>')
+# api.add_resource(Appliances_SB, '/appliancesSB')
+# api.add_resource(RemoveAppliance, "/RemoveAppliance")
+
+
+
+api.add_resource(Bills, '/bills','/bills/<string:user_id>')
+api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
+api.add_resource(AddExpense, '/addExpense')
+api.add_resource(AddRevenue, '/addRevenue')
+api.add_resource(AddPurchase, '/addPurchase')
+
+
+api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>', '/paymentVerification')
+api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<string:filter>')
+
+
+# api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
+
+api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
+api.add_resource(BusinessProfile, '/businessProfile')
+
+# Can we delete these?
+# api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
+# api.add_resource(TenantProfileByTenantUid, '/tenantProfile/<string:tenant_id>')
+# api.add_resource(BusinessProfileByUid, '/businessProfile/<string:business_uid>')
+# api.add_resource(OwnerProfile, '/ownerProfile')  # POST, PUT OwnerProfile
+# api.add_resource(TenantProfile, '/tenantProfile')
+# api.add_resource(BusinessProfileWeb, '/businessProfileWeb')
+# api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
+
+
+api.add_resource(Employee, '/employee','/employee/<string:user_id>')
+api.add_resource(EmployeeVerification, '/employeeVerification')
+# api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
+# api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
+# api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
+api.add_resource(Documents, '/documents','/documents/<string:user_id>')
+api.add_resource(LeaseDetails, '/leaseDetails/<string:user_id>', '/leaseDetails')
+api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
+api.add_resource(LeaseReferal, '/leaseReferal')
+
+
+api.add_resource(Contacts, '/contacts/<string:uid>')
+api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
+
+
+api.add_resource(List, '/lists')
+api.add_resource(Listings, '/listings/<string:tenant_id>')
+api.add_resource(Utilities, '/utilities')
+
+api.add_resource(Account, '/account')
+# api.add_resource(HappinessMatrix,'/happinessMatrix/<string:user_id>')
+
+api.add_resource(SearchManager, '/searchManager')
+
+api.add_resource(Password, '/password')
+
+# #JWT Token
+# api.add_resource(JwtToken, '/jwtToken/<string:user_id>')
+
+#CRON JOBS
+# api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
+# api.add_resource(Rent_CLASS, '/MonthlyRent')
+api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
+# api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
+# api.add_resource(RentPurchase, '/rentPurchase')
+api.add_resource(LateFees_CLASS, '/LateFees')
+api.add_resource(Contract_CLASS, '/contractCRON')
+# api.add_resource(CRONTest_CLASS, '/CRONRent')
+api.add_resource(Lease_CLASS, '/leaseCRON')
+
+
+# api.add_resource(ExtendLease, '/ExtendLease')
+# api.add_resource(MonthlyRent_CLASS, '/MonthlyRent')
+
+api.add_resource(SendEmail_CLASS, "/sendEmail_CLASS")
+
+api.add_resource(SendEmail, "/sendEmail")
+
+api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
+
+api.add_resource(EndPoint_CLASS, "/testapi")
+api.add_resource(endPointTest_db_CLASS, "/testapi_db")
+api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
+api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
+
+
+
+# refresh
+# api.add_resource(Refresh, '/refresh')
+
+# socialLogin
+# api.add_resource(UserSocialLogin, '/userSocialLogin/<string:email>')
+# api.add_resource(UserSocialSignup, '/userSocialSignup')
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4010)
     # app.run(host='127.0.0.1', port=4000)

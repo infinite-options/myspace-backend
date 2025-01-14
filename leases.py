@@ -148,10 +148,9 @@ class LeaseApplication(Resource):
                 json_object = json.loads(lease_fees)
                 # print("lease fees json_object", json_object)
                 for fees in json_object:
-                    print("fees",fees)
+                    # print("fees",fees)
                     new_leaseFees = {}
-                    # Get new leaseFees_uid
-                    new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']  
+                   
                     for item in fees:
                         # print("Item: ", item)
                         if item == 'frequency' and fees[item] in {'Annually', 'Semi-Annually', 'One Time'}:
@@ -159,9 +158,15 @@ class LeaseApplication(Resource):
                                 new_leaseFees['due_by_date'] = datetime.today().strftime('%m-%d-%Y %H:%M')
                         new_leaseFees[item] = fees[item]
                         # print(new_leaseFees[item])
+                    
+                    # Get new leaseFees_uid
+                    new_leaseFees["leaseFees_uid"] = db.call('space_prod.new_leaseFee_uid')['result'][0]['new_id']  
+                    # print(new_leaseFees["leaseFees_uid"])
+
                     # print("Payload: ", new_leaseFees)
                     # print("lease_uid: ", lease_uid)
                     new_leaseFees["fees_lease_id"] = lease_uid
+                    # print("New Payload: ", new_leaseFees)
                     response["lease_fees"] = db.insert('space_prod.leaseFees', new_leaseFees)
                     # print("response: ", response["lease_fees"])
 
