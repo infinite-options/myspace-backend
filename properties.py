@@ -82,8 +82,8 @@ class Properties(Resource):
                         , leases.*
                         , lease_fees
                         , t_details.*
-                    FROM space_prod.properties
-                    LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                    FROM space_dev.properties
+                    LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                     LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
                             'fee_name', fee_name,
@@ -97,10 +97,10 @@ class Properties(Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space_prod.leaseFees
+                            FROM space_dev.leaseFees
                             GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space_prod.property_owner ON property_id = property_uid
+                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space_dev.property_owner ON property_id = property_uid
                     -- WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
                     WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
                         AND property_owner_id = \'""" + uid + """\'   
@@ -118,8 +118,8 @@ class Properties(Resource):
                         , lease_fees
                         , t_details.*
                         , property_owner.*
-                    FROM space_prod.properties
-                    LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                    FROM space_dev.properties
+                    LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                     LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
                             'fee_name', fee_name,
@@ -133,11 +133,11 @@ class Properties(Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space_prod.leaseFees
+                            FROM space_dev.leaseFees
                             GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space_prod.contracts ON contract_property_id = property_uid
-                    LEFT JOIN space_prod.property_owner ON property_id = property_uid
+                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space_dev.property_owner ON property_id = property_uid
                     WHERE contract_status = "ACTIVE"
                     -- AND property_owner_id = "110-000003"
                     AND property_owner_id = \'""" + uid + """\' 
@@ -171,8 +171,8 @@ class Properties(Resource):
                         , leases.*
                         , lease_fees
                         , t_details.*
-                    FROM space_prod.properties
-                    LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                    FROM space_dev.properties
+                    LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                     LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
                             'fee_name', fee_name,
@@ -186,10 +186,10 @@ class Properties(Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space_prod.leaseFees
+                            FROM space_dev.leaseFees
                             GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space_prod.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
                     WHERE leases.lease_status NOT IN ('ACTIVE', 'ACTIVE M2M', 'ENDED', 'TERMINATED')
                     AND contract_status = "ACTIVE"
                     AND contract_business_id = \'""" + uid + """\'                   
@@ -206,8 +206,8 @@ class Properties(Resource):
                         , lease_fees
                         , t_details.*
                         , property_owner.*
-                    FROM space_prod.properties
-                    LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                    FROM space_dev.properties
+                    LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                     LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
                             'fee_name', fee_name,
@@ -221,11 +221,11 @@ class Properties(Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space_prod.leaseFees
+                            FROM space_dev.leaseFees
                             GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space_prod.contracts ON contract_property_id = property_uid
-                    LEFT JOIN space_prod.property_owner ON property_id = property_uid
+                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space_dev.property_owner ON property_id = property_uid
                     WHERE contract_status = "ACTIVE"
                     -- AND property_owner_id = "110-000003"
                     -- AND property_owner_id = \'""" + uid + """\' 
@@ -244,9 +244,9 @@ class Properties(Resource):
                 contractsQuery = db.execute("""
                     -- NEW PROPERTIES FOR MANAGER
                     SELECT *, CASE WHEN announcements IS NULL THEN false ELSE true END AS announcements_boolean
-                    FROM space_prod.o_details
-                    LEFT JOIN space_prod.properties ON property_id = property_uid
-                    LEFT JOIN space_prod.b_details ON contract_property_id = property_uid
+                    FROM space_dev.o_details
+                    LEFT JOIN space_dev.properties ON property_id = property_uid
+                    LEFT JOIN space_dev.b_details ON contract_property_id = property_uid
                     LEFT JOIN (
                     SELECT announcement_properties, JSON_ARRAYAGG(JSON_OBJECT
                     ('announcement_uid', announcement_uid,
@@ -256,7 +256,7 @@ class Properties(Resource):
                     'announcement_date', announcement_date,
                     'announcement_receiver', announcement_receiver
                     )) AS announcements
-                    FROM space_prod.announcements
+                    FROM space_dev.announcements
                     GROUP BY announcement_properties) as t ON announcement_properties = property_uid
                     WHERE contract_business_id = \'""" + uid + """\'  AND (contract_status = "NEW" OR contract_status = "SENT" OR contract_status = "REJECTED");
                     """)
@@ -279,8 +279,8 @@ class Properties(Resource):
                             , leases.*
                             , lease_fees
                             , t_details.*
-                        FROM space_prod.properties
-                        LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                        FROM space_dev.properties
+                        LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                         LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('leaseFees_uid', leaseFees_uid,
                                 'fee_name', fee_name,
@@ -294,9 +294,9 @@ class Properties(Resource):
                                 'available_topay', available_topay,
                                 'due_by_date', due_by_date
                                 )) AS lease_fees
-                                FROM space_prod.leaseFees
+                                FROM space_dev.leaseFees
                                 GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                        LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
+                        LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
                         WHERE (leases.lease_status = "NEW" OR leases.lease_status = "SENT" OR leases.lease_status = "REJECTED" OR leases.lease_status = "REFUSED" OR leases.lease_status = "PROCESSING" OR leases.lease_status = "TENANT APPROVED")
                         AND lt_tenant_id = \'""" + uid + """\';
                         """)
@@ -314,8 +314,8 @@ class Properties(Resource):
                         , lease_fees
                         , t_details.*
                         , property_owner.*
-                    FROM space_prod.properties
-                    LEFT JOIN space_prod.leases ON property_uid = lease_property_id
+                    FROM space_dev.properties
+                    LEFT JOIN space_dev.leases ON property_uid = lease_property_id
                     LEFT JOIN (SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
                             ('leaseFees_uid', leaseFees_uid,
                             'fee_name', fee_name,
@@ -329,11 +329,11 @@ class Properties(Resource):
                             'available_topay', available_topay,
                             'due_by_date', due_by_date
                             )) AS lease_fees
-                            FROM space_prod.leaseFees
+                            FROM space_dev.leaseFees
                             GROUP BY fees_lease_id) AS lf ON fees_lease_id = lease_uid
-                    LEFT JOIN space_prod.t_details ON lease_uid = lt_lease_id
-                    LEFT JOIN space_prod.contracts ON contract_property_id = property_uid
-                    LEFT JOIN space_prod.property_owner ON property_id = property_uid
+                    LEFT JOIN space_dev.t_details ON lease_uid = lt_lease_id
+                    LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
+                    LEFT JOIN space_dev.property_owner ON property_id = property_uid
                     WHERE contract_status = "ACTIVE"
                     -- AND property_owner_id = "110-000003"
                     -- AND property_owner_id = \'""" + uid + """\' 
@@ -357,7 +357,7 @@ class Properties(Resource):
                         --     , contract_uid AS actual_contract_uid
                         --     , lease_status AS actual_lease_status
                         FROM (
-                            SELECT * FROM space_prod.p_details
+                            SELECT * FROM space_dev.p_details
                             -- WHERE business_uid = "600-000003"
                             -- WHERE owner_uid = "110-000003"
                             -- WHERE owner_uid = \'""" + uid + """\'
@@ -367,7 +367,7 @@ class Properties(Resource):
                             ) as p
                         LEFT JOIN (
                             SELECT * 
-                            FROM space_prod.pp_status
+                            FROM space_dev.pp_status
                             WHERE  (purchase_type = "RENT" OR ISNULL(purchase_type))
                                 AND LEFT(pur_payer, 3) = '350'
                                 AND (cf_month = DATE_FORMAT(NOW(), '%M') OR ISNULL(cf_month))
@@ -378,8 +378,8 @@ class Properties(Resource):
                                 property_owner_id
                                 , maintenance_property_id
                                 , COUNT(maintenance_property_id) AS num_open_maintenace_req
-                            FROM space_prod.maintenanceRequests
-                            LEFT JOIN space_prod.o_details ON maintenance_property_id = property_id
+                            FROM space_dev.maintenanceRequests
+                            LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
                             WHERE  maintenance_request_status != "COMPLETED" AND maintenance_request_status != "CANCELLED"
                             GROUP BY maintenance_property_id
                             ) AS m ON p.property_uid = maintenance_property_id
@@ -399,7 +399,7 @@ class Properties(Resource):
                 propertiesQuery = db.execute("""
                     -- RETURN PROPERTIES WITH APPLIANCES
                     SELECT *
-                    FROM space_prod.p_details AS p      
+                    FROM space_dev.p_details AS p      
                     -- WHERE property_uid = '200-000001'              
                     WHERE property_uid = \'""" + uid + """\'
                 """)
@@ -426,14 +426,14 @@ class Properties(Resource):
             raise BadRequest("Request failed, UID found in payload.")
 
         with connect() as db:
-            newPropertyUID = db.call('space_prod.new_property_uid')['result'][0]['new_id']
+            newPropertyUID = db.call('space_dev.new_property_uid')['result'][0]['new_id']
             key = {'property_uid': newPropertyUID}
             print("Property Key: ", key)
 
             # --------------- PROCESS IMAGES ------------------
 
             processImage(key, payload)
-            print("Payload after function: ", payload)
+            # print("Payload after function: ", payload)
             
             # --------------- PROCESS IMAGES ------------------
 
@@ -450,16 +450,16 @@ class Properties(Resource):
                         # appliances is now a list of strings
                         for appliance in appliances:
                             print(f"Appliance: {appliance}")
-                            # newRequestID = db.call('space_prod.new_property_uid')['result'][0]['new_id']
+                            # newRequestID = db.call('space_dev.new_property_uid')['result'][0]['new_id']
                             # print(newRequestID)
-                            NewApplianceID = db.call('space_prod.new_appliance_uid')['result'][0]['new_id']
+                            NewApplianceID = db.call('space_dev.new_appliance_uid')['result'][0]['new_id']
                             newAppliance['appliance_uid'] = NewApplianceID
                             print(NewApplianceID)
                             newAppliance['appliance_property_id'] = newPropertyUID
                             newAppliance['appliance_type'] = appliance
                             newAppliance['appliance_images'] = '[]'
                             newAppliance['appliance_documents'] = '[]'
-                            response['Add Appliance'] = db.insert('space_prod.appliances', newAppliance)
+                            response['Add Appliance'] = db.insert('space_dev.appliances', newAppliance)
                             print(response['Add Appliance'])
                 else:
                     print("No appliances provided in the form.")
@@ -476,7 +476,7 @@ class Properties(Resource):
                 findOwnerIdQuery = db.execute(""" 
                             -- FIND OWNER UID
                             SELECT owner_uid
-                            FROM space_prod.ownerProfileInfo
+                            FROM space_dev.ownerProfileInfo
                             -- WHERE owner_user_id = "100-000007"
                             WHERE owner_user_id = \'""" + property_user_id + """\' 
                             """)
@@ -491,7 +491,7 @@ class Properties(Resource):
             newPropertyOwner['property_owner_id'] = property_owner_id
             newPropertyOwner['po_owner_percent'] = payload.pop("po_owner_percent", 1)
             print("newPropertyOwner Payload: ", newPropertyOwner)
-            response['Add Owner'] = db.insert('space_prod.property_owner', newPropertyOwner)
+            response['Add Owner'] = db.insert('space_dev.property_owner', newPropertyOwner)
             print("\nNew Property-Owner Relationship Added")
          
 
@@ -501,7 +501,7 @@ class Properties(Resource):
             payload["property_listed_date"] = datetime.today().strftime('%m-%d-%Y') if payload.pop('property_listed') == '1' else ''
             # payload.pop('property_listed')
             payload["property_uid"] = newPropertyUID
-            response['Add Property'] = db.insert('space_prod.properties', payload)
+            response['Add Property'] = db.insert('space_dev.properties', payload)
             response['property_UID'] = newPropertyUID
             response['Images Added'] = payload.get('property_images', "None")
 
@@ -530,7 +530,7 @@ class Properties(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        print("Payload after function: ", payload)
+        # print("Payload after function: ", payload)
         
         # --------------- PROCESS IMAGES ------------------
 
@@ -540,7 +540,7 @@ class Properties(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['property_info'] = db.update('space_prod.properties', key, payload)
+            response['property_info'] = db.update('space_dev.properties', key, payload)
             # print("Response:" , response)
         return response
 
@@ -560,7 +560,7 @@ class Properties(Resource):
             # Query
             delPropertyQuery = (""" 
                     -- DELETE PROPERTY FROM PROPERTY-OWNER TABLE
-                    DELETE FROM space_prod.property_owner
+                    DELETE FROM space_dev.property_owner
                     WHERE property_id = \'""" + property_id + """\'
                         AND property_owner_id = \'""" + property_owner_id + """\';         
                     """)
@@ -576,7 +576,7 @@ class Properties(Resource):
 
             delPropertyQuery = (""" 
                     -- DELETE PROPERTY FROM PROPERTIES TABLE
-                    DELETE FROM space_prod.properties 
+                    DELETE FROM space_dev.properties 
                     WHERE property_uid = \'""" + property_id + """\';         
                     """)
 

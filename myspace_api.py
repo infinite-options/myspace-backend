@@ -1,4 +1,4 @@
-# MANIFEST MY space_prod (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
+# MANIFEST MY space_dev (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
 # https://qn4agnb0v9.execute-api.us-west-1.amazonaws.com/production/<enter_endpoint_details>
 
@@ -427,10 +427,10 @@ class Announcements(Resource):
                             WHEN a.announcement_receiver LIKE '110%' THEN 'Owner'
                             ELSE 'Unknown'
                       END AS receiver_role
-                    FROM space_prod.announcements a
-                    LEFT JOIN space_prod.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
-                    LEFT JOIN space_prod.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
-                    LEFT JOIN space_prod.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
+                    FROM space_dev.announcements a
+                    LEFT JOIN space_dev.businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
+                    LEFT JOIN space_dev.ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
+                    LEFT JOIN space_dev.tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
                     WHERE announcement_sender = \'""" + user_id + """\';
             """)
 
@@ -450,13 +450,13 @@ class Announcements(Resource):
                             ELSE 'Unknown'
                         END AS sender_role
                     FROM 
-                        space_prod.announcements a
+                        space_dev.announcements a
                     LEFT JOIN 
-                        space_prod.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
+                        space_dev.businessProfileInfo b ON a.announcement_sender LIKE '600%' AND b.business_uid = a.announcement_sender
                     LEFT JOIN 
-                        space_prod.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
+                        space_dev.ownerProfileInfo c ON a.announcement_sender LIKE '110%' AND c.owner_uid = a.announcement_sender
                     LEFT JOIN 
-                        space_prod.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
+                        space_dev.tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
                     WHERE 
                         announcement_receiver = \'""" + user_id + """\';
 
@@ -468,7 +468,7 @@ class Announcements(Resource):
             #     response = db.execute("""
             #                             -- Find the user details
             #                             SELECT *
-            #                             FROM space_prod.announcements AS a
+            #                             FROM space_dev.announcements AS a
             #                             WHERE a.announcement_receiver = \'""" + user_id + """\'
             #                             AND a.App = '1'
             #                             ORDER BY a.announcement_date DESC;
@@ -530,8 +530,8 @@ class Announcements(Resource):
                     user_query = db.execute(""" 
                                         -- Find the user details
                                         SELECT tenant_email as email, tenant_phone_number as phone_number, notifications
-                                        FROM space_prod.tenantProfileInfo AS t
-                                        LEFT JOIN space_prod.users ON tenant_user_id = user_uid
+                                        FROM space_dev.tenantProfileInfo AS t
+                                        LEFT JOIN space_dev.users ON tenant_user_id = user_uid
                                         -- WHERE t.tenant_uid = '350-000005';
                                         WHERE t.tenant_uid = \'""" + receivers[i] + """\';
                                         """)                    
@@ -539,8 +539,8 @@ class Announcements(Resource):
                     user_query = db.execute(""" 
                                         -- Find the user details
                                         SELECT owner_email as email, owner_phone_number as phone_number, notifications
-                                        FROM space_prod.ownerProfileInfo AS o
-                                        LEFT JOIN space_prod.users ON owner_user_id = user_uid
+                                        FROM space_dev.ownerProfileInfo AS o
+                                        LEFT JOIN space_dev.users ON owner_user_id = user_uid
                                         -- WHERE o.owner_uid = '110-000005';
                                         WHERE o.owner_uid = \'""" + receivers[i] + """\';
                                         """)
@@ -548,8 +548,8 @@ class Announcements(Resource):
                     user_query = db.execute(""" 
                                         -- Find the user details
                                         SELECT business_email as email, business_phone_number as phone_number, notifications
-                                        FROM space_prod.businessProfileInfo AS b
-                                        LEFT JOIN space_prod.users ON business_user_id = user_uid
+                                        FROM space_dev.businessProfileInfo AS b
+                                        LEFT JOIN space_dev.users ON business_user_id = user_uid
                                         -- WHERE b.business_uid = '600-000005';
                                         WHERE b.business_uid = \'""" + receivers[i] + """\';
                                         """)                                        
@@ -582,7 +582,7 @@ class Announcements(Resource):
                     # if payload["announcement_type"][j] == "App":
                     #     newRequest['App'] = "1"
                 newRequest['App'] = "1"                
-                response["App"] = db.insert('space_prod.announcements', newRequest)
+                response["App"] = db.insert('space_dev.announcements', newRequest)
 
         return response           
 
@@ -615,7 +615,7 @@ class Announcements(Resource):
                     key = {'announcement_uid': each}
                     print("Annoucement Key: ", key)
                     with connect() as db:
-                        response = db.update('space_prod.announcements', key, payload)
+                        response = db.update('space_dev.announcements', key, payload)
                         i = i + 1
                     response["rows affected"] = i
 
@@ -630,10 +630,10 @@ class LeaseExpiringNotify(Resource):
         with connect() as db:
             response = db.execute("""
             SELECT *
-            FROM space_prod.leases l
-            LEFT JOIN space_prod.t_details t ON t.lt_lease_id = l.lease_uid
-            LEFT JOIN space_prod.b_details b ON b.contract_property_id = l.lease_property_id
-            LEFT JOIN space_prod.properties p ON p.property_uid = l.lease_property_id
+            FROM space_dev.leases l
+            LEFT JOIN space_dev.t_details t ON t.lt_lease_id = l.lease_uid
+            LEFT JOIN space_dev.b_details b ON b.contract_property_id = l.lease_property_id
+            LEFT JOIN space_dev.properties p ON p.property_uid = l.lease_property_id
             WHERE l.lease_end = DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 2 MONTH), "%Y-%m-%d")
             AND l.lease_status='ACTIVE'
             AND b.contract_status='ACTIVE'; """)
@@ -683,26 +683,26 @@ class LeaseExpiringNotify(Resource):
 # RUN STORED PROCEDURES
 
 # def get_new_billUID(conn):
-#     newBillQuery = execute("CALL space_prod.new_bill_uid;", "get", conn)
+#     newBillQuery = execute("CALL space_dev.new_bill_uid;", "get", conn)
 #     if newBillQuery["code"] == 280:
 #         return newBillQuery["result"][0]["new_id"]
 #     return "Could not generate new bill UID", 500
 
 
 # def get_new_purchaseUID(conn):
-#     newPurchaseQuery = execute("CALL space_prod.new_purchase_uid;", "get", conn)
+#     newPurchaseQuery = execute("CALL space_dev.new_purchase_uid;", "get", conn)
 #     if newPurchaseQuery["code"] == 280:
 #         return newPurchaseQuery["result"][0]["new_id"]
 #     return "Could not generate new bill UID", 500
 
 # def get_new_propertyUID(conn):
-#     newPropertyQuery = execute("CALL space_prod.new_property_uid;", "get", conn)
+#     newPropertyQuery = execute("CALL space_dev.new_property_uid;", "get", conn)
 #     if newPropertyQuery["code"] == 280:
 #         return newPropertyQuery["result"][0]["new_id"]
 #     return "Could not generate new property UID", 500
 
 
-# -- space_prod Queries start here -------------------------------------------------------------------------------
+# -- space_dev Queries start here -------------------------------------------------------------------------------
 
 class stripe_key(Resource):
     def get(self, desc):
@@ -714,7 +714,7 @@ class stripe_key(Resource):
         
 
 
-# -- space_prod CRON ENDPOINTS start here -------------------------------------------------------------------------------
+# -- space_dev CRON ENDPOINTS start here -------------------------------------------------------------------------------
 
 # -- CURRENT CRON JOB
 
@@ -738,7 +738,7 @@ class Lease_CLASS(Resource):
             with connect() as db:    
                 lease_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.leases
+                    FROM space_dev.leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
                     """)
@@ -753,7 +753,7 @@ class Lease_CLASS(Resource):
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
                         active_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'INACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'ACTIVE';
@@ -768,7 +768,7 @@ class Lease_CLASS(Resource):
 
                         # Make the Approved contract Active
                         new_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'ACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'APPROVED';  
@@ -791,7 +791,7 @@ class Lease_CLASS(Resource):
                 # Run query to find all EXPIRED Contracts
                 lease_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.leases
+                    FROM space_dev.leases
                     WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
                         AND lease_status = "ACTIVE" ;
                     """)
@@ -802,7 +802,7 @@ class Lease_CLASS(Resource):
                 for lease in expired_leases:
                     if lease["lease_m2m"] == 1:
                         m2m_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'ACTIVE M2M'
                                 WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
                                 """)
@@ -813,7 +813,7 @@ class Lease_CLASS(Resource):
 
                     else:
                         expired_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'EXPIRED'
                                 WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
                                 """)
@@ -889,7 +889,7 @@ def Lease_CRON(Resource):
             with connect() as db:    
                 lease_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.leases
+                    FROM space_dev.leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
                     """)
@@ -904,7 +904,7 @@ def Lease_CRON(Resource):
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
                         active_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'INACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'ACTIVE';
@@ -919,7 +919,7 @@ def Lease_CRON(Resource):
 
                         # Make the Approved contract Active
                         new_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'ACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'APPROVED';  
@@ -942,7 +942,7 @@ def Lease_CRON(Resource):
                 # Run query to find all EXPIRED Contracts
                 lease_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.leases
+                    FROM space_dev.leases
                     WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
                         AND lease_status = "ACTIVE" ;
                     """)
@@ -953,7 +953,7 @@ def Lease_CRON(Resource):
                 for lease in expired_leases:
                     if lease["lease_m2m"] == 1:
                         m2m_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'ACTIVE M2M'
                                 WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
                                 """)
@@ -964,7 +964,7 @@ def Lease_CRON(Resource):
 
                     else:
                         expired_lease = ("""
-                                UPDATE space_prod.leases
+                                UPDATE space_dev.leases
                                 SET lease_status = 'EXPIRED'
                                 WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
                                 """)
@@ -1040,7 +1040,7 @@ class Contract_CLASS(Resource):
             with connect() as db:    
                 contract_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.contracts
+                    FROM space_dev.contracts
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
                     """)
@@ -1054,7 +1054,7 @@ class Contract_CLASS(Resource):
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
                         active_contract = ("""
-                                UPDATE space_prod.contracts
+                                UPDATE space_dev.contracts
                                 SET contract_status = 'INACTIVE'
                                 WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
                                 AND contract_status = 'ACTIVE';
@@ -1071,7 +1071,7 @@ class Contract_CLASS(Resource):
 
                         # Make the Approved contract Active
                         new_contract = ("""
-                                UPDATE space_prod.contracts
+                                UPDATE space_dev.contracts
                                 SET contract_status = 'ACTIVE'
                                 WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
                                 AND contract_status = 'APPROVED';  
@@ -1153,7 +1153,7 @@ def Contract_CRON(Resource):
             with connect() as db:    
                 contract_query = db.execute("""
                     SELECT * 
-                    FROM space_prod.contracts
+                    FROM space_dev.contracts
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
                     """)
@@ -1167,7 +1167,7 @@ def Contract_CRON(Resource):
                         # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
                         active_contract = ("""
-                                UPDATE space_prod.contracts
+                                UPDATE space_dev.contracts
                                 SET contract_status = 'INACTIVE'
                                 WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
                                 AND contract_status = 'ACTIVE';
@@ -1184,7 +1184,7 @@ def Contract_CRON(Resource):
 
                         # Make the Approved contract Active
                         new_contract = ("""
-                                UPDATE space_prod.contracts
+                                UPDATE space_dev.contracts
                                 SET contract_status = 'ACTIVE'
                                 WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
                                 AND contract_status = 'APPROVED';  
@@ -1277,7 +1277,7 @@ class LateFees_CLASS(Resource):
                 lateFees = db.execute("""
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
-                        FROM space_prod.purchases    
+                        FROM space_dev.purchases    
                         WHERE purchase_type LIKE "%LATE FEE%" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
                             AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                         """)
@@ -1378,7 +1378,7 @@ class LateFees_CLASS(Resource):
                                         payload = {'pur_amount_due': late_fee}
                                         # print(key, payload)
 
-                                        response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                                        response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
                                         # print("updated ", key, payload)
                                         numCronUpdates = numCronUpdates + 1
                                         # print(response)
@@ -1398,7 +1398,7 @@ class LateFees_CLASS(Resource):
                                                 payload = {'pur_amount_due': amount_due}
                                                 # print(key, payload)
 
-                                                response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                                                response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
                                                 numCronUpdates = numCronUpdates + 1
                                                 # print("Updated PM", key, payload)
                                     else:
@@ -1413,7 +1413,7 @@ class LateFees_CLASS(Resource):
 
                             # Create JSON Object for Rent Purchase
                             newRequest = {}
-                            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                            newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                             grouping = newRequestID
                             # print(newRequestID)
 
@@ -1454,13 +1454,13 @@ class LateFees_CLASS(Resource):
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
-                            db.insert('space_prod.purchases', newRequest)
+                            db.insert('space_dev.purchases', newRequest)
                             numCronPurchases = numCronPurchases + 1
                             # print("Inserted into db: ", newRequest)
 
 
                             # Create JSON Object for Rent Purchase for PM-Owner Payment
-                            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                            newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                             newRequest['purchase_uid'] = newRequestID
                             # print(newRequestID)
                             newRequest['pur_receiver'] = owner
@@ -1470,7 +1470,7 @@ class LateFees_CLASS(Resource):
                             # print(newRequest)
                             # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                             # print("\nInsert Property Manager to Owner Late Fee")
-                            db.insert('space_prod.purchases', newRequest)
+                            db.insert('space_dev.purchases', newRequest)
                             numCronPurchases = numCronPurchases + 1
 
                             
@@ -1490,7 +1490,7 @@ class LateFees_CLASS(Resource):
 
                                     # Use this fee to create an Owner-PM late Fee PUT OR PST 
                                     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                                    newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                                    newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                                     newRequest['purchase_uid'] = newRequestID
                                     # print(newRequestID
                                     newRequest['pur_receiver'] = manager
@@ -1503,7 +1503,7 @@ class LateFees_CLASS(Resource):
                                     # print(newRequest)
                                     # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                                     # print("\nInsert Owner to Property Manager Late Fee")
-                                    db.insert('space_prod.purchases', newRequest)  
+                                    db.insert('space_dev.purchases', newRequest)  
                                     numCronPurchases = numCronPurchases + 1     
 
 
@@ -1573,7 +1573,7 @@ def LateFees_CRON(Resource):
                 lateFees = db.execute("""
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
-                        FROM space_prod.purchases    
+                        FROM space_dev.purchases    
                         WHERE purchase_type LIKE "%LATE FEE%" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
                             AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
                         """)
@@ -1674,7 +1674,7 @@ def LateFees_CRON(Resource):
                                         payload = {'pur_amount_due': late_fee}
                                         # print(key, payload)
 
-                                        response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                                        response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
                                         # print("updated ", key, payload)
                                         numCronUpdates = numCronUpdates + 1
                                         # print(response)
@@ -1694,7 +1694,7 @@ def LateFees_CRON(Resource):
                                                 payload = {'pur_amount_due': amount_due}
                                                 # print(key, payload)
 
-                                                response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                                                response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
                                                 numCronUpdates = numCronUpdates + 1
                                                 # print("Updated PM", key, payload)
                                     else:
@@ -1709,7 +1709,7 @@ def LateFees_CRON(Resource):
 
                             # Create JSON Object for Rent Purchase
                             newRequest = {}
-                            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                            newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                             grouping = newRequestID
                             # print(newRequestID)
 
@@ -1750,13 +1750,13 @@ def LateFees_CRON(Resource):
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
-                            db.insert('space_prod.purchases', newRequest)
+                            db.insert('space_dev.purchases', newRequest)
                             numCronPurchases = numCronPurchases + 1
                             # print("Inserted into db: ", newRequest)
 
 
                             # Create JSON Object for Rent Purchase for PM-Owner Payment
-                            newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                            newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                             newRequest['purchase_uid'] = newRequestID
                             # print(newRequestID)
                             newRequest['pur_receiver'] = owner
@@ -1766,7 +1766,7 @@ def LateFees_CRON(Resource):
                             # print(newRequest)
                             # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                             # print("\nInsert Property Manager to Owner Late Fee")
-                            db.insert('space_prod.purchases', newRequest)
+                            db.insert('space_dev.purchases', newRequest)
                             numCronPurchases = numCronPurchases + 1
 
                             
@@ -1786,7 +1786,7 @@ def LateFees_CRON(Resource):
 
                                     # Use this fee to create an Owner-PM late Fee PUT OR PST 
                                     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                                    newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                                    newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                                     newRequest['purchase_uid'] = newRequestID
                                     # print(newRequestID
                                     newRequest['pur_receiver'] = manager
@@ -1799,7 +1799,7 @@ def LateFees_CRON(Resource):
                                     # print(newRequest)
                                     # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                                     # print("\nInsert Owner to Property Manager Late Fee")
-                                    db.insert('space_prod.purchases', newRequest)  
+                                    db.insert('space_dev.purchases', newRequest)  
                                     numCronPurchases = numCronPurchases + 1     
 
 
@@ -2009,7 +2009,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -2022,12 +2022,12 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_prod.purchases', newRequest)
+                        db.insert('space_dev.purchases', newRequest)
 
 
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
@@ -2039,7 +2039,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                 
                         # print(newRequest)
                         print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_prod.purchases', newRequest)
+                        db.insert('space_dev.purchases', newRequest)
 
 
                         # Owner-PM Payments for Management Fees
@@ -2053,7 +2053,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                             -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                             , jt.*
                                         FROM 
-                                            space_prod.contracts,
+                                            space_dev.contracts,
                                             JSON_TABLE(
                                                 contract_fees,
                                                 "$[*]" COLUMNS (
@@ -2091,7 +2091,7 @@ class MonthlyRentPurchase_CLASS(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                                 # print(newPMRequestID)
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
@@ -2119,7 +2119,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 
                                 # print("PM Fees:", newPMRequest)
                                 # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('space_prod.purchases', newPMRequest)
+                                db.insert('space_dev.purchases', newPMRequest)
                                 print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table
@@ -2323,7 +2323,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                     with connect() as db: 
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -2336,12 +2336,12 @@ def MonthlyRentPurchase_CRON(Resource):
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_prod.purchases', newRequest)
+                        db.insert('space_dev.purchases', newRequest)
 
 
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_receiver'] = owner
@@ -2353,7 +2353,7 @@ def MonthlyRentPurchase_CRON(Resource):
                 
                         # print(newRequest)
                         print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_prod.purchases', newRequest)
+                        db.insert('space_dev.purchases', newRequest)
 
 
                         # Owner-PM Payments for Management Fees
@@ -2367,7 +2367,7 @@ def MonthlyRentPurchase_CRON(Resource):
                                             -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                             , jt.*
                                         FROM 
-                                            space_prod.contracts,
+                                            space_dev.contracts,
                                             JSON_TABLE(
                                                 contract_fees,
                                                 "$[*]" COLUMNS (
@@ -2405,7 +2405,7 @@ def MonthlyRentPurchase_CRON(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
                                 # print(newPMRequestID)
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
@@ -2433,7 +2433,7 @@ def MonthlyRentPurchase_CRON(Resource):
                                 
                                 # print("PM Fees:", newPMRequest)
                                 # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('space_prod.purchases', newPMRequest)
+                                db.insert('space_dev.purchases', newPMRequest)
                                 print("Number of CRON Purchases: ", numCronPurchases, dt)
 
                                 # For each fee, post to purchases table
@@ -2773,7 +2773,7 @@ def check_jwt_token():
 def decrypt_request():
     if request.is_json:
         global decrypted_data
-        print('Inside is_json - space_prod')
+        print('Inside is_json - space_dev')
         print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
         # form_data = request.get_json(force=True).get('data_type') # True = Form data, False = JSON data
@@ -2795,7 +2795,7 @@ def decrypt_request():
         else:
             print("Data issue")
     elif request.content_type and request.content_type.startswith('multipart/form-data'):
-        print('Inside form data - space_prod')
+        print('Inside form data - space_dev')
         # For FormData directly in the request
         encrypted_data = request.form.get('encrypted_data')
 
