@@ -737,7 +737,8 @@ class Lease_CLASS(Resource):
             # Run query to find all APPROVED Contracts
             with connect() as db:    
                 lease_query = db.execute("""
-                    SELECT * 
+                    -- SELECT *
+                    SELECT lease_uid, lease_property_id
                     FROM space_dev.leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
@@ -756,7 +757,7 @@ class Lease_CLASS(Resource):
                                 UPDATE space_dev.leases
                                 SET lease_status = 'INACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
-                                AND lease_status = 'ACTIVE';
+                                AND lease_status IN ('ACTIVE', 'ACTIVE M2M');
                                 """)
                         # print("active_lease Query: ", active_lease)
 
@@ -888,7 +889,8 @@ def Lease_CRON(Resource):
             # Run query to find all APPROVED Contracts
             with connect() as db:    
                 lease_query = db.execute("""
-                    SELECT * 
+                    -- SELECT *
+                    SELECT lease_uid, lease_property_id
                     FROM space_dev.leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
@@ -907,7 +909,7 @@ def Lease_CRON(Resource):
                                 UPDATE space_dev.leases
                                 SET lease_status = 'INACTIVE'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
-                                AND lease_status = 'ACTIVE';
+                                AND lease_status IN ('ACTIVE', 'ACTIVE M2M');
                                 """)
                         # print("active_lease Query: ", active_lease)
 
@@ -1020,7 +1022,6 @@ def Lease_CRON(Resource):
                         'code': 500}
 
         return response
-
 
 class Contract_CLASS(Resource):
     def get(self):
