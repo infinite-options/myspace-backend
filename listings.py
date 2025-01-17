@@ -20,28 +20,37 @@ class Listings (Resource):
 
         with connect() as db:
             print("in listings loop")
+            # listingsQuery = db.execute(""" 
+            #         -- AVAILABLE LISTINGS EXCLUDING ACTIVE LEASES EXPIRING MORE THAT 2 MONTH FROM NOW
+            #         SELECT * 
+            #         FROM (
+            #             SELECT * FROM space_prod.properties
+            #             RIGHT JOIN (
+            #                 SELECT * FROM space_prod.contracts 
+            #                 WHERE contract_status = "ACTIVE") AS c 
+            #             ON contract_property_id = property_uid
+            #             WHERE property_available_to_rent = 1 ) AS p
+            #         LEFT JOIN ( 
+            #             SELECT * FROM space_prod.u_details                                                 
+            #             ) AS u                                       
+            #         ON utility_property_id = property_uid
+            #         LEFT JOIN ( 
+            #             SELECT * FROM space_prod.leases 
+            #             -- WHERE lease_status = "ACTIVE"
+            #             WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
+            #             ) AS l
+            #         ON lease_property_id = property_uid
+            #         WHERE lease_status IS null
+            #         ORDER BY property_uid;
+            #         """)
+
             listingsQuery = db.execute(""" 
-                    -- AVAILABLE LISTINGS EXCLUDING ACTIVE LEASES EXPIRING MORE THAT 2 MONTH FROM NOW
+                    -- AVAILABLE LISTINGS 
                     SELECT * 
-                    FROM (
-                        SELECT * FROM space_prod.properties
-                        RIGHT JOIN (
-                            SELECT * FROM space_prod.contracts 
-                            WHERE contract_status = "ACTIVE") AS c 
-                        ON contract_property_id = property_uid
-                        WHERE property_available_to_rent = 1 ) AS p
-                    LEFT JOIN ( 
-                        SELECT * FROM space_prod.u_details                                                 
-                        ) AS u                                       
-                    ON utility_property_id = property_uid
-                    LEFT JOIN ( 
-                        SELECT * FROM space_prod.leases 
-                        -- WHERE lease_status = "ACTIVE"
-                        WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
-                        ) AS l
-                    ON lease_property_id = property_uid
-                    WHERE lease_status IS null
-                    ORDER BY property_uid;
+                    FROM space_prod.properties
+                    LEFT JOIN (SELECT * FROM space_prod.contracts WHERE contract_status = 'ACTIVE') c ON property_uid = contract_property_id
+                    LEFT JOIN space_prod.u_details ON utility_property_id = property_uid
+                    WHERE property_available_to_rent = '1'
                     """)
 
             # print("Query: ", listingsQuery)
