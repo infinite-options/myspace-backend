@@ -10,7 +10,7 @@
 # README:  if there are errors, make sure you have all requirements are loaded
 # pip3 install -r requirements.txt
 
-print("-------------------- New Program Run --------------------")
+print("-------------------- New Program Run ( space_dev ) --------------------")
 
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
@@ -2849,13 +2849,14 @@ def health_check():
 @app.route('/decode', methods=['POST'])
 def decode():
     print("In decode")
-    # data = request.get_json
+    
     decrypt_request()
+
     if request.is_json:
-        print(request.get_json(force=True))
+        print("JSON Data: ", request.get_json(force=True))
         response = jsonify({'decode': request.get_json(force=True)})
     else:
-        print(request.form)
+        print("Request Form: ", request.form)
         # print(request.files)
         decode_files = {}
         # decode_files['form']=request.form
