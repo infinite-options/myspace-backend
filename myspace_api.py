@@ -10,6 +10,8 @@
 # README:  if there are errors, make sure you have all requirements are loaded
 # pip3 install -r requirements.txt
 
+# Changes is .env file only affect running in LocalHost
+
 print("-------------------- New Program Run ( space_dev ) --------------------")
 
 
