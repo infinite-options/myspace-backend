@@ -815,7 +815,7 @@ def connect():
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor,
         )
-        print("Successfully connected to RDS. (API v2)")
+        print(f"Successfully connected to RDS. ({os.getenv('RDS_DB')})")
         return DatabaseConnection(conn)
     except:
         print(f"Could not connect to RDS. ({os.getenv('RDS_DB')})")

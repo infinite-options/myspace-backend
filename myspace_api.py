@@ -2779,7 +2779,7 @@ def check_jwt_token():
 def decrypt_request():
     if request.is_json:
         global decrypted_data
-        print(f'Inside is_json - {os.getenv('RDS_DB')}')
+        print(f"Inside is_json - {os.getenv('RDS_DB')}")
         print(request.get_json().get('encrypted_data'))
         encrypted_data = request.get_json().get('encrypted_data')
         # form_data = request.get_json(force=True).get('data_type') # True = Form data, False = JSON data
@@ -2801,7 +2801,7 @@ def decrypt_request():
         else:
             print("Data issue")
     elif request.content_type and request.content_type.startswith('multipart/form-data'):
-        print(f'Inside form data - {os.getenv('RDS_DB')}')
+        print(f"Inside is_json - {os.getenv('RDS_DB')}")
         # For FormData directly in the request
         encrypted_data = request.form.get('encrypted_data')
 

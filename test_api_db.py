@@ -296,12 +296,12 @@ class endPointTest_db_CLASS(Resource):
                 # update_lease_fees_query_response = db.execute(update_lease_fees_query, cmd='post')
 
             print("\n*** Completed ***\n")
-            response['insert_temporary_data'] = 'Passed'
+            response['insert_temporary_data'] = f"Passed / Inserted in  {os.getenv('RDS_DB')}"
 
         except:
-            response['insert_temporary_data'] = 'Failed'
+            response['insert_temporary_data'] = f"Failed / Could not access {os.getenv('RDS_DB')}"
 
-        if response['insert_temporary_data'] != 'Passed':
+        if response['insert_temporary_data'] != f"Passed / Inserted in  {os.getenv('RDS_DB')}":
             return response['insert_temporary_data']
         
         response['No of APIs tested'] = 0
