@@ -16,7 +16,7 @@ from werkzeug.exceptions import BadRequest
 # def get_new_paymentUID(conn):
 #     print("In new UID request")
 #     with connect() as db:
-#         newPaymentQuery = db.execute("CALL space_dev.new_payment_uid;", "get", conn)
+#         newPaymentQuery = db.execute("CALL space_prod.new_payment_uid;", "get", conn)
 #         if newPaymentQuery["code"] == 280:
 #             return newPaymentQuery["result"][0]["new_id"]
 #     return "Could not generate new payment UID", 500
@@ -56,7 +56,7 @@ class NewPayments(Resource):
 
                 # GET NEW PAYMENT UID
                 # print("Get New Request UID")
-                newPaymentRequestID = db.call('space_dev.new_payment_uid')['result'][0]['new_id']
+                newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                 print(newPaymentRequestID)
 
                 if total_paid > round(float(item['pur_amount_due']), 2):
@@ -72,7 +72,7 @@ class NewPayments(Resource):
 
                 paymentQuery = (""" 
                         -- INSERT ITEM PAYMENT INTO PAYMENTS TABLE
-                        INSERT INTO space_dev.payments
+                        INSERT INTO space_prod.payments
                         SET payment_uid = \'""" + newPaymentRequestID + """\'
                             , pay_purchase_id =  \'""" + item['purchase_uid'] + """\'
                             , pay_amount = \'""" + paid_amt + """\'
@@ -96,7 +96,7 @@ class NewPayments(Resource):
                 purchaseInfo = db.execute("""
                             -- QUERY ORIGINAL PURCHASE TO CHECK HOW MUCH IS SUPPOSED TO BE PAID
                             SELECT *
-                            FROM space_dev.pp_status
+                            FROM space_prod.pp_status
                             -- WHERE purchase_uid = '400-000703';
                             WHERE purchase_uid = \'""" + item['purchase_uid'] + """\';
                             """)
@@ -155,8 +155,8 @@ class NewPayments(Resource):
                 # print(key, payload)
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
-                response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
-                response['purchase_status_update'] = db.update('space_dev.purchases', key, payload2)
+                response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                response['purchase_status_update'] = db.update('space_prod.purchases', key, payload2)
                 # print(response)
                 
 
@@ -172,7 +172,7 @@ class NewPayments(Resource):
                     managementInfo = db.execute("""
                             -- DETERMINE WHICH PURCHASES ARE MONTHLY MANAGEMENT FEES
                             SELECT *
-                            FROM space_dev.purchases
+                            FROM space_prod.purchases
                             WHERE purchase_type = "Management" AND
                                 -- pur_description = '400-000023';
                                 pur_description = \'""" + item['purchase_uid'] + """\';
@@ -194,8 +194,8 @@ class NewPayments(Resource):
                         # print(key, payload)
 
                         # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
-                        response['purchase_table_update'] = db.update('space_dev.purchases', key, payload)
-                        response['purchase_status_update'] = db.update('space_dev.purchases', key, payload2)
+                        response['purchase_table_update'] = db.update('space_prod.purchases', key, payload)
+                        response['purchase_status_update'] = db.update('space_prod.purchases', key, payload2)
                         # print(response)
 
 
@@ -209,7 +209,7 @@ class NewPayments(Resource):
 
                     # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
-                    newPurchaseRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                    newPurchaseRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                     # print("Part 2A: ", newPurchaseRequestID)
 
                     # DETERMINE HOW MUCH OF THE CONVENIENCE FEES WAS DUE TO EACH PURCHASE
@@ -227,7 +227,7 @@ class NewPayments(Resource):
                         print("Item Convenience Fee: ", itemFee)
 
                     feePurchaseQuery = (""" 
-                            INSERT INTO space_dev.purchases
+                            INSERT INTO space_prod.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
                                 , pur_group = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -255,12 +255,12 @@ class NewPayments(Resource):
                     # INSERT INTO PAYMENTS TABLE
                     # GET NEW UID
                     # print("Get New Request UID")
-                    newPaymentRequestID = db.call('space_dev.new_payment_uid')['result'][0]['new_id']
+                    newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                     # print(newPaymentRequestID)
 
                     feePaymentQuery = (""" 
                             -- PAY PURCHASE UID
-                            INSERT INTO space_dev.payments
+                            INSERT INTO space_prod.payments
                             SET payment_uid = \'""" + newPaymentRequestID + """\'
                                 , pay_purchase_id =  \'""" + newPurchaseRequestID + """\'
                                 , pay_amount = """ + str(itemFee) + """
@@ -280,11 +280,11 @@ class NewPayments(Resource):
 
                     # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE
                     # INSERT INTO PURCHASES TABLE
-                    newPurchaseRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                    newPurchaseRequestID = db.call('space_prod.new_purchase_uid')['result'][0]['new_id']
                     # print("Part 2B: ", newPurchaseRequestID)
 
                     feePurchaseQuery = (""" 
-                            INSERT INTO space_dev.purchases
+                            INSERT INTO space_prod.purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
                                 , pur_group = \'""" + newPurchaseRequestID + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
@@ -312,12 +312,12 @@ class NewPayments(Resource):
                     # INSERT INTO PAYMENTS TABLE
                     # GET NEW UID
                     # print("Get New Request UID")
-                    newPaymentRequestID = db.call('space_dev.new_payment_uid')['result'][0]['new_id']
+                    newPaymentRequestID = db.call('space_prod.new_payment_uid')['result'][0]['new_id']
                     # print(newPaymentRequestID)
 
                     feePaymentQuery = (""" 
                             -- PAY PURCHASE UID
-                            INSERT INTO space_dev.payments
+                            INSERT INTO space_prod.payments
                             SET payment_uid = \'""" + newPaymentRequestID + """\'
                                 , pay_purchase_id =  \'""" + newPurchaseRequestID + """\'
                                 , pay_amount = """ + str(itemFee) + """
@@ -358,13 +358,13 @@ class PaymentMethod(Resource):
             if isinstance(payload, list):
                 for item in payload:
                     print(item)
-                    query_response = db.insert('space_dev.paymentMethods', item)
+                    query_response = db.insert('space_prod.paymentMethods', item)
                     print(query_response)
                     response[i] = query_response
                     i += 1
 
             else:
-                query_response = db.insert('space_dev.paymentMethods', payload)
+                query_response = db.insert('space_prod.paymentMethods', payload)
                 print(query_response)
                 response = query_response
 
@@ -389,7 +389,7 @@ class PaymentMethod(Resource):
                         print(item)
                         key = {'paymentMethod_uid': item.pop('paymentMethod_uid')}
                         print("Key: ", type(key), key)
-                        query_response = db.update('space_dev.paymentMethods', key, item)
+                        query_response = db.update('space_prod.paymentMethods', key, item)
                         print(query_response)
                         response[i] = query_response
                         i += 1
@@ -399,7 +399,7 @@ class PaymentMethod(Resource):
                     print("No paymentMethod_uid")
                     raise BadRequest("Request failed, no UID in payload.")
                 key = {'paymentMethod_uid': payload.pop('paymentMethod_uid')}
-                query_response = db.update('space_dev.paymentMethods', key, payload)
+                query_response = db.update('space_prod.paymentMethods', key, payload)
                 print(query_response)
                 response = query_response
 
@@ -411,7 +411,7 @@ class PaymentMethod(Resource):
             paymentMethodQuery = db.execute("""
                 -- FIND APPLICATIONS CURRENTLY IN PROGRESS
                 SELECT *
-                FROM space_dev.paymentMethods
+                FROM space_prod.paymentMethods
                 WHERE paymentMethod_profile_id = \'""" + user_id + """\';
                  """)
         return paymentMethodQuery
@@ -424,7 +424,7 @@ class PaymentMethod(Resource):
 
             paymentQuery = ("""
                     DELETE 
-                    FROM space_dev.paymentMethods
+                    FROM space_prod.paymentMethods
                     -- WHERE paymentMethod_profile_id = '350-000007' AND paymentMethod_uid = '070-000075';
                     WHERE paymentMethod_profile_id = \'""" + user_id + """\' AND paymentMethod_uid = \'""" + payment_id + """\';
                     """)

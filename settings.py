@@ -9,12 +9,12 @@ class Account(Resource):
         response = {}
         payload = request.get_json(force=True)
         with connect() as db:
-            response = db.insert('space_dev.accounts', payload)
+            response = db.insert('space_prod.accounts', payload)
         return response
     
     def get(self):
         response = {}
         where = request.args.to_dict()
         with connect() as db:
-            response = db.select('space_dev.accounts', where)
+            response = db.select('space_prod.accounts', where)
         return response
