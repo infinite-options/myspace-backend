@@ -63,7 +63,7 @@ class Contracts(Resource):
                 print("In loop processing: ", property)
 
 
-                contract_uid = db.call('space_dev.new_contract_uid')['result'][0]['new_id']
+                contract_uid = db.call('new_contract_uid')['result'][0]['new_id']
                 key = {'contract_uid': contract_uid}
                 response['contract_uid'] = contract_uid 
                 print("Contract Key: ", key)
@@ -80,8 +80,8 @@ class Contracts(Resource):
                 # Actual Insert Statement
                 print("About to insert: ", payload)
                 payload["contract_property_id"] = property
-                response["contract"] = db.insert('space_dev.contracts', payload)
-                print("Data inserted into space_dev.contracts", response)
+                response["contract"] = db.insert('contracts', payload)
+                print("Data inserted into contracts", response)
 
         return response
 
@@ -116,7 +116,7 @@ class Contracts(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response['contract_info'] = db.update('space_dev.contracts', key, payload)
+            response['contract_info'] = db.update('contracts', key, payload)
             # print("Response:" , response)
         
         return response

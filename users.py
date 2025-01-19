@@ -24,7 +24,7 @@ class UserInfo(Resource):
             # print("in get lease applications")
             userQuery = db.execute("""                     
                     SELECT *
-                    FROM space_dev.users 
+                    FROM users 
                     -- WHERE user_uid = 'anureetksandhu7@gmail.com' OR email = 'anureetksandhu7@gmail.com'   ;                   
                     WHERE user_uid = \'""" + user_id + """\' OR email = \'""" + user_id + """\'  ;
                     """)
@@ -50,7 +50,7 @@ class UserInfo(Resource):
             # print(payload)
             
             with connect() as db:
-                response = db.update('space_dev.users', key, payload)
+                response = db.update('users', key, payload)
             return response
 
 

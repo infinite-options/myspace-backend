@@ -71,8 +71,8 @@ class LeaseApplication(Resource):
             leaseQuery = db.execute(""" 
                     -- FIND LEASE-TENANT APPLICATION
                     SELECT *
-                    FROM space_dev.lease_tenant
-                    LEFT JOIN space_dev.leases ON lt_lease_id = lease_uid
+                    FROM lease_tenant
+                    LEFT JOIN leases ON lt_lease_id = lease_uid
                     WHERE lt_tenant_id = \'""" + tenant_id + """\' AND lease_property_id = \'""" + property_id + """\';
                     """)
             # print(leaseQuery)
@@ -108,7 +108,7 @@ class LeaseApplication(Resource):
         with connect() as db: 
 
             # Get New Lease UID    
-            lease_uid = db.call('space_dev.new_lease_uid')['result'][0]['new_id']
+            lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
             key = {'lease_uid': lease_uid}
             response['lease_uid'] = lease_uid
             print("Contract Key: ", key)
@@ -139,8 +139,8 @@ class LeaseApplication(Resource):
 
             # Actual Insert Statement
             # print("About to insert: ", payload)
-            response["lease"] = db.insert('space_dev.leases', payload)
-            # print("Data inserted into space_dev.leases", response)
+            response["lease"] = db.insert('leases', payload)
+            # print("Data inserted into leases", response)
 
 
             # Insert data into lease-Tenants table
@@ -160,14 +160,14 @@ class LeaseApplication(Resource):
                         # print(new_leaseFees[item])
                     
                     # Get new leaseFees_uid
-                    new_leaseFees["leaseFees_uid"] = db.call('space_dev.new_leaseFee_uid')['result'][0]['new_id']  
+                    new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']  
                     # print(new_leaseFees["leaseFees_uid"])
 
                     # print("Payload: ", new_leaseFees)
                     # print("lease_uid: ", lease_uid)
                     new_leaseFees["fees_lease_id"] = lease_uid
                     # print("New Payload: ", new_leaseFees)
-                    response["lease_fees"] = db.insert('space_dev.leaseFees', new_leaseFees)
+                    response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
                     # print("response: ", response["lease_fees"])
 
 
@@ -178,7 +178,7 @@ class LeaseApplication(Resource):
                 # lt_employment = tenant_employment if tenant_employment else []
 
                 ltQuery = (""" 
-                    INSERT INTO space_dev.lease_tenant
+                    INSERT INTO lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
                         , lt_tenant_id = \'""" + tenant_uid + """\'
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
@@ -186,7 +186,7 @@ class LeaseApplication(Resource):
                 # print("Made it to here")
                 response["lease_tenant"] = db.execute(ltQuery, [], 'post')
                 # print("Added tenant: ", response)
-            # print("Data inserted into space_dev.lease_tenant")
+            # print("Data inserted into lease_tenant")
 
 
         return response
@@ -228,14 +228,14 @@ class LeaseApplication(Resource):
                     print("Fee to delete: ", delete_uid)
 
                     leaseQuery = ("""
-                            DELETE FROM space_dev.leaseFees
+                            DELETE FROM leaseFees
                             WHERE leaseFees_uid = \'""" + delete_uid + """\'
                             """)
 
                     response["delete_fees"] = db.delete(leaseQuery)
 
                     # response["delete_fees"] = db.delete(""" 
-                    #         DELETE FROM space_dev.leaseFees
+                    #         DELETE FROM leaseFees
                     #         WHERE leaseFees_uid = \'""" + delete_uid + """\'
                     #         """)
                             
@@ -269,13 +269,13 @@ class LeaseApplication(Resource):
                         fee_key = {'leaseFees_uid': fees['leaseFees_uid']}
                         # print("fee_key",fee_key, type(fee_key))
                         # print("new_leaseFees: ", new_leaseFees)
-                        response['lease_fees'] = db.update('space_dev.leaseFees', fee_key, new_leaseFees)
+                        response['lease_fees'] = db.update('leaseFees', fee_key, new_leaseFees)
                     # FOR FIRST TIME FEES ARE BEING ADDED
                     else:
                         # print("In ELSE Statment ") 
-                        new_leaseFees["leaseFees_uid"] = db.call('space_dev.new_leaseFee_uid')['result'][0]['new_id']    
+                        new_leaseFees["leaseFees_uid"] = db.call('new_leaseFee_uid')['result'][0]['new_id']    
                         # print('New Lease Fees Payload: ', new_leaseFees)
-                        response["lease_fees"] = db.insert('space_dev.leaseFees', new_leaseFees)
+                        response["lease_fees"] = db.insert('leaseFees', new_leaseFees)
 
             if "lease_end" in payload:
                 print("In lease_end")
@@ -289,7 +289,7 @@ class LeaseApplication(Resource):
                     payload[key1] = None
 
             print("Leases Payload: ", payload, type(payload))
-            response['lease_docs'] = db.update('space_dev.leases', key, payload)
+            response['lease_docs'] = db.update('leases', key, payload)
             # print("Response:" , response)
        
 
@@ -308,11 +308,11 @@ class LeaseApplication(Resource):
                             leaseFees.* -- , leases.*
                             ,lease_property_id, lease_start, lease_status
                             , contract_uid, contract_status, contract_business_id, property_owner_id, lt_tenant_id
-                        FROM space_dev.leaseFees
-                        LEFT JOIN space_dev.leases ON fees_lease_id = lease_uid
-                        LEFT JOIN space_dev.lease_tenant ON fees_lease_id = lt_lease_id
-                        LEFT JOIN (SELECT * FROM space_dev.contracts WHERE contract_status = "ACTIVE") AS c ON lease_property_id = contract_property_id
-                        LEFT JOIN space_dev.property_owner ON lease_property_id = property_id
+                        FROM leaseFees
+                        LEFT JOIN leases ON fees_lease_id = lease_uid
+                        LEFT JOIN lease_tenant ON fees_lease_id = lt_lease_id
+                        LEFT JOIN (SELECT * FROM contracts WHERE contract_status = "ACTIVE") AS c ON lease_property_id = contract_property_id
+                        LEFT JOIN property_owner ON lease_property_id = property_id
                         -- WHERE fees_lease_id = '300-000005'
                         WHERE fees_lease_id = \'""" + lease_uid + """\'
                             AND contract_status = 'ACTIVE';
@@ -468,7 +468,7 @@ class LeaseApplication(Resource):
 
                         # Create Tenant-PM Purchase
                         # Create JSON Object for Rent Purchase for Tenant-PM Purchase
-                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -485,7 +485,7 @@ class LeaseApplication(Resource):
 
                         print("Input to purchases Tenant-PM: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_dev.purchases', newRequest)
+                        db.insert('purchases', newRequest)
                         print("Tenant-PM Fee Inserted")
 
 
@@ -495,7 +495,7 @@ class LeaseApplication(Resource):
 
                         # Create PM-Owner Purchase
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         newRequest['purchase_uid'] = newRequestID
                         # print(newRequestID)
                         newRequest['pur_cf_type'] = "expense"
@@ -525,7 +525,7 @@ class LeaseApplication(Resource):
                         
                         print("Input to purchases PM-Owner: ", newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_dev.purchases', newRequest)
+                        db.insert('purchases', newRequest)
                         print("PM-Owner Fee Inserted")
 
 
@@ -542,7 +542,7 @@ class LeaseApplication(Resource):
                                     -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                     , jt.*
                                 FROM 
-                                    space_dev.contracts,
+                                    contracts,
                                     JSON_TABLE(
                                         contract_fees,
                                         "$[*]" COLUMNS (
@@ -574,7 +574,7 @@ class LeaseApplication(Resource):
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                                 newPMRequest['purchase_uid'] = newPMRequestID
                                 # print(newPMRequestID)
                                 
@@ -609,7 +609,7 @@ class LeaseApplication(Resource):
                                 newPMRequest['pur_due_date'] =  newRequest['pur_due_date']
                                 
                                 # print(newPMRequest)
-                                db.insert('space_dev.purchases', newPMRequest)
+                                db.insert('purchases', newPMRequest)
 
 
 
@@ -625,7 +625,7 @@ class LeaseApplication(Resource):
                         #     newRequest['pur_description'] = f"First Month {fee['fee_name']}"
 
                         #     # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        #     newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         #     grouping = newRequestID
                         #     newRequest['purchase_uid'] = newRequestID
                         #     newRequest['pur_group'] = grouping
@@ -637,13 +637,13 @@ class LeaseApplication(Resource):
                             
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('space_dev.purchases', newRequest)
+                        #     db.insert('purchases', newRequest)
 
 
 
                         #     # Create PM-Owner Payment
                         #     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        #     newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        #     newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         #     newRequest['purchase_uid'] = newRequestID
                         #     # print(newRequestID)
                         #     newRequest['pur_receiver'] = owner
@@ -659,7 +659,7 @@ class LeaseApplication(Resource):
 
                         #     # print(newRequest)
                         #     # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        #     db.insert('space_dev.purchases', newRequest)
+                        #     db.insert('purchases', newRequest)
 
 
 
@@ -673,7 +673,7 @@ class LeaseApplication(Resource):
                         #                 -- , contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                         #                 , jt.*
                         #             FROM 
-                        #                 space_dev.contracts,
+                        #                 contracts,
                         #                 JSON_TABLE(
                         #                     contract_fees,
                         #                     "$[*]" COLUMNS (
@@ -705,7 +705,7 @@ class LeaseApplication(Resource):
 
                         #             # Create JSON Object for Fee Purchase
                         #             newPMRequest = {}
-                        #             newPMRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        #             newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         #             newPMRequest['purchase_uid'] = newPMRequestID
                         #             # print(newPMRequestID)
                                     
@@ -738,7 +738,7 @@ class LeaseApplication(Resource):
                         #             print("Next Months PM-Owner Due: ", newPMRequest['pur_due_date'], type(newPMRequest['pur_due_date'])) 
 
                         #             # print(newPMRequest)
-                        #             db.insert('space_dev.purchases', newPMRequest)
+                        #             db.insert('purchases', newPMRequest)
                             
                             
                         # else: 
@@ -749,7 +749,7 @@ class LeaseApplication(Resource):
                     else: 
                         print("Not Rent")
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('space_dev.new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                         grouping = newRequestID
                         newRequest['purchase_uid'] = newRequestID
                         newRequest['pur_group'] = grouping
@@ -769,7 +769,7 @@ class LeaseApplication(Resource):
                         newRequest['pur_amount_due'] = fee['charge']
                         # print(newRequest)
                         # print("Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('space_dev.purchases', newRequest)
+                        db.insert('purchases', newRequest)
 
         return response
 
@@ -794,7 +794,7 @@ class LeaseReferal(Resource):
 
         with connect() as db: 
 
-            lease_uid = db.call('space_dev.new_lease_uid')['result'][0]['new_id']
+            lease_uid = db.call('new_lease_uid')['result'][0]['new_id']
             print("New Lease UID: ", lease_uid)
 
             # IF tenant_uid ==> POST
@@ -813,7 +813,7 @@ class LeaseReferal(Resource):
                 try:
                     tenantID = (""" 
                         SELECT * 
-                        FROM space_dev.tenantProfileInfo
+                        FROM tenantProfileInfo
                         WHERE tenant_email = \'""" + tenant["email"] + """\'
                     """)
 
@@ -836,7 +836,7 @@ class LeaseReferal(Resource):
 
                         userID = (""" 
                             SELECT *
-                            FROM space_dev.users
+                            FROM users
                             WHERE email = \'""" + tenant["email"] + """\'
                         """)
 
@@ -853,7 +853,7 @@ class LeaseReferal(Resource):
                         print('New Roles: ', roles)
 
 
-                        response = db.update('space_dev.users', {"user_uid": user_uid}, {'role': roles})
+                        response = db.update('users', {"user_uid": user_uid}, {'role': roles})
                         print("MYSPACE response: ", response)
                         print("MYSPACE response code: ", response['code'])
 
@@ -869,18 +869,18 @@ class LeaseReferal(Resource):
 
                         # Create UserID
 
-                        # query = ["CALL space_dev.new_user_uid;"]
+                        # query = ["CALL new_user_uid;"]
                         # NewIDresponse = db.execute(query[0], [], 'get')
                     
                         # newUserID = NewIDresponse["result"][0]["new_id"]
                         if user_uid == 0:
                             print("UserID not found")
-                            user_uid = db.call('space_dev.new_user_uid')['result'][0]['new_id']
+                            user_uid = db.call('new_user_uid')['result'][0]['new_id']
                         
                             print("MySpace userID: ", user_uid)
 
                             userQuery = ("""
-                                    INSERT INTO space_dev.users SET
+                                    INSERT INTO users SET
                                         user_uid = \'""" + user_uid + """\',
                                         first_name = \'""" + tenant["first_name"] + """\',
                                         last_name = \'""" + tenant["last_name"] + """\',
@@ -898,11 +898,11 @@ class LeaseReferal(Resource):
                         # Create Tenant ID
 
                         print("create tenant ID")
-                        # newTenantID = db.call('space_dev.new_tenant_uid')['result'][0]['new_id']
+                        # newTenantID = db.call('new_tenant_uid')['result'][0]['new_id']
                         # print("MySpace tenantID: ", newTenantID)
 
                         # tenantQuery = ("""
-                        #         INSERT INTO space_dev.tenantProfileInfo SET
+                        #         INSERT INTO tenantProfileInfo SET
                         #             tenant_uid = \'""" + newTenantID + """\',
                         #             tenant_user_id = \'""" + newUserID + """\',
                         #             tenant_first_name = \'""" + tenant["first_name"] + """\',
@@ -917,7 +917,7 @@ class LeaseReferal(Resource):
 
                         profile_info = {}
 
-                        tenant_uid = db.call('space_dev.new_tenant_uid')['result'][0]['new_id']
+                        tenant_uid = db.call('new_tenant_uid')['result'][0]['new_id']
                         print("MySpace tenantID: ", tenant_uid)
 
                         profile_info["tenant_uid"] = tenant_uid
@@ -940,7 +940,7 @@ class LeaseReferal(Resource):
 
                         
 
-                        response = db.insert('space_dev.tenantProfileInfo', profile_info)
+                        response = db.insert('tenantProfileInfo', profile_info)
                         response["tenant_uid"] = profile_info["tenant_uid"]
                         print("MYSPACE Tenant response: ", response)
 
@@ -949,7 +949,7 @@ class LeaseReferal(Resource):
                 # Add Tenant to Lease Contacts
                 print(tenant_uid)
                 ltQuery = (""" 
-                    INSERT INTO space_dev.lease_tenant
+                    INSERT INTO lease_tenant
                     SET lt_lease_id = \'""" + lease_uid + """\'
                         , lt_tenant_id = \'""" + tenant_uid + """\'
                         , lt_responsibility = \'""" + tenant_responsibiity + """\';
@@ -978,8 +978,8 @@ class LeaseReferal(Resource):
 
             # Actual Insert Statement
             print("About to insert: ", payload)
-            response["lease"] = db.insert('space_dev.leases', payload)
-            print("Data inserted into space_dev.leases", response)
+            response["lease"] = db.insert('leases', payload)
+            print("Data inserted into leases", response)
 
         
             response["msg"] = "Lease Referal Endpoint"

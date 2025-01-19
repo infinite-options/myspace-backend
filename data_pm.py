@@ -207,7 +207,7 @@ def processImage(key, payload):
             key_uid = key['appliance_uid']
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New appliance images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT appliance_images FROM space_dev.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT appliance_images FROM appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -224,7 +224,7 @@ def processImage(key, payload):
             key_uid = key['bill_uid']
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New bill images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT bill_images FROM space_dev.bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT bill_images FROM bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -241,7 +241,7 @@ def processImage(key, payload):
             key_uid = key['maintenance_request_uid']
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance request images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT maintenance_images FROM space_dev.maintenanceRequests WHERE maintenance_request_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT maintenance_images FROM maintenanceRequests WHERE maintenance_request_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -257,7 +257,7 @@ def processImage(key, payload):
             key_uid = key['maintenance_quote_uid']
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New maintenance quote images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT quote_maintenance_images FROM space_dev.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT quote_maintenance_images FROM maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -273,7 +273,7 @@ def processImage(key, payload):
             key_uid = key['property_uid']
             payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'img_0' in request.files or payload_delete_images != None:   #  New property images are passed in as img_0, img_1.  No Image attributes are passed in
-                payload_query = db.execute(""" SELECT property_images FROM space_dev.properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT property_images FROM properties WHERE property_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -290,7 +290,7 @@ def processImage(key, payload):
             key_uid = key['tenant_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'tenant_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT tenant_photo_url FROM space_dev.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT tenant_photo_url FROM tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -308,7 +308,7 @@ def processImage(key, payload):
             key_uid = key['owner_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'owner_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT owner_photo_url FROM space_dev.ownerProfileInfo WHERE owner_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT owner_photo_url FROM ownerProfileInfo WHERE owner_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -327,7 +327,7 @@ def processImage(key, payload):
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             # if 'business_photo' in request.files: #  New images are passed in as photo_url
             if 'business_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT business_photo_url FROM space_dev.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT business_photo_url FROM businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -345,7 +345,7 @@ def processImage(key, payload):
             key_uid = key['employee_uid']
             # payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
             if 'employee_photo_url' in request.files: #  New images are passed in as photo_url
-                payload_query = db.execute(""" SELECT employee_photo_url FROM space_dev.employees WHERE employee_uid = \'""" + key_uid + """\'; """)     # Current Images
+                payload_query = db.execute(""" SELECT employee_photo_url FROM employees WHERE employee_uid = \'""" + key_uid + """\'; """)     # Current Images
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if len(payload_query['result']) > 0:
@@ -524,7 +524,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('contract_documents_details', None)      # New Documents         (if there are New documents being added)
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete   (if documents are being deleted)
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT contract_documents FROM space_dev.contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Get Current Documents from db
+                payload_query = db.execute(""" SELECT contract_documents FROM contracts WHERE contract_uid = \'""" + key_uid + """\'; """)     # Get Current Documents from db
                 # print("1: ", payload_query)
                 # print("2: ", payload_query['result'], type(payload_query['result']))
                 # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
@@ -542,7 +542,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('lease_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT lease_documents FROM space_dev.leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                payload_query = db.execute(""" SELECT lease_documents FROM leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Documents
                 print("1: ", payload_query)
                 print("2: ", payload_query['result'], type(payload_query['result']))
                 if payload_query['result']: print("3: ", payload_query['result'][0] ) 
@@ -559,7 +559,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('bill_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT bill_documents FROM space_dev.bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                payload_query = db.execute(""" SELECT bill_documents FROM bills WHERE bill_uid = \'""" + key_uid + """\'; """)     # Current Documents
                 # print("1: ", payload_query)
                 # print("2: ", payload_query['result'], type(payload_query['result']))
                 # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
@@ -577,7 +577,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('appliance_documents_details', None)     # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT appliance_documents FROM space_dev.appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Documents
+                payload_query = db.execute(""" SELECT appliance_documents FROM appliances WHERE appliance_uid = \'""" + key_uid + """\'; """)     # Current Documents
                 # print("1: ", payload_query)
                 # print("2: ", payload_query['result'], type(payload_query['result']))
                 # if payload_query['result']: print("3: ", payload_query['result'][0] ) 
@@ -594,7 +594,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('quote_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query =  db.execute(""" SELECT quote_documents FROM space_dev.maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)                # Current Documents
+                payload_query =  db.execute(""" SELECT quote_documents FROM maintenanceQuotes WHERE maintenance_quote_uid = \'""" + key_uid + """\'; """)                # Current Documents
                 payload_documents = payload_query['result'][0]['quote_documents'] if payload_query['result'] else None
             else:
                 return payload
@@ -607,7 +607,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('tenant_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                     # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT tenant_documents FROM space_dev.tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
+                payload_query = db.execute(""" SELECT tenant_documents FROM tenantProfileInfo WHERE tenant_uid = \'""" + key_uid + """\'; """)                 # Current Documents
                 payload_documents = payload_query['result'][0]['tenant_documents'] if payload_query['result'] else None
             else:
                 return payload
@@ -620,7 +620,7 @@ def processDocument(key, payload):
             payload_document_details = payload.pop('business_documents_details', None)         # New Documents
             payload_delete_documents = payload.pop('delete_documents', None)                   # Documents to Delete
             if payload_changed_documents != None or payload_document_details != None or payload_delete_documents != None:
-                payload_query = db.execute(""" SELECT business_documents FROM space_dev.businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
+                payload_query = db.execute(""" SELECT business_documents FROM businessProfileInfo WHERE business_uid = \'""" + key_uid + """\'; """)                # Current Documents
                 payload_documents = payload_query['result'][0]['business_documents'] if payload_query['result'] else None                                          
             else:
                 return payload

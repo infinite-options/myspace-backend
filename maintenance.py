@@ -42,14 +42,14 @@ class MaintenanceRequests(Resource):
                         -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
                         -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
                         -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                        FROM space_dev.maintenanceRequests
-                        LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                        -- LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-                        -- LEFT JOIN space_dev.pp_status ON pur_bill_id = bill_uid
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                        FROM maintenanceRequests
+                        LEFT JOIN properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN o_details ON maintenance_property_id = property_id
+                        LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
@@ -110,14 +110,14 @@ class MaintenanceRequests(Resource):
                         -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
                         -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
                         -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                        FROM space_dev.maintenanceRequests
-                        LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                        -- LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-                        -- LEFT JOIN space_dev.pp_status ON pur_bill_id = bill_uid
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                        FROM maintenanceRequests
+                        LEFT JOIN properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN o_details ON maintenance_property_id = property_id
+                        LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
@@ -172,14 +172,14 @@ class MaintenanceRequests(Resource):
                         -- 	, property_id, property_owner_id, po_owner_percent, owner_uid, owner_user_id, owner_first_name, owner_last_name, owner_phone_number, owner_email
                         -- 	, business_uid, business_user_id, business_type, business_name, business_phone_number, business_email, contract_status
                         -- 	, lease_uid, lease_status, lease_assigned_contacts,  tenant_uid, tenant_user_id, tenant_first_name, tenant_last_name, tenant_email, tenant_phone_number
-                        FROM space_dev.maintenanceRequests
-                        LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                        -- LEFT JOIN space_dev.bills ON bill_maintenance_quote_id = maintenance_quote_uid
-                        -- LEFT JOIN space_dev.pp_status ON pur_bill_id = bill_uid
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                        FROM maintenanceRequests
+                        LEFT JOIN properties ON property_uid = maintenance_property_id
+                        -- LEFT JOIN bills ON bill_maintenance_quote_id = maintenance_quote_uid
+                        -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
+                        LEFT JOIN o_details ON maintenance_property_id = property_id
+                        LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
                         -- WHERE business_uid = \'""" + uid + """\'
@@ -231,7 +231,7 @@ class MaintenanceRequests(Resource):
             raise BadRequest("Request failed, UID found in payload.")
         
         with connect() as db:
-            newMaintenanceReqUID = db.call('space_dev.new_request_uid')['result'][0]['new_id']
+            newMaintenanceReqUID = db.call('new_request_uid')['result'][0]['new_id']
             key = {'maintenance_request_uid': newMaintenanceReqUID}
             print("Maintenance Req Key: ", key)
            
@@ -250,7 +250,7 @@ class MaintenanceRequests(Resource):
 
 
             payload["maintenance_request_uid"] = newMaintenanceReqUID  
-            response['Add Maintenance Req'] = db.insert('space_dev.maintenanceRequests', payload)
+            response['Add Maintenance Req'] = db.insert('maintenanceRequests', payload)
             response['maintenance_request_uid'] = newMaintenanceReqUID 
             response['Maintenance Req Images Added'] = payload.get('maintenance_images', "None")
             print("\nNew Maintenance Request Added")
@@ -286,7 +286,7 @@ class MaintenanceRequests(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response["request_update"] = db.update('space_dev.maintenanceRequests', key, payload)
+            response["request_update"] = db.update('maintenanceRequests', key, payload)
             print("Response:" , response)
 
         return response
@@ -314,17 +314,17 @@ class MaintenanceQuotes(Resource):
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                 , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
                                 , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
-                                FROM space_dev.maintenanceQuotes
-                                LEFT JOIN space_dev.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid 
-                                LEFT JOIN space_dev.property_owner ON property_id = property_uid
-                                LEFT JOIN space_dev.ownerProfileInfo ON property_owner_id = owner_uid
-                                LEFT JOIN space_dev.contracts ON contract_property_id = property_uid 
-                                LEFT JOIN space_dev.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
-                                LEFT JOIN space_dev.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                FROM maintenanceQuotes
+                                LEFT JOIN maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                LEFT JOIN properties ON maintenance_property_id = property_uid 
+                                LEFT JOIN property_owner ON property_id = property_uid
+                                LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                                LEFT JOIN contracts ON contract_property_id = property_uid 
+                                LEFT JOIN businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                LEFT JOIN businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
                                 WHERE owner_uid = \'""" + uid + """\';
-                                -- WHERE space_dev.pm_business_info.business_uid = \'""" + uid + """\';
-                                -- WHERE space_dev.pm_business_info.business_uid = '600-000003';
+                                -- WHERE pm_business_info.business_uid = \'""" + uid + """\';
+                                -- WHERE pm_business_info.business_uid = '600-000003';
                                 """)
 
             response["maintenanceQuotes"] = ownerQuery
@@ -339,7 +339,7 @@ class MaintenanceQuotes(Resource):
                 query = db.execute(""" 
                     -- FIND ALL CURRENT BUSINESS CONTACTS
                         SELECT business_type
-                        FROM space_dev.businessProfileInfo
+                        FROM businessProfileInfo
                         WHERE business_uid = \'""" + uid + """\';
                         """)
 
@@ -366,17 +366,17 @@ class MaintenanceQuotes(Resource):
                                 , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                 , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
                                 , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
-                                FROM space_dev.maintenanceQuotes
-                                LEFT JOIN space_dev.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid 
-                                LEFT JOIN space_dev.property_owner ON property_id = property_uid
-                                LEFT JOIN space_dev.ownerProfileInfo ON property_owner_id = owner_uid
-                                LEFT JOIN space_dev.contracts ON contract_property_id = property_uid 
-                                LEFT JOIN space_dev.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
-                                LEFT JOIN space_dev.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                FROM maintenanceQuotes
+                                LEFT JOIN maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                LEFT JOIN properties ON maintenance_property_id = property_uid 
+                                LEFT JOIN property_owner ON property_id = property_uid
+                                LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                                LEFT JOIN contracts ON contract_property_id = property_uid 
+                                LEFT JOIN businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                LEFT JOIN businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
                                 -- WHERE owner_uid = \'""" + uid + """\';
-                                WHERE space_dev.pm_business_info.business_uid = \'""" + uid + """\';
-                                -- WHERE space_dev.pm_business_info.business_uid = '600-000008';
+                                WHERE pm_business_info.business_uid = \'""" + uid + """\';
+                                -- WHERE pm_business_info.business_uid = '600-000008';
                                 """)
                     response["maintenanceQuotes"] = businessQuery
 
@@ -399,17 +399,17 @@ class MaintenanceQuotes(Resource):
                                     , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                     , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
                                     , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
-                                FROM space_dev.maintenanceQuotes
-                                LEFT JOIN space_dev.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid 
-                                LEFT JOIN space_dev.property_owner ON property_id = property_uid
-                                LEFT JOIN space_dev.ownerProfileInfo ON property_owner_id = owner_uid
-                                LEFT JOIN space_dev.contracts ON contract_property_id = property_uid 
-                                LEFT JOIN space_dev.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
-                                LEFT JOIN space_dev.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                FROM maintenanceQuotes
+                                LEFT JOIN maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                LEFT JOIN properties ON maintenance_property_id = property_uid 
+                                LEFT JOIN property_owner ON property_id = property_uid
+                                LEFT JOIN ownerProfileInfo ON property_owner_id = owner_uid
+                                LEFT JOIN contracts ON contract_property_id = property_uid 
+                                LEFT JOIN businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                LEFT JOIN businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
                                 -- WHERE owner_uid = \'""" + uid + """\';
-                                -- WHERE space_dev.pm_business_info.business_uid = \'""" + uid + """\';
-                                -- WHERE space_dev.pm_business_info.business_uid = '600-000003';
+                                -- WHERE pm_business_info.business_uid = \'""" + uid + """\';
+                                -- WHERE pm_business_info.business_uid = '600-000003';
                                 WHERE quote_business_id = \'""" + uid + """\';
                                 -- WHERE quote_business_id = '600-000256';
                                             """)
@@ -433,15 +433,15 @@ class MaintenanceQuotes(Resource):
                                     , contract_uid -- , contract_property_id, contract_business_id, contract_start_date, contract_end_date, contract_fees, contract_assigned_contacts, contract_documents, contract_name, contract_status, contract_early_end_date
                                     , pm_business_info.business_uid as pm_business_uid, pm_business_info.business_type as pm_business_type, pm_business_info.business_name as pm_business_name, pm_business_info.business_phone_number as pm_business_phone_number, pm_business_info.business_email as pm_business_email, pm_business_info.business_address as pm_business_address, pm_business_info.business_unit as pm_business_unit, pm_business_info.business_city as pm_business_city, pm_business_info.business_state as pm_business_state, pm_business_info.business_zip as pm_business_zip, pm_business_info.business_photo_url as pm_business_photo_url
                                     , maintenance_info.business_uid as maint_business_uid, maintenance_info.business_type as maint_business_type, maintenance_info.business_name as maint_business_name, maintenance_info.business_phone_number as maint_business_phone_number, maintenance_info.business_email as maint_business_email, maintenance_info.business_address as maint_business_address, maintenance_info.business_unit as maint_business_unit, maintenance_info.business_city as maint_business_city, maintenance_info.business_state as maint_business_state, maintenance_info.business_zip as maint_business_zip, maintenance_info.business_photo_url as maint_business_photo_url
-                                FROM space_dev.maintenanceQuotes
-                                LEFT JOIN space_dev.maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.properties ON maintenance_property_id = property_uid
-                                LEFT JOIN space_dev.leases ON lease_property_id = property_uid
-                                LEFT JOIN space_dev.lease_tenant ON lt_lease_id = lease_uid
-                                LEFT JOIN space_dev.tenantProfileInfo ON tenant_uid = lt_tenant_id
-                                LEFT JOIN space_dev.contracts ON contract_property_id = property_uid
-                                LEFT JOIN space_dev.businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
-                                LEFT JOIN space_dev.businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
+                                FROM maintenanceQuotes
+                                LEFT JOIN maintenanceRequests ON quote_maintenance_request_id = maintenance_request_uid
+                                LEFT JOIN properties ON maintenance_property_id = property_uid
+                                LEFT JOIN leases ON lease_property_id = property_uid
+                                LEFT JOIN lease_tenant ON lt_lease_id = lease_uid
+                                LEFT JOIN tenantProfileInfo ON tenant_uid = lt_tenant_id
+                                LEFT JOIN contracts ON contract_property_id = property_uid
+                                LEFT JOIN businessProfileInfo AS pm_business_info ON contract_business_id = pm_business_info.business_uid
+                                LEFT JOIN businessProfileInfo AS maintenance_info ON quote_business_id = maintenance_info.business_uid
                                 -- WHERE tenant_uid = '350-000002';
                                 WHERE tenant_uid = \'""" + uid + """\';
                                 """)
@@ -471,7 +471,7 @@ class MaintenanceQuotes(Resource):
                 payload["quote_maintenance_images"] = maintenance_images_og
                 print('payload["maintenance_quote_uid"] before Process Images: ', payload["quote_maintenance_images"])
                 print('payload["maintenance_quote_uid"] before Process Images: ', payload)
-                newMaintenanceQuoteUID = db.call('space_dev.new_quote_uid')['result'][0]['new_id']
+                newMaintenanceQuoteUID = db.call('new_quote_uid')['result'][0]['new_id']
                 key = {'maintenance_quote_uid': newMaintenanceQuoteUID}
                 print("Maintenance Quote Key: ", key)
             
@@ -491,7 +491,7 @@ class MaintenanceQuotes(Resource):
                 payload["quote_status"] = "REQUESTED"
                 payload["quote_requested_date"] = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
                 payload["maintenance_quote_uid"] = newMaintenanceQuoteUID  
-                response['Add Maintenance Quote'] = db.insert('space_dev.maintenanceQuotes', payload)
+                response['Add Maintenance Quote'] = db.insert('maintenanceQuotes', payload)
                 response['maintenance_quote_uid'] = newMaintenanceQuoteUID 
                 response['Maintenance Quote Images Added'] = payload.get('quote_maintenance_images', "None")
                 print("\nNew Maintenance Quote Added")
@@ -533,7 +533,7 @@ class MaintenanceQuotes(Resource):
         # Write to Database
         with connect() as db:
             print("Checking Inputs: ", key, payload)
-            response["request_update"] = db.update('space_dev.maintenanceQuotes', key, payload)
+            response["request_update"] = db.update('maintenanceQuotes', key, payload)
             print("Response:" , response)
 
         return response
@@ -543,7 +543,7 @@ class MaintenanceQuotesByUid(Resource):
     def get(self, maintenance_quote_uid):
         print('in MaintenanceQuotesByUid')
         with connect() as db:
-            response = db.select('space_dev.maintenanceQuotes', {"maintenance_quote_uid": maintenance_quote_uid})
+            response = db.select('maintenanceQuotes', {"maintenance_quote_uid": maintenance_quote_uid})
         return response
 
 
@@ -567,10 +567,10 @@ class MaintenanceStatus(Resource):
                                         WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
                                     END AS maintenance_status
 
-                            FROM space_dev.maintenanceRequests
+                            FROM maintenanceRequests
                             LEFT JOIN m_quote_rank AS quote_summary ON maintenance_request_uid = qmr_id
 
-                            LEFT JOIN space_dev.bills ON maintenance_request_uid = bill_maintenance_request_id
+                            LEFT JOIN bills ON maintenance_request_uid = bill_maintenance_request_id
                             LEFT JOIN (
                                 SELECT quote_maintenance_request_id, 
                                     JSON_ARRAYAGG(JSON_OBJECT
@@ -589,14 +589,14 @@ class MaintenanceStatus(Resource):
                                         'quote_earliest_available_date', quote_earliest_available_date,
                                         'quote_earliest_available_time', quote_earliest_available_time
                                         )) AS quote_info
-                                FROM space_dev.maintenanceQuotes
+                                FROM maintenanceQuotes
                                 GROUP BY quote_maintenance_request_id) as qi ON quote_maintenance_request_id = maintenance_request_uid
-                            LEFT JOIN space_dev.pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
-                            LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                            LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                            LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                            LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                            LEFT JOIN pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
+                            LEFT JOIN properties ON property_uid = maintenance_property_id
+                            LEFT JOIN o_details ON maintenance_property_id = property_id
+                            LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                            LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                            LEFT JOIN t_details ON lt_lease_id = lease_uid
 
                             -- WHERE property_owner_id = '110-000003'
                             WHERE property_owner_id = \'""" + user_id + """\' 
@@ -642,7 +642,7 @@ class MaintenanceStatus(Resource):
                         -- CHECK BUSINESS TYPE
                         SELECT -- *
                             business_uid, business_type
-                        FROM space_dev.businessProfileInfo
+                        FROM businessProfileInfo
                         WHERE business_uid = \'""" + user_id + """\';
                         """)
             
@@ -672,10 +672,10 @@ class MaintenanceStatus(Resource):
                                         ELSE maintenance_request_status -- "NEW REQUEST"
                                     END AS maintenance_status
 
-                                FROM space_dev.maintenanceRequests
+                                FROM maintenanceRequests
                                 LEFT JOIN m_quote_rank AS quote_summary ON maintenance_request_uid = qmr_id
 
-                                LEFT JOIN space_dev.bills ON maintenance_request_uid = bill_maintenance_request_id
+                                LEFT JOIN bills ON maintenance_request_uid = bill_maintenance_request_id
                                 LEFT JOIN (
                                     SELECT quote_maintenance_request_id, 
                                         JSON_ARRAYAGG(JSON_OBJECT
@@ -694,14 +694,14 @@ class MaintenanceStatus(Resource):
                                             'quote_earliest_available_date', quote_earliest_available_date,
                                             'quote_earliest_available_time', quote_earliest_available_time
                                             )) AS quote_info
-                                    FROM space_dev.maintenanceQuotes
+                                    FROM maintenanceQuotes
                                     GROUP BY quote_maintenance_request_id) as qi ON quote_maintenance_request_id = maintenance_request_uid
-                                LEFT JOIN space_dev.pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
-                                LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                                LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                                LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                                LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                                LEFT JOIN pp_status ON bill_uid = pur_bill_id AND pur_receiver = maintenance_assigned_business
+                                LEFT JOIN properties ON property_uid = maintenance_property_id
+                                LEFT JOIN o_details ON maintenance_property_id = property_id
+                                LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                                LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
                                 -- WHERE business_uid = '600-000003' -- AND (pur_receiver = '600-000003' OR ISNULL(pur_receiver))
@@ -749,25 +749,25 @@ class MaintenanceStatus(Resource):
                             -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                             SELECT *
                                 , CASE
-                                    WHEN space_dev.m_details.quote_status IN ("REQUESTED", "MORE INFO")                                        		THEN "REQUESTED"
-                                    WHEN space_dev.m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
-                                    WHEN space_dev.m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
-                                    WHEN space_dev.m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
-                                    WHEN space_dev.m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
-                                    WHEN space_dev.m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
-                                    WHEN space_dev.m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
-                                    ELSE space_dev.m_details.quote_status
+                                    WHEN m_details.quote_status IN ("REQUESTED", "MORE INFO")                                        		THEN "REQUESTED"
+                                    WHEN m_details.quote_status IN ("SENT", "REFUSED" ,"REJECTED" ) 	                                    THEN "SUBMITTED"
+                                    WHEN m_details.quote_status IN ("ACCEPTED", "SCHEDULE")                          						THEN "ACCEPTED"
+                                    WHEN m_details.quote_status IN ("SCHEDULED" , "RESCHEDULE")                       					THEN "SCHEDULED"
+                                    WHEN m_details.quote_status = "FINISHED"                                                       		THEN "FINISHED"
+                                    WHEN m_details.quote_status = "COMPLETED"                                                      		THEN "PAID"   
+                                    WHEN m_details.quote_status IN ("CANCELLED" , "ARCHIVE", "NOT ACCEPTED","WITHDRAWN" ,"WITHDRAW")      THEN "ARCHIVE"
+                                    ELSE m_details.quote_status
                                 END AS maintenance_status
-                            FROM space_dev.m_details
-                            LEFT JOIN space_dev.bills ON space_dev.m_details.maintenance_request_uid = bill_maintenance_request_id
-                            -- LEFT JOIN space_dev.maintenanceQuotes ON bill_maintenance_quote_id = space_dev.maintenanceQuotes.maintenance_quote_uid
-                            -- LEFT JOIN (SELECT * FROM space_dev.purchases WHERE pur_receiver = '600-000008' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
-                            LEFT JOIN (SELECT * FROM space_dev.purchases WHERE pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
-                            LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
-                            LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                            LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                            LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                            LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                            FROM m_details
+                            LEFT JOIN bills ON m_details.maintenance_request_uid = bill_maintenance_request_id
+                            -- LEFT JOIN maintenanceQuotes ON bill_maintenance_quote_id = maintenanceQuotes.maintenance_quote_uid
+                            -- LEFT JOIN (SELECT * FROM purchases WHERE pur_receiver = '600-000008' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
+                            LEFT JOIN (SELECT * FROM purchases WHERE pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver)) AS pp ON bill_uid = pur_bill_id
+                            LEFT JOIN properties ON property_uid = maintenance_property_id
+                            LEFT JOIN o_details ON maintenance_property_id = property_id
+                            LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                            LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                            LEFT JOIN t_details ON lt_lease_id = lease_uid
                             WHERE quote_business_id = \'""" + user_id + """\'
                             -- WHERE quote_business_id = '600-000008'
                             """)
@@ -816,20 +816,20 @@ class MaintenanceStatus(Resource):
                             WHEN maintenance_request_status IN ("INFO", "INFO TENANT")		THEN "INFO REQUESTED"
                             WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
-                        FROM space_dev.m_details
-                        LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
+                        FROM m_details
+                        LEFT JOIN properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
                             SELECT -- *
                                 bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                                 , sum(bill_amount) AS bill_amount
-                            FROM space_dev.bills
+                            FROM bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space_dev.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
+                        LEFT JOIN o_details ON maintenance_property_id = property_id
+                        LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN t_details ON lt_lease_id = lease_uid
                             LEFT JOIN (
                             SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('maintenance_quote_uid', maintenance_quote_uid,
@@ -847,7 +847,7 @@ class MaintenanceStatus(Resource):
                                 'quote_earliest_available_date', quote_earliest_available_date,
                                 'quote_earliest_available_time', quote_earliest_available_time
                                 )) AS quote_info
-                                FROM space_dev.maintenanceQuotes
+                                FROM maintenanceQuotes
                                 GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
                         -- WHERE owner_uid = \'""" + user_id + """\'
                         -- WHERE business_uid = \'""" + user_id + """\'
@@ -895,20 +895,20 @@ class MaintenanceStatus(Resource):
                             WHEN maintenance_request_status = "INFO"						THEN "INFO REQUESTED"
                             WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
-                        FROM space_dev.m_details
-                        LEFT JOIN space_dev.properties ON property_uid = maintenance_property_id
+                        FROM m_details
+                        LEFT JOIN properties ON property_uid = maintenance_property_id
                         LEFT JOIN (
                             SELECT -- *
                                 bill_uid, bill_timestamp, bill_created_by, bill_description, bill_utility_type, bill_split, bill_property_id, bill_documents, bill_maintenance_quote_id, bill_notes
                                 , sum(bill_amount) AS bill_amount
-                            FROM space_dev.bills
+                            FROM bills
                             GROUP BY bill_maintenance_quote_id
                             ) as b ON bill_maintenance_quote_id = maintenance_quote_uid
-                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM space_dev.pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
-                        LEFT JOIN space_dev.o_details ON maintenance_property_id = property_id
-                        LEFT JOIN (SELECT * FROM space_dev.b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM space_dev.leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
-                        LEFT JOIN space_dev.t_details ON lt_lease_id = lease_uid
+                        LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
+                        LEFT JOIN o_details ON maintenance_property_id = property_id
+                        LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN t_details ON lt_lease_id = lease_uid
                             LEFT JOIN (
                             SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
                                 ('maintenance_quote_uid', maintenance_quote_uid,
@@ -926,7 +926,7 @@ class MaintenanceStatus(Resource):
                                 'quote_earliest_available_date', quote_earliest_available_date,
                                 'quote_earliest_available_time', quote_earliest_available_time
                                 )) AS quote_info
-                                FROM space_dev.maintenanceQuotes
+                                FROM maintenanceQuotes
                                 GROUP BY quote_maintenance_request_id) as qi ON qi.quote_maintenance_request_id = maintenance_request_uid
                         -- WHERE owner_uid = \'""" + user_id + """\'
                         -- WHERE business_uid = \'""" + user_id + """\'

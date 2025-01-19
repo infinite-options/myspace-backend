@@ -21,7 +21,7 @@ class BusinessProfile(Resource):
         where = request.args.to_dict()
         print("Where: ", where)
         with connect() as db:
-            response = db.select('space_dev.businessProfileInfo', where)
+            response = db.select('businessProfileInfo', where)
         return response
 
 
@@ -37,13 +37,13 @@ class Profile(Resource):
 
 
             elif user_id.startswith("120"):
-                    # response["profile"] = db.select('space_dev.employees', {"employee_uid": user_id})
+                    # response["profile"] = db.select('employees', {"employee_uid": user_id})
                 print ('    -in Get Employee Profile')
                 employeeQuery = db.execute(""" 
                             -- EMPLOYEE CONTACTS
                             SELECT *
-                            FROM space_dev.employees
-                            LEFT JOIN space_dev.businessProfileInfo ON employee_business_id = business_uid
+                            FROM employees
+                            LEFT JOIN businessProfileInfo ON employee_business_id = business_uid
                             LEFT JOIN (
                                 SELECT paymentMethod_profile_id AS pm_employee_id, JSON_ARRAYAGG(JSON_OBJECT
                                     ('paymentMethod_uid', paymentMethod_uid,
@@ -57,7 +57,7 @@ class Profile(Resource):
                                     'paymentMethod_billingzip', paymentMethod_billingzip,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS employeePaymentMethods
-                                FROM space_dev.paymentMethods
+                                FROM paymentMethods
                                 GROUP BY paymentMethod_profile_id) as e ON employee_uid = e.pm_employee_id
                             LEFT JOIN (
                                 SELECT paymentMethod_profile_id AS pm_business_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -72,7 +72,7 @@ class Profile(Resource):
                                     'paymentMethod_billingzip', paymentMethod_billingzip,
                                     'paymentMethod_status', paymentMethod_status
                                     )) AS paymentMethods
-                                FROM space_dev.paymentMethods
+                                FROM paymentMethods
                                 GROUP BY paymentMethod_profile_id) as p ON business_uid = p.pm_business_id
                             -- WHERE employee_uid = '120-000441';
                             WHERE employee_uid = \'""" + user_id + """\'
@@ -87,7 +87,7 @@ class Profile(Resource):
             else:
                 where = request.args.to_dict()
                 with connect() as db:
-                    response = db.select('space_dev.businessProfileInfo', where)
+                    response = db.select('businessProfileInfo', where)
                 return response
                 # raise BadRequest("Request failed, no UID in payload.")
 
@@ -107,13 +107,13 @@ class Profile(Resource):
         with connect() as db:
             if owner:
                 print("owner")
-                profile_info["owner_uid"] = db.call('space_dev.new_owner_uid')['result'][0]['new_id']
+                profile_info["owner_uid"] = db.call('new_owner_uid')['result'][0]['new_id']
                 file = request.files.get("owner_photo")
                 if file:
                     key = f'ownerProfileInfo/{profile_info["owner_uid"]}/owner_photo'
                     profile_info["owner_photo_url"] = uploadImage(file, key, '')
                 profile_info['owner_documents'] = '[]' if profile_info.get('owner_documents') in {None, '', 'null'} else profile_info.get('owner_documents', '[]')
-                response = db.insert('space_dev.ownerProfileInfo', profile_info)
+                response = db.insert('ownerProfileInfo', profile_info)
                 response["owner_uid"] = profile_info["owner_uid"]
             elif tenant:
                 print("tenant")
@@ -128,27 +128,27 @@ class Profile(Resource):
                 profile_info['tenant_employment'] = profile_info['tenant_employment'] if 'tenant_employment' in profile_info else '[]'
                 # print("Updated Tenant Profile: ", tenant_profile)
 
-                profile_info["tenant_uid"] = db.call('space_dev.new_tenant_uid')['result'][0]['new_id']
+                profile_info["tenant_uid"] = db.call('new_tenant_uid')['result'][0]['new_id']
                 file = request.files.get("tenant_photo")
                 if file:
                     key = f'tenantProfileInfo/{profile_info["tenant_uid"]}/tenant_photo'
                     profile_info["tenant_photo_url"] = uploadImage(file, key, '')
-                response = db.insert('space_dev.tenantProfileInfo', profile_info)
+                response = db.insert('tenantProfileInfo', profile_info)
                 response["tenant_uid"] = profile_info["tenant_uid"]
             elif business:
                 print("manager")
-                profile_info["business_uid"] = db.call('space_dev.new_business_uid')['result'][0]['new_id']
+                profile_info["business_uid"] = db.call('new_business_uid')['result'][0]['new_id']
                 file = request.files.get("business_photo")
                 # print(profile_info, file)
                 if file:
                     key = f'businessProfileInfo/{profile_info["business_uid"]}/business_photo'
                     profile_info["business_photo_url"] = uploadImage(file, key, '')
                 profile_info['business_documents'] = '[]' if profile_info.get('business_documents') in {None, '', 'null'} else profile_info.get('business_documents', '[]')
-                response = db.insert('space_dev.businessProfileInfo', profile_info)
+                response = db.insert('businessProfileInfo', profile_info)
                 # response["business_uid"] = profile_info["business_uid"]
 
                 print("employee")
-                employee_info["employee_uid"] = db.call('space_dev.new_employee_uid')['result'][0]['new_id']
+                employee_info["employee_uid"] = db.call('new_employee_uid')['result'][0]['new_id']
                 employee_info["employee_user_id"] = profile_info["business_user_id"]
                 employee_info["employee_business_id"] = profile_info["business_uid"]
                 employee_info["employee_role"] = "OWNER"
@@ -157,12 +157,12 @@ class Profile(Resource):
                 if file:
                     key = f'employee/{employee_info["employee_uid"]}/employee_photo'
                     employee_info["employee_photo_url"] = uploadImage(file, key, '')
-                response = db.insert('space_dev.employees', employee_info)
+                response = db.insert('employees', employee_info)
                 response["business_uid"] = profile_info["business_uid"]
                 response["employee_uid"] = employee_info["employee_uid"]
             elif employee:
                 print("employee")
-                employee_info["employee_uid"] = db.call('space_dev.new_employee_uid')['result'][0]['new_id']
+                employee_info["employee_uid"] = db.call('new_employee_uid')['result'][0]['new_id']
                 employee_info["employee_user_id"] = profile_info["employee_user_id"]
                 employee_info["employee_business_id"] = profile_info["business_uid"]
                 file = request.files.get("employee_photo_url")
@@ -170,7 +170,7 @@ class Profile(Resource):
                 if file:
                     key = f'employee/{employee_info["employee_uid"]}/employee_photo'
                     employee_info["employee_photo_url"] = uploadImage(file, key, '')
-                response = db.insert('space_dev.employees', employee_info)
+                response = db.insert('employees', employee_info)
                 response["employee_uid"] = employee_info["employee_uid"]
             else:
                 raise BadRequest("Request failed, check payload.")
@@ -251,14 +251,14 @@ class Profile(Resource):
         with connect() as db:
                 # print("Checking Inputs: ", key)
                 if payload.get('tenant_uid'):
-                    # response['tenant_docs'] = db.update('space_dev.tenantProfileInfo', key, filtered_payload)
-                    response = db.update('space_dev.tenantProfileInfo', key, filtered_payload)
+                    # response['tenant_docs'] = db.update('tenantProfileInfo', key, filtered_payload)
+                    response = db.update('tenantProfileInfo', key, filtered_payload)
                 if payload.get('owner_uid'):
-                    response = db.update('space_dev.ownerProfileInfo', key, filtered_payload)
+                    response = db.update('ownerProfileInfo', key, filtered_payload)
                 if payload.get('business_uid'):
-                    response = db.update('space_dev.businessProfileInfo', key, filtered_payload)
+                    response = db.update('businessProfileInfo', key, filtered_payload)
                 if payload.get('employee_uid'):
-                    response['employee'] = db.update('space_dev.employees', employee_key, employee_payload)
+                    response['employee'] = db.update('employees', employee_key, employee_payload)
 
         return response
 

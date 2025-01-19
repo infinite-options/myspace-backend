@@ -96,11 +96,11 @@ class CleanUpDatabase(Resource):
         try:
             # cursor = connection.cursor()
             cursor = connect.cursor()
-            cursor.execute("""
-                SELECT TABLE_NAME 
-                FROM information_schema.TABLES 
-                WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
-            """)
+            # cursor.execute("""
+            #     SELECT TABLE_NAME 
+            #     FROM information_schema.TABLES 
+            #     WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
+            # """)
             tables = cursor.fetchall()
 
             response['Data deleted from (tables)'] = collections.defaultdict(list)
