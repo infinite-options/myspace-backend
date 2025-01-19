@@ -193,7 +193,7 @@ class endPointTest_CLASS(Resource):
     def get():
         dt = datetime.today()
         response = {}
-        print("\n Table Name: space_dev \n")
+        print(f"\n Table Name: {os.getenv('RDS_DB')} \n")
         # Insert temporary data into the database
         try:
             print("\n\n*** Inserting temporary data into the database ***\n")

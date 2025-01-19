@@ -1,4 +1,4 @@
-# MANIFEST MY space_dev (PROPERTY MANAGEMENT) BACKEND PYTHON FILE
+# MANIFEST PROPERTY MANAGEMENT BACKEND PYTHON FILE
 # https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev/<enter_endpoint_details>
 # https://qn4agnb0v9.execute-api.us-west-1.amazonaws.com/production/<enter_endpoint_details>
 
@@ -214,7 +214,7 @@ CORS(app)
 
 # Set this to false when deploying to live application
 # db = 'space_dev' if os.getenv('DEBUG') == "TRUE" else 'space_prod'
-mode = True if os.getenv('RDS_DB') == "space_dev" else False
+mode = True if os.getenv('RDS_DB') == "space-dev" else False
 
 app.config['DEBUG'] = mode
 
@@ -707,7 +707,7 @@ class LeaseExpiringNotify(Resource):
 #     return "Could not generate new property UID", 500
 
 
-# -- space_dev Queries start here -------------------------------------------------------------------------------
+# -- Queries start here -------------------------------------------------------------------------------
 
 class stripe_key(Resource):
     def get(self, desc):
@@ -719,7 +719,7 @@ class stripe_key(Resource):
         
 
 
-# -- space_dev CRON ENDPOINTS start here -------------------------------------------------------------------------------
+# -- CRON ENDPOINTS start here -------------------------------------------------------------------------------
 
 # -- CURRENT CRON JOB
 

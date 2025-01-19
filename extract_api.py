@@ -20,7 +20,7 @@ class Extract_API(Resource):
             my_space_api_url = "https://raw.githubusercontent.com/infinite-options/myspace-backend/refs/heads/master/myspace_api.py"
             my_space_api_response = requests.get(my_space_api_url)
             if my_space_api_response.status_code != 200:
-                raise Exception('Error in reading my space_dev api file')
+                raise Exception(f'Error in reading my {os.getenv('RDS_DB')} api file')
 
             my_space_api_content = my_space_api_response.text
             lines = my_space_api_content.splitlines()
