@@ -12,8 +12,6 @@
 
 # Changes is .env file only affect running in LocalHost
 
-print("-------------------- New Program Run ( space_dev ) --------------------")
-
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
@@ -109,6 +107,10 @@ import json
 import base64
 
 
+
+
+MySQLdb = 'dev database' if os.getenv('DEBUG') == "TRUE" else 'production database'
+print(f"-------------------- New Program Run ( {MySQLdb} ) --------------------")
 
 
 # == Using Cryptography library for AES encryption ==
