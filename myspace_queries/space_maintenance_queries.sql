@@ -204,8 +204,8 @@ VALUES ('200-000006'
 
 
 
-;-- DEBUG maintenaceStatus
-
+;
+-- TEST maintenaceStatus
 SELECT * FROM space_dev.maintenanceRequests;
 SELECT * FROM space_dev.maintenanceQuotes;
 

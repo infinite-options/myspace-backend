@@ -6,6 +6,7 @@
 # To run program:  python3 myspace_api.py
 
 # README:  if conn error make sure password is set properly in RDS PASSWORD section
+# README:  use zappa update dev to push to test mode.  use zappa update production to push to live mode
 # README:  Debug Mode may need to be set to False when deploying live (although it seems to be working through Zappa)
 # README:  if there are errors, make sure you have all requirements are loaded
 # pip3 install -r requirements.txt
@@ -107,10 +108,7 @@ import json
 import base64
 
 
-
-
-MySQLdb = 'dev database' if os.getenv('DEBUG') == "TRUE" else 'production database'
-print(f"-------------------- New Program Run ( {MySQLdb} ) --------------------")
+print(f"-------------------- New Program Run ( {os.getenv('RDS_DB')} ) --------------------")
 
 
 # == Using Cryptography library for AES encryption ==
@@ -215,7 +213,10 @@ CORS(app)
 # CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 # Set this to false when deploying to live application
-app.config['DEBUG'] = True
+# db = 'space_dev' if os.getenv('DEBUG') == "TRUE" else 'space_prod'
+mode = True if os.getenv('RDS_DB') == "space_dev" else False
+
+app.config['DEBUG'] = mode
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
@@ -279,7 +280,7 @@ app.config["MAIL_USE_SSL"] = True
 
 
 # Set this to false when deploying to live application
-app.config["DEBUG"] = True
+# app.config["DEBUG"] = True
 # app.config["DEBUG"] = False
 
 # MAIL  -- This statement has to be below the Mail Variables

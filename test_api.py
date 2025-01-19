@@ -6,181 +6,182 @@ import requests
 from dotenv import load_dotenv
 from flask_restful import Resource
 import os
+from data_pm import connect, uploadImage, s3, serializeJSON
 
 #python -m pytest -v -s Use this in cmd to run the pytest script
 
 
-def connect():
-    conn = pymysql.connect(
-        host=os.getenv('RDS_HOST'),
-        user=os.getenv('RDS_USER'),
-        port=int(os.getenv('RDS_PORT')),
-        passwd=os.getenv('RDS_PW'),
-        db=os.getenv('RDS_DB'),
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    return DatabaseConnection(conn)
+# def connect():
+#     conn = pymysql.connect(
+#         host=os.getenv('RDS_HOST'),
+#         user=os.getenv('RDS_USER'),
+#         port=int(os.getenv('RDS_PORT')),
+#         passwd=os.getenv('RDS_PW'),
+#         db=os.getenv('RDS_DB'),
+#         charset='utf8mb4',
+#         cursorclass=pymysql.cursors.DictCursor
+#     )
+#     return DatabaseConnection(conn)
 
 
-def serializeJSON(unserialized):
-    # print(unserialized, type(unserialized))
-    if type(unserialized) == list:
-        # print("in list")
-        serialized = []
-        for entry in unserialized:
-            serializedEntry = serializeJSON(entry)
-            serialized.append(serializedEntry)
-        return serialized
-    elif type(unserialized) == dict:
-        # print("in dict")
-        serialized = {}
-        for entry in unserialized:
-            serializedEntry = serializeJSON(unserialized[entry])
-            serialized[entry] = serializedEntry
-        return serialized
-    elif type(unserialized) == datetime.datetime:
-        # print("in date")
-        return str(unserialized)
-    elif type(unserialized) == bytes:
-        # print("in bytes")
-        return str(unserialized)
-    elif type(unserialized) == Decimal:
-        # print("in Decimal")
-        return str(unserialized)
-    else:
-        # print("in else")
-        return unserialized
+# def serializeJSON(unserialized):
+#     # print(unserialized, type(unserialized))
+#     if type(unserialized) == list:
+#         # print("in list")
+#         serialized = []
+#         for entry in unserialized:
+#             serializedEntry = serializeJSON(entry)
+#             serialized.append(serializedEntry)
+#         return serialized
+#     elif type(unserialized) == dict:
+#         # print("in dict")
+#         serialized = {}
+#         for entry in unserialized:
+#             serializedEntry = serializeJSON(unserialized[entry])
+#             serialized[entry] = serializedEntry
+#         return serialized
+#     elif type(unserialized) == datetime.datetime:
+#         # print("in date")
+#         return str(unserialized)
+#     elif type(unserialized) == bytes:
+#         # print("in bytes")
+#         return str(unserialized)
+#     elif type(unserialized) == Decimal:
+#         # print("in Decimal")
+#         return str(unserialized)
+#     else:
+#         # print("in else")
+#         return unserialized
 
 
-class DatabaseConnection:
-    def __init__(self, conn):
-        self.conn = conn
+# class DatabaseConnection:
+#     def __init__(self, conn):
+#         self.conn = conn
 
-    def disconnect(self):
-        self.conn.close()
+#     def disconnect(self):
+#         self.conn.close()
 
-    def __enter__(self):
-        return self
+#     def __enter__(self):
+#         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.disconnect()
+#     def __exit__(self, exc_type, exc_value, traceback):
+#         self.disconnect()
 
-    def execute(self, sql, args=[], cmd='get'):
-        # print("In execute.  SQL: ", sql)
-        # print("In execute.  args: ",args)
-        # print("In execute.  cmd: ",cmd)
-        response = {}
-        try:
-            with self.conn.cursor() as cur:
-                # print('IN EXECUTE')
-                if len(args) == 0:
-                    # print('execute', sql)
-                    cur.execute(sql)
-                else:
-                    cur.execute(sql, args)
-                formatted_sql = f"{sql} (args: {args})"
-                # print(formatted_sql)
+#     def execute(self, sql, args=[], cmd='get'):
+#         # print("In execute.  SQL: ", sql)
+#         # print("In execute.  args: ",args)
+#         # print("In execute.  cmd: ",cmd)
+#         response = {}
+#         try:
+#             with self.conn.cursor() as cur:
+#                 # print('IN EXECUTE')
+#                 if len(args) == 0:
+#                     # print('execute', sql)
+#                     cur.execute(sql)
+#                 else:
+#                     cur.execute(sql, args)
+#                 formatted_sql = f"{sql} (args: {args})"
+#                 # print(formatted_sql)
 
-                if 'get' in cmd:
-                    # print('IN GET')
-                    result = cur.fetchall()
-                    result = serializeJSON(result)
-                    # print('RESULT GET')
-                    response['message'] = 'Successfully executed SQL query'
-                    response['code'] = 200
-                    response['result'] = result
-                    # print('RESPONSE GET')
-                elif 'post' in cmd:
-                    # print('IN POST')
-                    self.conn.commit()
-                    response['message'] = 'Successfully committed SQL query'
-                    response['code'] = 200
-                    # print('RESPONSE POST')
-        except Exception as e:
-            print('ERROR', e)
-            response['message'] = 'Error occurred while executing SQL query'
-            response['code'] = 500
-            response['error'] = e
-            print('RESPONSE ERROR', response)
-        return response
+#                 if 'get' in cmd:
+#                     # print('IN GET')
+#                     result = cur.fetchall()
+#                     result = serializeJSON(result)
+#                     # print('RESULT GET')
+#                     response['message'] = 'Successfully executed SQL query'
+#                     response['code'] = 200
+#                     response['result'] = result
+#                     # print('RESPONSE GET')
+#                 elif 'post' in cmd:
+#                     # print('IN POST')
+#                     self.conn.commit()
+#                     response['message'] = 'Successfully committed SQL query'
+#                     response['code'] = 200
+#                     # print('RESPONSE POST')
+#         except Exception as e:
+#             print('ERROR', e)
+#             response['message'] = 'Error occurred while executing SQL query'
+#             response['code'] = 500
+#             response['error'] = e
+#             print('RESPONSE ERROR', response)
+#         return response
 
-    def select(self, tables, where={}, cols='*'):
-        response = {}
-        try:
-            sql = f'SELECT {cols} FROM {tables}'
-            for i, key in enumerate(where.keys()):
-                if i == 0:
-                    sql += ' WHERE '
-                sql += f'{key} = %({key})s'
-                if i != len(where.keys()) - 1:
-                    sql += ' AND '
+#     def select(self, tables, where={}, cols='*'):
+#         response = {}
+#         try:
+#             sql = f'SELECT {cols} FROM {tables}'
+#             for i, key in enumerate(where.keys()):
+#                 if i == 0:
+#                     sql += ' WHERE '
+#                 sql += f'{key} = %({key})s'
+#                 if i != len(where.keys()) - 1:
+#                     sql += ' AND '
 
-            response = self.execute(sql, where, 'get')
-        except Exception as e:
-            print(e)
-        return response
+#             response = self.execute(sql, where, 'get')
+#         except Exception as e:
+#             print(e)
+#         return response
 
-    def insert(self, table, object):
-        response = {}
-        try:
-            sql = f'INSERT INTO {table} SET '
-            for i, key in enumerate(object.keys()):
-                sql += f'{key} = %({key})s'
-                if i != len(object.keys()) - 1:
-                    sql += ', '
-            # print(sql)
-            # print(object)
-            response = self.execute(sql, object, 'post')
-        except Exception as e:
-            print(e)
-        return response
+#     def insert(self, table, object):
+#         response = {}
+#         try:
+#             sql = f'INSERT INTO {table} SET '
+#             for i, key in enumerate(object.keys()):
+#                 sql += f'{key} = %({key})s'
+#                 if i != len(object.keys()) - 1:
+#                     sql += ', '
+#             # print(sql)
+#             # print(object)
+#             response = self.execute(sql, object, 'post')
+#         except Exception as e:
+#             print(e)
+#         return response
 
-    def update(self, table, primaryKey, object):
-        response = {}
-        try:
-            sql = f'UPDATE {table} SET '
-            print(sql)
-            for i, key in enumerate(object.keys()):
-                sql += f'{key} = %({key})s'
-                if i != len(object.keys()) - 1:
-                    sql += ', '
-            sql += f' WHERE '
-            print(sql)
-            for i, key in enumerate(primaryKey.keys()):
-                sql += f'{key} = %({key})s'
-                object[key] = primaryKey[key]
-                if i != len(primaryKey.keys()) - 1:
-                    sql += ' AND '
-            print(sql, object)
-            response = self.execute(sql, object, 'post')
-            print(response)
-        except Exception as e:
-            print(e)
-        return response
+#     def update(self, table, primaryKey, object):
+#         response = {}
+#         try:
+#             sql = f'UPDATE {table} SET '
+#             print(sql)
+#             for i, key in enumerate(object.keys()):
+#                 sql += f'{key} = %({key})s'
+#                 if i != len(object.keys()) - 1:
+#                     sql += ', '
+#             sql += f' WHERE '
+#             print(sql)
+#             for i, key in enumerate(primaryKey.keys()):
+#                 sql += f'{key} = %({key})s'
+#                 object[key] = primaryKey[key]
+#                 if i != len(primaryKey.keys()) - 1:
+#                     sql += ' AND '
+#             print(sql, object)
+#             response = self.execute(sql, object, 'post')
+#             print(response)
+#         except Exception as e:
+#             print(e)
+#         return response
 
-    def delete(self, sql):
-        response = {}
-        try:
-            with self.conn.cursor() as cur:
-                cur.execute(sql)
+#     def delete(self, sql):
+#         response = {}
+#         try:
+#             with self.conn.cursor() as cur:
+#                 cur.execute(sql)
 
-                self.conn.commit()
-                response['message'] = 'Successfully committed SQL query'
-                response['code'] = 200
-                # response = self.execute(sql, 'post')
-        except Exception as e:
-            print(e)
-        return response
+#                 self.conn.commit()
+#                 response['message'] = 'Successfully committed SQL query'
+#                 response['code'] = 200
+#                 # response = self.execute(sql, 'post')
+#         except Exception as e:
+#             print(e)
+#         return response
 
-    def call(self, procedure, cmd='get'):
-        response = {}
-        try:
-            sql = f'CALL {procedure}()'
-            response = self.execute(sql, cmd=cmd)
-        except Exception as e:
-            print(e)
-        return response
+#     def call(self, procedure, cmd='get'):
+#         response = {}
+#         try:
+#             sql = f'CALL {procedure}()'
+#             response = self.execute(sql, cmd=cmd)
+#         except Exception as e:
+#             print(e)
+#         return response
 
 
 # ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
@@ -1770,17 +1771,18 @@ def test_clean_up_Database():
     patterns = [r"200-000000", r"600-000000", r"110-000000", r"350-000000", r"100-000000", r"050-000000", r"800-000000", r"900-000000", r"400-000000", r"010-000000", r"370-000000", r"300-000000"]
 
     # Connect to the MySQL database
-    connection = pymysql.connect(
-        host=os.getenv('RDS_HOST'),
-        user=os.getenv('RDS_USER'),
-        port=int(os.getenv('RDS_PORT')),
-        passwd=os.getenv('RDS_PW'),
-        db=os.getenv('RDS_DB'),
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    # connection = pymysql.connect(
+    #     host=os.getenv('RDS_HOST'),
+    #     user=os.getenv('RDS_USER'),
+    #     port=int(os.getenv('RDS_PORT')),
+    #     passwd=os.getenv('RDS_PW'),
+    #     db=os.getenv('RDS_DB'),
+    #     charset='utf8mb4',
+    #     cursorclass=pymysql.cursors.DictCursor
+    # )
 
-    cursor = connection.cursor()
+    # cursor = connection.cursor()
+    cursor = connect.cursor()
 
     try:
         print("in new try")
@@ -1813,7 +1815,8 @@ def test_clean_up_Database():
                     """
                     cursor.execute(delete_query, (pattern,))
                     rows_deleted = cursor.rowcount 
-                    connection.commit()
+                    # connection.commit()
+                    connect.commit()
                     if rows_deleted > 0:
                         print(f"Deleted {rows_deleted} rows in table `{value}` where column `{column_name}` matched '{pattern}'")
 
@@ -1824,5 +1827,6 @@ def test_clean_up_Database():
         print(f"Error: {e}")
     finally:
         cursor.close()
-        connection.close()
+        # connection.close()
+        connect.close()
 

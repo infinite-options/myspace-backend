@@ -798,7 +798,7 @@ def connect():
     # global RDS_USER
     # global RDS_DB
 
-    print("Trying to connect to RDS (API v2)...")
+    print(f"Trying to connect to RDS ({os.getenv('RDS_DB')})...")
     # print("RDS_HOST: ", os.getenv('RDS_HOST'))
     # print("RDS_USER: ", os.getenv('RDS_USER'))
     # print("RDS_PORT: ", os.getenv('RDS_PORT'), type(os.getenv('RDS_PORT')))
@@ -818,7 +818,7 @@ def connect():
         print("Successfully connected to RDS. (API v2)")
         return DatabaseConnection(conn)
     except:
-        print("Could not connect to RDS. (API v2)")
+        print(f"Could not connect to RDS. ({os.getenv('RDS_DB')})")
         raise Exception("RDS Connection failed. (API v2)")
 
 
