@@ -350,8 +350,8 @@ class Properties(Resource):
                         SELECT p.*
                             , CASE
                                     WHEN ISNULL(contract_uid) THEN "NO MANAGER"
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NOT NULL) THEN payment_status
-                                    WHEN (lease_status = 'ACTIVE' AND payment_status IS NULL) THEN 'UNPAID'
+                                    WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M') AND payment_status IS NOT NULL) THEN payment_status
+                                    WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M') AND payment_status IS NULL) THEN 'UNPAID'
                                     ELSE 'VACANT'
                                 END AS rent_status 
                         --     , contract_uid AS actual_contract_uid

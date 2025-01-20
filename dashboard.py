@@ -520,7 +520,7 @@ class Dashboard(Resource):
                             FROM pp_status
                             WHERE purchase_status IN ('UNPAID', 'PARTIALLY PAID') AND LEFT(pur_payer,3) = '350'
                             GROUP BY pur_property_id
-                            ) AS pp ON pur_property_id = property_uid AND lease_status IN ('ACTIVE')
+                            ) AS pp ON pur_property_id = property_uid AND lease_status IN ('ACTIVE', 'ACTIVE M2M')
                         -- WHERE lt_tenant_id = '350-000007'
                         WHERE lt_tenant_id = \'""" + user_id + """\'
                         ORDER BY lease_status
@@ -542,7 +542,7 @@ class Dashboard(Resource):
                         LEFT JOIN (
                             SELECT * 
                             FROM leases 
-                            WHERE lease_status = 'ACTIVE'
+                            WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')
                             ) AS l ON lease_property_id = maintenance_property_id
                         LEFT JOIN lease_tenant ON lease_uid = lt_lease_id
                         LEFT JOIN businessProfileInfo ON business_uid = maintenance_assigned_business
@@ -565,7 +565,7 @@ class Dashboard(Resource):
                         LEFT JOIN (
                             SELECT * 
                             FROM leases 
-                            WHERE lease_status = 'ACTIVE'
+                            WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')
                             ) AS l ON lease_property_id = maintenance_property_id
                         LEFT JOIN lease_tenant ON lease_uid = lt_lease_id
                         LEFT JOIN businessProfileInfo ON business_uid = maintenance_assigned_business

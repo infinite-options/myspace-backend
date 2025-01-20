@@ -906,7 +906,7 @@ def NextDueDate():
                                         DATE_ADD(CURDATE(), INTERVAL (due_by - DAYOFWEEK(CURDATE()) + 14) % 14 DAY)
                                 END, '%m-%d-%Y %H:%i') AS next_due_date
                         FROM (
-                            SELECT * FROM leases WHERE lease_status = 'ACTIVE'
+                            SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')
                             ) AS l
                         LEFT JOIN (
                             SELECT * FROM leaseFees WHERE frequency != 'One Time'

@@ -242,7 +242,7 @@ class Contacts(Resource):
                                             ORDER BY pur_property_id, pur_payer, cf_month_num
                                             ) AS rents
                                         GROUP BY pur_property_id, pur_payer
-                                        ) AS r ON pur_property_id = property_uid AND tenant_uid = pur_payer AND lease_status = 'ACTIVE'
+                                        ) AS r ON pur_property_id = property_uid AND tenant_uid = pur_payer AND lease_status IN ('ACTIVE', 'ACTIVE M2M')
 
                                     -- ADD MAINTENANCE ISSUES
                                     LEFT JOIN (
@@ -254,7 +254,7 @@ class Contacts(Resource):
                                         ) AS m ON maintenance_property_id = property_uid
                                     -- WHERE contract_business_id = '600-000003' 
                                     WHERE contract_business_id = \'""" + uid + """\'
-                                        -- AND lease_status = 'ACTIVE'
+                                        -- AND lease_status IN ('ACTIVE', 'ACTIVE M2M')
                                     
                                     ) AS tenants
                                 WHERE !ISNULL(tenant_user_id)
@@ -452,7 +452,7 @@ class Contacts(Resource):
                                 ) AS pm ON pm.paymentMethod_profile_id = tenant_uid
                         -- WHERE quote_business_id = '600-000012'
                         WHERE quote_business_id = \'""" + uid + """\'
-                            AND lease_status = 'ACTIVE'
+                            AND lease_status IN ('ACTIVE', 'ACTIVE M2M')
                             AND !ISNULL(tenant_uid) 
                         GROUP BY tenant_uid;          
                     """)

@@ -203,7 +203,7 @@ class Bills(Resource):
                             FROM property_utility
                             LEFT JOIN lists AS utility ON utility_type_id = utility.list_uid
                             LEFT JOIN lists AS payer ON utility_payer_id = payer.list_uid
-                            LEFT JOIN (SELECT * FROM leases WHERE lease_status = 'ACTIVE' OR lease_status = 'ACTIVE M2M') AS l ON utility_property_id = lease_property_id
+                            LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON utility_property_id = lease_property_id
                             LEFT JOIN property_owner ON utility_property_id = property_id		-- TO FIND PROPERTY OWNER
                             LEFT JOIN contracts ON utility_property_id = contract_property_id    -- TO FIND PROPERTY MANAGER
                             LEFT JOIN lease_tenant ON lease_uid = lt_lease_id				-- TO FIND TENANT IDS AND RESPONSIBILITY PERCENTAGES

@@ -294,7 +294,7 @@ class LeaseApplication(Resource):
        
 
             # ==> ONLY POST TO PURCHASES IF THE LEASE HAS BEEN ACCEPTED AND NOT BEING RENEWED
-            if payload.get('lease_status') == 'ACTIVE':
+            if payload.get('lease_status') in ['ACTIVE', 'ACTIVE M2M']:
                 print("\nLease Status Changed to: ", payload.get('lease_status'), lease_uid)
 
 
