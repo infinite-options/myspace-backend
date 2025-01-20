@@ -184,13 +184,17 @@ from data_pm import connect, uploadImage, s3, serializeJSON
 #         return response
 
 
+
 # ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
-ENDPOINT = os.getenv('ENDPOINT')
+ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev" if os.getenv('RDS_DB') == "space_dev" else "https://qn4agnb0v9.execute-api.us-west-1.amazonaws.com/production"
+print("Endpoint Under Test: ", ENDPOINT)
+# ENDPOINT = os.getenv('ENDPOINT')
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
 class endPointTest_CLASS(Resource):
     def get():
+        print(f"-------------------- New Test Run ( {os.getenv('RDS_DB')} ) --------------------")
         dt = datetime.today()
         response = {}
         print(f"\n Table Name: {os.getenv('RDS_DB')} \n")
@@ -342,11 +346,18 @@ class endPointTest_CLASS(Resource):
                         "maintenance_request_closed_date":"null",
                         "maintenance_request_adjustment_date":"null"
                     }
+                print(post_maintenance_request_payload)
+                print(ENDPOINT + "/maintenanceRequests")
                 post_maintenance_request_response = requests.post(ENDPOINT + "/maintenanceRequests", data = post_maintenance_request_payload, headers=headers)
+                print(post_maintenance_request_response)
+                print(post_maintenance_request_response.json())
                 maintenance_request_uid = post_maintenance_request_response.json()['maintenance_request_uid']
+                print("3")
                 if post_maintenance_request_response.status_code == 200:
+                    print("4")
                     response['APIs running successfully'].append('POST Maintenance Requests')
                 else:
+                    print("5")
                     response['APIs failing'].append('POST Maintenance Requests')
                 response['No of APIs tested'] += 1
 

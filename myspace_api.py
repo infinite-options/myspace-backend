@@ -230,7 +230,7 @@ jwtManager = JWTManager(app)
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 
 # ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev"
-ENDPOINT = os.getenv('ENDPOINT')
+# ENDPOINT = os.getenv('ENDPOINT')
 
 # --------------- Google Scopes and Credentials------------------
 # SCOPES = "https://www.googleapis.com/auth/calendar"
@@ -2883,8 +2883,11 @@ def before_request():
     # all_headers = dict(request.headers)
     # print(all_headers)
     # print("Before Postman Secret: ", request.headers.get("Postman-Secret"))
+    print("e0")
     if request.headers.get("Postman-Secret") != POSTMAN_SECRET:
-        if request.method != 'OPTIONS':  
+        print("e1")
+        if request.method != 'OPTIONS': 
+            print("e2") 
             print("In Middleware before_request")
             response,code = check_jwt_token()
             if code == 201:
