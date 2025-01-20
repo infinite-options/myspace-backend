@@ -189,12 +189,15 @@ from data_pm import connect, uploadImage, s3, serializeJSON
 ENDPOINT = "https://l0h6a9zi1e.execute-api.us-west-1.amazonaws.com/dev" if os.getenv('RDS_DB') == "space_dev" else "https://qn4agnb0v9.execute-api.us-west-1.amazonaws.com/production"
 print("Endpoint Under Test: ", ENDPOINT)
 # ENDPOINT = os.getenv('ENDPOINT')
-POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
+# POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 
 # Tables affecting: {maintenanceRequests, maintenanceQuotes, Properties, Property_Owner, Contracts, leases, lease_tenant, addPurchases, paymentMethods, payments}
 class endPointTest_CLASS(Resource):
     def get():
         print(f"-------------------- New Test Run ( {os.getenv('RDS_DB')} ) --------------------")
+        print(ENDPOINT)
+        POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
+        print(POSTMAN_SECRET)
         dt = datetime.today()
         response = {}
         print(f"\n Table Name: {os.getenv('RDS_DB')} \n")
