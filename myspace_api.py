@@ -2840,7 +2840,7 @@ def decrypt_request():
 
 # Middleware to encrypt response data
 def encrypt_response(data):
-    print("data: ",data)
+    # print("data: ",data)
     encrypted_data = encrypt_dict(data)
     return jsonify({'encrypted_data': encrypted_data})
 
@@ -2858,10 +2858,10 @@ def decode():
     decrypt_request()
 
     if request.is_json:
-        print("JSON Data: ", request.get_json(force=True))
+        # print("JSON Data: ", request.get_json(force=True))
         response = jsonify({'decode': request.get_json(force=True)})
     else:
-        print("Request Form: ", request.form)
+        # print("Request Form: ", request.form)
         # print(request.files)
         decode_files = {}
         # decode_files['form']=request.form

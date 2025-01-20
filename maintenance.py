@@ -287,7 +287,7 @@ class MaintenanceRequests(Resource):
         with connect() as db:
             print("Checking Inputs: ", key, payload)
             response["request_update"] = db.update('maintenanceRequests', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
 
         return response
 
@@ -534,7 +534,7 @@ class MaintenanceQuotes(Resource):
         with connect() as db:
             print("Checking Inputs: ", key, payload)
             response["request_update"] = db.update('maintenanceQuotes', key, payload)
-            print("Response:" , response)
+            # print("Response:" , response)
 
         return response
 
@@ -562,8 +562,8 @@ class MaintenanceStatus(Resource):
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT *
                             , CASE 
-                                        WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
-                                        WHEN maintenance_request_status IN ("INFO", "INFO OWNER")		THEN "INFO REQUESTED"
+                                        WHEN maintenance_request_status = "NEW" 						                         THEN "NEW REQUEST"
+                                        WHEN maintenance_request_status IN ("INFO", "INFO OWNER", "INFO TENANT")		         THEN "INFO REQUESTED"
                                         WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
                                     END AS maintenance_status
 
@@ -604,6 +604,7 @@ class MaintenanceStatus(Resource):
                             -- WHERE business_uid = '600-000003' -- AND (pur_receiver = '600-000003' OR ISNULL(pur_receiver))
                             ORDER BY maintenance_request_created_date;
                             """)
+            # print(maintenanceStatus)
 
             if maintenanceStatus.get('code') == 200:
                 status_colors = {
@@ -812,8 +813,8 @@ class MaintenanceStatus(Resource):
                         -- MAINTENANCE STATUS BY OWNER, BUSINESS, TENENT OR PROPERTY
                         SELECT *, -- bill_property_id,  maintenance_property_id,
                         CASE 
-							WHEN maintenance_request_status = "NEW" 						THEN "NEW REQUEST"
-                            WHEN maintenance_request_status IN ("INFO", "INFO TENANT")		THEN "INFO REQUESTED"
+							WHEN maintenance_request_status IN ("NEW")		                            THEN "NEW REQUEST"
+                            WHEN maintenance_request_status IN ("INFO", "INFO OWNER", "INFO TENANT")	THEN "INFO REQUESTED"
                             WHEN maintenance_request_status IN ('PROCESSING', 'SCHEDULED', 'CANCELLED', 'COMPLETED') THEN maintenance_request_status
 						END AS maintenance_status
                         FROM m_details
