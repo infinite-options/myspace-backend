@@ -149,7 +149,7 @@ class Bills(Resource):
                         #             , list_item AS utility_type
                         #             , CASE
                         #                 WHEN contract_status = "ACTIVE" AND utility_payer = "property manager" THEN contract_business_id
-                        #                 WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND utility_payer = "tenant" THEN lt_tenant_id
+                        #                 WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M')) AND utility_payer = "tenant" THEN lt_tenant_id
                         #                 ELSE property_owner_id
                         #             END AS responsible_party
                         #         FROM (
@@ -184,12 +184,12 @@ class Bills(Resource):
                             -- UTILITY PAYMENT REPOSONSIBILITY BY PROPERTY
                             SELECT *
                             , CASE
-                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "owner" THEN property_owner_id
-                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "tenant" THEN lt_tenant_id
-                                WHEN (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") and payer = "property manager" THEN contract_business_id
+                                WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M')) and payer = "owner" THEN property_owner_id
+                                WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M')) and payer = "tenant" THEN lt_tenant_id
+                                WHEN (lease_status IN ('ACTIVE', 'ACTIVE M2M')) and payer = "property manager" THEN contract_business_id
                                 ELSE property_owner_id
                                     END AS responsible_party
-                            , IF((lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND lt_responsibility IS NOT NULL, lt_responsibility, 1) AS lt_responsibility
+                            , IF((lease_status IN ('ACTIVE', 'ACTIVE M2M')) AND lt_responsibility IS NOT NULL, lt_responsibility, 1) AS lt_responsibility
                             FROM (
                             SELECT -- *
                                 property_utility.*

@@ -48,7 +48,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         WHERE owner_uid = \'""" + uid + """\'
@@ -116,7 +116,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
@@ -178,7 +178,7 @@ class MaintenanceRequests(Resource):
                         -- LEFT JOIN pp_status ON pur_bill_id = bill_uid
                         LEFT JOIN o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS b ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN t_details ON lt_lease_id = lease_uid
                         -- WHERE owner_uid = "110-000095"
                         -- WHERE owner_uid = \'""" + uid + """\'
@@ -595,7 +595,7 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN properties ON property_uid = maintenance_property_id
                             LEFT JOIN o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                            LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                            LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN t_details ON lt_lease_id = lease_uid
 
                             -- WHERE property_owner_id = '110-000003'
@@ -701,7 +701,7 @@ class MaintenanceStatus(Resource):
                                 LEFT JOIN properties ON property_uid = maintenance_property_id
                                 LEFT JOIN o_details ON maintenance_property_id = property_id
                                 LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                                 LEFT JOIN t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
@@ -767,7 +767,7 @@ class MaintenanceStatus(Resource):
                             LEFT JOIN properties ON property_uid = maintenance_property_id
                             LEFT JOIN o_details ON maintenance_property_id = property_id
                             LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                            LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                            LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                             LEFT JOIN t_details ON lt_lease_id = lease_uid
                             WHERE quote_business_id = \'""" + user_id + """\'
                             -- WHERE quote_business_id = '600-000008'
@@ -829,7 +829,7 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                         LEFT JOIN o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN t_details ON lt_lease_id = lease_uid
                             LEFT JOIN (
                             SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -908,7 +908,7 @@ class MaintenanceStatus(Resource):
                         LEFT JOIN (SELECT SUM(pur_amount_due) as pur_amount_due ,SUM(total_paid) as pur_amount_paid, CASE WHEN SUM(total_paid) >= SUM(pur_amount_due) THEN "PAID" ELSE "UNPAID" END AS purchase_status , pur_bill_id, pur_property_id FROM pp_status GROUP BY pur_bill_id) as p ON pur_bill_id = bill_uid AND p.pur_property_id = maintenance_property_id
                         LEFT JOIN o_details ON maintenance_property_id = property_id
                         LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                        LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                        LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                         LEFT JOIN t_details ON lt_lease_id = lease_uid
                             LEFT JOIN (
                             SELECT quote_maintenance_request_id, JSON_ARRAYAGG(JSON_OBJECT

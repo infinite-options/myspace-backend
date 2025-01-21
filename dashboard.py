@@ -166,7 +166,7 @@ class Dashboard(Resource):
                             LEFT JOIN (SELECT lease_property_id
                                 , lease_status 
                                 FROM leases 
-                                WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON contract_property_id = lease_property_id
+                                WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON contract_property_id = lease_property_id
                             LEFT JOIN (SELECT pur_property_id
                                 , SUM(if(pur_receiver LIKE "110%", pur_amount_due, -pur_amount_due)) AS pur_amount_due
                                 , SUM(if(pur_receiver LIKE "110%", total_paid, -total_paid)) AS total_paid
@@ -237,7 +237,7 @@ class Dashboard(Resource):
                                 LEFT JOIN properties ON property_uid = maintenance_property_id
                                 LEFT JOIN o_details ON maintenance_property_id = property_id
                                 LEFT JOIN (SELECT * FROM b_details WHERE contract_status = "ACTIVE") AS c ON maintenance_property_id = contract_property_id
-                                LEFT JOIN (SELECT * FROM leases WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AS l ON maintenance_property_id = lease_property_id
+                                LEFT JOIN (SELECT * FROM leases WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M')) AS l ON maintenance_property_id = lease_property_id
                                 LEFT JOIN t_details ON lt_lease_id = lease_uid
 
                                 WHERE business_uid = \'""" + user_id + """\' -- AND (pur_receiver = \'""" + user_id + """\' OR ISNULL(pur_receiver))
@@ -275,7 +275,7 @@ class Dashboard(Resource):
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM leases 
-                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
+                                    WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M') OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -391,7 +391,7 @@ class Dashboard(Resource):
                                     END AS lease_end_month
                                     , CAST(LEFT(lease_end, 2) AS UNSIGNED) AS lease_end_num
                                     FROM leases 
-                                    WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
+                                    WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M') OR lease_status = "ENDED"
                                     ) AS l
                                 LEFT JOIN property_owner ON property_id = lease_property_id
                                 LEFT JOIN (SELECT * FROM contracts WHERE contract_status = "ACTIVE") b ON contract_property_id = lease_property_id
@@ -498,7 +498,7 @@ class Dashboard(Resource):
                         -- WHERE contract_business_id = "600-000003"
                         WHERE tenants LIKE '%""" + user_id + """%'
                         -- WHERE tenants LIKE "%350-000004%"
-                        -- AND lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M"
+                        -- AND lease_status IN ('ACTIVE', 'ACTIVE M2M')
                         ; """)
 
 

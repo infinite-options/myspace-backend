@@ -37,7 +37,7 @@ class Listings (Resource):
             #         LEFT JOIN ( 
             #             SELECT * FROM leases 
             #             -- WHERE lease_status = "ACTIVE"
-            #             WHERE (lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M") AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
+            #             WHERE (lease_status IN ('ACTIVE', 'ACTIVE M2M')) AND STR_TO_DATE(lease_end, '%m-%d-%Y') > DATE_ADD(CURDATE(), INTERVAL 2 MONTH)
             #             ) AS l
             #         ON lease_property_id = property_uid
             #         WHERE lease_status IS null

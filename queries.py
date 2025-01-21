@@ -53,7 +53,7 @@ def LeaseDetailsQuery(user_id):
                 END AS lease_end_month
                 FROM leases 
                 {cond}
-                -- WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"
+                -- WHERE lease_status IN ('ACTIVE', 'ACTIVE M2M') OR lease_status = "ENDED"
                 ) AS l
             LEFT JOIN (
                 SELECT fees_lease_id, JSON_ARRAYAGG(JSON_OBJECT
@@ -101,11 +101,11 @@ def LeaseDetailsQuery(user_id):
     # like_pattern = '600%'
 
     if user_id.startswith("110"):
-        query = query.format(column='owner_uid', cond = 'WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"')
+        query = query.format(column='owner_uid', cond = 'WHERE lease_status IN ("ACTIVE", "ACTIVE M2M", "ENDED")')
     elif user_id.startswith("350"):
         query = query.format(column='tenants', cond = 'WHERE lease_uid LIKE "300%"')
     elif user_id.startswith("600"):
-        query = query.format(column='contract_business_id', cond = 'WHERE lease_status = "ACTIVE" OR lease_status = "ACTIVE M2M" OR lease_status = "ENDED"')
+        query = query.format(column='contract_business_id', cond = 'WHERE lease_status IN ("ACTIVE", "ACTIVE M2M", "ENDED")')
     else:
         print("Invalid condition type")
         return None
