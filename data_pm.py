@@ -199,6 +199,7 @@ def processImage(key, payload):
     # print("Key Passed into processImage: ", key)
     response = {}
     bucket = os.getenv('BUCKET_NAME')
+    payload_fav_images = None
     with connect() as db:
 
         if 'appliance_uid' in key:
@@ -232,6 +233,21 @@ def processImage(key, payload):
                 payload_images = payload_query['result'][0]['bill_images'] if payload_query['result'] else None  # Current Images
                 # payload_fav_images = payload.pop("img_favorite") if payload.get("img_favorite") else None  # (PUT & POST)
                 payload_fav_images = payload.get("bill_favorite_image") or payload.pop("img_favorite", None)   # (PUT & POST)
+            else:
+                return payload
+            
+        elif 'lease_uid' in key:
+            print("Lease Key passed")
+            key_type = 'leases'
+            key_uid = key['lease_uid']
+            payload_delete_images = payload.pop('delete_images', None)      # Images to Delete
+            if 'img_0' in request.files or payload_delete_images != None:   #  New lease signature is passed in as img_0.  No Image attributes are passed in
+                payload_query = db.execute(""" SELECT lease_signature FROM leases WHERE lease_uid = \'""" + key_uid + """\'; """)     # Current Images
+                print("1: ", payload_query)
+                print("2: ", payload_query['result'], type(payload_query['result']))
+                if len(payload_query['result']) > 0:
+                    print("4: ", payload_query.get('result', [{}])[0].get('lease_signature', None))
+                payload_images = payload_query['result'][0]['lease_signature'] if payload_query['result'] else None  # Current Images
             else:
                 return payload
 
@@ -494,6 +510,7 @@ def processImage(key, payload):
         
         if key_type == 'appliances': payload['appliance_images'] = json.dumps(current_images) 
         if key_type == 'bills': payload['bill_images'] = json.dumps(current_images) 
+        if key_type == 'leases': payload['lease_signature'] = json.dumps(current_images) 
         if key_type == 'maintenance request': payload['maintenance_images'] = json.dumps(current_images) 
         if key_type == 'maintenance quote': payload['quote_maintenance_images'] = json.dumps(current_images) 
         if key_type == 'properties': payload['property_images'] = json.dumps(current_images) 

@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-from data_pm import connect, deleteImage, uploadImage, s3, processDocument, pmDueDate
+from data_pm import connect, deleteImage, uploadImage, s3, processImage, processDocument, pmDueDate
 import boto3
 import json
 # import datetime
@@ -208,6 +208,11 @@ class LeaseApplication(Resource):
         # print("Lease Key: ", key)
 
 
+        # --------------- PROCESS IMAGES ------------------
+
+        processImage(key, payload)
+        print("Payload after function: ", payload)
+        
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
