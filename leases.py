@@ -212,6 +212,9 @@ class LeaseApplication(Resource):
 
         processImage(key, payload)
         print("Payload after function: ", payload)
+
+        # --------------- PROCESS IMAGES ------------------
+        
         
         # --------------- PROCESS DOCUMENTS ------------------
 
