@@ -2659,7 +2659,7 @@ class Delete_six_0s_from_database_CLASS(Resource):
 
 
             try:
-                recipients = ["pmarathay@gmail.com",
+                recipients = [#"pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
                 body = f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n" + "\n"
@@ -2674,7 +2674,7 @@ class Delete_six_0s_from_database_CLASS(Resource):
 
         except:
             try:
-                recipients = ["pmarathay@gmail.com",
+                recipients = [#"pmarathay@gmail.com",
                              "saumyashah4751@gmail.com"]
                 subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
                 body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"

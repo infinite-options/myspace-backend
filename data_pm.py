@@ -877,6 +877,12 @@ class DatabaseConnection:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.disconnect()
+    
+    def cursor(self):
+        return self.conn.cursor()
+    
+    def commit(self):
+        return self.conn.commit()
 
     def execute(self, sql, args=[], cmd='get'):
         # print("\nIn execute.  SQL: ", sql)

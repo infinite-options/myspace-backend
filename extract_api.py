@@ -5,7 +5,6 @@ import os
 import pymysql
 from dotenv import load_dotenv
 import collections
-from data_pm import connect, uploadImage, s3, serializeJSON
 
 load_dotenv()
 
@@ -76,70 +75,60 @@ class CleanUpDatabase(Resource):
         # Define the patterns to search for
         patterns = [r"200-000000", r"600-000000", r"110-000000", r"350-000000", r"100-000000", r"050-000000", r"800-000000", r"900-000000", r"400-000000", r"010-000000", r"370-000000", r"300-000000"]
         response = {}
-
-        # try:
-        #     # Connect to the MySQL database
-        #     connection = pymysql.connect(
-        #         host=os.getenv('RDS_HOST'),
-        #         user=os.getenv('RDS_USER'),
-        #         port=int(os.getenv('RDS_PORT')),
-        #         passwd=os.getenv('RDS_PW'),
-        #         db=os.getenv('RDS_DB'),
-        #         charset='utf8mb4',
-        #         cursorclass=pymysql.cursors.DictCursor
-        #     )
-        # except:
-        #     response['message'] = 'Error in database connection'
-        #     return response
-        
         
         try:
-            # cursor = connection.cursor()
-            cursor = connect.cursor()
-            # cursor.execute("""
-            #     SELECT TABLE_NAME 
-            #     FROM information_schema.TABLES 
-            #     WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
-            # """)
-            tables = cursor.fetchall()
+            with connect() as db:
 
-            response['Data deleted from (tables)'] = collections.defaultdict(list)
+                print("Making connection to the database")
+                cursor = db.cursor()
+                # cursor = connection.cursor()
+                print("Connection Successful")
+                # cursor = connect.cursor()
+                cursor.execute("""
+                    SELECT TABLE_NAME 
+                    FROM information_schema.TABLES 
+                    WHERE TABLE_SCHEMA = 'space_dev' AND TABLE_TYPE = 'BASE TABLE';
+                """)
+                tables = cursor.fetchall()
 
-            for table_name in tables:
-                # print(f"\nProcessing table: {table_name}")
-                table = table_name['TABLE_NAME']
+                print("Tables: ", tables)
 
-                cursor.execute(f"DESCRIBE `{table}`")
-                columns = cursor.fetchall()
+                response['Data deleted from (tables)'] = collections.defaultdict(list)
 
-                for column_info in columns:
-                    column_name = column_info['Field']
-                    # print(f"Checking column: {column_name} in table: {value}")
+                for table_name in tables:
+                    # print(f"\nProcessing table: {table_name}")
+                    table = table_name['TABLE_NAME']
 
-                    for pattern in patterns:
-                        delete_query = f"""
-                        DELETE FROM `{table}`
-                        WHERE `{column_name}` REGEXP %s
-                        """
-                        cursor.execute(delete_query, (pattern,))
-                        rows_deleted = cursor.rowcount 
-                        # connection.commit()
-                        connect.commit()
-                        if rows_deleted > 0:
-                            response['Data deleted from (tables)'][table].append(f"\nDeleted {rows_deleted} rows in table `{table}` where column `{column_name}` matched '{pattern}'\n")
-                            # print(f"\nDeleted {rows_deleted} rows in table `{table}` where column `{column_name}` matched '{pattern}'\n")
+                    cursor.execute(f"DESCRIBE `{table}`")
+                    columns = cursor.fetchall()
 
-            if len(response['Data deleted from (tables)']) == 0:
-                response.pop('Data deleted from (tables)')
-            
-            response['message'] = 'Clean Up Completed'
-            # print("Cleanup completed.")
+                    for column_info in columns:
+                        column_name = column_info['Field']
+                        print("\nColumn_Name: ", column_name)
+                        # print(f"Checking column: {column_name} in table: {value}")
+
+                        for pattern in patterns:
+                            delete_query = f"""
+                            DELETE FROM `{table}`
+                            WHERE `{column_name}` REGEXP %s
+                            """
+                            print(delete_query)
+                            cursor.execute(delete_query, (pattern,))
+                            rows_deleted = cursor.rowcount 
+                            db.commit()
+                            # connection.commit()
+                            # connect.commit()
+                            if rows_deleted > 0:
+                                response['Data deleted from (tables)'][table].append(f"\nDeleted {rows_deleted} rows in table `{table}` where column `{column_name}` matched '{pattern}'\n")
+                                # print(f"\nDeleted {rows_deleted} rows in table `{table}` where column `{column_name}` matched '{pattern}'\n")
+
+                if len(response['Data deleted from (tables)']) == 0:
+                    response.pop('Data deleted from (tables)')
+                
+                response['message'] = 'Clean Up Completed'
+                # print("Cleanup completed.")
 
         except:
             response['message'] = 'Error in cleaning the database'
-        finally:
-            cursor.close()
-            # connection.close()
-            connect.close()
         
         return response
