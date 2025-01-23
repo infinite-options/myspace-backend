@@ -54,10 +54,10 @@ class Appliances(Resource):
             key = {'appliance_uid': newApplianceUID}
             print("Appliance Key: ", key)
            
-           # --------------- PROCESS IMAGES ------------------
+            # --------------- PROCESS IMAGES ------------------
 
             processImage(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processImage function: ", payload, type(payload))
             
             # --------------- PROCESS IMAGES ------------------
 
@@ -65,7 +65,7 @@ class Appliances(Resource):
             # --------------- PROCESS DOCUMENTS ------------------
 
             processDocument(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processDocument function: ", payload, type(payload))
             
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -105,7 +105,7 @@ class Appliances(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processImage function: ", payload, type(payload))
         
         # --------------- PROCESS IMAGES ------------------
         
@@ -113,7 +113,7 @@ class Appliances(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processDocument function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
 

@@ -117,7 +117,7 @@ class LeaseApplication(Resource):
             # --------------- PROCESS DOCUMENTS ------------------
 
             processDocument(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processDocument function: ", payload, type(payload))
             
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -211,7 +211,7 @@ class LeaseApplication(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        print("Payload after function: ", payload)
+        print("Payload after processImage function: ", payload, type(payload))
 
         # --------------- PROCESS IMAGES ------------------
         
@@ -219,7 +219,7 @@ class LeaseApplication(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        print("Payload after function: ", payload, type(payload))
+        print("Payload after processDocument function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
 

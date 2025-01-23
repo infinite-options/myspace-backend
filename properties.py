@@ -433,7 +433,7 @@ class Properties(Resource):
             # --------------- PROCESS IMAGES ------------------
 
             processImage(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processImage function: ", payload, type(payload))
             
             # --------------- PROCESS IMAGES ------------------
 
@@ -530,7 +530,7 @@ class Properties(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processImage function: ", payload, type(payload))
         
         # --------------- PROCESS IMAGES ------------------
 

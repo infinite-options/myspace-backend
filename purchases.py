@@ -68,7 +68,7 @@ class Bills(Resource):
             # --------------- PROCESS IMAGES ------------------
 
             processImage(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processImage function: ", payload, type(payload))
             
             # --------------- PROCESS IMAGES ------------------
 
@@ -76,7 +76,7 @@ class Bills(Resource):
             # --------------- PROCESS DOCUMENTS ------------------
 
             processDocument(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processDocument function: ", payload, type(payload))
             
             # --------------- PROCESS DOCUMENTS ------------------
 
@@ -447,7 +447,7 @@ class Bills(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processImage function: ", payload, type(payload))
         
         # --------------- PROCESS IMAGES ------------------
         
@@ -455,7 +455,7 @@ class Bills(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processDocument function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
 
@@ -538,7 +538,7 @@ class AddPurchase(Resource):
 
             # --------------- PROCESS DOCUMENTS ------------------
             # processDocument(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processDocument function: ", payload, type(payload))
             
             # --------------- PROCESS DOCUMENTS ------------------
 

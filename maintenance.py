@@ -238,7 +238,7 @@ class MaintenanceRequests(Resource):
            # --------------- PROCESS IMAGES ------------------
 
             processImage(key, payload)
-            # print("Payload after function: ", payload)
+            # print("Payload after processImage function: ", payload, type(payload))
             
             # --------------- PROCESS IMAGES ------------------
 
@@ -277,7 +277,7 @@ class MaintenanceRequests(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processImage function: ", payload, type(payload))
         
         # --------------- PROCESS IMAGES ------------------
 
@@ -478,7 +478,7 @@ class MaintenanceQuotes(Resource):
                 # --------------- PROCESS IMAGES ------------------
 
                 processImage(key, payload)
-                # print("Payload after function: ", payload)
+                # print("Payload after processImage function: ", payload, type(payload))
                 
                 # --------------- PROCESS IMAGES ------------------
 
@@ -517,7 +517,7 @@ class MaintenanceQuotes(Resource):
         # --------------- PROCESS IMAGES ------------------
 
         processImage(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processImage function: ", payload, type(payload))
         
         # --------------- PROCESS IMAGES ------------------
 
@@ -525,7 +525,7 @@ class MaintenanceQuotes(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
 
         processDocument(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processDocument function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
 

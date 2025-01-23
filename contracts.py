@@ -72,7 +72,7 @@ class Contracts(Resource):
                 # --------------- PROCESS DOCUMENTS ------------------
 
                 processDocument(key, payload)
-                # print("Payload after function: ", payload)
+                # print("Payload after processDocument function: ", payload, type(payload))
                 
                 # --------------- PROCESS DOCUMENTS ------------------
 
@@ -104,7 +104,7 @@ class Contracts(Resource):
         # --------------- PROCESS DOCUMENTS ------------------
         
         processDocument(key, payload)
-        # print("Payload after function: ", payload)
+        # print("Payload after processDocument function: ", payload, type(payload))
         
         # --------------- PROCESS DOCUMENTS ------------------
    
