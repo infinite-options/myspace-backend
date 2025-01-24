@@ -774,7 +774,8 @@ class Lease_CLASS(Resource):
                         # Make the Approved contract Active
                         new_lease = ("""
                                 UPDATE leases
-                                SET lease_status = 'ACTIVE'
+                                SET lease_status = 'ACTIVE', lease_renew_status = Null
+                                -- WHERE lease_property_id = '200-000001'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'APPROVED';  
                                 """)
@@ -793,7 +794,7 @@ class Lease_CLASS(Resource):
                 # print("This is the Function response: ", response)
 
 
-                # Run query to find all EXPIRED Contracts
+                # Run query to find all EXPIRED Leases
                 lease_query = db.execute("""
                     SELECT * 
                     FROM leases
@@ -926,7 +927,8 @@ def Lease_CRON(Resource):
                         # Make the Approved contract Active
                         new_lease = ("""
                                 UPDATE leases
-                                SET lease_status = 'ACTIVE'
+                                SET lease_status = 'ACTIVE', lease_renew_status = Null
+                                -- WHERE lease_property_id = '200-000001'
                                 WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
                                 AND lease_status = 'APPROVED';  
                                 """)
@@ -945,7 +947,7 @@ def Lease_CRON(Resource):
                 # print("This is the Function response: ", response)
 
 
-                # Run query to find all EXPIRED Contracts
+                # Run query to find all EXPIRED Leases
                 lease_query = db.execute("""
                     SELECT * 
                     FROM leases
