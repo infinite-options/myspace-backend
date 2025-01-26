@@ -42,6 +42,9 @@ class NewPayments(Resource):
                 total_paid = data.pop('cashflow_total')  # Pop the value from the dictionary
             else:
                 total_paid = data.get('pay_total', 0)  # Use 'pay_total' or default to 0
+                
+            pay_total = str(total_paid)
+            print("Pay Total: ", pay_total, type(pay_total))
 
             num_pi = len(purchase_ids)
             print("number of items: ", num_pi, total_paid)
@@ -63,7 +66,7 @@ class NewPayments(Resource):
                     paid_amt = item['pur_amount_due']
                     print("Paid Amount: ", paid_amt, type(paid_amt))
                     total_paid = total_paid - round(float(item['pur_amount_due']), 2)
-                    print("Total Paid: ", total_paid)
+                    print("Total Paid: ", total_paid, type(total_paid))
                 else:
                     paid_amt = str(total_paid)
                     print("Paid Amount: ", paid_amt, type(paid_amt))
@@ -76,6 +79,7 @@ class NewPayments(Resource):
                         SET payment_uid = \'""" + newPaymentRequestID + """\'
                             , pay_purchase_id =  \'""" + item['purchase_uid'] + """\'
                             , pay_amount = \'""" + paid_amt + """\'
+                            , pay_total = \'""" + pay_total + """\'
                             , payment_notes = \'""" + data['payment_notes'] + """\'
                             , pay_charge_id = \'""" + data['pay_charge_id'] + """\'
                             , payment_type = \'""" + data['payment_type'] + """\'
