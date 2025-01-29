@@ -152,17 +152,31 @@ class NewPayments(Resource):
                     pur_status_value = "1"
                 # print("Purchase Status: ", purchase_status)
 
-                # DEFINE KEY VALUE PAIR
+                # # DEFINE KEY VALUE PAIR
+                # key = {'purchase_uid': item['purchase_uid']}
+                # payload = {'purchase_status': purchase_status}
+                # payload2= {'pur_status_value': pur_status_value}    
+                # # print(key, payload)
+
+                # # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
+                # response['purchase_table_update'] = db.update('purchases', key, payload)
+                # response['purchase_status_update'] = db.update('purchases', key, payload2)
+                # # print(response)
+                
+
+                # Define key-value pair
                 key = {'purchase_uid': item['purchase_uid']}
-                payload = {'purchase_status': purchase_status}
-                payload2= {'pur_status_value': pur_status_value}    
-                # print(key, payload)
+                payload = {
+                    'purchase_status': purchase_status,
+                    'pur_status_value': pur_status_value
+                }  
 
                 # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
                 response['purchase_table_update'] = db.update('purchases', key, payload)
-                response['purchase_status_update'] = db.update('purchases', key, payload2)
-                # print(response)
-                
+
+
+
+
 
 
 
@@ -187,19 +201,31 @@ class NewPayments(Resource):
                         # print("Current Item: ", managementFee)
                         # print(managementFee['purchase_uid'])
 
-                        # SET STATUS AS MAIN PURCHASE UID
-                        payload = {'purchase_status': purchase_status}
-                        payload2= {'pur_status_value': pur_status_value}  
+                        # # SET STATUS AS MAIN PURCHASE UID
+                        # payload = {'purchase_status': purchase_status}
+                        # payload2= {'pur_status_value': pur_status_value}  
 
                         # DEFINE KEY VALUE PAIR
-                        key = {'purchase_uid': managementFee['purchase_uid']}
-                        payload = {'purchase_status': purchase_status}
-                        payload2= {'pur_status_value': pur_status_value}    
+                        # key = {'purchase_uid': managementFee['purchase_uid']}
+                        # payload = {'purchase_status': purchase_status}
+                        # payload2= {'pur_status_value': pur_status_value}    
                         # print(key, payload)
 
                         # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
+                        # response['purchase_table_update'] = db.update('purchases', key, payload)
+                        # response['purchase_status_update'] = db.update('purchases', key, payload2)
+                        # print(response)
+
+
+                        # Define key-value pair
+                        key = {'purchase_uid': managementFee['purchase_uid']}
+                        payload = {
+                            'purchase_status': purchase_status,
+                            'pur_status_value': pur_status_value
+                        }
+
+                        # UPDATE PURCHASE TABLE WITH PURCHASE STATUS
                         response['purchase_table_update'] = db.update('purchases', key, payload)
-                        response['purchase_status_update'] = db.update('purchases', key, payload2)
                         # print(response)
 
 
@@ -211,9 +237,13 @@ class NewPayments(Resource):
                 print("Convenience fee paid: ", data['pay_fee'], type(data['pay_fee']))
                 if data['pay_fee'] > 0:
 
-                    # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE
+                    # PART 2A: ENTER PURCHASE AND PAYMENT INFO FOR RECEIPT OF CONVENIENCE FEE (Payer to Manager)
                     # INSERT INTO PURCHASES TABLE
                     newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                    convenienceFee_pur_group = newPurchaseRequestID
+
+                    purchase_description = purchaseInfo['result'][0]['pur_description']
+                    pur_description = purchase_description + " - Convenience Fee"
                     # print("Part 2A: ", newPurchaseRequestID)
 
                     # DETERMINE HOW MUCH OF THE CONVENIENCE FEES WAS DUE TO EACH PURCHASE
@@ -233,7 +263,7 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
-                                , pur_group = \'""" + newPurchaseRequestID + """\'
+                                , pur_group = \'""" + convenienceFee_pur_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Extra Charges"
@@ -244,7 +274,7 @@ class NewPayments(Resource):
                                 , purchase_status = "PAID"
                                 , pur_status_value = '5'
                                 , pur_notes = \'""" + item['purchase_uid'] + """\'
-                                , pur_description =  "Credit Card Fee - Auto Posted"
+                                , pur_description = '""" + pur_description + """'
                                 , pur_receiver = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_payer'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
@@ -282,7 +312,7 @@ class NewPayments(Resource):
                     response = db.execute(feePaymentQuery, [], 'post')
 
 
-                    # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE
+                    # PART 2B: ENTER PURCHASE AND PAYMENT INFO FOR PAYMENT OF CONVENIENCE FEE (Manager to Stripe)
                     # INSERT INTO PURCHASES TABLE
                     newPurchaseRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
                     # print("Part 2B: ", newPurchaseRequestID)
@@ -290,7 +320,7 @@ class NewPayments(Resource):
                     feePurchaseQuery = (""" 
                             INSERT INTO purchases
                             SET purchase_uid = \'""" + newPurchaseRequestID + """\'
-                                , pur_group = \'""" + newPurchaseRequestID + """\'
+                                , pur_group = \'""" + convenienceFee_pur_group + """\'
                                 , pur_timestamp = DATE_FORMAT(CURDATE(), '%m-%d-%Y %H:%i')
                                 , pur_property_id = \'""" + purchaseInfo['result'][0]['pur_property_id'] + """\'  
                                 , purchase_type = "Bill Posting"
@@ -301,7 +331,7 @@ class NewPayments(Resource):
                                 , purchase_status = "PAID"
                                 , pur_status_value = '5'
                                 , pur_notes = \'""" + item['purchase_uid'] + """\'
-                                , pur_description =  "Credit Card Fee - Auto Posted"
+                                , pur_description = '""" + pur_description + """'
                                 , pur_receiver = "STRIPE"
                                 , pur_payer = \'""" + purchaseInfo['result'][0]['pur_receiver'] + """\'
                                 , pur_initiator = \'""" + purchaseInfo['result'][0]['pur_initiator'] + """\'
