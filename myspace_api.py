@@ -1430,7 +1430,6 @@ class LateFees_CLASS(Resource):
                             newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
                             newRequest['pur_property_id'] = property_id
                             newRequest['purchase_type'] = "Late Fee"
-                            newRequest['pur_cf_type'] = "revenue"
                             newRequest['pur_amount_due'] = late_fee
                             newRequest['purchase_status'] = "UNPAID"
                             newRequest['pur_status_value'] = "0"
@@ -1449,6 +1448,7 @@ class LateFees_CLASS(Resource):
                             newRequest['pur_receiver'] = manager
                             newRequest['pur_payer'] = tenant
                             newRequest['pur_initiator'] = manager
+                            newRequest['pur_cf_type'] = "revenue"
                             newRequest['pur_due_date'] = dt.strftime("%m-%d-%Y %H:%M")
                             
 
@@ -1472,6 +1472,7 @@ class LateFees_CLASS(Resource):
                             # print(newRequestID)
                             newRequest['pur_receiver'] = owner
                             newRequest['pur_payer'] = manager
+                            newRequest['pur_cf_type'] = "expense"
 
                                 
                             # print(newRequest)
@@ -1502,7 +1503,7 @@ class LateFees_CLASS(Resource):
                                     # print(newRequestID
                                     newRequest['pur_receiver'] = manager
                                     newRequest['pur_payer'] = owner
-                                    newRequest['pur_cf_type'] = "expense"
+                                    newRequest['pur_cf_type'] = "revenue"
                                     newRequest['purchase_type'] = "Management"
                                     newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee for {purchase_description}'
                                     newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
@@ -2000,7 +2001,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                     newRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
                     
                     
-                    newRequest['pur_cf_type'] = "revenue"
+                    
                     newRequest['pur_amount_due'] = amt_due
                     newRequest['purchase_status'] = "UNPAID"
                     newRequest['pur_status_value'] = "0"
@@ -2024,6 +2025,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = manager
                         newRequest['pur_payer'] = tenant
                         newRequest['pur_initiator'] = manager
+                        newRequest['pur_cf_type'] = "revenue"
                         newRequest['purchase_type'] = fee_type
                         newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
 
@@ -2040,6 +2042,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                         newRequest['pur_receiver'] = owner
                         newRequest['pur_payer'] = manager
                         newRequest['pur_initiator'] = manager
+                        newRequest['pur_cf_type'] = "expense"
                         newRequest['purchase_type'] = f"{fee_type} Due Owner"
                         newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
                         newRequest['pur_group'] = grouping
@@ -2105,7 +2108,6 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 newPMRequest['pur_property_id'] = property
                                 newPMRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
                                 newPMRequest['purchase_type'] = "Management"
-                                newPMRequest['pur_cf_type'] = "expense"
                                 newPMRequest['pur_amount_due'] = charge_amt
                                 newPMRequest['purchase_status'] = "UNPAID"
                                 newPMRequest['pur_status_value'] = "0"
@@ -2116,6 +2118,7 @@ class MonthlyRentPurchase_CLASS(Resource):
                                 newPMRequest['pur_receiver'] = manager
                                 newPMRequest['pur_payer'] = owner
                                 newPMRequest['pur_initiator'] = manager
+                                newPMRequest['pur_cf_type'] = "revenue"
                                 newPMRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
                                 newPMRequest['pur_group'] = grouping
 
