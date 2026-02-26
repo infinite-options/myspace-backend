@@ -16,20 +16,33 @@
 
 # SECTION 1:  IMPORT FILES AND FUNCTIONS
 from dashboard import Dashboard
-from appliances import Appliances #, RemoveAppliance
+from appliances import Appliances  # , RemoveAppliance
 from rents import Rents, RentDetails, RentTest
 from payments import NewPayments, PaymentMethod
-from properties import Properties
+from properties import (
+    Properties,
+    PropertiesSearch,
+    PropertyOwners,
+)
+from propertyTransfer import OwnershipTransfer, OwnershipTransfersByUser
+
 # from cashflow import CashflowByOwner
-# from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised, 
+# from cashflow import Cashflow, CashflowSimplified, HappinessMatrix, CashflowSummary, CashflowRevised,
 from cashflow import PaymentVerification, CashflowTransactions
 from employees import Employee, EmployeeVerification
-from profiles import Profile, BusinessProfile #, BusinessProfileList
+from profiles import Profile, BusinessProfile  # , BusinessProfileList
+
 # from documents import OwnerDocuments, TenantDocuments
 from documents import Documents
 from leases import LeaseDetails, LeaseApplication, LeaseReferal
-from purchases import Bills, AddExpense, AddRevenue, AddPurchase # , RentPurchase
-from maintenance import MaintenanceStatus, MaintenanceRequests, MaintenanceQuotes, MaintenanceQuotesByUid
+from purchases import Bills, AddExpense, AddRevenue, AddPurchase  # , RentPurchase
+from maintenance import (
+    MaintenanceStatus,
+    MaintenanceRequests,
+    MaintenanceQuotes,
+    MaintenanceQuotesByUid,
+)
+
 # from cron import PeriodicPurchases_CLASS # , ExtendLease, MonthlyRentPurchase_CLASS, MonthlyRentPurchase_CRON, LateFees_CLASS, LateFees_CRON
 # from cron import MonthlyRent_CLASS
 from contacts import Contacts
@@ -44,19 +57,23 @@ from users import UserInfo
 from password import Password
 from data_pm import connect, uploadImage, s3
 from queries import NextDueDate, UnpaidRents, ApprovedContracts
+
 # from jwtToken import JwtToken
 from functools import wraps
 import jwt
 
 from test_api import endPointTest_CLASS
 from extract_api import Extract_API, CleanUpDatabase
+
 # from flask import Request
 
 import os
 import boto3
 import json
 import pytz
-# import time
+
+import time
+
 # import sys
 # import pymysql
 # import requests
@@ -73,6 +90,7 @@ import pytz
 
 import calendar
 from dotenv import load_dotenv
+
 # from datetime import datetime as dt
 # from datetime import timezone as dtz
 # from datetime import datetime, date, timedelta
@@ -81,12 +99,19 @@ from flask import Flask, request, render_template, url_for, redirect, jsonify, a
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_mail import Mail, Message  # used for email
-from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity, jwt_required, create_access_token 
+from flask_jwt_extended import (
+    JWTManager,
+    verify_jwt_in_request,
+    get_jwt_identity,
+    jwt_required,
+    create_access_token,
+)
 from pytz import timezone as ptz  # Not sure what the difference is
 from decimal import Decimal
 from hashlib import sha512
 from twilio.rest import Client
 from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
+
 # from google_auth_oauthlib.flow import InstalledAppFlow
 from urllib.parse import urlparse
 from io import BytesIO
@@ -107,7 +132,9 @@ import json
 import base64
 
 
-print(f"-------------------- New Program Run ( {os.getenv('RDS_DB')} ) --------------------")
+print(
+    f"-------------------- New Program Run ( {os.getenv('RDS_DB')} ) --------------------"
+)
 
 
 # == Using Cryptography library for AES encryption ==
@@ -116,15 +143,16 @@ print(f"-------------------- New Program Run ( {os.getenv('RDS_DB')} ) ---------
 # BLOCK_SIZE = 16  # AES block size
 
 # load_dotenv()
-AES_SECRET_KEY = os.getenv('AES_SECRET_KEY')
+AES_SECRET_KEY = os.getenv("AES_SECRET_KEY")
 # print("AES Secret Key: ", AES_SECRET_KEY)
-AES_KEY = AES_SECRET_KEY.encode('utf-8')
-BLOCK_SIZE = int(os.getenv('BLOCK_SIZE'))
+AES_KEY = AES_SECRET_KEY.encode("utf-8")
+BLOCK_SIZE = int(os.getenv("BLOCK_SIZE"))
 # print("Block Size: ", BLOCK_SIZE)
-POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
+POSTMAN_SECRET = os.getenv("POSTMAN_SECRET")
 # print("POSTMAN_SECRET: ", POSTMAN_SECRET)
 
 decrypted_data = {}
+
 
 # Encrypt dictionary
 def encrypt_dict(data_dict):
@@ -141,7 +169,9 @@ def encrypt_dict(data_dict):
         iv = os.urandom(BLOCK_SIZE)
 
         # Create a new AES cipher
-        cipher = Cipher(algorithms.AES(AES_KEY), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(
+            algorithms.AES(AES_KEY), modes.CBC(iv), backend=default_backend()
+        )
         encryptor = cipher.encryptor()
 
         # Encrypt the padded data
@@ -153,6 +183,7 @@ def encrypt_dict(data_dict):
     except Exception as e:
         print(f"Encryption error: {e}")
         return None
+
 
 # Decrypt dictionary
 def decrypt_dict(encrypted_blob):
@@ -166,11 +197,15 @@ def decrypt_dict(encrypted_blob):
         encrypted_content = encrypted_data[BLOCK_SIZE:]
 
         # Create a new AES cipher
-        cipher = Cipher(algorithms.AES(AES_KEY), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(
+            algorithms.AES(AES_KEY), modes.CBC(iv), backend=default_backend()
+        )
         decryptor = cipher.decryptor()
 
         # Decrypt the encrypted content
-        decrypted_padded_data = decryptor.update(encrypted_content) + decryptor.finalize()
+        decrypted_padded_data = (
+            decryptor.update(encrypted_content) + decryptor.finalize()
+        )
 
         # Unpad the decrypted content
         unpadder = PKCS7(BLOCK_SIZE * 8).unpadder()
@@ -181,7 +216,6 @@ def decrypt_dict(encrypted_blob):
     except Exception as e:
         print(f"Decryption error: {e}")
         return None
-
 
 
 # NEED to figure out where the NotFound or InternalServerError is displayed
@@ -198,10 +232,8 @@ def decrypt_dict(encrypted_blob):
 # from env_keys import BING_API_KEY, RDS_PW
 
 
-
-
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
-s3 = boto3.client('s3')
+s3 = boto3.client("s3")
 
 
 app = Flask(__name__)
@@ -213,15 +245,15 @@ CORS(app)
 
 # Set this to false when deploying to live application
 # db = 'space_dev' if os.getenv('DEBUG') == "TRUE" else 'space_prod'
-mode = True if os.getenv('RDS_DB') == "space_dev" else False
+mode = True if os.getenv("RDS_DB") == "space_dev" else False
 
-app.config['DEBUG'] = mode
+app.config["DEBUG"] = mode
 
 # Setup the Flask-JWT-Extended extension
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
-app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
-app.config['JWT_HEADER_NAME'] = 'Authorization' 
-app.config['JWT_HEADER_TYPE'] = 'Bearer'
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_TOKEN_LOCATION"] = ["headers"]
+app.config["JWT_HEADER_NAME"] = "Authorization"
+app.config["JWT_HEADER_TYPE"] = "Bearer"
 
 jwtManager = JWTManager(app)
 
@@ -233,11 +265,11 @@ jwtManager = JWTManager(app)
 
 # --------------- Google Scopes and Credentials------------------
 # SCOPES = "https://www.googleapis.com/auth/calendar"
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 # CLIENT_SECRET_FILE = "credentials.json"
 # APPLICATION_NAME = "nitya-ayurveda"
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
-s = URLSafeTimedSerializer('thisisaverysecretkey')
+ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg"])
+s = URLSafeTimedSerializer("thisisaverysecretkey")
 
 
 # --------------- Stripe Variables ------------------
@@ -253,16 +285,15 @@ stripe_secret_live_key = os.getenv("stripe_secret_live_key")
 # Twilio's settings
 # from twilio.rest import Client
 
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 
 
 # --------------- Mail Variables ------------------
 # Mail username and password loaded in .env file
-app.config['MAIL_USERNAME'] = os.getenv('SUPPORT_EMAIL')
-app.config['MAIL_PASSWORD'] = os.getenv('SUPPORT_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+app.config["MAIL_USERNAME"] = os.getenv("SUPPORT_EMAIL")
+app.config["MAIL_PASSWORD"] = os.getenv("SUPPORT_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
 # print("Sender: ", app.config['MAIL_DEFAULT_SENDER'])
 
 
@@ -286,8 +317,6 @@ app.config["MAIL_USE_SSL"] = True
 mail = Mail(app)
 
 
-
-
 # --------------- Time Variables ------------------
 # convert to UTC time zone when testing in local time zone
 utc = pytz.utc
@@ -296,9 +325,11 @@ utc = pytz.utc
 # def getToday(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d")
 # def getNow(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d %H:%M:%S")
 
+
 # # These statment return Day and Time in Local Time - Not sure about PST vs PDT
 def getToday():
     return datetime.strftime(datetime.now(), "%Y-%m-%d")
+
 
 def getNow():
     return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
@@ -316,29 +347,24 @@ def getNow():
 # NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME'
 
 
-
-
 # -- Send Email Endpoints start here -------------------------------------------------------------------------------
+
 
 def sendEmail(recipient, subject, body):
     with app.app_context():
         # print("In sendEmail: ", recipient, subject, body)
-        sender="support@manifestmy.space"
+        sender = "support@manifestmy.space"
         # print("sender: ", sender)
-        msg = Message(
-            sender=sender,
-            recipients=[recipient],
-            subject=subject,
-            body=body
-        )
+        msg = Message(sender=sender, recipients=[recipient], subject=subject, body=body)
         # print("sender: ", sender)
         # print("Email message: ", msg)
         mail.send(msg)
         # print("email sent")
 
+
 # app.sendEmail = sendEmail
 
-    
+
 class SendEmail(Resource):
     def post(self):
         payload = request.get_json(force=True)
@@ -346,7 +372,9 @@ class SendEmail(Resource):
 
         # Check if each field in the payload is not null
         if all(field is not None for field in payload.values()):
-            sendEmail(payload["receiver"], payload["email_subject"], payload["email_body"])
+            sendEmail(
+                payload["receiver"], payload["email_subject"], payload["email_body"]
+            )
             return "Email Sent"
         else:
             return "Some fields are missing in the payload", 400
@@ -373,22 +401,22 @@ class SendEmail_CLASS(Resource):
 
 
 def SendEmail_CRON(self):
-        print("In Send EMail CRON get")
-        try:
-            conn = connect()
+    print("In Send EMail CRON get")
+    try:
+        conn = connect()
 
-            recipient = "pmarathay@gmail.com"
-            subject = "MySpace CRON Jobs Completed"
-            body = "The Following CRON Jobs Ran:"
-            # mail.send(msg)
-            sendEmail(recipient, subject, body)
+        recipient = "pmarathay@gmail.com"
+        subject = "MySpace CRON Jobs Completed"
+        body = "The Following CRON Jobs Ran:"
+        # mail.send(msg)
+        sendEmail(recipient, subject, body)
 
-            return "Email Sent", 200
+        return "Email Sent", 200
 
-        except:
-            raise BadRequest("Request failed, please try again later.")
-        finally:
-            print("exit SendEmail")
+    except:
+        raise BadRequest("Request failed, please try again later.")
+    finally:
+        print("exit SendEmail")
 
 
 def Send_Twilio_SMS(message, phone_number):
@@ -396,19 +424,17 @@ def Send_Twilio_SMS(message, phone_number):
     items = {}
     numbers = phone_number
     message = message
-    numbers = list(set(numbers.split(',')))
+    numbers = list(set(numbers.split(",")))
     # print("TWILIO_ACCOUNT_SID: ", TWILIO_ACCOUNT_SID)
     # print("TWILIO_AUTH_TOKEN: ", TWILIO_AUTH_TOKEN)
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     # print("Client Info: ", client)
     for destination in numbers:
         message = client.messages.create(
-            body=message,
-            from_='+19254815757',
-            to="+1" + destination
+            body=message, from_="+19254815757", to="+1" + destination
         )
-    items['code'] = 200
-    items['Message'] = 'SMS sent successfully to the recipient'
+    items["code"] = 200
+    items["Message"] = "SMS sent successfully to the recipient"
     return items
 
 
@@ -418,7 +444,8 @@ class Announcements(Resource):
         response = {}
         with connect() as db:
             # if user_id.startswith("600-"):
-            sentQuery = db.execute("""
+            sentQuery = db.execute(
+                """
                     SELECT 
                         a.*,
                         COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS receiver_first_name,
@@ -435,12 +462,16 @@ class Announcements(Resource):
                     LEFT JOIN businessProfileInfo b ON a.announcement_receiver LIKE '600%' AND b.business_uid = a.announcement_receiver
                     LEFT JOIN ownerProfileInfo c ON a.announcement_receiver LIKE '110%' AND c.owner_uid = a.announcement_receiver
                     LEFT JOIN tenantProfileInfo d ON a.announcement_receiver LIKE '350%' AND d.tenant_uid = a.announcement_receiver
-                    WHERE announcement_sender = \'""" + user_id + """\';
-            """)
+                    WHERE announcement_sender = \'"""
+                + user_id
+                + """\';
+            """
+            )
 
             response["sent"] = sentQuery
 
-            receivedQuery = db.execute("""
+            receivedQuery = db.execute(
+                """
                     SELECT 
                         a.*,
                         COALESCE(b.business_name, c.owner_first_name, d.tenant_first_name) AS sender_first_name,
@@ -462,9 +493,12 @@ class Announcements(Resource):
                     LEFT JOIN 
                         tenantProfileInfo d ON a.announcement_sender LIKE '350%' AND d.tenant_uid = a.announcement_sender
                     WHERE 
-                        announcement_receiver = \'""" + user_id + """\';
+                        announcement_receiver = \'"""
+                + user_id
+                + """\';
 
-            """)
+            """
+            )
 
             response["received"] = receivedQuery
 
@@ -487,13 +521,12 @@ class Announcements(Resource):
         manager_id = user_id
         print("Manager ID: ", manager_id)
 
-        
         if isinstance(payload["announcement_receiver"], list):
             print("In List")
             receivers = payload["announcement_receiver"]
         else:
             print("Not a list")
-            receivers = [payload["announcement_receiver"]]  
+            receivers = [payload["announcement_receiver"]]
         print("Receivers: ", receivers)
 
         if isinstance(payload["announcement_properties"], list):
@@ -509,71 +542,101 @@ class Announcements(Resource):
             print("Property: ", propertyObj)
 
             for key, value in propertyObj.items():
-                receiverPropertiesMap[key] = value        
+                receiverPropertiesMap[key] = value
 
         with connect() as db:
             for i in range(len(receivers)):
                 newRequest = {}
-                newRequest['announcement_title'] = payload["announcement_title"]
-                newRequest['announcement_msg'] = payload["announcement_msg"]
-                newRequest['announcement_sender'] = manager_id
-                newRequest['announcement_mode'] = payload["announcement_mode"]
-                newRequest['announcement_properties'] = json.dumps(receiverPropertiesMap.get(receivers[i], []))
-                newRequest['announcement_receiver'] = receivers[i]
+                newRequest["announcement_title"] = payload["announcement_title"]
+                newRequest["announcement_msg"] = payload["announcement_msg"]
+                newRequest["announcement_sender"] = manager_id
+                newRequest["announcement_mode"] = payload["announcement_mode"]
+                newRequest["announcement_properties"] = json.dumps(
+                    receiverPropertiesMap.get(receivers[i], [])
+                )
+                newRequest["announcement_receiver"] = receivers[i]
 
                 # Get the current date and time
                 current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
-    
+
                 # Insert or update the "announcement_read" key with the current date and time
-                newRequest['announcement_date'] = current_datetime
-                print("Announcement Date: ", newRequest['announcement_date'])
+                newRequest["announcement_date"] = current_datetime
+                print("Announcement Date: ", newRequest["announcement_date"])
 
                 #  Get Receiver email
-                user_query = None                    
-                if(receivers[i][:3] == '350'):                    
-                    user_query = db.execute(""" 
+                user_query = None
+                if receivers[i][:3] == "350":
+                    user_query = db.execute(
+                        """ 
                                         -- Find the user details
                                         SELECT tenant_email as email, tenant_phone_number as phone_number, notifications
                                         FROM tenantProfileInfo AS t
                                         LEFT JOIN users ON tenant_user_id = user_uid
                                         -- WHERE t.tenant_uid = '350-000005';
-                                        WHERE t.tenant_uid = \'""" + receivers[i] + """\';
-                                        """)                    
-                elif(receivers[i][:3] == '110'):                                        
-                    user_query = db.execute(""" 
+                                        WHERE t.tenant_uid = \'"""
+                        + receivers[i]
+                        + """\';
+                                        """
+                    )
+                elif receivers[i][:3] == "110":
+                    user_query = db.execute(
+                        """ 
                                         -- Find the user details
                                         SELECT owner_email as email, owner_phone_number as phone_number, notifications
                                         FROM ownerProfileInfo AS o
                                         LEFT JOIN users ON owner_user_id = user_uid
                                         -- WHERE o.owner_uid = '110-000005';
-                                        WHERE o.owner_uid = \'""" + receivers[i] + """\';
-                                        """)
-                elif(receivers[i][:3] == '600'):                                        
-                    user_query = db.execute(""" 
+                                        WHERE o.owner_uid = \'"""
+                        + receivers[i]
+                        + """\';
+                                        """
+                    )
+                elif receivers[i][:3] == "600":
+                    user_query = db.execute(
+                        """ 
                                         -- Find the user details
                                         SELECT business_email as email, business_phone_number as phone_number, notifications
                                         FROM businessProfileInfo AS b
                                         LEFT JOIN users ON business_user_id = user_uid
                                         -- WHERE b.business_uid = '600-000005';
-                                        WHERE b.business_uid = \'""" + receivers[i] + """\';
-                                        """)                                        
-                print("Notifications allowed: ", user_query['result'][0]['notifications'], type( user_query['result'][0]['notifications']))
+                                        WHERE b.business_uid = \'"""
+                        + receivers[i]
+                        + """\';
+                                        """
+                    )
+                print(
+                    "Notifications allowed: ",
+                    user_query["result"][0]["notifications"],
+                    type(user_query["result"][0]["notifications"]),
+                )
                 for j in range(len(payload["announcement_type"])):
                     print("Announcement Type: ", payload["announcement_type"][j])
                     if payload["announcement_type"][j] == "Email":
-                        newRequest['Email'] = "1"
-                        user_email = user_query['result'][0]['email']
-                        sendEmail(user_email, payload["announcement_title"], payload["announcement_msg"])
+                        newRequest["Email"] = "1"
+                        user_email = user_query["result"][0]["email"]
+                        sendEmail(
+                            user_email,
+                            payload["announcement_title"],
+                            payload["announcement_msg"],
+                        )
                         response["email"] = "email sent"
-                    
-                    print("Before Text: ", payload["announcement_type"][j], user_query['result'][0]['notifications'])
+
+                    print(
+                        "Before Text: ",
+                        payload["announcement_type"][j],
+                        user_query["result"][0]["notifications"],
+                    )
                     if payload["announcement_type"][j] == "Text":
-                        if user_query['result'][0]['notifications'] == 'true':
+                        if user_query["result"][0]["notifications"] == "true":
                             print("sending Text")
                             # continue
-                            newRequest['Text'] = "1"
-                            user_phone = user_query['result'][0]['phone_number']
-                            msg = payload["announcement_title"]+"\n" + payload["announcement_msg"]
+                            newRequest["Text"] = "1"
+                            user_phone = user_query["result"][0]["phone_number"]
+                            msg = (
+                                payload["announcement_title"]
+                                + "\n"
+                                + payload["announcement_msg"]
+                            )
                             # print("Before Twilio Call: ", msg, user_phone)
                             try:
                                 Send_Twilio_SMS(msg, user_phone)
@@ -585,10 +648,10 @@ class Announcements(Resource):
                             response["text"] = "text notifications turned off"
                     # if payload["announcement_type"][j] == "App":
                     #     newRequest['App'] = "1"
-                newRequest['App'] = "1"                
-                response["App"] = db.insert('announcements', newRequest)
+                newRequest["App"] = "1"
+                response["App"] = db.insert("announcements", newRequest)
 
-        return response           
+        return response
 
     def put(self):
         print("In Announcements PUT")
@@ -596,43 +659,44 @@ class Announcements(Resource):
         payload = request.get_json(force=True)
         print("Announcement Payload: ", payload, type(payload))
 
-        if 'announcement_uid' in payload and payload['announcement_uid']:
+        if "announcement_uid" in payload and payload["announcement_uid"]:
 
             # payload.get('announcement_uid')
 
             # Get the current date and time
             current_datetime = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
-        
+
             # Insert or update the "announcement_read" key with the current date and time
-            payload['announcement_read'] = current_datetime
+            payload["announcement_read"] = current_datetime
 
             i = 0
-            for each in payload['announcement_uid']:
+            for each in payload["announcement_uid"]:
 
-                if each in {None, '', 'null'}:
+                if each in {None, "", "null"}:
                     print("No announcement_uid")
                     # raise BadRequest("Request failed, no UID in payload.")
                     response["bad data"] = "TRUE"
-            
+
                 else:
                     print("current uid: ", each)
-                    key = {'announcement_uid': each}
+                    key = {"announcement_uid": each}
                     print("Annoucement Key: ", key)
                     with connect() as db:
-                        response = db.update('announcements', key, payload)
+                        response = db.update("announcements", key, payload)
                         i = i + 1
                     response["rows affected"] = i
 
         else:
-            response['msg'] = 'No UID in payload'
+            response["msg"] = "No UID in payload"
 
         return response
-    
+
 
 class LeaseExpiringNotify(Resource):
     def get(self):
         with connect() as db:
-            response = db.execute("""
+            response = db.execute(
+                """
             SELECT *
             FROM leases l
             LEFT JOIN t_details t ON t.lt_lease_id = l.lease_uid
@@ -640,43 +704,52 @@ class LeaseExpiringNotify(Resource):
             LEFT JOIN properties p ON p.property_uid = l.lease_property_id
             WHERE l.lease_end = DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 2 MONTH), "%Y-%m-%d")
             AND l.lease_status='ACTIVE'
-            AND b.contract_status='ACTIVE'; """)
+            AND b.contract_status='ACTIVE'; """
+            )
             print(response)
-            if len(response['result']) > 0:
-                for i in range(len(response['result'])):
-                    name = response['result'][i]['tenant_first_name'] + \
-                           ' ' + response['result'][i]['tenant_last_name']
-                    address = response['result'][i]["tenant_address"] + \
-                              ' ' + response['result'][i]["tenant_unit"] + ", " + response['result'][i]["tenant_city"] + \
-                              ', ' + response['result'][i]["tenant_state"] + \
-                              ' ' + response['result'][i]["tenant_zip"]
-                    start_date = response['result'][i]['lease_start']
-                    end_date = response['result'][i]['lease_end']
-                    business_name = response['result'][i]['business_name']
-                    phone = response['result'][i]['business_phone_number']
-                    email = response['result'][i]['business_email']
-                    recipient = response['result'][i]['tenant_email']
+            if len(response["result"]) > 0:
+                for i in range(len(response["result"])):
+                    name = (
+                        response["result"][i]["tenant_first_name"]
+                        + " "
+                        + response["result"][i]["tenant_last_name"]
+                    )
+                    address = (
+                        response["result"][i]["tenant_address"]
+                        + " "
+                        + response["result"][i]["tenant_unit"]
+                        + ", "
+                        + response["result"][i]["tenant_city"]
+                        + ", "
+                        + response["result"][i]["tenant_state"]
+                        + " "
+                        + response["result"][i]["tenant_zip"]
+                    )
+                    start_date = response["result"][i]["lease_start"]
+                    end_date = response["result"][i]["lease_end"]
+                    business_name = response["result"][i]["business_name"]
+                    phone = response["result"][i]["business_phone_number"]
+                    email = response["result"][i]["business_email"]
+                    recipient = response["result"][i]["tenant_email"]
                     subject = "Lease ending soon..."
                     body = (
-                            "Hello " + str(name) + "," + "\n"
-                             "\n"
-                             "Property: " + str(address) + "\n"
-                           "This is your 2 month reminder, that your lease is ending. \n"
-                           "Here are your lease details: \n"
-                           "Start Date: " +
-                            str(start_date) + "\n"
-                          "End Date: " +
-                            str(end_date) + "\n"
+                        "Hello " + str(name) + "," + "\n"
+                        "\n"
+                        "Property: " + str(address) + "\n"
+                        "This is your 2 month reminder, that your lease is ending. \n"
+                        "Here are your lease details: \n"
+                        "Start Date: " + str(start_date) + "\n"
+                        "End Date: " + str(end_date) + "\n"
                         "Please contact your Property Manager if you wish to renew or end your lease before the time of expiry. \n"
                         "\n"
                         "Name: " + str(business_name) + "\n"
                         "Phone: " + str(phone) + "\n"
-                         "Email: " + str(email) + "\n"
-                                 "\n"
-                                 "Thank you - Team Property Management\n\n"
+                        "Email: " + str(email) + "\n"
+                        "\n"
+                        "Thank you - Team Property Management\n\n"
                     )
                     sendEmail(recipient, subject, body)
-                    print('sending')
+                    print("sending")
 
                 return response
 
@@ -708,6 +781,7 @@ class LeaseExpiringNotify(Resource):
 
 # -- Queries start here -------------------------------------------------------------------------------
 
+
 class stripe_key(Resource):
     def get(self, desc):
         print(desc)
@@ -715,12 +789,12 @@ class stripe_key(Resource):
             return {"publicKey": stripe_public_test_key}
         else:
             return {"publicKey": stripe_public_live_key}
-        
 
 
 # -- CRON ENDPOINTS start here -------------------------------------------------------------------------------
 
 # -- CURRENT CRON JOB
+
 
 class Lease_CLASS(Resource):
     def get(self):
@@ -733,301 +807,359 @@ class Lease_CLASS(Resource):
         leasesMadeActive = 0
         leasesM2M = 0
         leasesExpired = 0
-        CronPostings = ["Lease Affected:"] 
+        CronPostings = ["Lease Affected:"]
         response = {}
-
 
         try:
             # Run query to find all APPROVED Contracts
-            with connect() as db:    
-                lease_query = db.execute("""
+            with connect() as db:
+                lease_query = db.execute(
+                    """
                     -- SELECT *
                     SELECT lease_uid, lease_property_id
                     FROM leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
-                    """)
+                    """
+                )
 
-                approved_leases = lease_query['result']
+                approved_leases = lease_query["result"]
                 # print("\nApproved Contracts: ", approved_leases)
 
                 for lease in approved_leases:
-                        # print("Lease: ", lease)
-                        # print("Lease Property ID: ", lease['lease_property_id'])
+                    # print("Lease: ", lease)
+                    # print("Lease Property ID: ", lease['lease_property_id'])
 
-                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+                    # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
-                        active_lease = ("""
+                    active_lease = (
+                        """
                                 UPDATE leases
                                 SET lease_status = 'INACTIVE'
-                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                WHERE lease_property_id = \'"""
+                        + lease["lease_property_id"]
+                        + """\'
                                 AND lease_status IN ('ACTIVE', 'ACTIVE M2M');
-                                """)
-                        # print("active_lease Query: ", active_lease)
+                                """
+                    )
+                    # print("active_lease Query: ", active_lease)
 
-                        response['old_lease'] = db.execute(active_lease, cmd='post')
-                        # print(response['old_lease']['change'])
-                        leasesMadeInactive = leasesMadeInactive + 1
-                        # print("Leases Made Inactive: ", leasesMadeInactive)
+                    response["old_lease"] = db.execute(active_lease, cmd="post")
+                    # print(response['old_lease']['change'])
+                    leasesMadeInactive = leasesMadeInactive + 1
+                    # print("Leases Made Inactive: ", leasesMadeInactive)
 
-
-                        # Make the Approved contract Active
-                        new_lease = ("""
+                    # Make the Approved contract Active
+                    new_lease = (
+                        """
                                 UPDATE leases
                                 SET lease_status = 'ACTIVE', lease_renew_status = Null
                                 -- WHERE lease_property_id = '200-000001'
-                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                WHERE lease_property_id = \'"""
+                        + lease["lease_property_id"]
+                        + """\'
                                 AND lease_status = 'APPROVED';  
-                                """)
+                                """
+                    )
 
-                        # print("new_lease Query: ", new_lease)
-                        response['new_lease'] = db.execute(new_lease, cmd='post')
-                        # print(response['new_lease']['change'])
-                        leasesMadeActive = leasesMadeActive + 1
-                        # print("Leases Made Active: ", leasesMadeActive)
+                    # print("new_lease Query: ", new_lease)
+                    response["new_lease"] = db.execute(new_lease, cmd="post")
+                    # print(response['new_lease']['change'])
+                    leasesMadeActive = leasesMadeActive + 1
+                    # print("Leases Made Active: ", leasesMadeActive)
 
-                        CronPostings.append(f"{lease['lease_property_id']}  ")
-                        
+                    CronPostings.append(f"{lease['lease_property_id']}  ")
+
                 # print("Lease Cron Query Complete")
-                response['Leases_Made_Inactive'] = leasesMadeInactive
-                response['Leases_Made_Aactive'] = leasesMadeActive
+                response["Leases_Made_Inactive"] = leasesMadeInactive
+                response["Leases_Made_Aactive"] = leasesMadeActive
                 # print("This is the Function response: ", response)
 
-
                 # Run query to find all EXPIRED Leases
-                lease_query = db.execute("""
+                lease_query = db.execute(
+                    """
                     SELECT * 
                     FROM leases
                     WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
                         AND lease_status = "ACTIVE" ;
-                    """)
-                
-                expired_leases = lease_query['result']
+                    """
+                )
+
+                expired_leases = lease_query["result"]
                 # print("\nExpired Leases: ", expired_leases)
 
                 for lease in expired_leases:
                     if lease["lease_m2m"] == 1:
-                        m2m_lease = ("""
+                        m2m_lease = (
+                            """
                                 UPDATE leases
                                 SET lease_status = 'ACTIVE M2M'
-                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
-                                """)
+                                WHERE lease_uid = \'"""
+                            + lease["lease_uid"]
+                            + """\'
+                                """
+                        )
 
                         # print("new_lease Query: ", new_lease)
-                        response['new_lease'] = db.execute(m2m_lease, cmd='post')
+                        response["new_lease"] = db.execute(m2m_lease, cmd="post")
                         leasesM2M = leasesM2M + 1
 
                     else:
-                        expired_lease = ("""
+                        expired_lease = (
+                            """
                                 UPDATE leases
                                 SET lease_status = 'EXPIRED'
-                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
-                                """)
+                                WHERE lease_uid = \'"""
+                            + lease["lease_uid"]
+                            + """\'
+                                """
+                        )
 
                         # print("new_lease Query: ", new_lease)
-                        response['expired'] = db.execute(expired_lease, cmd='post')
+                        response["expired"] = db.execute(expired_lease, cmd="post")
                         leasesExpired = leasesExpired + 1
-                
-                response['Leases_Made_M2M'] = leasesM2M
-                response['Leases_Expired'] = leasesExpired
 
-                
+                response["Leases_Made_M2M"] = leasesM2M
+                response["Leases_Expired"] = leasesExpired
+
                 # APPEND TO CRON OUTPUT
                 CronPostings.append(
-                        f"""
+                    f"""
                         response['Leases_Made_Inactive'] = {leasesMadeInactive}
                         response['Leases_Made_Active'] = {leasesMadeActive}
                         response['Leases_Made_M2M'] = {leasesM2M}
                         response['Leases_Expired'] = {leasesExpired}
                         """
-                        )
+                )
 
                 try:
                     # print(CronPostings)
                     recipient = "pmarathay@gmail.com"
                     subject = f"MySpace LEASE CRON JOB for {dt} Completed "
-                    body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(
+                        CronPostings
+                    )
                     # mail.send(msg)
                     sendEmail(recipient, subject, body)
 
-                    response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
-                        'code': 200}
+                    response["email"] = {
+                        "message": f"LEASE CRON Job Email for {dt} sent!",
+                        "code": 200,
+                    }
 
                 except:
-                    response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
-                        'code': 500}
-                    
+                    response["email fail"] = {
+                        "message": f"LEASE CRON Job Email for {dt} could not be sent",
+                        "code": 500,
+                    }
+
         except:
-                response["cron fail"] = {'message': f'LEASE CRON Job failed for {dt}' ,
-                        'code': 500}
-                try:
-                    recipient = "pmarathay@gmail.com"
-                    subject = "MySpace LEASE CRON JOB Failed!"
-                    body = "LEASE CRON JOB Failed"
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            response["cron fail"] = {
+                "message": f"LEASE CRON Job failed for {dt}",
+                "code": 500,
+            }
+            try:
+                recipient = "pmarathay@gmail.com"
+                subject = "MySpace LEASE CRON JOB Failed!"
+                body = "LEASE CRON JOB Failed"
+                # mail.send(msg)
+                sendEmail(recipient, subject, body)
 
-                    response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
-                        'code': 201}
+                response["email"] = {
+                    "message": f"LEASE CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
-                except:
-                    response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
-                        'code': 500}
+            except:
+                response["email fail"] = {
+                    "message": f"LEASE CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
-    
+
+
 def Lease_CRON(Resource):
-        print("In Lease CRON JOB")
+    print("In Lease CRON JOB")
 
-        # Establish current day, month and year
-        dt = date.today()
+    # Establish current day, month and year
+    dt = date.today()
 
-        leasesMadeInactive = 0
-        leasesMadeActive = 0
-        leasesM2M = 0
-        leasesExpired = 0
-        CronPostings = ["Lease Affected:"] 
-        response = {}
+    leasesMadeInactive = 0
+    leasesMadeActive = 0
+    leasesM2M = 0
+    leasesExpired = 0
+    CronPostings = ["Lease Affected:"]
+    response = {}
 
-
-        try:
-            # Run query to find all APPROVED Contracts
-            with connect() as db:    
-                lease_query = db.execute("""
+    try:
+        # Run query to find all APPROVED Contracts
+        with connect() as db:
+            lease_query = db.execute(
+                """
                     -- SELECT *
                     SELECT lease_uid, lease_property_id
                     FROM leases
                     WHERE lease_status = "APPROVED" 
                         AND STR_TO_DATE(lease_start, '%m-%d-%Y') <= CURDATE();
-                    """)
+                    """
+            )
 
-                approved_leases = lease_query['result']
-                # print("\nApproved Contracts: ", approved_leases)
+            approved_leases = lease_query["result"]
+            # print("\nApproved Contracts: ", approved_leases)
 
-                for lease in approved_leases:
-                        # print("Lease: ", lease)
-                        # print("Lease Property ID: ", lease['lease_property_id'])
+            for lease in approved_leases:
+                # print("Lease: ", lease)
+                # print("Lease Property ID: ", lease['lease_property_id'])
 
-                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+                # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
-                        active_lease = ("""
+                active_lease = (
+                    """
                                 UPDATE leases
                                 SET lease_status = 'INACTIVE'
-                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                WHERE lease_property_id = \'"""
+                    + lease["lease_property_id"]
+                    + """\'
                                 AND lease_status IN ('ACTIVE', 'ACTIVE M2M');
-                                """)
-                        # print("active_lease Query: ", active_lease)
+                                """
+                )
+                # print("active_lease Query: ", active_lease)
 
-                        response['old_lease'] = db.execute(active_lease, cmd='post')
-                        # print(response['old_lease']['change'])
-                        leasesMadeInactive = leasesMadeInactive + 1
-                        # print("Leases Made Inactive: ", leasesMadeInactive)
+                response["old_lease"] = db.execute(active_lease, cmd="post")
+                # print(response['old_lease']['change'])
+                leasesMadeInactive = leasesMadeInactive + 1
+                # print("Leases Made Inactive: ", leasesMadeInactive)
 
-
-                        # Make the Approved contract Active
-                        new_lease = ("""
+                # Make the Approved contract Active
+                new_lease = (
+                    """
                                 UPDATE leases
                                 SET lease_status = 'ACTIVE', lease_renew_status = Null
                                 -- WHERE lease_property_id = '200-000001'
-                                WHERE lease_property_id = \'""" + lease['lease_property_id'] + """\'
+                                WHERE lease_property_id = \'"""
+                    + lease["lease_property_id"]
+                    + """\'
                                 AND lease_status = 'APPROVED';  
-                                """)
+                                """
+                )
 
-                        # print("new_lease Query: ", new_lease)
-                        response['new_lease'] = db.execute(new_lease, cmd='post')
-                        # print(response['new_lease']['change'])
-                        leasesMadeActive = leasesMadeActive + 1
-                        # print("Leases Made Active: ", leasesMadeActive)
+                # print("new_lease Query: ", new_lease)
+                response["new_lease"] = db.execute(new_lease, cmd="post")
+                # print(response['new_lease']['change'])
+                leasesMadeActive = leasesMadeActive + 1
+                # print("Leases Made Active: ", leasesMadeActive)
 
-                        CronPostings.append(f"{lease['lease_property_id']}  ")
-                        
-                # print("Lease Cron Query Complete")
-                response['Leases_Made_Inactive'] = leasesMadeInactive
-                response['Leases_Made_Aactive'] = leasesMadeActive
-                # print("This is the Function response: ", response)
+                CronPostings.append(f"{lease['lease_property_id']}  ")
 
+            # print("Lease Cron Query Complete")
+            response["Leases_Made_Inactive"] = leasesMadeInactive
+            response["Leases_Made_Aactive"] = leasesMadeActive
+            # print("This is the Function response: ", response)
 
-                # Run query to find all EXPIRED Leases
-                lease_query = db.execute("""
+            # Run query to find all EXPIRED Leases
+            lease_query = db.execute(
+                """
                     SELECT * 
                     FROM leases
                     WHERE STR_TO_DATE(lease_end, '%m-%d-%Y') <= CURDATE()
                         AND lease_status = "ACTIVE" ;
-                    """)
-                
-                expired_leases = lease_query['result']
-                # print("\nExpired Leases: ", expired_leases)
+                    """
+            )
 
-                for lease in expired_leases:
-                    if lease["lease_m2m"] == 1:
-                        m2m_lease = ("""
+            expired_leases = lease_query["result"]
+            # print("\nExpired Leases: ", expired_leases)
+
+            for lease in expired_leases:
+                if lease["lease_m2m"] == 1:
+                    m2m_lease = (
+                        """
                                 UPDATE leases
                                 SET lease_status = 'ACTIVE M2M'
-                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
-                                """)
+                                WHERE lease_uid = \'"""
+                        + lease["lease_uid"]
+                        + """\'
+                                """
+                    )
 
-                        # print("new_lease Query: ", new_lease)
-                        response['new_lease'] = db.execute(m2m_lease, cmd='post')
-                        leasesM2M = leasesM2M + 1
+                    # print("new_lease Query: ", new_lease)
+                    response["new_lease"] = db.execute(m2m_lease, cmd="post")
+                    leasesM2M = leasesM2M + 1
 
-                    else:
-                        expired_lease = ("""
+                else:
+                    expired_lease = (
+                        """
                                 UPDATE leases
                                 SET lease_status = 'EXPIRED'
-                                WHERE lease_uid = \'""" + lease['lease_uid'] + """\'
-                                """)
+                                WHERE lease_uid = \'"""
+                        + lease["lease_uid"]
+                        + """\'
+                                """
+                    )
 
-                        # print("new_lease Query: ", new_lease)
-                        response['expired'] = db.execute(expired_lease, cmd='post')
-                        leasesExpired = leasesExpired + 1
-                
-                response['Leases_Made_M2M'] = leasesM2M
-                response['Leases_Expired'] = leasesExpired
+                    # print("new_lease Query: ", new_lease)
+                    response["expired"] = db.execute(expired_lease, cmd="post")
+                    leasesExpired = leasesExpired + 1
 
-                
-                # APPEND TO CRON OUTPUT
-                CronPostings.append(
-                        f"""
+            response["Leases_Made_M2M"] = leasesM2M
+            response["Leases_Expired"] = leasesExpired
+
+            # APPEND TO CRON OUTPUT
+            CronPostings.append(
+                f"""
                         response['Leases_Made_Inactive'] = {leasesMadeInactive}
                         response['Leases_Made_Active'] = {leasesMadeActive}
                         response['Leases_Made_M2M'] = {leasesM2M}
                         response['Leases_Expired'] = {leasesExpired}
                         """
-                        )
+            )
 
-                try:
-                    # print(CronPostings)
-                    recipient = "pmarathay@gmail.com"
-                    subject = f"MySpace LEASE CRON JOB for {dt} Completed "
-                    body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            try:
+                # print(CronPostings)
+                recipient = "pmarathay@gmail.com"
+                subject = f"MySpace LEASE CRON JOB for {dt} Completed "
+                body = f"LEASE CRON JOB has been executed.\n\n" + "\n".join(
+                    CronPostings
+                )
+                # mail.send(msg)
+                sendEmail(recipient, subject, body)
 
-                    response["email"] = {'message': f'LEASE CRON Job Email for {dt} sent!' ,
-                        'code': 200}
+                response["email"] = {
+                    "message": f"LEASE CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
-                except:
-                    response["email fail"] = {'message': f'LEASE CRON Job Email for {dt} could not be sent' ,
-                        'code': 500}
-                    
+            except:
+                response["email fail"] = {
+                    "message": f"LEASE CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
+
+    except:
+        response["cron fail"] = {
+            "message": f"LEASE CRON Job failed for {dt}",
+            "code": 500,
+        }
+        try:
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace LEASE CRON JOB Failed!"
+            body = "LEASE CRON JOB Failed"
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
+
+            response["email"] = {
+                "message": f"LEASE CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
+
         except:
-                response["cron fail"] = {'message': f'LEASE CRON Job failed for {dt}' ,
-                        'code': 500}
-                try:
-                    recipient = "pmarathay@gmail.com"
-                    subject = "MySpace LEASE CRON JOB Failed!"
-                    body = "LEASE CRON JOB Failed"
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            response["email fail"] = {
+                "message": f"LEASE CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                    response["email"] = {'message': f'LEASE CRON Job Fail Email for {dt} sent!' ,
-                        'code': 201}
+    return response
 
-                except:
-                    response["email fail"] = {'message': f'LEASE CRON Job Fail Email for {dt} could not be sent' ,
-                        'code': 500}
-
-        return response
 
 class Contract_CLASS(Resource):
     def get(self):
@@ -1038,223 +1170,252 @@ class Contract_CLASS(Resource):
 
         contractsMadeInactive = 0
         contractsMadeActive = 0
-        CronPostings = ["Contracts Affected:"] 
+        CronPostings = ["Contracts Affected:"]
         response = {}
-
 
         try:
             # Run query to find all APPROVED Contracts
-            with connect() as db:    
-                contract_query = db.execute("""
+            with connect() as db:
+                contract_query = db.execute(
+                    """
                     SELECT * 
                     FROM contracts
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
-                    """)
+                    """
+                )
 
-                approved_contracts = contract_query['result']
+                approved_contracts = contract_query["result"]
                 print("\nApproved Contracts: ", approved_contracts)
 
                 for contract in approved_contracts:
-                        print("Contract: ", contract)
+                    print("Contract: ", contract)
 
-                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+                    # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
-                        active_contract = ("""
+                    active_contract = (
+                        """
                                 UPDATE contracts
                                 SET contract_status = 'INACTIVE'
-                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                WHERE contract_property_id = \'"""
+                        + contract["contract_property_id"]
+                        + """\'
                                 AND contract_status = 'ACTIVE';
-                                """)
-                        print("active_contract Query: ", active_contract)
+                                """
+                    )
+                    print("active_contract Query: ", active_contract)
 
-                        response['old_contract'] = db.execute(active_contract, cmd='post')
-                        print(response['old_contract']['change'])
-                        contractsMadeInactive = contractsMadeInactive + 1
-                        print("Contracts Made Inactive: ", contractsMadeInactive)
+                    response["old_contract"] = db.execute(active_contract, cmd="post")
+                    print(response["old_contract"]["change"])
+                    contractsMadeInactive = contractsMadeInactive + 1
+                    print("Contracts Made Inactive: ", contractsMadeInactive)
 
-
-                        
-
-                        # Make the Approved contract Active
-                        new_contract = ("""
+                    # Make the Approved contract Active
+                    new_contract = (
+                        """
                                 UPDATE contracts
                                 SET contract_status = 'ACTIVE'
-                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                WHERE contract_property_id = \'"""
+                        + contract["contract_property_id"]
+                        + """\'
                                 AND contract_status = 'APPROVED';  
-                                """)
+                                """
+                    )
 
-                        print("new_contract Query: ", new_contract)
-                        response['new_contract'] = db.execute(new_contract, cmd='post')
-                        print(response['new_contract']['change'])
-                        contractsMadeActive = contractsMadeActive + 1
-                        print("Contracts Made Active: ", contractsMadeActive)
+                    print("new_contract Query: ", new_contract)
+                    response["new_contract"] = db.execute(new_contract, cmd="post")
+                    print(response["new_contract"]["change"])
+                    contractsMadeActive = contractsMadeActive + 1
+                    print("Contracts Made Active: ", contractsMadeActive)
 
-                        CronPostings.append(f"{contract['contract_property_id']}  ")
-                        
+                    CronPostings.append(f"{contract['contract_property_id']}  ")
+
                 print("Conract Cron Query Complete")
-                response['Contracts_Made_Inactive'] = contractsMadeInactive
-                response['Contracts_Made_Aactive'] = contractsMadeActive
+                response["Contracts_Made_Inactive"] = contractsMadeInactive
+                response["Contracts_Made_Aactive"] = contractsMadeActive
                 print("This is the Function response: ", response)
-
 
                 # APPEND TO CRON OUTPUT
                 CronPostings.append(
-                        f"""
+                    f"""
                         response['Contracts_Made_Inactive'] = {contractsMadeInactive}
                         response['Contracts_Made_Active'] = {contractsMadeActive}
                         """
-                        )
-
-                          
-
+                )
 
                 try:
                     # print(CronPostings)
                     recipient = "pmarathay@gmail.com"
                     subject = f"MySpace CONTRACT CRON JOB for {dt} Completed "
-                    body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                    body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(
+                        CronPostings
+                    )
                     # mail.send(msg)
                     sendEmail(recipient, subject, body)
 
-                    response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
-                        'code': 200}
+                    response["email"] = {
+                        "message": f"CONTRACT CRON Job Email for {dt} sent!",
+                        "code": 200,
+                    }
 
                 except:
-                    response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
-                        'code': 500}
-                    
+                    response["email fail"] = {
+                        "message": f"CONTRACT CRON Job Email for {dt} could not be sent",
+                        "code": 500,
+                    }
+
         except:
-                response["cron fail"] = {'message': f'CONTRACT CRON Job failed for {dt}' ,
-                        'code': 500}
-                try:
-                    recipient = "pmarathay@gmail.com"
-                    subject = "MySpace CONTRACT CRON JOB Failed!"
-                    body = "CONTRACT CRON JOB Failed"
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            response["cron fail"] = {
+                "message": f"CONTRACT CRON Job failed for {dt}",
+                "code": 500,
+            }
+            try:
+                recipient = "pmarathay@gmail.com"
+                subject = "MySpace CONTRACT CRON JOB Failed!"
+                body = "CONTRACT CRON JOB Failed"
+                # mail.send(msg)
+                sendEmail(recipient, subject, body)
 
-                    response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
-                        'code': 201}
+                response["email"] = {
+                    "message": f"CONTRACT CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
-                except:
-                    response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
-                        'code': 500}
+            except:
+                response["email fail"] = {
+                    "message": f"CONTRACT CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
+
 
 def Contract_CRON(Resource):
-        print("In Contract CRON JOB")
+    print("In Contract CRON JOB")
 
-        # Establish current day, month and year
-        dt = date.today()
+    # Establish current day, month and year
+    dt = date.today()
 
-        contractsMadeInactive = 0
-        contractsMadeActive = 0
-        CronPostings = ["Contracts Affected:"] 
-        response = {}
+    contractsMadeInactive = 0
+    contractsMadeActive = 0
+    CronPostings = ["Contracts Affected:"]
+    response = {}
 
-
-        try:
-            # Run query to find all APPROVED Contracts
-            with connect() as db:    
-                contract_query = db.execute("""
+    try:
+        # Run query to find all APPROVED Contracts
+        with connect() as db:
+            contract_query = db.execute(
+                """
                     SELECT * 
                     FROM contracts
                     WHERE contract_status = 'APPROVED'
                         AND STR_TO_DATE(contract_start_date, '%m-%d-%Y') <= CURDATE();
-                    """)
+                    """
+            )
 
-                approved_contracts = contract_query['result']
-                print("\nApproved Contracts: ", approved_contracts)
+            approved_contracts = contract_query["result"]
+            print("\nApproved Contracts: ", approved_contracts)
 
-                for contract in approved_contracts:
-                        print("Contract: ", contract)
+            for contract in approved_contracts:
+                print("Contract: ", contract)
 
-                        # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
+                # See if there is a matching ACTIVE contract for the same property and make that contract INACTIVE
 
-                        active_contract = ("""
+                active_contract = (
+                    """
                                 UPDATE contracts
                                 SET contract_status = 'INACTIVE'
-                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                WHERE contract_property_id = \'"""
+                    + contract["contract_property_id"]
+                    + """\'
                                 AND contract_status = 'ACTIVE';
-                                """)
-                        print("active_contract Query: ", active_contract)
+                                """
+                )
+                print("active_contract Query: ", active_contract)
 
-                        response['old_contract'] = db.execute(active_contract, cmd='post')
-                        print(response['old_contract']['change'])
-                        contractsMadeInactive = contractsMadeInactive + 1
-                        print("Contracts Made Inactive: ", contractsMadeInactive)
+                response["old_contract"] = db.execute(active_contract, cmd="post")
+                print(response["old_contract"]["change"])
+                contractsMadeInactive = contractsMadeInactive + 1
+                print("Contracts Made Inactive: ", contractsMadeInactive)
 
-
-                        
-
-                        # Make the Approved contract Active
-                        new_contract = ("""
+                # Make the Approved contract Active
+                new_contract = (
+                    """
                                 UPDATE contracts
                                 SET contract_status = 'ACTIVE'
-                                WHERE contract_property_id = \'""" + contract['contract_property_id'] + """\'
+                                WHERE contract_property_id = \'"""
+                    + contract["contract_property_id"]
+                    + """\'
                                 AND contract_status = 'APPROVED';  
-                                """)
+                                """
+                )
 
-                        print("new_contract Query: ", new_contract)
-                        response['new_contract'] = db.execute(new_contract, cmd='post')
-                        print(response['new_contract']['change'])
-                        contractsMadeActive = contractsMadeActive + 1
-                        print("Contracts Made Active: ", contractsMadeActive)
+                print("new_contract Query: ", new_contract)
+                response["new_contract"] = db.execute(new_contract, cmd="post")
+                print(response["new_contract"]["change"])
+                contractsMadeActive = contractsMadeActive + 1
+                print("Contracts Made Active: ", contractsMadeActive)
 
-                        CronPostings.append(f"{contract['contract_property_id']}  ")
-                        
-                print("Conract Cron Query Complete")
-                response['Contracts_Made_Inactive'] = contractsMadeInactive
-                response['Contracts_Made_Aactive'] = contractsMadeActive
-                print("This is the Function response: ", response)
+                CronPostings.append(f"{contract['contract_property_id']}  ")
 
+            print("Conract Cron Query Complete")
+            response["Contracts_Made_Inactive"] = contractsMadeInactive
+            response["Contracts_Made_Aactive"] = contractsMadeActive
+            print("This is the Function response: ", response)
 
-                # APPEND TO CRON OUTPUT
-                CronPostings.append(
-                        f"""
+            # APPEND TO CRON OUTPUT
+            CronPostings.append(
+                f"""
                         response['Contracts_Made_Inactive'] = {contractsMadeInactive}
                         response['Contracts_Made_Active'] = {contractsMadeActive}
                         """
-                        )
+            )
 
-                          
+            try:
+                # print(CronPostings)
+                recipient = "pmarathay@gmail.com"
+                subject = f"MySpace CONTRACT CRON JOB for {dt} Completed "
+                body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(
+                    CronPostings
+                )
+                # mail.send(msg)
+                sendEmail(recipient, subject, body)
 
+                response["email"] = {
+                    "message": f"CONTRACT CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
-                try:
-                    # print(CronPostings)
-                    recipient = "pmarathay@gmail.com"
-                    subject = f"MySpace CONTRACT CRON JOB for {dt} Completed "
-                    body = f"CONTRACT CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            except:
+                response["email fail"] = {
+                    "message": f"CONTRACT CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
-                    response["email"] = {'message': f'CONTRACT CRON Job Email for {dt} sent!' ,
-                        'code': 200}
+    except:
+        response["cron fail"] = {
+            "message": f"CONTRACT CRON Job failed for {dt}",
+            "code": 500,
+        }
+        try:
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace CONTRACT CRON JOB Failed!"
+            body = "CONTRACT CRON JOB Failed"
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
 
-                except:
-                    response["email fail"] = {'message': f'CONTRACT CRON Job Email for {dt} could not be sent' ,
-                        'code': 500}
-                    
+            response["email"] = {
+                "message": f"CONTRACT CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
+
         except:
-                response["cron fail"] = {'message': f'CONTRACT CRON Job failed for {dt}' ,
-                        'code': 500}
-                try:
-                    recipient = "pmarathay@gmail.com"
-                    subject = "MySpace CONTRACT CRON JOB Failed!"
-                    body = "CONTRACT CRON JOB Failed"
-                    # mail.send(msg)
-                    sendEmail(recipient, subject, body)
+            response["email fail"] = {
+                "message": f"CONTRACT CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                    response["email"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} sent!' ,
-                        'code': 201}
-
-                except:
-                    response["email fail"] = {'message': f'CONTRACT CRON Job Fail Email for {dt} could not be sent' ,
-                        'code': 500}
-
-        return response
+    return response
 
 
 class LateFees_CLASS(Resource):
@@ -1267,79 +1428,97 @@ class LateFees_CLASS(Resource):
 
         numCronPurchases = 0
         numCronUpdates = 0
-        CronPostings = ["Num Purchase_UID   Property    Due Date       Amt Due   Status   Late fee   Payer"]        
+        CronPostings = [
+            "Num Purchase_UID   Property    Due Date       Amt Due   Status   Late fee   Payer"
+        ]
 
-         # FIND ALL Rents that are UNPAID OR PARTIALLY PAID
+        # FIND ALL Rents that are UNPAID OR PARTIALLY PAID
         response = UnpaidRents()
         # print("\nUnpaid Rents: ", response)
-        print(range(len(response['result'])))
+        print(range(len(response["result"])))
 
         try:
 
             with connect() as db:
 
-
                 # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
                 # Run Query to get all late fees.  This will be used later to update existing rows
-                lateFees = db.execute("""
+                lateFees = db.execute(
+                    """
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
                         FROM purchases    
                         WHERE purchase_type LIKE "%LATE FEE%" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
                             AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
-                        """)
-                print("\n","LateFees Query: ", lateFees['result'][0:1], type(lateFees))
+                        """
+                )
+                print("\n", "LateFees Query: ", lateFees["result"][0:1], type(lateFees))
 
-
-
-                headers = ["Index", "Purchase UID", "Property ID", "Due Date", "Late By", "Late By Date", "Amount Due", "Purchase Status", "Status Value", "Payer"]
-                print("\n{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(*headers))
+                headers = [
+                    "Index",
+                    "Purchase UID",
+                    "Property ID",
+                    "Due Date",
+                    "Late By",
+                    "Late By Date",
+                    "Amount Due",
+                    "Purchase Status",
+                    "Status Value",
+                    "Payer",
+                ]
+                print(
+                    "\n{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
+                        *headers
+                    )
+                )
 
                 # EXTRACT KEY DATES FOR EACH UNPAID RENT
-                for i in range(len(response['result'])):
-                    print("{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
-                        i, 
-                        response['result'][i]['purchase_uid'], 
-                        response['result'][i]['pur_property_id'], 
-                        response['result'][i]['pur_due_date'], 
-                        response['result'][i]['pur_late_by'],
-                        response['result'][i]['late_by_date'],
-                        response['result'][i]['pur_amount_due'], 
-                        response['result'][i]['purchase_status'], 
-                        response['result'][i]['pur_status_value'], 
-                        response['result'][i]['pur_payer']
-                    ))
+                for i in range(len(response["result"])):
+                    print(
+                        "{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
+                            i,
+                            response["result"][i]["purchase_uid"],
+                            response["result"][i]["pur_property_id"],
+                            response["result"][i]["pur_due_date"],
+                            response["result"][i]["pur_late_by"],
+                            response["result"][i]["late_by_date"],
+                            response["result"][i]["pur_amount_due"],
+                            response["result"][i]["purchase_status"],
+                            response["result"][i]["pur_status_value"],
+                            response["result"][i]["pur_payer"],
+                        )
+                    )
 
-                    purchase_uid = response['result'][i]['purchase_uid']
-                    property_id = response['result'][i]['pur_property_id']
+                    purchase_uid = response["result"][i]["purchase_uid"]
+                    property_id = response["result"][i]["pur_property_id"]
                     # print(response['result'][i]['late_by_date'])
-                    late_date = datetime.strptime(response['result'][i]['late_by_date'],'%m-%d-%Y %H:%M').date()
+                    late_date = datetime.strptime(
+                        response["result"][i]["late_by_date"], "%m-%d-%Y %H:%M"
+                    ).date()
                     # print('late_by_date', late_date, type(late_date), dt , type(dt))
                     numDays = (dt - late_date).days
                     # print("Number of Days Late: ", numDays, type(numDays))
-                    
 
-            # DETERMINE IF UNPAID RENT IS LATE
+                    # DETERMINE IF UNPAID RENT IS LATE
                     # print("Late Date: ", late_date, type(late_date))
                     # print("Today: ", dt, type(dt))
                     if late_date < dt:
                         print("Rent is late!", purchase_uid, property_id)
 
-
-            # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
+                        # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
                         # PAYMENT PARAMTERS
-                        rent_due = response['result'][i]['pur_amount_due']
-                        one_time_late_fee = response['result'][i]['pur_late_Fee']
-                        per_day_late_fee = response['result'][i]['pur_perDay_late_fee']
-                        purchase_notes = response['result'][i]['pur_notes']
-                        purchase_description = response['result'][i]['pur_description']
-                        fees = json.loads(response['result'][i]['contract_fees'])
+                        rent_due = response["result"][i]["pur_amount_due"]
+                        one_time_late_fee = response["result"][i]["pur_late_Fee"]
+                        per_day_late_fee = response["result"][i]["pur_perDay_late_fee"]
+                        purchase_notes = response["result"][i]["pur_notes"]
+                        purchase_description = response["result"][i]["pur_description"]
+                        fees = json.loads(response["result"][i]["contract_fees"])
                         # print("Fees: ", fees)
                         # PAYMENT PARTIES
-                        tenant = response['result'][i]['pur_payer']
-                        owner = response['result'][i]['property_owner_id']
-                        manager = response['result'][i]['contract_business_id']
-                    
+                        tenant = response["result"][i]["pur_payer"]
+                        owner = response["result"][i]["property_owner_id"]
+                        manager = response["result"][i]["contract_business_id"]
+
                         # print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
                         # print("Property id: ", property_id, type(property_id) )
                         # print("Payment Description: ", description, type(description))
@@ -1349,63 +1528,92 @@ class LateFees_CLASS(Resource):
                         # print("PM Contract Fees: ", fees, type(fees))
                         # print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
 
-            # CALCULATE THE LATE FEE AMOUNT
-                        late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
+                        # CALCULATE THE LATE FEE AMOUNT
+                        late_fee = round(
+                            float(one_time_late_fee)
+                            + float(per_day_late_fee) * numDays,
+                            2,
+                        )
                         print("Late Fee: ", late_fee, type(late_fee))
-                    
-            # return  # Use this for debug purposes
 
-            # APPEND TO CRON OUTPUT
+                        # return  # Use this for debug purposes
+
+                        # APPEND TO CRON OUTPUT
                         CronPostings.append(
                             "{:<8} {:<20} {:<15} {:<15} {:<12} {:<18} {:<13} {:<15}".format(
                                 i,
-                                response['result'][i]['purchase_uid'],
-                                response['result'][i]['pur_property_id'],
-                                response['result'][i]['pur_due_date'],
-                                response['result'][i]['pur_amount_due'],
-                                response['result'][i]['purchase_status'],
+                                response["result"][i]["purchase_uid"],
+                                response["result"][i]["pur_property_id"],
+                                response["result"][i]["pur_due_date"],
+                                response["result"][i]["pur_amount_due"],
+                                response["result"][i]["purchase_status"],
                                 late_fee,
-                                response['result'][i]['pur_payer']
+                                response["result"][i]["pur_payer"],
                             )
                         )
 
-            # UPDATE APPRORIATE ROWS
+                        # UPDATE APPRORIATE ROWS
                         putFlag = 0
-                        if len(lateFees['result']) > 0 and late_fee > 0:
-                            for j in range(len(lateFees['result'])):
+                        if len(lateFees["result"]) > 0 and late_fee > 0:
+                            for j in range(len(lateFees["result"])):
                                 # print("Conditional Parameters: ", purchase_uid, lateFees['result'][j]['pur_notes'])
-                                if  purchase_uid == lateFees['result'][j]['pur_notes']:
+                                if purchase_uid == lateFees["result"][j]["pur_notes"]:
                                     putFlag = putFlag + 1
                                     # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['purchase_uid'])
                                     # print("Entire Row: ", lateFees['result'][j])
-                                    payer = lateFees['result'][j]['pur_payer']
-                                    receiver = lateFees['result'][j]['pur_receiver']
-                                    key = {'purchase_uid': lateFees['result'][j]['purchase_uid']}
-                                    if payer[0:3] == '350' or payer[0:3] == '600':
-                                        payload = {'pur_amount_due': late_fee}
+                                    payer = lateFees["result"][j]["pur_payer"]
+                                    receiver = lateFees["result"][j]["pur_receiver"]
+                                    key = {
+                                        "purchase_uid": lateFees["result"][j][
+                                            "purchase_uid"
+                                        ]
+                                    }
+                                    if payer[0:3] == "350" or payer[0:3] == "600":
+                                        payload = {"pur_amount_due": late_fee}
                                         # print(key, payload)
 
-                                        response['purchase_table_update'] = db.update('purchases', key, payload)
+                                        response["purchase_table_update"] = db.update(
+                                            "purchases", key, payload
+                                        )
                                         # print("updated ", key, payload)
                                         numCronUpdates = numCronUpdates + 1
                                         # print(response)
-                                    elif payer[0:3] == '110':                                   
+                                    elif payer[0:3] == "110":
                                         # print("Figure out what the appropriate Fee split is", purchase_notes )
                                         for fee in fees:
                                             # print("Fee: ", fee)
                                             # Extract only the monthly fees
                                             # if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
-                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:    
+                                            if (
+                                                "fee_type" in fee
+                                                and fee["frequency"].lower()
+                                                == "monthly"
+                                                and fee["charge"] != ""
+                                                and (
+                                                    fee["fee_type"] == "%"
+                                                    or fee["fee_type"] == "PERCENT"
+                                                )
+                                                and fee["fee_name"]
+                                                in lateFees["result"][j][
+                                                    "pur_description"
+                                                ]
+                                            ):
                                                 print("In Update PM Fee if statement")
-                                                charge = fee['charge']
-                                                charge_type = fee['fee_type']
+                                                charge = fee["charge"]
+                                                charge_type = fee["fee_type"]
                                                 # print("\nCharge: ", charge, charge_type)
 
-                                                amount_due = float(late_fee) * float(charge) / 100
-                                                payload = {'pur_amount_due': amount_due}
+                                                amount_due = (
+                                                    float(late_fee)
+                                                    * float(charge)
+                                                    / 100
+                                                )
+                                                payload = {"pur_amount_due": amount_due}
                                                 # print(key, payload)
 
-                                                response['purchase_table_update'] = db.update('purchases', key, payload)
+                                                response["purchase_table_update"] = (
+                                                    db.update("purchases", key, payload)
+                                                )
                                                 numCronUpdates = numCronUpdates + 1
                                                 # print("Updated PM", key, payload)
                                     else:
@@ -1414,130 +1622,164 @@ class LateFees_CLASS(Resource):
                                 #     print("No existing Late Fee found")
                                 continue
 
-            # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
+                        # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
                         if putFlag == 0 and late_fee > 0:
-                            print("POST Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
+                            print(
+                                "POST Flag: ",
+                                putFlag,
+                                "New Late Fee for: ",
+                                i,
+                                purchase_uid,
+                            )
 
                             # Create JSON Object for Rent Purchase
                             newRequest = {}
-                            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                            newRequestID = db.call("new_purchase_uid")["result"][0][
+                                "new_id"
+                            ]
                             grouping = newRequestID
                             # print(newRequestID)
 
                             # Common JSON Object Attributes
-                            newRequest['purchase_uid'] = newRequestID
-                            newRequest['pur_group'] = grouping
-                            newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                            newRequest['pur_property_id'] = property_id
-                            newRequest['purchase_type'] = "Late Fee"
-                            newRequest['pur_amount_due'] = late_fee
-                            newRequest['purchase_status'] = "UNPAID"
-                            newRequest['pur_status_value'] = "0"
-                            
+                            newRequest["purchase_uid"] = newRequestID
+                            newRequest["pur_group"] = grouping
+                            newRequest["pur_timestamp"] = dt.strftime("%m-%d-%Y %H:%M")
+                            newRequest["pur_property_id"] = property_id
+                            newRequest["purchase_type"] = "Late Fee"
+                            newRequest["pur_amount_due"] = late_fee
+                            newRequest["purchase_status"] = "UNPAID"
+                            newRequest["pur_status_value"] = "0"
 
-                            newRequest['pur_due_by'] = 1
-                            newRequest['pur_late_by'] = 90
-                            newRequest['pur_late_fee'] = 0
-                            newRequest['pur_perDay_late_fee'] = 0
+                            newRequest["pur_due_by"] = 1
+                            newRequest["pur_late_by"] = 90
+                            newRequest["pur_late_fee"] = 0
+                            newRequest["pur_perDay_late_fee"] = 0
 
-                            newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                            newRequest['pur_notes'] = purchase_uid
-                            
-                        
+                            newRequest["purchase_date"] = dt.strftime("%m-%d-%Y %H:%M")
+                            newRequest["pur_notes"] = purchase_uid
+
                             # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                            newRequest['pur_receiver'] = manager
-                            newRequest['pur_payer'] = tenant
-                            newRequest['pur_initiator'] = manager
-                            newRequest['pur_cf_type'] = "revenue"
-                            newRequest['pur_due_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                            
+                            newRequest["pur_receiver"] = manager
+                            newRequest["pur_payer"] = tenant
+                            newRequest["pur_initiator"] = manager
+                            newRequest["pur_cf_type"] = "revenue"
+                            newRequest["pur_due_date"] = dt.strftime("%m-%d-%Y %H:%M")
 
-                            if numDays ==  0:
+                            if numDays == 0:
                                 # print("\n", "Late Today")
                                 # newRequest['pur_description'] = f"Late Fee Applied for {purchase_notes}"
-                                 newRequest['pur_description'] = f"Late Fee Applied for {purchase_description}"
+                                newRequest["pur_description"] = (
+                                    f"Late Fee Applied for {purchase_description}"
+                                )
                             else:
-                                newRequest['pur_description'] = f"Late Fee for {purchase_description}"
+                                newRequest["pur_description"] = (
+                                    f"Late Fee for {purchase_description}"
+                                )
                                 # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
                             # print("\nInsert Tenant to Property Manager Late Fee")
-                            db.insert('purchases', newRequest)
+                            db.insert("purchases", newRequest)
                             numCronPurchases = numCronPurchases + 1
                             # print("Inserted into db: ", newRequest)
 
-
                             # Create JSON Object for Rent Purchase for PM-Owner Payment
-                            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                            newRequest['purchase_uid'] = newRequestID
+                            newRequestID = db.call("new_purchase_uid")["result"][0][
+                                "new_id"
+                            ]
+                            newRequest["purchase_uid"] = newRequestID
                             # print(newRequestID)
-                            newRequest['pur_receiver'] = owner
-                            newRequest['pur_payer'] = manager
-                            newRequest['pur_cf_type'] = "expense"
+                            newRequest["pur_receiver"] = owner
+                            newRequest["pur_payer"] = manager
+                            newRequest["pur_cf_type"] = "expense"
 
-                                
                             # print(newRequest)
                             # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                             # print("\nInsert Property Manager to Owner Late Fee")
-                            db.insert('purchases', newRequest)
+                            db.insert("purchases", newRequest)
                             numCronPurchases = numCronPurchases + 1
 
-                            
                             # Create JSON Object for Rent Purchase for Owner-PM Payment
                             # Determine Split between PM and Owner
                             # print("\n  Contract Fees", response['result'][i]['contract_fees'])
-                            fees = json.loads(response['result'][i]['contract_fees'])
+                            fees = json.loads(response["result"][i]["contract_fees"])
                             # print("\nFees: ", fees, type(fees))
 
                             for fee in fees:
                                 # print(fee)
                                 # Extract only the monthly fees
-                                if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
-                                    charge = fee['charge']
-                                    charge_type = fee['fee_type']
+                                if (
+                                    "fee_type" in fee
+                                    and fee["frequency"].lower() == "monthly"
+                                    and fee["charge"] != ""
+                                    and (
+                                        fee["fee_type"] == "%"
+                                        or fee["fee_type"] == "PERCENT"
+                                    )
+                                ):
+                                    charge = fee["charge"]
+                                    charge_type = fee["fee_type"]
                                     # print("\nCharge: ", charge, charge_type)
 
-                                    # Use this fee to create an Owner-PM late Fee PUT OR PST 
+                                    # Use this fee to create an Owner-PM late Fee PUT OR PST
                                     # Create JSON Object for Rent Purchase for PM-Owner Payment
-                                    newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                                    newRequest['purchase_uid'] = newRequestID
+                                    newRequestID = db.call("new_purchase_uid")[
+                                        "result"
+                                    ][0]["new_id"]
+                                    newRequest["purchase_uid"] = newRequestID
                                     # print(newRequestID
-                                    newRequest['pur_receiver'] = manager
-                                    newRequest['pur_payer'] = owner
-                                    newRequest['pur_cf_type'] = "revenue"
-                                    newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee for {purchase_description}'
-                                    newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
-                                    
+                                    newRequest["pur_receiver"] = manager
+                                    newRequest["pur_payer"] = owner
+                                    newRequest["pur_cf_type"] = "revenue"
+                                    newRequest["purchase_type"] = "Management"
+                                    newRequest["pur_description"] = (
+                                        f'{fee["fee_name"]} Late Fee for {purchase_description}'
+                                    )
+                                    newRequest["pur_amount_due"] = (
+                                        float(late_fee) * float(charge) / 100
+                                    )
+
                                     # print(newRequest)
                                     # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
                                     # print("\nInsert Owner to Property Manager Late Fee")
-                                    db.insert('purchases', newRequest)  
-                                    numCronPurchases = numCronPurchases + 1     
+                                    db.insert("purchases", newRequest)
+                                    numCronPurchases = numCronPurchases + 1
 
+            print(
+                f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated."
+            )
+            response["cron_job"] = {
+                "message": f"Successfully completed LATE FEE CRON Job for {dt}",
+                "rows added": f"{numCronPurchases}",
+                "rows updated": f"{numCronUpdates}",
+                "code": 200,
+            }
 
-            print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated.")
-            response["cron_job"] = {'message': f'Successfully completed LATE FEE CRON Job for {dt}' ,
-                        'rows added': f'{numCronPurchases}', 'rows updated': f'{numCronUpdates}',
-                    'code': 200}
-            
             try:
                 # print(CronPostings)
                 recipient = "pmarathay@gmail.com"
                 subject = f"MySpace LATE FEE CRON JOB for {dt} Completed "
-                body = f"LATE FEE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+                body = f"LATE FEE CRON JOB has been executed.\n\n" + "\n".join(
+                    CronPostings
+                )
                 # mail.send(msg)
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'LATE FEE CRON Job Email for {dt} sent!' ,
-                    'code': 200}
+                response["email"] = {
+                    "message": f"LATE FEE CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
             except:
-                response["email fail"] = {'message': f'LATE FEE CRON Job Email for {dt} could not be sent' ,
-                    'code': 500}
-                
+                response["email fail"] = {
+                    "message": f"LATE FEE CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
+
         except:
-            response["cron fail"] = {'message': f'LATE FEE CRON Job failed for {dt}' ,
-                    'code': 500}
+            response["cron fail"] = {
+                "message": f"LATE FEE CRON Job failed for {dt}",
+                "code": 500,
+            }
             try:
                 recipient = "pmarathay@gmail.com"
                 subject = "MySpace LATE FEE CRON JOB Failed!"
@@ -1545,311 +1787,390 @@ class LateFees_CLASS(Resource):
                 # mail.send(msg)
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} sent!' ,
-                    'code': 201}
+                response["email"] = {
+                    "message": f"LATE FEE CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
             except:
-                response["email fail"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} could not be sent' ,
-                    'code': 500}
-
+                response["email fail"] = {
+                    "message": f"LATE FEE CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
+
 
 def LateFees_CRON(Resource):
-        print("In Late Fees CRON JOB")
+    print("In Late Fees CRON JOB")
 
-        # Establish current day, month and year
-        dt = date.today()
-        print("dt is: ", dt, type(dt))
+    # Establish current day, month and year
+    dt = date.today()
+    print("dt is: ", dt, type(dt))
 
-        numCronPurchases = 0
-        numCronUpdates = 0
-        CronPostings = ["Num Purchase_UID   Property    Due Date       Amt Due   Status   Late fee   Payer"]        
+    numCronPurchases = 0
+    numCronUpdates = 0
+    CronPostings = [
+        "Num Purchase_UID   Property    Due Date       Amt Due   Status   Late fee   Payer"
+    ]
 
-         # FIND ALL Rents that are UNPAID OR PARTIALLY PAID
-        response = UnpaidRents()
-        # print("\nUnpaid Rents: ", response)
-        print(range(len(response['result'])))
+    # FIND ALL Rents that are UNPAID OR PARTIALLY PAID
+    response = UnpaidRents()
+    # print("\nUnpaid Rents: ", response)
+    print(range(len(response["result"])))
 
-        try:
+    try:
 
-            with connect() as db:
+        with connect() as db:
 
-
-                # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
-                # Run Query to get all late fees.  This will be used later to update existing rows
-                lateFees = db.execute("""
+            # FIND ALL ROWS THAT ALREADY EXIST FOR THIS LATE FEE (IE DESCRIPTION MATCHES PURCHASE_ID)
+            # Run Query to get all late fees.  This will be used later to update existing rows
+            lateFees = db.execute(
+                """
                         -- DETERMINE WHICH LATE FEES ALREADY EXIST
                         SELECT *
                         FROM purchases    
                         WHERE purchase_type LIKE "%LATE FEE%" OR ( purchase_type = "Management" AND pur_description LIKE "%LATE FEE%")
                             AND (purchase_status = "UNPAID" OR purchase_status = "PARTIALLY PAID")
-                        """)
-                print("\n","LateFees Query: ", lateFees['result'][0:1], type(lateFees))
+                        """
+            )
+            print("\n", "LateFees Query: ", lateFees["result"][0:1], type(lateFees))
 
+            headers = [
+                "Index",
+                "Purchase UID",
+                "Property ID",
+                "Due Date",
+                "Late By",
+                "Late By Date",
+                "Amount Due",
+                "Purchase Status",
+                "Status Value",
+                "Payer",
+            ]
+            print(
+                "\n{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
+                    *headers
+                )
+            )
 
+            # EXTRACT KEY DATES FOR EACH UNPAID RENT
+            for i in range(len(response["result"])):
+                print(
+                    "{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
+                        i,
+                        response["result"][i]["purchase_uid"],
+                        response["result"][i]["pur_property_id"],
+                        response["result"][i]["pur_due_date"],
+                        response["result"][i]["pur_late_by"],
+                        response["result"][i]["late_by_date"],
+                        response["result"][i]["pur_amount_due"],
+                        response["result"][i]["purchase_status"],
+                        response["result"][i]["pur_status_value"],
+                        response["result"][i]["pur_payer"],
+                    )
+                )
 
-                headers = ["Index", "Purchase UID", "Property ID", "Due Date", "Late By", "Late By Date", "Amount Due", "Purchase Status", "Status Value", "Payer"]
-                print("\n{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(*headers))
+                purchase_uid = response["result"][i]["purchase_uid"]
+                property_id = response["result"][i]["pur_property_id"]
+                # print(response['result'][i]['late_by_date'])
+                late_date = datetime.strptime(
+                    response["result"][i]["late_by_date"], "%m-%d-%Y %H:%M"
+                ).date()
+                # print('late_by_date', late_date, type(late_date), dt , type(dt))
+                numDays = (dt - late_date).days
+                # print("Number of Days Late: ", numDays, type(numDays))
 
-                # EXTRACT KEY DATES FOR EACH UNPAID RENT
-                for i in range(len(response['result'])):
-                    print("{:<8} {:<20} {:<15} {:<15} {:<8} {:<12} {:<12} {:<18} {:<13} {:<15}".format(
-                        i, 
-                        response['result'][i]['purchase_uid'], 
-                        response['result'][i]['pur_property_id'], 
-                        response['result'][i]['pur_due_date'], 
-                        response['result'][i]['pur_late_by'],
-                        response['result'][i]['late_by_date'],
-                        response['result'][i]['pur_amount_due'], 
-                        response['result'][i]['purchase_status'], 
-                        response['result'][i]['pur_status_value'], 
-                        response['result'][i]['pur_payer']
-                    ))
+                # DETERMINE IF UNPAID RENT IS LATE
+                # print("Late Date: ", late_date, type(late_date))
+                # print("Today: ", dt, type(dt))
+                if late_date < dt:
+                    print("Rent is late!", purchase_uid, property_id)
 
-                    purchase_uid = response['result'][i]['purchase_uid']
-                    property_id = response['result'][i]['pur_property_id']
-                    # print(response['result'][i]['late_by_date'])
-                    late_date = datetime.strptime(response['result'][i]['late_by_date'],'%m-%d-%Y %H:%M').date()
-                    # print('late_by_date', late_date, type(late_date), dt , type(dt))
-                    numDays = (dt - late_date).days
-                    # print("Number of Days Late: ", numDays, type(numDays))
-                    
+                    # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
+                    # PAYMENT PARAMTERS
+                    rent_due = response["result"][i]["pur_amount_due"]
+                    one_time_late_fee = response["result"][i]["pur_late_Fee"]
+                    per_day_late_fee = response["result"][i]["pur_perDay_late_fee"]
+                    purchase_notes = response["result"][i]["pur_notes"]
+                    purchase_description = response["result"][i]["pur_description"]
+                    fees = json.loads(response["result"][i]["contract_fees"])
+                    # print("Fees: ", fees)
+                    # PAYMENT PARTIES
+                    tenant = response["result"][i]["pur_payer"]
+                    owner = response["result"][i]["property_owner_id"]
+                    manager = response["result"][i]["contract_business_id"]
 
-            # DETERMINE IF UNPAID RENT IS LATE
-                    # print("Late Date: ", late_date, type(late_date))
-                    # print("Today: ", dt, type(dt))
-                    if late_date < dt:
-                        print("Rent is late!", purchase_uid, property_id)
+                    # print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
+                    # print("Property id: ", property_id, type(property_id) )
+                    # print("Payment Description: ", description, type(description))
+                    # print("Payment Amount Due: ", rent_due, type(rent_due))
+                    # print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
+                    # print("Purchase Notes: ", purchase_notes, purchase_description)
+                    # print("PM Contract Fees: ", fees, type(fees))
+                    # print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
 
+                    # CALCULATE THE LATE FEE AMOUNT
+                    late_fee = round(
+                        float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2
+                    )
+                    print("Late Fee: ", late_fee, type(late_fee))
 
-            # EXTRACT KEY PARAMETERS FOR EACH UNPAID RENT
-                        # PAYMENT PARAMTERS
-                        rent_due = response['result'][i]['pur_amount_due']
-                        one_time_late_fee = response['result'][i]['pur_late_Fee']
-                        per_day_late_fee = response['result'][i]['pur_perDay_late_fee']
-                        purchase_notes = response['result'][i]['pur_notes']
-                        purchase_description = response['result'][i]['pur_description']
-                        fees = json.loads(response['result'][i]['contract_fees'])
-                        # print("Fees: ", fees)
-                        # PAYMENT PARTIES
-                        tenant = response['result'][i]['pur_payer']
-                        owner = response['result'][i]['property_owner_id']
-                        manager = response['result'][i]['contract_business_id']
-                    
-                        # print("\nPurchase UID: ", purchase_uid, type(purchase_uid))
-                        # print("Property id: ", property_id, type(property_id) )
-                        # print("Payment Description: ", description, type(description))
-                        # print("Payment Amount Due: ", rent_due, type(rent_due))
-                        # print("Lease Late Fees: ", one_time_late_fee, type(one_time_late_fee), per_day_late_fee, type(per_day_late_fee))
-                        # print("Purchase Notes: ", purchase_notes, purchase_description)
-                        # print("PM Contract Fees: ", fees, type(fees))
-                        # print("Tenant, Owner, PM: ", tenant, owner, manager, type(manager))
+                    # return  # Use this for debug purposes
 
-            # CALCULATE THE LATE FEE AMOUNT
-                        late_fee = round(float(one_time_late_fee) + float(per_day_late_fee) * numDays, 2)
-                        print("Late Fee: ", late_fee, type(late_fee))
-                    
-            # return  # Use this for debug purposes
+                    # APPEND TO CRON OUTPUT
+                    CronPostings.append(
+                        "{:<8} {:<20} {:<15} {:<15} {:<12} {:<18} {:<13} {:<15}".format(
+                            i,
+                            response["result"][i]["purchase_uid"],
+                            response["result"][i]["pur_property_id"],
+                            response["result"][i]["pur_due_date"],
+                            response["result"][i]["pur_amount_due"],
+                            response["result"][i]["purchase_status"],
+                            late_fee,
+                            response["result"][i]["pur_payer"],
+                        )
+                    )
 
-            # APPEND TO CRON OUTPUT
-                        CronPostings.append(
-                            "{:<8} {:<20} {:<15} {:<15} {:<12} {:<18} {:<13} {:<15}".format(
-                                i,
-                                response['result'][i]['purchase_uid'],
-                                response['result'][i]['pur_property_id'],
-                                response['result'][i]['pur_due_date'],
-                                response['result'][i]['pur_amount_due'],
-                                response['result'][i]['purchase_status'],
-                                late_fee,
-                                response['result'][i]['pur_payer']
-                            )
+                    # UPDATE APPRORIATE ROWS
+                    putFlag = 0
+                    if len(lateFees["result"]) > 0 and late_fee > 0:
+                        for j in range(len(lateFees["result"])):
+                            # print("Conditional Parameters: ", purchase_uid, lateFees['result'][j]['pur_notes'])
+                            if purchase_uid == lateFees["result"][j]["pur_notes"]:
+                                putFlag = putFlag + 1
+                                # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['purchase_uid'])
+                                # print("Entire Row: ", lateFees['result'][j])
+                                payer = lateFees["result"][j]["pur_payer"]
+                                receiver = lateFees["result"][j]["pur_receiver"]
+                                key = {
+                                    "purchase_uid": lateFees["result"][j][
+                                        "purchase_uid"
+                                    ]
+                                }
+                                if payer[0:3] == "350" or payer[0:3] == "600":
+                                    payload = {"pur_amount_due": late_fee}
+                                    # print(key, payload)
+
+                                    response["purchase_table_update"] = db.update(
+                                        "purchases", key, payload
+                                    )
+                                    # print("updated ", key, payload)
+                                    numCronUpdates = numCronUpdates + 1
+                                    # print(response)
+                                elif payer[0:3] == "110":
+                                    # print("Figure out what the appropriate Fee split is", purchase_notes )
+                                    for fee in fees:
+                                        # print("Fee: ", fee)
+                                        # Extract only the monthly fees
+                                        # if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
+                                        if (
+                                            "fee_type" in fee
+                                            and fee["frequency"].lower() == "monthly"
+                                            and fee["charge"] != ""
+                                            and (
+                                                fee["fee_type"] == "%"
+                                                or fee["fee_type"] == "PERCENT"
+                                            )
+                                            and fee["fee_name"]
+                                            in lateFees["result"][j]["pur_description"]
+                                        ):
+                                            print("In Update PM Fee if statement")
+                                            charge = fee["charge"]
+                                            charge_type = fee["fee_type"]
+                                            # print("\nCharge: ", charge, charge_type)
+
+                                            amount_due = (
+                                                float(late_fee) * float(charge) / 100
+                                            )
+                                            payload = {"pur_amount_due": amount_due}
+                                            # print(key, payload)
+
+                                            response["purchase_table_update"] = (
+                                                db.update("purchases", key, payload)
+                                            )
+                                            numCronUpdates = numCronUpdates + 1
+                                            # print("Updated PM", key, payload)
+                                else:
+                                    print("No Matching Payer Found: ", payer)
+                            # else:
+                            #     print("No existing Late Fee found")
+                            continue
+
+                    # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
+                    if putFlag == 0 and late_fee > 0:
+                        print(
+                            "POST Flag: ",
+                            putFlag,
+                            "New Late Fee for: ",
+                            i,
+                            purchase_uid,
                         )
 
-            # UPDATE APPRORIATE ROWS
-                        putFlag = 0
-                        if len(lateFees['result']) > 0 and late_fee > 0:
-                            for j in range(len(lateFees['result'])):
-                                # print("Conditional Parameters: ", purchase_uid, lateFees['result'][j]['pur_notes'])
-                                if  purchase_uid == lateFees['result'][j]['pur_notes']:
-                                    putFlag = putFlag + 1
-                                    # print("\nFound Matching Entry ", putFlag, lateFees['result'][j]['purchase_uid'])
-                                    # print("Entire Row: ", lateFees['result'][j])
-                                    payer = lateFees['result'][j]['pur_payer']
-                                    receiver = lateFees['result'][j]['pur_receiver']
-                                    key = {'purchase_uid': lateFees['result'][j]['purchase_uid']}
-                                    if payer[0:3] == '350' or payer[0:3] == '600':
-                                        payload = {'pur_amount_due': late_fee}
-                                        # print(key, payload)
+                        # Create JSON Object for Rent Purchase
+                        newRequest = {}
+                        newRequestID = db.call("new_purchase_uid")["result"][0][
+                            "new_id"
+                        ]
+                        grouping = newRequestID
+                        # print(newRequestID)
 
-                                        response['purchase_table_update'] = db.update('purchases', key, payload)
-                                        # print("updated ", key, payload)
-                                        numCronUpdates = numCronUpdates + 1
-                                        # print(response)
-                                    elif payer[0:3] == '110':                                   
-                                        # print("Figure out what the appropriate Fee split is", purchase_notes )
-                                        for fee in fees:
-                                            # print("Fee: ", fee)
-                                            # Extract only the monthly fees
-                                            # if 'fee_type' in fee and (fee['frequency'] == 'Monthly' or fee['frequency'] == 'monthly') and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:
-                                            if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT") and fee['fee_name'] in lateFees['result'][j]['pur_description']:    
-                                                print("In Update PM Fee if statement")
-                                                charge = fee['charge']
-                                                charge_type = fee['fee_type']
-                                                # print("\nCharge: ", charge, charge_type)
+                        # Common JSON Object Attributes
+                        newRequest["purchase_uid"] = newRequestID
+                        newRequest["pur_group"] = grouping
+                        newRequest["pur_timestamp"] = dt.strftime("%m-%d-%Y %H:%M")
+                        newRequest["pur_property_id"] = property_id
+                        newRequest["purchase_type"] = "Late Fee"
+                        newRequest["pur_cf_type"] = "revenue"
+                        newRequest["pur_amount_due"] = late_fee
+                        newRequest["purchase_status"] = "UNPAID"
+                        newRequest["pur_status_value"] = "0"
 
-                                                amount_due = float(late_fee) * float(charge) / 100
-                                                payload = {'pur_amount_due': amount_due}
-                                                # print(key, payload)
+                        newRequest["pur_due_by"] = 1
+                        newRequest["pur_late_by"] = 90
+                        newRequest["pur_late_fee"] = 0
+                        newRequest["pur_perDay_late_fee"] = 0
 
-                                                response['purchase_table_update'] = db.update('purchases', key, payload)
-                                                numCronUpdates = numCronUpdates + 1
-                                                # print("Updated PM", key, payload)
-                                    else:
-                                        print("No Matching Payer Found: ", payer)
-                                # else:
-                                #     print("No existing Late Fee found")
-                                continue
+                        newRequest["purchase_date"] = dt.strftime("%m-%d-%Y %H:%M")
+                        newRequest["pur_notes"] = purchase_uid
 
-            # INSERT NEW ROWS IF THIS IS THE FIRST TIME LATE FEES ARE ASSESSED
-                        if putFlag == 0 and late_fee > 0:
-                            print("POST Flag: ", putFlag, "New Late Fee for: ", i, purchase_uid)
+                        # Create JSON Object for Rent Purchase for Tenant-PM Payment
+                        newRequest["pur_receiver"] = manager
+                        newRequest["pur_payer"] = tenant
+                        newRequest["pur_initiator"] = manager
+                        newRequest["pur_due_date"] = dt.strftime("%m-%d-%Y %H:%M")
 
-                            # Create JSON Object for Rent Purchase
-                            newRequest = {}
-                            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                            grouping = newRequestID
-                            # print(newRequestID)
+                        if numDays == 0:
+                            # print("\n", "Late Today")
+                            # newRequest['pur_description'] = f"Late Fee Applied for {purchase_notes}"
+                            newRequest["pur_description"] = (
+                                f"Late Fee Applied for {purchase_description}"
+                            )
+                        else:
+                            newRequest["pur_description"] = (
+                                f"Late Fee for {purchase_description}"
+                            )
+                            # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
 
-                            # Common JSON Object Attributes
-                            newRequest['purchase_uid'] = newRequestID
-                            newRequest['pur_group'] = grouping
-                            newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                            newRequest['pur_property_id'] = property_id
-                            newRequest['purchase_type'] = "Late Fee"
-                            newRequest['pur_cf_type'] = "revenue"
-                            newRequest['pur_amount_due'] = late_fee
-                            newRequest['purchase_status'] = "UNPAID"
-                            newRequest['pur_status_value'] = "0"
-                            
+                        # print("\nInsert Tenant to Property Manager Late Fee")
+                        db.insert("purchases", newRequest)
+                        numCronPurchases = numCronPurchases + 1
+                        # print("Inserted into db: ", newRequest)
 
-                            newRequest['pur_due_by'] = 1
-                            newRequest['pur_late_by'] = 90
-                            newRequest['pur_late_fee'] = 0
-                            newRequest['pur_perDay_late_fee'] = 0
+                        # Create JSON Object for Rent Purchase for PM-Owner Payment
+                        newRequestID = db.call("new_purchase_uid")["result"][0][
+                            "new_id"
+                        ]
+                        newRequest["purchase_uid"] = newRequestID
+                        # print(newRequestID)
+                        newRequest["pur_receiver"] = owner
+                        newRequest["pur_payer"] = manager
 
-                            newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                            newRequest['pur_notes'] = purchase_uid
-                            
-                        
-                            # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                            newRequest['pur_receiver'] = manager
-                            newRequest['pur_payer'] = tenant
-                            newRequest['pur_initiator'] = manager
-                            newRequest['pur_due_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                            
+                        # print(newRequest)
+                        # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
+                        # print("\nInsert Property Manager to Owner Late Fee")
+                        db.insert("purchases", newRequest)
+                        numCronPurchases = numCronPurchases + 1
 
-                            if numDays ==  0:
-                                # print("\n", "Late Today")
-                                # newRequest['pur_description'] = f"Late Fee Applied for {purchase_notes}"
-                                 newRequest['pur_description'] = f"Late Fee Applied for {purchase_description}"
-                            else:
-                                newRequest['pur_description'] = f"Late Fee for {purchase_description}"
-                                # newRequest['pur_description'] = f"Late for { calendar.month_name[nextMonth.month]} {nextMonth.year} {response['result'][i]['purchase_uid']}"
+                        # Create JSON Object for Rent Purchase for Owner-PM Payment
+                        # Determine Split between PM and Owner
+                        # print("\n  Contract Fees", response['result'][i]['contract_fees'])
+                        fees = json.loads(response["result"][i]["contract_fees"])
+                        # print("\nFees: ", fees, type(fees))
 
-                            # print("\nInsert Tenant to Property Manager Late Fee")
-                            db.insert('purchases', newRequest)
-                            numCronPurchases = numCronPurchases + 1
-                            # print("Inserted into db: ", newRequest)
+                        for fee in fees:
+                            # print(fee)
+                            # Extract only the monthly fees
+                            if (
+                                "fee_type" in fee
+                                and fee["frequency"].lower() == "monthly"
+                                and fee["charge"] != ""
+                                and (
+                                    fee["fee_type"] == "%"
+                                    or fee["fee_type"] == "PERCENT"
+                                )
+                            ):
+                                charge = fee["charge"]
+                                charge_type = fee["fee_type"]
+                                # print("\nCharge: ", charge, charge_type)
 
+                                # Use this fee to create an Owner-PM late Fee PUT OR PST
+                                # Create JSON Object for Rent Purchase for PM-Owner Payment
+                                newRequestID = db.call("new_purchase_uid")["result"][0][
+                                    "new_id"
+                                ]
+                                newRequest["purchase_uid"] = newRequestID
+                                # print(newRequestID
+                                newRequest["pur_receiver"] = manager
+                                newRequest["pur_payer"] = owner
+                                newRequest["pur_cf_type"] = "expense"
+                                newRequest["purchase_type"] = "Management"
+                                newRequest["pur_description"] = (
+                                    f'{fee["fee_name"]} Late Fee for {purchase_description}'
+                                )
+                                newRequest["pur_amount_due"] = (
+                                    float(late_fee) * float(charge) / 100
+                                )
 
-                            # Create JSON Object for Rent Purchase for PM-Owner Payment
-                            newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                            newRequest['purchase_uid'] = newRequestID
-                            # print(newRequestID)
-                            newRequest['pur_receiver'] = owner
-                            newRequest['pur_payer'] = manager
+                                # print(newRequest)
+                                # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
+                                # print("\nInsert Owner to Property Manager Late Fee")
+                                db.insert("purchases", newRequest)
+                                numCronPurchases = numCronPurchases + 1
 
-                                
-                            # print(newRequest)
-                            # print("\nPurchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
-                            # print("\nInsert Property Manager to Owner Late Fee")
-                            db.insert('purchases', newRequest)
-                            numCronPurchases = numCronPurchases + 1
+        print(
+            f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated."
+        )
+        response["cron_job"] = {
+            "message": f"Successfully completed LATE FEE CRON Job for {dt}",
+            "rows added": f"{numCronPurchases}",
+            "rows updated": f"{numCronUpdates}",
+            "code": 200,
+        }
 
-                            
-                            # Create JSON Object for Rent Purchase for Owner-PM Payment
-                            # Determine Split between PM and Owner
-                            # print("\n  Contract Fees", response['result'][i]['contract_fees'])
-                            fees = json.loads(response['result'][i]['contract_fees'])
-                            # print("\nFees: ", fees, type(fees))
+        try:
+            # print(CronPostings)
+            recipient = "pmarathay@gmail.com"
+            subject = f"MySpace LATE FEE CRON JOB for {dt} Completed "
+            body = f"LATE FEE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
 
-                            for fee in fees:
-                                # print(fee)
-                                # Extract only the monthly fees
-                                if 'fee_type' in fee and fee['frequency'].lower() == 'monthly' and fee['charge'] != "" and (fee['fee_type'] == "%" or fee['fee_type'] == "PERCENT"):
-                                    charge = fee['charge']
-                                    charge_type = fee['fee_type']
-                                    # print("\nCharge: ", charge, charge_type)
+            response["email"] = {
+                "message": f"LATE FEE CRON Job Email for {dt} sent!",
+                "code": 200,
+            }
 
-                                    # Use this fee to create an Owner-PM late Fee PUT OR PST 
-                                    # Create JSON Object for Rent Purchase for PM-Owner Payment
-                                    newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                                    newRequest['purchase_uid'] = newRequestID
-                                    # print(newRequestID
-                                    newRequest['pur_receiver'] = manager
-                                    newRequest['pur_payer'] = owner
-                                    newRequest['pur_cf_type'] = "expense"
-                                    newRequest['purchase_type'] = "Management"
-                                    newRequest['pur_description'] = f'{fee["fee_name"]} Late Fee for {purchase_description}'
-                                    newRequest['pur_amount_due'] = float(late_fee) * float(charge) / 100
-                                    
-                                    # print(newRequest)
-                                    # print("Purchase Parameters: ", i, newRequestID, grouping, tenant, owner, manager)
-                                    # print("\nInsert Owner to Property Manager Late Fee")
-                                    db.insert('purchases', newRequest)  
-                                    numCronPurchases = numCronPurchases + 1     
-
-
-            print(f"Late Fee CRON job for {dt} completed. {numCronPurchases} rows added. {numCronUpdates} rows updated.")
-            response["cron_job"] = {'message': f'Successfully completed LATE FEE CRON Job for {dt}' ,
-                        'rows added': f'{numCronPurchases}', 'rows updated': f'{numCronUpdates}',
-                    'code': 200}
-            
-            try:
-                # print(CronPostings)
-                recipient = "pmarathay@gmail.com"
-                subject = f"MySpace LATE FEE CRON JOB for {dt} Completed "
-                body = f"LATE FEE CRON JOB has been executed.\n\n" + "\n".join(CronPostings)
-                # mail.send(msg)
-                sendEmail(recipient, subject, body)
-
-                response["email"] = {'message': f'LATE FEE CRON Job Email for {dt} sent!' ,
-                    'code': 200}
-
-            except:
-                response["email fail"] = {'message': f'LATE FEE CRON Job Email for {dt} could not be sent' ,
-                    'code': 500}
-                
         except:
-            response["cron fail"] = {'message': f'LATE FEE CRON Job failed for {dt}' ,
-                    'code': 500}
-            try:
-                recipient = "pmarathay@gmail.com"
-                subject = "MySpace LATE FEE CRON JOB Failed!"
-                body = "LATE FEE CRON JOB Failed"
-                # mail.send(msg)
-                sendEmail(recipient, subject, body)
+            response["email fail"] = {
+                "message": f"LATE FEE CRON Job Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                response["email"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} sent!' ,
-                    'code': 201}
+    except:
+        response["cron fail"] = {
+            "message": f"LATE FEE CRON Job failed for {dt}",
+            "code": 500,
+        }
+        try:
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace LATE FEE CRON JOB Failed!"
+            body = "LATE FEE CRON JOB Failed"
+            # mail.send(msg)
+            sendEmail(recipient, subject, body)
 
-            except:
-                response["email fail"] = {'message': f'LATE FEE CRON Job Fail Email for {dt} could not be sent' ,
-                    'code': 500}
+            response["email"] = {
+                "message": f"LATE FEE CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
 
+        except:
+            response["email fail"] = {
+                "message": f"LATE FEE CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-        return response
+    return response
 
 
 class MonthlyRentPurchase_CLASS(Resource):
@@ -1861,201 +2182,258 @@ class MonthlyRentPurchase_CLASS(Resource):
         print("dt is: ", dt, type(dt))
 
         numCronPurchases = 0
-        CronPostings = ["Fee Num  Lease Fee   Property    Due Date       Available to Pay Date   Today   Rent Due   Purchase ID"]        
-        
+        CronPostings = [
+            "Fee Num  Lease Fee   Property    Due Date       Available to Pay Date   Today   Rent Due   Purchase ID"
+        ]
+
         # Determine ACTIVE LEASES and LEASE FEES
         response = NextDueDate()
         # print("\nACTIVE Leases from NextDueDate: ", response)
-        print(range(len(response['result'])))
+        print(range(len(response["result"])))
 
         try:
 
-            headers = ["Fee Num", "Lease Fee", "Property", "Due Date", "Available to Pay Date", "Today", "Rent Due", "Purchase ID"]
-            print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
+            headers = [
+                "Fee Num",
+                "Lease Fee",
+                "Property",
+                "Due Date",
+                "Available to Pay Date",
+                "Today",
+                "Rent Due",
+                "Purchase ID",
+            ]
+            print(
+                "{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(
+                    *headers
+                )
+            )
 
-            print(len(response['result']), range(len(response['result'])))
+            print(len(response["result"]), range(len(response["result"])))
 
-            for i in range(len(response['result'])):
-                print("\n Next i: ", response['result'][i]['leaseFees_uid'])
+            for i in range(len(response["result"])):
+                print("\n Next i: ", response["result"][i]["leaseFees_uid"])
                 # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
                 # Check if leaseFee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
-                if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
+                if (
+                    response["result"][i]["leaseFees_uid"] is None
+                    or response["result"][i]["contract_uid"] is None
+                ):
                     continue
 
                 # Check if available_topay is NONE
-                if response['result'][i]['available_topay'] is None:
+                if response["result"][i]["available_topay"] is None:
                     # print("available_topay Is NULL!!")
                     payable = 10
                 else:
-                    payable = response['result'][i]['available_topay']
+                    payable = response["result"][i]["available_topay"]
                 # print("available_topay: ", payable)
-
 
                 # Check if due_by is NONE
                 # print(response['result'][i]['due_by'])
-                if response['result'][i]['due_by'] is None or response['result'][i]['due_by'] == 0:
+                if (
+                    response["result"][i]["due_by"] is None
+                    or response["result"][i]["due_by"] == 0
+                ):
                     # print("due_by Is NULL!!")
                     due_by = 1
                 else:
-                    due_by = response['result'][i]['due_by']
+                    due_by = response["result"][i]["due_by"]
                 # print("due_by: ", due_by, type(due_by))  # Day rent is due ie 2
                 # print("dt.day: ", dt.day, type(dt.day))  # Todays Day ie 8/3/2024 would return 3
 
-
                 # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
                 # print("Date check: ", response['result'][i]['next_due_date'], type(response['result'][i]['next_due_date']))
-                next_due_date = datetime.strptime(response['result'][i]['next_due_date'],'%m-%d-%Y %H:%M')
+                next_due_date = datetime.strptime(
+                    response["result"][i]["next_due_date"], "%m-%d-%Y %H:%M"
+                )
                 # print("Rent due: ", next_due_date, type(next_due_date))
                 postdate = next_due_date - timedelta(days=payable)
                 # print("Post Date: ", postdate, type(postdate))
                 # pm_due_date = next_due_date + relativedelta(days=15)
-                last_day_of_month = calendar.monthrange(next_due_date.year, next_due_date.month)[1]
+                last_day_of_month = calendar.monthrange(
+                    next_due_date.year, next_due_date.month
+                )[1]
                 # Create a new datetime object for the last day of the month
                 pm_due_date = next_due_date.replace(day=last_day_of_month)
                 # print("PM Due Date: ", pm_due_date, type(pm_due_date))
-                
+
                 # print("Available to Post x days ahead: ", payable)
-                
+
                 # print("Already posted? ", response['result'][i]['purchase_uid'])
 
                 # Lease Fee Number, Lease Fee, Property, Due Date, Available to Pay Date, Today, Rent Due, Purchase ID
                 # UNCOMMENT THIS LINE FIRST TO SEE WHAT IS PROCESSED FOR EACH ROW RETURNED FROM THE QUERY
                 # print(i, "     ", response['result'][i]['leaseFees_uid'], "   ", response['result'][i]['lease_property_id'], "   ", next_due_date, "   ", postdate, "   ", dt, "   ", dt >= postdate, "   ", response['result'][i]['purchase_uid'] )
-                
 
                 # IF YOU MEET THESE CRITERIA THEN YOU ARE POSTING TO Purchases
-                if dt >= postdate and dt <= next_due_date and response['result'][i]['purchase_uid'] in {None, '', 'null'}:
+                if (
+                    dt >= postdate
+                    and dt <= next_due_date
+                    and response["result"][i]["purchase_uid"] in {None, "", "null"}
+                ):
                     print("Rent posted.  Please Pay")
                     numCronPurchases = numCronPurchases + 1
                     CronPostings.append(
-                        str(i) + '  ' + 
-                        str(response['result'][i]['leaseFees_uid']) + '  ' + 
-                        str(response['result'][i]['lease_property_id']) + '  ' + 
-                        str(next_due_date) + '  ' + 
-                        str(postdate) + '  ' + 
-                        str(dt) + '  ' + 
-                        str(dt >= postdate) + '  ' + 
-                        str(response['result'][i]['purchase_uid'])
+                        str(i)
+                        + "  "
+                        + str(response["result"][i]["leaseFees_uid"])
+                        + "  "
+                        + str(response["result"][i]["lease_property_id"])
+                        + "  "
+                        + str(next_due_date)
+                        + "  "
+                        + str(postdate)
+                        + "  "
+                        + str(dt)
+                        + "  "
+                        + str(dt >= postdate)
+                        + "  "
+                        + str(response["result"][i]["purchase_uid"])
                     )
 
                     # Perform Remainder Checks to ensure no blank fields
                     # Check if late_fee is NONE
                     # print(response['result'][i]['fee_name'], response['result'][i]['late_fee'], type(response['result'][i]['late_fee']))
-                    if response['result'][i]['late_fee'] is None or response['result'][i]['late_fee'] == 0 or response['result'][i]['late_fee'] == "":
+                    if (
+                        response["result"][i]["late_fee"] is None
+                        or response["result"][i]["late_fee"] == 0
+                        or response["result"][i]["late_fee"] == ""
+                    ):
                         # print("Is NULL!!")
                         late_fee = 0
                     else:
-                        late_fee = response['result'][i]['late_fee']
+                        late_fee = response["result"][i]["late_fee"]
                     # print("late_fee: ", late_fee, type(late_fee))
-                        
+
                     # Check if perDay_late_fee is NONE
                     # print(response['result'][i]['perDay_late_fee'])
-                    if response['result'][i]['perDay_late_fee'] is None or response['result'][i]['perDay_late_fee'] == 0:
+                    if (
+                        response["result"][i]["perDay_late_fee"] is None
+                        or response["result"][i]["perDay_late_fee"] == 0
+                    ):
                         # print("Is NULL!!")
                         perDay_late_fee = 0
                     else:
-                        perDay_late_fee = response['result'][i]['perDay_late_fee']
+                        perDay_late_fee = response["result"][i]["perDay_late_fee"]
                     # print("perDay_late_fee: ", perDay_late_fee, type(perDay_late_fee))
 
                     # Check if late_by is NONE
                     # print(response['result'][i]['late_by'])
-                    if response['result'][i]['late_by'] is None or response['result'][i]['late_by'] == 0:
+                    if (
+                        response["result"][i]["late_by"] is None
+                        or response["result"][i]["late_by"] == 0
+                    ):
                         # print("Is NULL!!")
                         late_by = 1
                     else:
-                        late_by = response['result'][i]['late_by']
+                        late_by = response["result"][i]["late_by"]
                     # print("late_by: ", late_by, type(late_by))
 
-                    
                     # Check if tenant responsiblity is NONE
                     # print("What is in the db: ", response['result'][i]['lt_responsibility'])
-                    if response['result'][i]['lt_responsibility'] is None:
+                    if response["result"][i]["lt_responsibility"] is None:
                         # print("Is NULL!!")
                         responsible_percent = 1.0
                     else:
-                        responsible_percent = response['result'][i]['lt_responsibility']
+                        responsible_percent = response["result"][i]["lt_responsibility"]
                     # print("What we set programmatically: ", responsible_percent, type(responsible_percent))
-                    charge = response['result'][i]['charge']
+                    charge = response["result"][i]["charge"]
                     # print("Charge: ", charge, type(charge))
-                    amt_due = float(charge)  * responsible_percent
+                    amt_due = float(charge) * responsible_percent
                     # print("Amount due: ", amt_due)
 
-
                     # Establish payer, initiator and receiver
-                    contract_uid = response['result'][i]['contract_uid']
-                    property = response['result'][i]['lease_property_id']
-                    tenant = response['result'][i]['lt_tenant_id']
-                    owner = response['result'][i]['property_owner_id']
-                    manager = response['result'][i]['contract_business_id']
-                    fee_name = response['result'][i]['fee_name']
-                    fee_type = response['result'][i]['fee_type']
+                    contract_uid = response["result"][i]["contract_uid"]
+                    property = response["result"][i]["lease_property_id"]
+                    tenant = response["result"][i]["lt_tenant_id"]
+                    owner = response["result"][i]["property_owner_id"]
+                    manager = response["result"][i]["contract_business_id"]
+                    fee_name = response["result"][i]["fee_name"]
+                    fee_type = response["result"][i]["fee_type"]
                     # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
-
 
                     # Common JSON Object Attributes
                     newRequest = {}
-                    
-                    newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_property_id'] = property
-                    newRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
-                    
-                    
-                    
-                    newRequest['pur_amount_due'] = amt_due
-                    newRequest['purchase_status'] = "UNPAID"
-                    newRequest['pur_status_value'] = "0"
-                    newRequest['pur_notes'] = fee_name
 
-                    newRequest['pur_due_by'] = due_by
-                    newRequest['pur_late_by'] = late_by
-                    newRequest['pur_late_fee'] = late_fee
-                    newRequest['pur_perDay_late_fee'] = perDay_late_fee
+                    newRequest["pur_timestamp"] = dt.strftime("%m-%d-%Y %H:%M")
+                    newRequest["pur_property_id"] = property
+                    newRequest["pur_leaseFees_id"] = response["result"][i][
+                        "leaseFees_uid"
+                    ]
 
-                    newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
+                    newRequest["pur_amount_due"] = amt_due
+                    newRequest["purchase_status"] = "UNPAID"
+                    newRequest["pur_status_value"] = "0"
+                    newRequest["pur_notes"] = fee_name
 
-                    with connect() as db: 
+                    newRequest["pur_due_by"] = due_by
+                    newRequest["pur_late_by"] = late_by
+                    newRequest["pur_late_fee"] = late_fee
+                    newRequest["pur_perDay_late_fee"] = perDay_late_fee
+
+                    newRequest["purchase_date"] = dt.strftime("%m-%d-%Y %H:%M")
+                    newRequest["pur_description"] = (
+                        f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
+                    )
+
+                    with connect() as db:
                         # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                        newRequestID = db.call("new_purchase_uid")["result"][0][
+                            "new_id"
+                        ]
                         grouping = newRequestID
-                        newRequest['purchase_uid'] = newRequestID
-                        newRequest['pur_group'] = grouping
+                        newRequest["purchase_uid"] = newRequestID
+                        newRequest["pur_group"] = grouping
                         # print(newRequestID)
-                        newRequest['pur_receiver'] = manager
-                        newRequest['pur_payer'] = tenant
-                        newRequest['pur_initiator'] = manager
-                        newRequest['pur_cf_type'] = "revenue"
-                        newRequest['purchase_type'] = fee_type
-                        newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
+                        newRequest["pur_receiver"] = manager
+                        newRequest["pur_payer"] = tenant
+                        newRequest["pur_initiator"] = manager
+                        newRequest["pur_cf_type"] = "revenue"
+                        newRequest["purchase_type"] = fee_type
+                        newRequest["pur_due_date"] = next_due_date.date().strftime(
+                            "%m-%d-%Y %H:%M"
+                        )
 
                         # print(newRequest)
                         # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
-
-
+                        db.insert("purchases", newRequest)
 
                         # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                        newRequest['purchase_uid'] = newRequestID
+                        newRequestID = db.call("new_purchase_uid")["result"][0][
+                            "new_id"
+                        ]
+                        newRequest["purchase_uid"] = newRequestID
                         # print(newRequestID)
-                        newRequest['pur_receiver'] = owner
-                        newRequest['pur_payer'] = manager
-                        newRequest['pur_initiator'] = manager
-                        newRequest['pur_cf_type'] = "expense"
-                        newRequest['purchase_type'] = f"{fee_type} Due Owner"
-                        newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
-                        newRequest['pur_group'] = grouping
-                
-                        # print(newRequest)
-                        print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
+                        newRequest["pur_receiver"] = owner
+                        newRequest["pur_payer"] = manager
+                        newRequest["pur_initiator"] = manager
+                        newRequest["pur_cf_type"] = "expense"
+                        newRequest["purchase_type"] = f"{fee_type} Due Owner"
+                        newRequest["pur_due_date"] = pm_due_date.date().strftime(
+                            "%m-%d-%Y %H:%M"
+                        )
+                        newRequest["pur_group"] = grouping
 
+                        # print(newRequest)
+                        print(
+                            "PM-Owner Purchase Parameters: ",
+                            i,
+                            newRequestID,
+                            property,
+                            contract_uid,
+                            tenant,
+                            owner,
+                            manager,
+                        )
+                        db.insert("purchases", newRequest)
 
                         # Owner-PM Payments for Management Fees
                         # For each entry posted to the purchases table, post any contract fees based on Rent
                         # Find contract fees based rent
-                        manager_fees = db.execute("""
+                        manager_fees = db.execute(
+                            """
                                         SELECT -- *
                                             contract_uid, contract_property_id, contract_business_id
                                             -- , contract_start_date, contract_end_date
@@ -2075,86 +2453,140 @@ class MonthlyRentPurchase_CLASS(Resource):
                                                 )
                                             ) AS jt
                                         -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
-                                        WHERE contract_uid = \'""" + contract_uid + """\' AND of_column LIKE '%rent%';
-                                    """)
+                                        WHERE contract_uid = \'"""
+                            + contract_uid
+                            + """\' AND of_column LIKE '%rent%';
+                                    """
+                        )
                         # print(manager_fees)
-                        
 
-                        for j in range(len(manager_fees['result'])):
+                        for j in range(len(manager_fees["result"])):
                             print("J :", j)
 
-                            # Check frequency 
-                            valid_frequencies = ['monthly', 'bi-weekly', 'weekly', 'semi-monthly', 'semi-quarterly', 'bi weekly']
+                            # Check frequency
+                            valid_frequencies = [
+                                "monthly",
+                                "bi-weekly",
+                                "weekly",
+                                "semi-monthly",
+                                "semi-quarterly",
+                                "bi weekly",
+                            ]
 
-                            if manager_fees['result'][j]['frequency_column'].lower() in valid_frequencies:
+                            if (
+                                manager_fees["result"][j]["frequency_column"].lower()
+                                in valid_frequencies
+                            ):
 
-
-                            # Check if fees is monthly 
-                            # if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
+                                # Check if fees is monthly
+                                # if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
                                 # Check if charge is a % or Fixed $ Amount
-                                if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
-                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(amt_due) / 100
+                                if (
+                                    manager_fees["result"][j]["fee_type_column"] == "%"
+                                    or manager_fees["result"][j]["fee_type_column"]
+                                    == "PERCENT"
+                                ):
+                                    charge_amt = (
+                                        Decimal(
+                                            manager_fees["result"][j]["charge_column"]
+                                        )
+                                        * Decimal(amt_due)
+                                        / 100
+                                    )
                                 else:
-                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
+                                    charge_amt = Decimal(
+                                        manager_fees["result"][j]["charge_column"]
+                                    )
                                 # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
 
                                 # Create JSON Object for Fee Purchase
                                 newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
+                                newPMRequestID = db.call("new_purchase_uid")["result"][
+                                    0
+                                ]["new_id"]
                                 # print(newPMRequestID)
-                                newPMRequest['purchase_uid'] = newPMRequestID
-                                newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                                newPMRequest['pur_property_id'] = property
-                                newPMRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
-                                newPMRequest['purchase_type'] = "Management"
-                                newPMRequest['pur_amount_due'] = charge_amt
-                                newPMRequest['purchase_status'] = "UNPAID"
-                                newPMRequest['pur_status_value'] = "0"
-                                newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                                newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for {next_due_date.strftime('%B')} {next_due_date.year} "
-                                # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
+                                newPMRequest["purchase_uid"] = newPMRequestID
+                                newPMRequest["pur_timestamp"] = dt.strftime(
+                                    "%m-%d-%Y %H:%M"
+                                )
+                                newPMRequest["pur_property_id"] = property
+                                newPMRequest["pur_leaseFees_id"] = response["result"][
+                                    i
+                                ]["leaseFees_uid"]
+                                newPMRequest["purchase_type"] = "Management"
+                                newPMRequest["pur_amount_due"] = charge_amt
+                                newPMRequest["purchase_status"] = "UNPAID"
+                                newPMRequest["pur_status_value"] = "0"
+                                newPMRequest["pur_notes"] = manager_fees["result"][j][
+                                    "fee_name_column"
+                                ]
+                                newPMRequest["pur_description"] = (
+                                    f"{manager_fees['result'][j]['fee_name_column']} for {next_due_date.strftime('%B')} {next_due_date.year} "
+                                )
+                                # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID
                                 # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
-                                newPMRequest['pur_receiver'] = manager
-                                newPMRequest['pur_payer'] = owner
-                                newPMRequest['pur_initiator'] = manager
-                                newPMRequest['pur_cf_type'] = "revenue"
-                                newPMRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                                newPMRequest['pur_group'] = grouping
+                                newPMRequest["pur_receiver"] = manager
+                                newPMRequest["pur_payer"] = owner
+                                newPMRequest["pur_initiator"] = manager
+                                newPMRequest["pur_cf_type"] = "revenue"
+                                newPMRequest["purchase_date"] = dt.strftime(
+                                    "%m-%d-%Y %H:%M"
+                                )
+                                newPMRequest["pur_group"] = grouping
 
                                 # *********
-                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
+                                newPMRequest["pur_due_date"] = (
+                                    pm_due_date.date().strftime("%m-%d-%Y %H:%M")
+                                )
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
                                 # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
-                                
+
                                 # print("PM Fees:", newPMRequest)
                                 # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('purchases', newPMRequest)
-                                print("Number of CRON Purchases: ", numCronPurchases, dt)
+                                db.insert("purchases", newPMRequest)
+                                print(
+                                    "Number of CRON Purchases: ", numCronPurchases, dt
+                                )
 
                                 # For each fee, post to purchases table
 
-                # print("completed line")     
+                # print("completed line")
 
             print("completed for loop")
             # response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' , 'rows affected': f'{numCronPurchases}','code': 200}
-            response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,'code': 200}
+            response["cron_job"] = {
+                "message": f"Successfully completed CRON Job for {dt}",
+                "code": 200,
+            }
             # print(response)
-            
+
             try:
                 # print(CronPostings)
                 recipient = "pmarathay@gmail.com"
                 subject = f"MySpace Monthly Rent CRON JOB for {dt} Completed "
-                body = f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n" + "\n".join(CronPostings)
+                body = (
+                    f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n"
+                    + "\n".join(CronPostings)
+                )
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 200}
+                response["email"] = {
+                    "message": f"CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
             except:
-                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent' , 'code': 500}
-                
+                response["email fail"] = {
+                    "message": f"CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
+
         except:
-            response["cron fail"] = {'message': f'CRON Job failed for {dt}' ,'code': 500}
+            response["cron fail"] = {
+                "message": f"CRON Job failed for {dt}",
+                "code": 500,
+            }
 
             try:
                 recipient = "pmarathay@gmail.com"
@@ -2162,214 +2594,269 @@ class MonthlyRentPurchase_CLASS(Resource):
                 body = "Monthly Rent CRON JOB Failed"
                 sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 201}
+                response["email"] = {
+                    "message": f"CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
             except:
-                response["email fail"] = {'message': f'CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
+
 
 def MonthlyRentPurchase_CRON(Resource):
-        print("In Rent CRON JOB")
+    print("In Rent CRON JOB")
 
-        # Establish current month and year
-        dt = datetime.today()
-        print("dt is: ", dt, type(dt))
+    # Establish current month and year
+    dt = datetime.today()
+    print("dt is: ", dt, type(dt))
 
-        numCronPurchases = 0
-        CronPostings = ["Fee Num  Lease Fee   Property    Due Date       Available to Pay Date   Today   Rent Due   Purchase ID"]        
-        
-        # Determine ACTIVE LEASES and LEASE FEES
-        response = NextDueDate()
-        # print("\nACTIVE Leases from NextDueDate: ", response)
-        print(range(len(response['result'])))
+    numCronPurchases = 0
+    CronPostings = [
+        "Fee Num  Lease Fee   Property    Due Date       Available to Pay Date   Today   Rent Due   Purchase ID"
+    ]
 
-        try:
+    # Determine ACTIVE LEASES and LEASE FEES
+    response = NextDueDate()
+    # print("\nACTIVE Leases from NextDueDate: ", response)
+    print(range(len(response["result"])))
 
-            headers = ["Fee Num", "Lease Fee", "Property", "Due Date", "Available to Pay Date", "Today", "Rent Due", "Purchase ID"]
-            print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
+    try:
 
-            # print(len(response['result']), range(len(response['result'])))
+        headers = [
+            "Fee Num",
+            "Lease Fee",
+            "Property",
+            "Due Date",
+            "Available to Pay Date",
+            "Today",
+            "Rent Due",
+            "Purchase ID",
+        ]
+        print("{:<8} {:<15} {:<15} {:<25} {:<25} {:<25} {:<10} {:<10}".format(*headers))
 
-            for i in range(len(response['result'])):
-                print("\n Next i: ", response['result'][i]['leaseFees_uid'])
-                # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
+        # print(len(response['result']), range(len(response['result'])))
 
-                # Check if leaseFee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
-                if response['result'][i]['leaseFees_uid'] is None or response['result'][i]['contract_uid'] is None:
-                    continue
+        for i in range(len(response["result"])):
+            print("\n Next i: ", response["result"][i]["leaseFees_uid"])
+            # print("\n",i, response['result'][i]['leaseFees_uid'], response['result'][i]['fees_lease_id'], response['result'][i]['lease_property_id'], response['result'][i]['contract_uid'], response['result'][i]['contract_business_id'], response['result'][i]['purchase_uid'], type(response['result'][i]['purchase_uid']))
 
-                # Check if available_topay is NONE
-                if response['result'][i]['available_topay'] is None:
-                    # print("available_topay Is NULL!!")
-                    payable = 10
+            # Check if leaseFee_uid is NONE indicating no fees are associated with the lease and likely an error in the leaseFees table
+            if (
+                response["result"][i]["leaseFees_uid"] is None
+                or response["result"][i]["contract_uid"] is None
+            ):
+                continue
+
+            # Check if available_topay is NONE
+            if response["result"][i]["available_topay"] is None:
+                # print("available_topay Is NULL!!")
+                payable = 10
+            else:
+                payable = response["result"][i]["available_topay"]
+            # print("available_topay: ", payable)
+
+            # Check if due_by is NONE
+            # print(response['result'][i]['due_by'])
+            if (
+                response["result"][i]["due_by"] is None
+                or response["result"][i]["due_by"] == 0
+            ):
+                # print("due_by Is NULL!!")
+                due_by = 1
+            else:
+                due_by = response["result"][i]["due_by"]
+            # print("due_by: ", due_by, type(due_by))  # Day rent is due ie 2
+            # print("dt.day: ", dt.day, type(dt.day))  # Todays Day ie 8/3/2024 would return 3
+
+            # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
+            # print("Date check: ", response['result'][i]['next_due_date'], type(response['result'][i]['next_due_date']))
+            next_due_date = datetime.strptime(
+                response["result"][i]["next_due_date"], "%m-%d-%Y %H:%M"
+            )
+            # print("Rent due: ", next_due_date, type(next_due_date))
+            postdate = next_due_date - timedelta(days=payable)
+            # print("Post Date: ", postdate, type(postdate))
+            # pm_due_date = next_due_date + relativedelta(days=15)
+            last_day_of_month = calendar.monthrange(
+                next_due_date.year, next_due_date.month
+            )[1]
+            # Create a new datetime object for the last day of the month
+            pm_due_date = next_due_date.replace(day=last_day_of_month)
+            # print("PM Due Date: ", pm_due_date, type(pm_due_date))
+
+            # print("Available to Post x days ahead: ", payable)
+
+            # print("Already posted? ", response['result'][i]['purchase_uid'])
+
+            # Lease Fee Number, Lease Fee, Property, Due Date, Available to Pay Date, Today, Rent Due, Purchase ID
+            # UNCOMMENT THIS LINE FIRST TO SEE WHAT IS PROCESSED FOR EACH ROW RETURNED FROM THE QUERY
+            # print(i, "     ", response['result'][i]['leaseFees_uid'], "   ", response['result'][i]['lease_property_id'], "   ", next_due_date, "   ", postdate, "   ", dt, "   ", dt >= postdate, "   ", response['result'][i]['purchase_uid'] )
+
+            # IF YOU MEET THESE CRITERIA THEN YOU ARE POSTING TO Purchases
+            if (
+                dt >= postdate
+                and dt <= next_due_date
+                and response["result"][i]["purchase_uid"] in {None, "", "null"}
+            ):
+                print("Rent posted.  Please Pay")
+                numCronPurchases = numCronPurchases + 1
+                CronPostings.append(
+                    str(i)
+                    + "  "
+                    + str(response["result"][i]["leaseFees_uid"])
+                    + "  "
+                    + str(response["result"][i]["lease_property_id"])
+                    + "  "
+                    + str(next_due_date)
+                    + "  "
+                    + str(postdate)
+                    + "  "
+                    + str(dt)
+                    + "  "
+                    + str(dt >= postdate)
+                    + "  "
+                    + str(response["result"][i]["purchase_uid"])
+                )
+
+                # Perform Remainder Checks to ensure no blank fields
+                # Check if late_fee is NONE
+                # print(response['result'][i]['fee_name'], response['result'][i]['late_fee'], type(response['result'][i]['late_fee']))
+                if (
+                    response["result"][i]["late_fee"] is None
+                    or response["result"][i]["late_fee"] == 0
+                    or response["result"][i]["late_fee"] == ""
+                ):
+                    # print("Is NULL!!")
+                    late_fee = 0
                 else:
-                    payable = response['result'][i]['available_topay']
-                # print("available_topay: ", payable)
+                    late_fee = response["result"][i]["late_fee"]
+                # print("late_fee: ", late_fee, type(late_fee))
 
-
-                # Check if due_by is NONE
-                # print(response['result'][i]['due_by'])
-                if response['result'][i]['due_by'] is None or response['result'][i]['due_by'] == 0:
-                    # print("due_by Is NULL!!")
-                    due_by = 1
+                # Check if perDay_late_fee is NONE
+                # print(response['result'][i]['perDay_late_fee'])
+                if (
+                    response["result"][i]["perDay_late_fee"] is None
+                    or response["result"][i]["perDay_late_fee"] == 0
+                ):
+                    # print("Is NULL!!")
+                    perDay_late_fee = 0
                 else:
-                    due_by = response['result'][i]['due_by']
-                # print("due_by: ", due_by, type(due_by))  # Day rent is due ie 2
-                # print("dt.day: ", dt.day, type(dt.day))  # Todays Day ie 8/3/2024 would return 3
+                    perDay_late_fee = response["result"][i]["perDay_late_fee"]
+                # print("perDay_late_fee: ", perDay_late_fee, type(perDay_late_fee))
 
+                # Check if late_by is NONE
+                # print(response['result'][i]['late_by'])
+                if (
+                    response["result"][i]["late_by"] is None
+                    or response["result"][i]["late_by"] == 0
+                ):
+                    # print("Is NULL!!")
+                    late_by = 1
+                else:
+                    late_by = response["result"][i]["late_by"]
+                # print("late_by: ", late_by, type(late_by))
 
-                # CHECK IF RENT IS AVAILABLE TO PAY  ==> IF IT IS, ADD PURCHASES FOR TENANT TO PM AND PM TO OWNER
-                # print("Date check: ", response['result'][i]['next_due_date'], type(response['result'][i]['next_due_date']))
-                next_due_date = datetime.strptime(response['result'][i]['next_due_date'],'%m-%d-%Y %H:%M')
-                # print("Rent due: ", next_due_date, type(next_due_date))
-                postdate = next_due_date - timedelta(days=payable)
-                # print("Post Date: ", postdate, type(postdate))
-                # pm_due_date = next_due_date + relativedelta(days=15)
-                last_day_of_month = calendar.monthrange(next_due_date.year, next_due_date.month)[1]
-                # Create a new datetime object for the last day of the month
-                pm_due_date = next_due_date.replace(day=last_day_of_month)
-                # print("PM Due Date: ", pm_due_date, type(pm_due_date))
-                
-                # print("Available to Post x days ahead: ", payable)
-                
-                # print("Already posted? ", response['result'][i]['purchase_uid'])
+                # Check if tenant responsiblity is NONE
+                # print("What is in the db: ", response['result'][i]['lt_responsibility'])
+                if response["result"][i]["lt_responsibility"] is None:
+                    # print("Is NULL!!")
+                    responsible_percent = 1.0
+                else:
+                    responsible_percent = response["result"][i]["lt_responsibility"]
+                # print("What we set programmatically: ", responsible_percent, type(responsible_percent))
+                charge = response["result"][i]["charge"]
+                # print("Charge: ", charge, type(charge))
+                amt_due = float(charge) * responsible_percent
+                # print("Amount due: ", amt_due)
 
-                # Lease Fee Number, Lease Fee, Property, Due Date, Available to Pay Date, Today, Rent Due, Purchase ID
-                # UNCOMMENT THIS LINE FIRST TO SEE WHAT IS PROCESSED FOR EACH ROW RETURNED FROM THE QUERY
-                # print(i, "     ", response['result'][i]['leaseFees_uid'], "   ", response['result'][i]['lease_property_id'], "   ", next_due_date, "   ", postdate, "   ", dt, "   ", dt >= postdate, "   ", response['result'][i]['purchase_uid'] )
-                
+                # Establish payer, initiator and receiver
+                contract_uid = response["result"][i]["contract_uid"]
+                property = response["result"][i]["lease_property_id"]
+                tenant = response["result"][i]["lt_tenant_id"]
+                owner = response["result"][i]["property_owner_id"]
+                manager = response["result"][i]["contract_business_id"]
+                fee_name = response["result"][i]["fee_name"]
+                fee_type = response["result"][i]["fee_type"]
+                # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
 
-                # IF YOU MEET THESE CRITERIA THEN YOU ARE POSTING TO Purchases
-                if dt >= postdate and dt <= next_due_date and response['result'][i]['purchase_uid'] in {None, '', 'null'}:
-                    print("Rent posted.  Please Pay")
-                    numCronPurchases = numCronPurchases + 1
-                    CronPostings.append(
-                        str(i) + '  ' + 
-                        str(response['result'][i]['leaseFees_uid']) + '  ' + 
-                        str(response['result'][i]['lease_property_id']) + '  ' + 
-                        str(next_due_date) + '  ' + 
-                        str(postdate) + '  ' + 
-                        str(dt) + '  ' + 
-                        str(dt >= postdate) + '  ' + 
-                        str(response['result'][i]['purchase_uid'])
+                # Common JSON Object Attributes
+                newRequest = {}
+
+                newRequest["pur_timestamp"] = dt.strftime("%m-%d-%Y %H:%M")
+                newRequest["pur_property_id"] = property
+                newRequest["pur_leaseFees_id"] = response["result"][i]["leaseFees_uid"]
+
+                newRequest["pur_cf_type"] = "revenue"
+                newRequest["pur_amount_due"] = amt_due
+                newRequest["purchase_status"] = "UNPAID"
+                newRequest["pur_status_value"] = "0"
+                newRequest["pur_notes"] = fee_name
+
+                newRequest["pur_due_by"] = due_by
+                newRequest["pur_late_by"] = late_by
+                newRequest["pur_late_fee"] = late_fee
+                newRequest["pur_perDay_late_fee"] = perDay_late_fee
+
+                newRequest["purchase_date"] = dt.strftime("%m-%d-%Y %H:%M")
+                newRequest["pur_description"] = (
+                    f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
+                )
+
+                with connect() as db:
+                    # Create JSON Object for Rent Purchase for Tenant-PM Payment
+                    newRequestID = db.call("new_purchase_uid")["result"][0]["new_id"]
+                    grouping = newRequestID
+                    newRequest["purchase_uid"] = newRequestID
+                    newRequest["pur_group"] = grouping
+                    # print(newRequestID)
+                    newRequest["pur_receiver"] = manager
+                    newRequest["pur_payer"] = tenant
+                    newRequest["pur_initiator"] = manager
+                    newRequest["purchase_type"] = fee_type
+                    newRequest["pur_due_date"] = next_due_date.date().strftime(
+                        "%m-%d-%Y %H:%M"
                     )
 
-                    # Perform Remainder Checks to ensure no blank fields
-                    # Check if late_fee is NONE
-                    # print(response['result'][i]['fee_name'], response['result'][i]['late_fee'], type(response['result'][i]['late_fee']))
-                    if response['result'][i]['late_fee'] is None or response['result'][i]['late_fee'] == 0 or response['result'][i]['late_fee'] == "":
-                        # print("Is NULL!!")
-                        late_fee = 0
-                    else:
-                        late_fee = response['result'][i]['late_fee']
-                    # print("late_fee: ", late_fee, type(late_fee))
-                        
-                    # Check if perDay_late_fee is NONE
-                    # print(response['result'][i]['perDay_late_fee'])
-                    if response['result'][i]['perDay_late_fee'] is None or response['result'][i]['perDay_late_fee'] == 0:
-                        # print("Is NULL!!")
-                        perDay_late_fee = 0
-                    else:
-                        perDay_late_fee = response['result'][i]['perDay_late_fee']
-                    # print("perDay_late_fee: ", perDay_late_fee, type(perDay_late_fee))
+                    # print(newRequest)
+                    # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
+                    db.insert("purchases", newRequest)
 
-                    # Check if late_by is NONE
-                    # print(response['result'][i]['late_by'])
-                    if response['result'][i]['late_by'] is None or response['result'][i]['late_by'] == 0:
-                        # print("Is NULL!!")
-                        late_by = 1
-                    else:
-                        late_by = response['result'][i]['late_by']
-                    # print("late_by: ", late_by, type(late_by))
+                    # Create JSON Object for Rent Purchase for PM-Owner Payment
+                    newRequestID = db.call("new_purchase_uid")["result"][0]["new_id"]
+                    newRequest["purchase_uid"] = newRequestID
+                    # print(newRequestID)
+                    newRequest["pur_receiver"] = owner
+                    newRequest["pur_payer"] = manager
+                    newRequest["pur_initiator"] = manager
+                    newRequest["purchase_type"] = f"{fee_type} Due Owner"
+                    newRequest["pur_due_date"] = pm_due_date.date().strftime(
+                        "%m-%d-%Y %H:%M"
+                    )
+                    newRequest["pur_group"] = grouping
 
-                    
-                    # Check if tenant responsiblity is NONE
-                    # print("What is in the db: ", response['result'][i]['lt_responsibility'])
-                    if response['result'][i]['lt_responsibility'] is None:
-                        # print("Is NULL!!")
-                        responsible_percent = 1.0
-                    else:
-                        responsible_percent = response['result'][i]['lt_responsibility']
-                    # print("What we set programmatically: ", responsible_percent, type(responsible_percent))
-                    charge = response['result'][i]['charge']
-                    # print("Charge: ", charge, type(charge))
-                    amt_due = float(charge)  * responsible_percent
-                    # print("Amount due: ", amt_due)
+                    # print(newRequest)
+                    print(
+                        "PM-Owner Purchase Parameters: ",
+                        i,
+                        newRequestID,
+                        property,
+                        contract_uid,
+                        tenant,
+                        owner,
+                        manager,
+                    )
+                    db.insert("purchases", newRequest)
 
-
-                    # Establish payer, initiator and receiver
-                    contract_uid = response['result'][i]['contract_uid']
-                    property = response['result'][i]['lease_property_id']
-                    tenant = response['result'][i]['lt_tenant_id']
-                    owner = response['result'][i]['property_owner_id']
-                    manager = response['result'][i]['contract_business_id']
-                    fee_name = response['result'][i]['fee_name']
-                    fee_type = response['result'][i]['fee_type']
-                    # print("Purchase Parameters: ", i, contract_uid, tenant, owner, manager)
-
-
-                    # Common JSON Object Attributes
-                    newRequest = {}
-                    
-                    newRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_property_id'] = property
-                    newRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
-                    
-                    
-                    newRequest['pur_cf_type'] = "revenue"
-                    newRequest['pur_amount_due'] = amt_due
-                    newRequest['purchase_status'] = "UNPAID"
-                    newRequest['pur_status_value'] = "0"
-                    newRequest['pur_notes'] = fee_name
-
-                    newRequest['pur_due_by'] = due_by
-                    newRequest['pur_late_by'] = late_by
-                    newRequest['pur_late_fee'] = late_fee
-                    newRequest['pur_perDay_late_fee'] = perDay_late_fee
-
-                    newRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                    newRequest['pur_description'] = f"{fee_name} for {next_due_date.strftime('%B')} {next_due_date.year}"
-
-                    with connect() as db: 
-                        # Create JSON Object for Rent Purchase for Tenant-PM Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                        grouping = newRequestID
-                        newRequest['purchase_uid'] = newRequestID
-                        newRequest['pur_group'] = grouping
-                        # print(newRequestID)
-                        newRequest['pur_receiver'] = manager
-                        newRequest['pur_payer'] = tenant
-                        newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = fee_type
-                        newRequest['pur_due_date'] = next_due_date.date().strftime('%m-%d-%Y %H:%M')
-
-                        # print(newRequest)
-                        # print("Tenant-PM Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
-
-
-
-                        # Create JSON Object for Rent Purchase for PM-Owner Payment
-                        newRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                        newRequest['purchase_uid'] = newRequestID
-                        # print(newRequestID)
-                        newRequest['pur_receiver'] = owner
-                        newRequest['pur_payer'] = manager
-                        newRequest['pur_initiator'] = manager
-                        newRequest['purchase_type'] = f"{fee_type} Due Owner"
-                        newRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
-                        newRequest['pur_group'] = grouping
-                
-                        # print(newRequest)
-                        print("PM-Owner Purchase Parameters: ", i, newRequestID, property, contract_uid, tenant, owner, manager)
-                        db.insert('purchases', newRequest)
-
-
-                        # Owner-PM Payments for Management Fees
-                        # For each entry posted to the purchases table, post any contract fees based on Rent
-                        # Find contract fees based rent
-                        manager_fees = db.execute("""
+                    # Owner-PM Payments for Management Fees
+                    # For each entry posted to the purchases table, post any contract fees based on Rent
+                    # Find contract fees based rent
+                    manager_fees = db.execute(
+                        """
                                         SELECT -- *
                                             contract_uid, contract_property_id, contract_business_id
                                             -- , contract_start_date, contract_end_date
@@ -2389,99 +2876,152 @@ def MonthlyRentPurchase_CRON(Resource):
                                                 )
                                             ) AS jt
                                         -- WHERE contract_uid = '010-000003' AND of_column LIKE '%rent%';
-                                        WHERE contract_uid = \'""" + contract_uid + """\' AND of_column LIKE '%rent%';
-                                    """)
-                        # print(manager_fees)
-                        
+                                        WHERE contract_uid = \'"""
+                        + contract_uid
+                        + """\' AND of_column LIKE '%rent%';
+                                    """
+                    )
+                    # print(manager_fees)
 
-                        for j in range(len(manager_fees['result'])):
-                            print("J :", j)
+                    for j in range(len(manager_fees["result"])):
+                        print("J :", j)
 
-                            # Check frequency 
-                            valid_frequencies = ['monthly', 'bi-weekly', 'weekly', 'semi-monthly', 'semi-quarterly', 'bi weekly']
+                        # Check frequency
+                        valid_frequencies = [
+                            "monthly",
+                            "bi-weekly",
+                            "weekly",
+                            "semi-monthly",
+                            "semi-quarterly",
+                            "bi weekly",
+                        ]
 
-                            if manager_fees['result'][j]['frequency_column'].lower() in valid_frequencies:
+                        if (
+                            manager_fees["result"][j]["frequency_column"].lower()
+                            in valid_frequencies
+                        ):
 
-
-                            # Check if fees is monthly 
+                            # Check if fees is monthly
                             # if manager_fees['result'][j]['frequency_column'] == 'Monthly' or manager_fees['result'][j]['frequency_column'] == 'monthly':
 
-                                # Check if charge is a % or Fixed $ Amount
-                                if manager_fees['result'][j]['fee_type_column'] == '%' or manager_fees['result'][j]['fee_type_column'] == 'PERCENT':
-                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column']) * Decimal(amt_due) / 100
-                                else:
-                                    charge_amt = Decimal(manager_fees['result'][j]['charge_column'])
-                                # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
+                            # Check if charge is a % or Fixed $ Amount
+                            if (
+                                manager_fees["result"][j]["fee_type_column"] == "%"
+                                or manager_fees["result"][j]["fee_type_column"]
+                                == "PERCENT"
+                            ):
+                                charge_amt = (
+                                    Decimal(manager_fees["result"][j]["charge_column"])
+                                    * Decimal(amt_due)
+                                    / 100
+                                )
+                            else:
+                                charge_amt = Decimal(
+                                    manager_fees["result"][j]["charge_column"]
+                                )
+                            # print("Charge Amount: ", charge_amt, property, contract_uid, manager_fees['result'][j]['charge_column'], response['result'][i]['charge'] )
 
-                                # Create JSON Object for Fee Purchase
-                                newPMRequest = {}
-                                newPMRequestID = db.call('new_purchase_uid')['result'][0]['new_id']
-                                # print(newPMRequestID)
-                                newPMRequest['purchase_uid'] = newPMRequestID
-                                newPMRequest['pur_timestamp'] = dt.strftime("%m-%d-%Y %H:%M")
-                                newPMRequest['pur_property_id'] = property
-                                newPMRequest['pur_leaseFees_id'] = response['result'][i]['leaseFees_uid']
-                                newPMRequest['purchase_type'] = "Management"
-                                newPMRequest['pur_cf_type'] = "expense"
-                                newPMRequest['pur_amount_due'] = charge_amt
-                                newPMRequest['purchase_status'] = "UNPAID"
-                                newPMRequest['pur_status_value'] = "0"
-                                newPMRequest['pur_notes'] = manager_fees['result'][j]['fee_name_column']
-                                newPMRequest['pur_description'] =  f"{manager_fees['result'][j]['fee_name_column']} for {next_due_date.strftime('%B')} {next_due_date.year} "
-                                # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID  
-                                # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
-                                newPMRequest['pur_receiver'] = manager
-                                newPMRequest['pur_payer'] = owner
-                                newPMRequest['pur_initiator'] = manager
-                                newPMRequest['purchase_date'] = dt.strftime("%m-%d-%Y %H:%M")
-                                newPMRequest['pur_group'] = grouping
+                            # Create JSON Object for Fee Purchase
+                            newPMRequest = {}
+                            newPMRequestID = db.call("new_purchase_uid")["result"][0][
+                                "new_id"
+                            ]
+                            # print(newPMRequestID)
+                            newPMRequest["purchase_uid"] = newPMRequestID
+                            newPMRequest["pur_timestamp"] = dt.strftime(
+                                "%m-%d-%Y %H:%M"
+                            )
+                            newPMRequest["pur_property_id"] = property
+                            newPMRequest["pur_leaseFees_id"] = response["result"][i][
+                                "leaseFees_uid"
+                            ]
+                            newPMRequest["purchase_type"] = "Management"
+                            newPMRequest["pur_cf_type"] = "expense"
+                            newPMRequest["pur_amount_due"] = charge_amt
+                            newPMRequest["purchase_status"] = "UNPAID"
+                            newPMRequest["pur_status_value"] = "0"
+                            newPMRequest["pur_notes"] = manager_fees["result"][j][
+                                "fee_name_column"
+                            ]
+                            newPMRequest["pur_description"] = (
+                                f"{manager_fees['result'][j]['fee_name_column']} for {next_due_date.strftime('%B')} {next_due_date.year} "
+                            )
+                            # newPMRequest['pur_description'] =  newRequestID # Original Rent Purchase ID
+                            # newPMRequest['pur_description'] = f"Fees for MARCH {nextMonth.year} CRON"
+                            newPMRequest["pur_receiver"] = manager
+                            newPMRequest["pur_payer"] = owner
+                            newPMRequest["pur_initiator"] = manager
+                            newPMRequest["purchase_date"] = dt.strftime(
+                                "%m-%d-%Y %H:%M"
+                            )
+                            newPMRequest["pur_group"] = grouping
 
-                                # *********
-                                newPMRequest['pur_due_date'] = pm_due_date.date().strftime('%m-%d-%Y %H:%M')
-                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
-                                # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
-                                
-                                # print("PM Fees:", newPMRequest)
-                                # print("Number of CRON Purchases: ", numCronPurchases, dt)
-                                db.insert('purchases', newPMRequest)
-                                print("Number of CRON Purchases: ", numCronPurchases, dt)
+                            # *********
+                            newPMRequest["pur_due_date"] = pm_due_date.date().strftime(
+                                "%m-%d-%Y %H:%M"
+                            )
+                            # newPMRequest['pur_due_date'] = datetime(nextMonth.year, nextMonth.month, due_by).date().strftime("%m-%d-%Y")
+                            # newPMRequest['pur_due_date'] = datetime(nextMonth.year, 1, due_by).date().strftime("%m-%d-%Y")
 
-                                # For each fee, post to purchases table
+                            # print("PM Fees:", newPMRequest)
+                            # print("Number of CRON Purchases: ", numCronPurchases, dt)
+                            db.insert("purchases", newPMRequest)
+                            print("Number of CRON Purchases: ", numCronPurchases, dt)
 
-                # print("completed line")     
+                            # For each fee, post to purchases table
 
-            print("completed for loop")
-            # response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' , 'rows affected': f'{numCronPurchases}','code': 200}
-            response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' ,'code': 200}
-            # print(response)
-            
-            try:
-                # print(CronPostings)
-                recipient = "pmarathay@gmail.com"
-                subject = f"MySpace Monthly Rent CRON JOB for {dt} Completed "
-                body = f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n" + "\n".join(CronPostings)
-                sendEmail(recipient, subject, body)
+            # print("completed line")
 
-                response["email"] = {'message': f'CRON Job Email for {dt} sent!' , 'code': 200}
+        print("completed for loop")
+        # response["cron_job"] = {'message': f'Successfully completed CRON Job for {dt}' , 'rows affected': f'{numCronPurchases}','code': 200}
+        response["cron_job"] = {
+            "message": f"Successfully completed CRON Job for {dt}",
+            "code": 200,
+        }
+        # print(response)
 
-            except:
-                response["email fail"] = {'message': f'CRON Job Email for {dt} could not be sent' , 'code': 500}
-                
+        try:
+            # print(CronPostings)
+            recipient = "pmarathay@gmail.com"
+            subject = f"MySpace Monthly Rent CRON JOB for {dt} Completed "
+            body = (
+                f"Monthly Rent CRON JOB has been executed {numCronPurchases} times.\n\n"
+                + "\n".join(CronPostings)
+            )
+            sendEmail(recipient, subject, body)
+
+            response["email"] = {
+                "message": f"CRON Job Email for {dt} sent!",
+                "code": 200,
+            }
+
         except:
-            response["cron fail"] = {'message': f'CRON Job failed for {dt}' ,'code': 500}
+            response["email fail"] = {
+                "message": f"CRON Job Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-            try:
-                recipient = "pmarathay@gmail.com"
-                subject = "MySpace Monthly Rent CRON JOB Failed!"
-                body = "Monthly Rent CRON JOB Failed"
-                sendEmail(recipient, subject, body)
+    except:
+        response["cron fail"] = {"message": f"CRON Job failed for {dt}", "code": 500}
 
-                response["email"] = {'message': f'CRON Job Fail Email for {dt} sent!' , 'code': 201}
+        try:
+            recipient = "pmarathay@gmail.com"
+            subject = "MySpace Monthly Rent CRON JOB Failed!"
+            body = "Monthly Rent CRON JOB Failed"
+            sendEmail(recipient, subject, body)
 
-            except:
-                response["email fail"] = {'message': f'CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
 
-        return response
+        except:
+            response["email fail"] = {
+                "message": f"CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
+
+    return response
 
 
 class EndPoint_CLASS(Resource):
@@ -2493,79 +3033,106 @@ class EndPoint_CLASS(Resource):
             response = endPointTest_CLASS.get()
 
             if "cron fail" in response.keys():
-                raise Exception("Error in cronjob") 
+                raise Exception("Error in cronjob")
 
             try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
+                recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
                 subject = f"MySpace Test API CRON JOB for {dt} Completed "
-                body = f"MySpace Test API CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+                body = (
+                    f"MySpace Test API CRON JOB has been executed. \n\n{response}\n\n"
+                    + "\n"
+                )
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 200}
+                response["email"] = {
+                    "message": f"MySpace Test API CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Test API CRON Job Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Test API CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         except:
             try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
+                recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
                 subject = "MySpace Test API CRON JOB Failed!"
                 body = f"MySpace Test API CRON JOB Failed. \n\n{response}\n\n"
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 201}
+                response["email"] = {
+                    "message": f"MySpace Test API CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Test API CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
+
 
 def EndPoint_CRON(Resource):
-        print("\nIn Test Class GET \n\n\n")
-        response = {}
-        dt = datetime.today()
+    print("\nIn Test Class GET \n\n\n")
+    response = {}
+    dt = datetime.today()
+    try:
+        response = endPointTest_CLASS.get()
+
+        if "cron fail" in response.keys():
+            raise Exception("Error in cronjob")
+
         try:
-            response = endPointTest_CLASS.get()
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = f"MySpace Test API CRON JOB for {dt} Completed "
+            body = (
+                f"MySpace Test API CRON JOB has been executed. \n\n{response}\n\n"
+                + "\n"
+            )
 
-            if "cron fail" in response.keys():
-                raise Exception("Error in cronjob") 
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = f"MySpace Test API CRON JOB for {dt} Completed "
-                body = f"MySpace Test API CRON JOB has been executed. \n\n{response}\n\n" + "\n"
-
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
-
-                response["email"] = {'message': f'MySpace Test API CRON Job Email for {dt} sent!' , 'code': 200}
-
-            except:
-                response["email fail"] = {'message': f'MySpace Test API CRON Job Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Test API CRON Job Email for {dt} sent!",
+                "code": 200,
+            }
 
         except:
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = "MySpace Test API CRON JOB Failed!"
-                body = f"MySpace Test API CRON JOB Failed. \n\n{response}\n\n"
+            response["email fail"] = {
+                "message": f"MySpace Test API CRON Job Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
+    except:
+        try:
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = "MySpace Test API CRON JOB Failed!"
+            body = f"MySpace Test API CRON JOB Failed. \n\n{response}\n\n"
 
-                response["email"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} sent!' , 'code': 201}
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-            except:
-                response["email fail"] = {'message': f'MySpace Test API CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Test API CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
 
-        return response
+        except:
+            response["email fail"] = {
+                "message": f"MySpace Test API CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
+
+    return response
 
 
 class Check_APIs_Remaining_To_Test_CLASS(Resource):
@@ -2578,78 +3145,107 @@ class Check_APIs_Remaining_To_Test_CLASS(Resource):
 
             response = extract_api_obj.get()
 
-
             try:
-                recipients = [#"pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
-                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+                recipients = ["saumyashah4751@gmail.com"]  # "pmarathay@gmail.com",
+                subject = (
+                    f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
+                )
+                body = (
+                    f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n"
+                    + "\n"
+                )
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!' , 'code': 200}
+                response["email"] = {
+                    "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         except:
             try:
-                recipients = [#"pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
+                recipients = ["saumyashah4751@gmail.com"]  # "pmarathay@gmail.com",
                 subject = "MySpace Check_APIs_Remaining_To_Test CRON JOB Failed!"
                 body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB Failed. \n\n{response}\n\n"
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!' , 'code': 201}
+                response["email"] = {
+                    "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
-    
+
+
 def Check_APIs_Remaining_To_Test_CRON():
-        print("\nIn Check_APIs_Remaining_To_Test_CLASS CRON \n\n\n")
-        response = {}
-        dt = datetime.today()
+    print("\nIn Check_APIs_Remaining_To_Test_CLASS CRON \n\n\n")
+    response = {}
+    dt = datetime.today()
+    try:
+        extract_api_obj = Extract_API()
+
+        response = extract_api_obj.get()
+
         try:
-            extract_api_obj = Extract_API()
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = (
+                f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
+            )
+            body = (
+                f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n"
+                + "\n"
+            )
 
-            response = extract_api_obj.get()
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = f"MySpace Check_APIs_Remaining_To_Test CRON JOB for {dt} Completed "
-                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB has been executed. \n\n{response}\n\n" + "\n"
-
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
-
-                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!' , 'code': 200}
-
-            except:
-                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} sent!",
+                "code": 200,
+            }
 
         except:
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = "MySpace Check_APIs_Remaining_To_Test CRON JOB Failed!"
-                body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB Failed. \n\n{response}\n\n"
+            response["email fail"] = {
+                "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
+    except:
+        try:
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = "MySpace Check_APIs_Remaining_To_Test CRON JOB Failed!"
+            body = f"MySpace Check_APIs_Remaining_To_Test CRON JOB Failed. \n\n{response}\n\n"
 
-                response["email"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!' , 'code': 201}
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-            except:
-                response["email fail"] = {'message': f'MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
 
-        return response
+        except:
+            response["email fail"] = {
+                "message": f"MySpace Check_APIs_Remaining_To_Test CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
+
+    return response
 
 
 class Delete_six_0s_from_database_CLASS(Resource):
@@ -2662,92 +3258,121 @@ class Delete_six_0s_from_database_CLASS(Resource):
 
             response = clean_database_obj.get()
 
-
             try:
-                recipients = [#"pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
-                body = f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n" + "\n"
+                recipients = ["saumyashah4751@gmail.com"]  # "pmarathay@gmail.com",
+                subject = (
+                    f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
+                )
+                body = (
+                    f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n"
+                    + "\n"
+                )
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!' , 'code': 200}
+                response["email"] = {
+                    "message": f"MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!",
+                    "code": 200,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         except:
             try:
-                recipients = [#"pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
+                recipients = ["saumyashah4751@gmail.com"]  # "pmarathay@gmail.com",
                 subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
                 body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"
 
                 for recipient in recipients:
                     sendEmail(recipient, subject, body)
 
-                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!' , 'code': 201}
+                response["email"] = {
+                    "message": f"MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!",
+                    "code": 201,
+                }
 
             except:
-                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+                response["email fail"] = {
+                    "message": f"MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent",
+                    "code": 500,
+                }
 
         return response
+
 
 def Delete_six_0s_from_database_CRON():
-        print("\nIn Delete_six_0s_from_database CRON \n\n\n")
-        response = {}
-        dt = datetime.today()
+    print("\nIn Delete_six_0s_from_database CRON \n\n\n")
+    response = {}
+    dt = datetime.today()
+    try:
+        clean_database_obj = CleanUpDatabase()
+
+        response = clean_database_obj.get()
+
         try:
-            clean_database_obj = CleanUpDatabase()
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = (
+                f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
+            )
+            body = (
+                f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n"
+                + "\n"
+            )
 
-            response = clean_database_obj.get()
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = f"MySpace Delete_six_0s_from_database CRON JOB for {dt} Completed "
-                body = f"MySpace Delete_six_0s_from_database CRON JOB has been executed. \n\n{response}\n\n" + "\n"
-
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
-
-                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!' , 'code': 200}
-
-            except:
-                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Delete_six_0s_from_database CRON Job Email for {dt} sent!",
+                "code": 200,
+            }
 
         except:
-            try:
-                recipients = ["pmarathay@gmail.com",
-                             "saumyashah4751@gmail.com"]
-                subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
-                body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"
+            response["email fail"] = {
+                "message": f"MySpace Delete_six_0s_from_database CRON Job Email for {dt} could not be sent",
+                "code": 500,
+            }
 
-                for recipient in recipients:
-                    sendEmail(recipient, subject, body)
+    except:
+        try:
+            recipients = ["pmarathay@gmail.com", "saumyashah4751@gmail.com"]
+            subject = "MySpace Delete_six_0s_from_database CRON JOB Failed!"
+            body = f"MySpace Delete_six_0s_from_database CRON JOB Failed. \n\n{response}\n\n"
 
-                response["email"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!' , 'code': 201}
+            for recipient in recipients:
+                sendEmail(recipient, subject, body)
 
-            except:
-                response["email fail"] = {'message': f'MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent' , 'code': 500}
+            response["email"] = {
+                "message": f"MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} sent!",
+                "code": 201,
+            }
 
-        return response
+        except:
+            response["email fail"] = {
+                "message": f"MySpace Delete_six_0s_from_database CRON Job Fail Email for {dt} could not be sent",
+                "code": 500,
+            }
 
+    return response
 
 
 #  -- ENCRYPTION MIDDLEWARE    -----------------------------------------
+
 
 # @app.route('/decrypt', methods=['POST'])
 def decrypt_data():
     try:
         # Get the encrypted data from the request body
-        encrypted_data_base64 = request.json.get('encrypted_data')
+        encrypted_data_base64 = request.json.get("encrypted_data")
         # print("encrypted_data: ", encrypted_data_base64)
         decrypted_data = decrypt_dict(encrypted_data_base64)
         print("Decrypted Data: ", decrypt_data)
-        
+
         return jsonify({"decrypted_data": decrypted_data})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -2756,27 +3381,32 @@ def decrypt_data():
 # Flask runs this code BEFORE running the actual endpoint code
 # @app.before_request
 
+
 def check_jwt_token():
-    if request.path == '/auth/refreshToken' or request.path.startswith('/userInfo/') or request.path.startswith('/businessProfile'):
-        return jsonify({'message': 'JWT not required!'}), 201
+    if (
+        request.path == "/auth/refreshToken"
+        or request.path.startswith("/userInfo/")
+        or request.path.startswith("/businessProfile")
+    ):
+        return jsonify({"message": "JWT not required!"}), 201
     try:
-        print('Request Headers:', request.headers['Authorization'])
+        print("Request Headers:", request.headers["Authorization"])
         verify_jwt_in_request()
-        current_user = get_jwt_identity() 
+        current_user = get_jwt_identity()
         print(f"Current User ID: {current_user}")
-        return jsonify({'message': 'JWT is present!'}), 201
+        return jsonify({"message": "JWT is present!"}), 201
     except jwt.ExpiredSignatureError:
-        print('JWT Expired')
-        return jsonify({'message': 'Token is expired!'}), 401
+        print("JWT Expired")
+        return jsonify({"message": "Token is expired!"}), 401
 
     except jwt.InvalidTokenError:
-        print('JWT Invalid')
-        return jsonify({'message': 'Invalid token!'}), 404
+        print("JWT Invalid")
+        return jsonify({"message": "Invalid token!"}), 404
 
     except Exception as e:
         # This will catch any other exception, including missing token
-        print('JWT Missing')
-        return jsonify({'message': 'Missing token!'}), 404
+        print("JWT Missing")
+        return jsonify({"message": "Missing token!"}), 404
 
 
 # Middleware for decrypting incoming request data
@@ -2784,12 +3414,12 @@ def decrypt_request():
     if request.is_json:
         global decrypted_data
         print(f"Inside is_json - {os.getenv('RDS_DB')}")
-        print(request.get_json().get('encrypted_data'))
-        encrypted_data = request.get_json().get('encrypted_data')
+        print(request.get_json().get("encrypted_data"))
+        encrypted_data = request.get_json().get("encrypted_data")
         # form_data = request.get_json(force=True).get('data_type') # True = Form data, False = JSON data
         if encrypted_data:  # and form_data == False:
             decrypted_data = decrypt_dict(encrypted_data)
-            print('decrypted data', decrypted_data, type(decrypted_data))
+            print("decrypted data", decrypted_data, type(decrypted_data))
 
             # Override request.get_json(force=True) to return decrypted data
             def get_json_override(*args, **kwargs):
@@ -2797,17 +3427,23 @@ def decrypt_request():
                 print("In function: ", decrypted_data, type(decrypted_data))
                 if isinstance(decrypted_data, str):
                     decrypted_data = json.loads(decrypted_data)
-                    print("JSON Announcement Payload: ", decrypted_data, type(decrypted_data))
+                    print(
+                        "JSON Announcement Payload: ",
+                        decrypted_data,
+                        type(decrypted_data),
+                    )
                 return decrypted_data
-            
+
             request.get_json = get_json_override
-            
+
         else:
             print("Data issue")
-    elif request.content_type and request.content_type.startswith('multipart/form-data'):
+    elif request.content_type and request.content_type.startswith(
+        "multipart/form-data"
+    ):
         print(f"Inside is_json - {os.getenv('RDS_DB')}")
         # For FormData directly in the request
-        encrypted_data = request.form.get('encrypted_data')
+        encrypted_data = request.form.get("encrypted_data")
 
         if encrypted_data:
             decrypted_data = decrypt_dict(encrypted_data)
@@ -2816,15 +3452,19 @@ def decrypt_request():
             files = {}
 
             for key, value in decrypted_data.items():
-                if isinstance(value, dict) and 'fileName' in value and 'fileType' in value:
+                if (
+                    isinstance(value, dict)
+                    and "fileName" in value
+                    and "fileType" in value
+                ):
                     # Handle file-specific data
                     # print("image - ", value)
-                    file_binary = base64.b64decode(value['fileData'])
+                    file_binary = base64.b64decode(value["fileData"])
                     file_stream = BytesIO(file_binary)
                     files[key] = FileStorage(
                         stream=file_stream,
-                        filename=value['fileName'],
-                        content_type=value['fileType']
+                        filename=value["fileName"],
+                        content_type=value["fileType"],
                     )
                 else:
                     fields[key] = value
@@ -2842,28 +3482,30 @@ def decrypt_request():
     else:
         print("GET Request, no JSON object received")
 
+
 # Middleware to encrypt response data
 def encrypt_response(data):
     # print("data: ",data)
     encrypted_data = encrypt_dict(data)
-    return jsonify({'encrypted_data': encrypted_data})
+    return jsonify({"encrypted_data": encrypted_data})
 
 
 # Health check route (optional)
-@app.route('/')
+@app.route("/")
 def health_check():
     print("In Health Check")
     return jsonify({"message": "API is running!"})
 
-@app.route('/decode', methods=['POST'])
+
+@app.route("/decode", methods=["POST"])
 def decode():
     print("In decode")
-    
+
     decrypt_request()
 
     if request.is_json:
         # print("JSON Data: ", request.get_json(force=True))
-        response = jsonify({'decode': request.get_json(force=True)})
+        response = jsonify({"decode": request.get_json(force=True)})
     else:
         # print("Request Form: ", request.form)
         # print(request.files)
@@ -2879,7 +3521,6 @@ def decode():
     return response
 
 
-
 # Actual middleware.  Commands before request (check JWT and then decrypt data) and after request (encrypt response before passing to FrontEnd)
 # def setup_middlewares(app):
 @app.before_request
@@ -2890,18 +3531,23 @@ def before_request():
     print("e0")
     if request.headers.get("Postman-Secret") != POSTMAN_SECRET:
         print("e1")
-        if request.method != 'OPTIONS': 
-            print("e2") 
+        if request.method != "OPTIONS":
+            print("e2")
             print("In Middleware before_request")
-            response,code = check_jwt_token()
+            response, code = check_jwt_token()
             if code == 201:
                 decrypt_request()
 
             else:
                 print("Response Code: ", code)
-                response = encrypt_response(response.get_json()) if response.is_json else response
+                response = (
+                    encrypt_response(response.get_json())
+                    if response.is_json
+                    else response
+                )
                 response.status_code = code
                 return response
+
 
 @app.after_request
 def after_request(response):
@@ -2912,38 +3558,46 @@ def after_request(response):
         # print("Actual endpoint response2: ", type(response.get_json()))
         original_status_code = response.status_code
 
-        response = encrypt_response(response.get_json()) if response.is_json else response
-        
+        response = (
+            encrypt_response(response.get_json()) if response.is_json else response
+        )
+
         response.status_code = original_status_code
 
     return response
-    
+
 
 # Apply middlewares
 # setup_middlewares(app)
 
-#This method is to refresh the jwt token from the FrontEnd
-@app.route('/auth/refreshToken', methods=['GET'])
+
+# This method is to refresh the jwt token from the FrontEnd
+@app.route("/auth/refreshToken", methods=["GET"])
 @jwt_required(refresh=True)  # This ensures that only refresh tokens can be used here
 def refreshToken():
     try:
-        print('Inside refresh token')
+        print("Inside refresh token")
         current_user = get_jwt_identity()  # Get user identity from refresh token
-        new_access_token = create_access_token(identity=current_user)  # Create new access token
-        print('New token is', new_access_token)
+        new_access_token = create_access_token(
+            identity=current_user
+        )  # Create new access token
+        print("New token is", new_access_token)
         return jsonify(access_token=new_access_token)
     except Exception as e:
-        print('Error refreshing token:', e)
-        return jsonify({'message': 'Could not refresh token'}), 401
-    
+        print("Error refreshing token:", e)
+        return jsonify({"message": "Could not refresh token"}), 401
 
+
+# here this will handle backend for ownership transfer
+
+# first step: create transfer proposal
 
 
 #  -- ACTUAL ENDPOINTS    -----------------------------------------
 
 # Dashboard Queries
 
-api.add_resource(Dashboard, '/dashboard/<string:user_id>')
+api.add_resource(Dashboard, "/dashboard/<string:user_id>")
 
 
 # Owner Queries
@@ -2951,47 +3605,74 @@ api.add_resource(Dashboard, '/dashboard/<string:user_id>')
 
 # Payment Endpoints
 api.add_resource(stripe_key, "/stripe_key/<string:desc>")
-api.add_resource(PaymentMethod, '/paymentMethod','/paymentMethod/<string:user_id>','/paymentMethod/<string:user_id>//<string:payment_id>')
-api.add_resource(NewPayments, '/makePayment')
-
+api.add_resource(
+    PaymentMethod,
+    "/paymentMethod",
+    "/paymentMethod/<string:user_id>",
+    "/paymentMethod/<string:user_id>//<string:payment_id>",
+)
+api.add_resource(NewPayments, "/makePayment")
 
 
 # Maintenance Endpoints
-api.add_resource(MaintenanceStatus, '/maintenanceStatus/<string:user_id>')
-api.add_resource(MaintenanceRequests, '/maintenanceReq/<string:uid>', '/maintenanceRequests')
-api.add_resource(MaintenanceQuotes, '/maintenanceQuotes', '/maintenanceQuotes/<string:uid>')
-api.add_resource(MaintenanceQuotesByUid, '/maintenanceQuotes/<string:maintenance_quote_uid>')
+api.add_resource(MaintenanceStatus, "/maintenanceStatus/<string:user_id>")
+api.add_resource(
+    MaintenanceRequests, "/maintenanceReq/<string:uid>", "/maintenanceRequests"
+)
+api.add_resource(
+    MaintenanceQuotes, "/maintenanceQuotes", "/maintenanceQuotes/<string:uid>"
+)
+api.add_resource(
+    MaintenanceQuotesByUid, "/maintenanceQuotes/<string:maintenance_quote_uid>"
+)
 
 
+# search properties - get request
+api.add_resource(PropertiesSearch, "/properties/search")
+api.add_resource(Properties, "/properties/<string:uid>", "/properties")
 
-api.add_resource(Properties, '/properties/<string:uid>', '/properties' )
-api.add_resource(Rents, '/rents/<string:user_id>')
-api.add_resource(RentDetails, '/rentDetails/<string:user_id>')
-api.add_resource(RentTest, '/rentTest/<string:user_id>')
+# multiple owners - supports both property_id and email query parameter
+api.add_resource(
+    PropertyOwners, "/propertyOwners", "/propertyOwners/<string:property_id>"
+)
+
+# Ownership transfer endpoints
+api.add_resource(
+    OwnershipTransfer, "/ownershipTransfer", "/ownershipTransfer/<string:property_id>"
+)
+api.add_resource(OwnershipTransfersByUser, "/ownershipTransfersByUser/<string:user_id>")
+
+
+api.add_resource(Rents, "/rents/<string:user_id>")
+api.add_resource(RentDetails, "/rentDetails/<string:user_id>")
+api.add_resource(RentTest, "/rentTest/<string:user_id>")
 
 
 # appliances
-api.add_resource(Appliances, '/appliances', '/appliances/<string:uid>')
+api.add_resource(Appliances, "/appliances", "/appliances/<string:uid>")
 # api.add_resource(Appliances_SB, '/appliancesSB')
 # api.add_resource(RemoveAppliance, "/RemoveAppliance")
 
 
+api.add_resource(Bills, "/bills", "/bills/<string:user_id>")
+api.add_resource(Contracts, "/contracts", "/contracts/<string:user_id>")
+api.add_resource(AddExpense, "/addExpense")
+api.add_resource(AddRevenue, "/addRevenue")
+api.add_resource(AddPurchase, "/addPurchase")
 
-api.add_resource(Bills, '/bills','/bills/<string:user_id>')
-api.add_resource(Contracts, '/contracts', '/contracts/<string:user_id>')
-api.add_resource(AddExpense, '/addExpense')
-api.add_resource(AddRevenue, '/addRevenue')
-api.add_resource(AddPurchase, '/addPurchase')
 
-
-api.add_resource(PaymentVerification, '/paymentVerification/<string:user_id>', '/paymentVerification')
-api.add_resource(CashflowTransactions, '/cashflowTransactions/<string:user_id>/<string:filter>')
+api.add_resource(
+    PaymentVerification, "/paymentVerification/<string:user_id>", "/paymentVerification"
+)
+api.add_resource(
+    CashflowTransactions, "/cashflowTransactions/<string:user_id>/<string:filter>"
+)
 
 
 # api.add_resource(AllTransactions, '/allTransactions/<string:uid>')
 
-api.add_resource(Profile, '/profile/<string:user_id>', '/profile' )
-api.add_resource(BusinessProfile, '/businessProfile')
+api.add_resource(Profile, "/profile/<string:user_id>", "/profile")
+api.add_resource(BusinessProfile, "/businessProfile")
 
 # Can we delete these?
 # api.add_resource(OwnerProfileByOwnerUid, '/ownerProfile/<string:owner_id>')
@@ -3003,45 +3684,49 @@ api.add_resource(BusinessProfile, '/businessProfile')
 # api.add_resource(BusinessProfileList, "/businessProfileList/<string:business_type>")
 
 
-api.add_resource(Employee, '/employee','/employee/<string:user_id>')
-api.add_resource(EmployeeVerification, '/employeeVerification')
+api.add_resource(Employee, "/employee", "/employee/<string:user_id>")
+api.add_resource(EmployeeVerification, "/employeeVerification")
 # api.add_resource(OwnerDocuments, '/ownerDocuments/<string:owner_id>')
 # api.add_resource(TenantDocuments, '/tenantDocuments/<string:tenant_id>')
 # api.add_resource(QuoteDocuments, '/quoteDocuments', '/quoteDocuments/<string:quote_id>')
-api.add_resource(Documents, '/documents','/documents/<string:user_id>')
-api.add_resource(LeaseDetails, '/leaseDetails/<string:user_id>', '/leaseDetails')
-api.add_resource(LeaseApplication, '/leaseApplication', '/leaseApplication/<string:tenant_id>/<string:property_id>')
-api.add_resource(LeaseReferal, '/leaseReferal')
+api.add_resource(Documents, "/documents", "/documents/<string:user_id>")
+api.add_resource(LeaseDetails, "/leaseDetails/<string:user_id>", "/leaseDetails")
+api.add_resource(
+    LeaseApplication,
+    "/leaseApplication",
+    "/leaseApplication/<string:tenant_id>/<string:property_id>",
+)
+api.add_resource(LeaseReferal, "/leaseReferal")
 
 
-api.add_resource(Contacts, '/contacts/<string:uid>')
-api.add_resource(Announcements, '/announcements/<string:user_id>', '/announcements')
+api.add_resource(Contacts, "/contacts/<string:uid>")
+api.add_resource(Announcements, "/announcements/<string:user_id>", "/announcements")
 
 
-api.add_resource(List, '/lists')
-api.add_resource(Listings, '/listings/<string:tenant_id>')
-api.add_resource(Utilities, '/utilities')
+api.add_resource(List, "/lists")
+api.add_resource(Listings, "/listings/<string:tenant_id>")
+api.add_resource(Utilities, "/utilities")
 
-api.add_resource(Account, '/account')
+api.add_resource(Account, "/account")
 # api.add_resource(HappinessMatrix,'/happinessMatrix/<string:user_id>')
 
-api.add_resource(SearchManager, '/searchManager')
+api.add_resource(SearchManager, "/searchManager")
 
-api.add_resource(Password, '/password')
+api.add_resource(Password, "/password")
 
 # #JWT Token
 # api.add_resource(JwtToken, '/jwtToken/<string:user_id>')
 
-#CRON JOBS
+# CRON JOBS
 # api.add_resource(LeaseExpiringNotify, '/LeaseExpiringNotify')
 # api.add_resource(Rent_CLASS, '/MonthlyRent')
-api.add_resource(MonthlyRentPurchase_CLASS, '/MonthlyRent')
+api.add_resource(MonthlyRentPurchase_CLASS, "/MonthlyRent")
 # api.add_resource(PeriodicPurchases_CLASS, '/periodicPurchase')
 # api.add_resource(RentPurchase, '/rentPurchase')
-api.add_resource(LateFees_CLASS, '/LateFees')
-api.add_resource(Contract_CLASS, '/contractCRON')
+api.add_resource(LateFees_CLASS, "/LateFees")
+api.add_resource(Contract_CLASS, "/contractCRON")
 # api.add_resource(CRONTest_CLASS, '/CRONRent')
-api.add_resource(Lease_CLASS, '/leaseCRON')
+api.add_resource(Lease_CLASS, "/leaseCRON")
 
 
 # api.add_resource(ExtendLease, '/ExtendLease')
@@ -3054,9 +3739,8 @@ api.add_resource(SendEmail, "/sendEmail")
 api.add_resource(UserInfo, "/userInfo/<string:user_id>", "/userInfo")
 
 api.add_resource(EndPoint_CLASS, "/testapi")
-api.add_resource(Check_APIs_Remaining_To_Test_CLASS, '/extract_api')
-api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
-
+api.add_resource(Check_APIs_Remaining_To_Test_CLASS, "/extract_api")
+api.add_resource(Delete_six_0s_from_database_CLASS, "/cleanupdata")
 
 
 # refresh
@@ -3067,7 +3751,6 @@ api.add_resource(Delete_six_0s_from_database_CLASS, '/cleanupdata')
 # api.add_resource(UserSocialSignup, '/userSocialSignup')
 
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4010)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=4010)
     # app.run(host='127.0.0.1', port=4000)

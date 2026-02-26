@@ -4,7 +4,8 @@ from data_pm import connect, uploadImage
 from datetime import date, datetime, timedelta
 import json
 
-class QuotesStatusByBusiness(Resource): 
+
+class QuotesStatusByBusiness(Resource):
     def get(self):
         args = request.args
         business_id = args.get("business_id")
@@ -15,13 +16,19 @@ class QuotesStatusByBusiness(Resource):
             last_30_days = """ quote_created_date BETWEEN (CURDATE() - INTERVAL 1 MONTH) AND CURDATE()
                     AND"""
         with connect() as db:
-            query = """ 
+            query = (
+                """ 
                 SELECT maintenance_request_uid, maintenance_title, maintenance_priority, maintenance_images,
                     maintenance_quote_uid, quote_business_id, property_uid, property_address, quote_status
                 FROM m_details
                     LEFT JOIN properties ON property_uid = maintenance_property_id
-                WHERE""" + last_30_days + """ quote_business_id = \'""" + business_id + """\'
+                WHERE"""
+                + last_30_days
+                + """ quote_business_id = \'"""
+                + business_id
+                + """\'
             """
+            )
             query_result = db.execute(query)
             response_dict = {}
             for item in query_result["result"]:
@@ -32,12 +39,14 @@ class QuotesStatusByBusiness(Resource):
                     response_dict[group_by_value] = [item]
             return response_dict
 
-class QuotesByBusiness(Resource): 
+
+class QuotesByBusiness(Resource):
     def get(self):
         args = request.args
         business_id = args.get("business_id")
         with connect() as db:
-            query = """ 
+            query = (
+                """ 
                 SELECT maintenance_request_uid, maintenance_title, maintenance_desc, maintenance_images,
                     maintenance_request_type, maintenance_priority, maintenance_request_created_date, maintenance_quote_uid,
                     quote_business_id,quote_earliest_available_date, quote_earliest_available_time, quote_event_duration, quote_notes, quote_status,
@@ -46,8 +55,11 @@ class QuotesByBusiness(Resource):
                     LEFT JOIN properties ON property_uid = maintenance_property_id
                     LEFT JOIN businessProfileInfo ON quote_business_id = business_uid
                     LEFT JOIN users ON business_user_id = user_uid
-                WHERE quote_business_id = \'""" + business_id + """\'
+                WHERE quote_business_id = \'"""
+                + business_id
+                + """\'
             """
+            )
             query_result = db.execute(query)
             response_dict = {}
             for item in query_result["result"]:
@@ -59,35 +71,44 @@ class QuotesByBusiness(Resource):
             return response_dict
 
 
-class QuotesByRequest(Resource): 
+# here we have
+class QuotesByRequest(Resource):
     def get(self):
         args = request.args
         request_id = args.get("maintenance_request_id")
         with connect() as db:
-            query = """ 
+            query = (
+                """ 
                 SELECT *
                 FROM maintenanceQuotes
-                WHERE quote_maintenance_request_id = \'""" + request_id + """\' AND quote_status = 'SENT'
+                WHERE quote_maintenance_request_id = \'"""
+                + request_id
+                + """\' AND quote_status = 'SENT'
             """
+            )
             response = db.execute(query)
             return response
 
 
 # TODO: Move (post) to /maintenanceQuotes after UI routing changes
-class Quotes(Resource): 
+class Quotes(Resource):
     def post(self):
         response = []
         payload = request.form
         quote_maintenance_request_id = payload.get("quote_maintenance_request_id")
-        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(',')
+        quote_maintenance_contacts = payload.get("quote_maintenance_contacts").split(
+            ","
+        )
         # print("Contacts: ", quote_maintenance_contacts, type(quote_maintenance_contacts))
         quote_pm_notes = payload["quote_pm_notes"]
-        today = datetime.today().strftime('%m-%d-%Y %H:%M:%S')
+        today = datetime.today().strftime("%m-%d-%Y %H:%M:%S")
         with connect() as db:
             for quote_business_id in quote_maintenance_contacts:
                 # print("Business ID: ", quote_business_id)
                 quote = {}
-                quote["maintenance_quote_uid"] = db.call('new_quote_uid')['result'][0]['new_id']
+                quote["maintenance_quote_uid"] = db.call("new_quote_uid")["result"][0][
+                    "new_id"
+                ]
                 quote["quote_business_id"] = quote_business_id
                 quote["quote_maintenance_request_id"] = quote_maintenance_request_id
                 quote["quote_status"] = "REQUESTED"
@@ -99,20 +120,22 @@ class Quotes(Resource):
                 while True:
                     print("In while loop")
                     if i == 0:
-                        filename = 'img_cover'
+                        filename = "img_cover"
                     else:
-                        filename = f'img_{i - 1}'  # Adjust the filename for img_0, img_1, ...
+                        filename = (
+                            f"img_{i - 1}"  # Adjust the filename for img_0, img_1, ...
+                        )
                     file = request.files.get(filename)
                     if file:
                         key = f'maintenanceQuotes/{quote["maintenance_quote_uid"]}/{filename}'
-                        image = uploadImage(file, key, '')
+                        image = uploadImage(file, key, "")
                         images.append(image)
                     else:
                         break
                     i += 1
 
                 quote["quote_maintenance_images"] = json.dumps(images)
-                query_response = db.insert('maintenanceQuotes', quote)
+                query_response = db.insert("maintenanceQuotes", quote)
                 response.append(query_response)
 
         return response
