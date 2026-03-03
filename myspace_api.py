@@ -124,6 +124,8 @@ BLOCK_SIZE = int(os.getenv('BLOCK_SIZE'))
 POSTMAN_SECRET = os.getenv('POSTMAN_SECRET')
 # print("POSTMAN_SECRET: ", POSTMAN_SECRET)
 
+ENCRYPTION_ENABLED = False
+
 decrypted_data = {}
 
 # Encrypt dictionary
@@ -2781,6 +2783,8 @@ def check_jwt_token():
 
 # Middleware for decrypting incoming request data
 def decrypt_request():
+    if not ENCRYPTION_ENABLED:
+        return
     if request.is_json:
         global decrypted_data
         print(f"Inside is_json - {os.getenv('RDS_DB')}")
@@ -2844,6 +2848,8 @@ def decrypt_request():
 
 # Middleware to encrypt response data
 def encrypt_response(data):
+    if not ENCRYPTION_ENABLED:
+        return jsonify(data)
     # print("data: ",data)
     encrypted_data = encrypt_dict(data)
     return jsonify({'encrypted_data': encrypted_data})
