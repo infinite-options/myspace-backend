@@ -109,9 +109,11 @@ import base64
 
 
 
-MySQLdb = 'dev database' if os.getenv('DEBUG') == "TRUE" else 'production database'
+MySQLdb = 'dev database' if os.getenv('ENCRYPTION_ENABLED') == "false" else 'production database'
 print(f"-------------------- New Program Run ( {MySQLdb} ) --------------------")
 
+ENCRYPTION_ENABLED = False if os.getenv('ENCRYPTION_ENABLED') == "false" else True
+print("Encryption Enabled: ", ENCRYPTION_ENABLED)
 
 # == Using Cryptography library for AES encryption ==
 
@@ -2776,6 +2778,9 @@ def check_jwt_token():
 
 # Middleware for decrypting incoming request data
 def decrypt_request():
+    if not ENCRYPTION_ENABLED:
+        print("Encryption is disabled, skipping decryption")
+        return
     if request.is_json:
         global decrypted_data
         print('Inside is_json - space_prod')
@@ -2839,7 +2844,10 @@ def decrypt_request():
 
 # Middleware to encrypt response data
 def encrypt_response(data):
-    print("data: ",data)
+    # print("data: ",data)
+    if not ENCRYPTION_ENABLED:
+        print("Encryption is disabled, returning original data")
+        return jsonify(data)
     encrypted_data = encrypt_dict(data)
     return jsonify({'encrypted_data': encrypted_data})
 
