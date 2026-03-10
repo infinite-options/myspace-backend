@@ -1,26 +1,30 @@
-# manifiestmyspace-backend
+# manifiestmyspace-backend README File
 
-# Use this in cmd to run the pytest script
+# Use this in cmd to run the pytest script (test_api): python -m pytest -v -s
 
-# This will run test_api
+# ----------------------------------------------------------------------------
 
-# python -m pytest -v -s
+# LOCAL MODE INSTRUCTION
 
-# Change .env file to go between Production Mode and Dev Mode as follows:
+# CHANGE env FILE TO TURN ENCRYPTION ON OR OFF AS FOLLOWS:
 
-# For PRODUCTION MODE:
+    ENCRYPTION_ENABLED = false to turn encryption OFF
+    ENCRYPTION_ENABLED = true to turn encryption ON
 
-# RDS_DB = space_prod
+# ----------------------------------------------------------------------------
 
-# BUCKET_NAME = io-pm
+# ZAPPA UPDATE INSTRUCTIONS
 
-# For DEV MODE:
+# Settings for PRODUCTION MODE:
 
-# RDS_DB = space_dev
+    RDS_DB = space_prod
+    BUCKET_NAME = io-pm
 
-# BUCKET_NAME = io-myspace
+# ZAPPA UPDATE USE: zappa update production
 
+# Settings for DEV MODE:
 
-# For Production use zappa update production
-# For Testing use zappa update dev
-# That forces Encryption into the correct state
+    RDS_DB = space_dev
+    BUCKET_NAME = io-myspace
+
+# ZAPPA UPDATE USE: zappa update dev
